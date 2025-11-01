@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
         benzin: ['Russo One', 'sans-serif'],
+        gilroy: ['Montserrat', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

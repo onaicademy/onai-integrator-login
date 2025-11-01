@@ -17,11 +17,11 @@ const Index = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="flex justify-center items-baseline gap-1">
-          <h1 className="font-benzin text-5xl font-bold">
+          <h1 className="font-gilroy text-5xl font-semibold">
             <span className="text-neon">on</span>
             <span className="text-foreground">AI</span>
           </h1>
-          <span className="font-benzin text-3xl font-bold text-foreground">Academy</span>
+          <span className="font-gilroy text-3xl font-semibold text-foreground">Academy</span>
         </div>
 
         {/* Heading */}
