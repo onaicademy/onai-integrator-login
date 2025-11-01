@@ -1,11 +1,72 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import onaiLogo from "@/assets/onai-logo.png";
 
 const Index = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Login attempt:", { email, password });
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md space-y-8">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <img src={onaiLogo} alt="onAI Academy" className="h-16 object-contain" />
+        </div>
+
+        {/* Heading */}
+        <h1 className="text-3xl font-semibold text-center">Вход в платформу</h1>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-foreground">
+              Пароль
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <Button type="submit" variant="neon" className="w-full" size="lg">
+            Войти
+          </Button>
+        </form>
+
+        {/* Forgot password */}
+        <div className="text-center">
+          <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Забыли пароль?
+          </a>
+        </div>
       </div>
     </div>
   );
