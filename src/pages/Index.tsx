@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import onaiLogo from "@/assets/onai-logo.png";
 
 const Index = () => {
   const [email, setEmail] = useState("");
@@ -17,8 +16,12 @@ const Index = () => {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
-        <div className="flex justify-center">
-          <img src={onaiLogo} alt="onAI Academy" className="h-16 object-contain" />
+        <div className="flex justify-center items-baseline gap-1">
+          <h1 className="font-benzin text-5xl font-bold">
+            <span className="text-neon">on</span>
+            <span className="text-foreground">AI</span>
+          </h1>
+          <span className="font-benzin text-3xl font-bold text-foreground">Academy</span>
         </div>
 
         {/* Heading */}

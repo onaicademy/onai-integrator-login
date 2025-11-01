@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
+        benzin: ['Russo One', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
