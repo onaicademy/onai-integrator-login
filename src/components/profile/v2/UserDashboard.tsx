@@ -97,7 +97,7 @@ export const UserDashboard = () => {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] rounded-full shadow-lg"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] rounded-full shadow-lg"
               >
                 <span className="text-sm font-bold text-background">Уровень {level}</span>
               </motion.div>
