@@ -53,7 +53,11 @@ const Course = () => {
         >
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3 bg-gradient-to-r from-neon via-[hsl(var(--cyber-blue))] to-neon bg-clip-text text-transparent">
+              <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-neon via-[hsl(var(--cyber-blue))] to-neon bg-clip-text text-transparent"
+                  style={{
+                    textShadow: "0 0 40px rgba(177, 255, 50, 0.5), 0 0 80px rgba(0, 200, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.8)",
+                    filter: "drop-shadow(0 10px 30px rgba(177, 255, 50, 0.4))"
+                  }}>
                 Интегратор 2.0
               </h1>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
