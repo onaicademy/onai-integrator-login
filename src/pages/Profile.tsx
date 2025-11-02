@@ -8,7 +8,7 @@ import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
 
 const Profile = () => {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="relative overflow-hidden">
       {/* Ambient background effects */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Grid pattern */}

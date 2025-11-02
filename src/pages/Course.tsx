@@ -36,7 +36,7 @@ const Course = () => {
   const modulesCount = "8 + бонусы";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0 bg-black" />
