@@ -11,9 +11,9 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-neon transition-colors",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background text-foreground hover:bg-accent hover:text-neon hover:border-neon/50 transition-colors",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:text-neon transition-colors",
-        ghost: "hover:bg-accent hover:text-neon transition-colors",
+        outline: "border border-input bg-background text-foreground hover:bg-neon/10 hover:text-neon hover:border-neon/50 transition-colors",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-neon/10 hover:text-neon transition-colors",
+        ghost: "hover:bg-neon/10 hover:text-neon transition-colors",
         link: "text-primary underline-offset-4 hover:underline hover:text-neon transition-colors",
         neon: "bg-neon text-neon-foreground hover:bg-neon/20 font-medium transition-all",
       },
