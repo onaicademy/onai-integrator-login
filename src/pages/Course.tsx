@@ -3,32 +3,31 @@ import { Button } from "@/components/ui/button";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { CourseStats } from "@/components/course/CourseStats";
 import { 
-  Hand, 
-  MessageSquare, 
-  Settings, 
-  Workflow, 
-  Link, 
-  Package, 
-  Rocket, 
-  TrendingUp,
+  Sparkles, 
+  Bot, 
+  Plug2, 
+  Cpu, 
+  Network, 
+  FileCheck2, 
+  Megaphone, 
+  DollarSign,
   Gift,
-  Search,
+  Users,
   Download,
-  Calendar,
   MessageCircle
 } from "lucide-react";
 
 const modules = [
-  { id: 1, title: "Введение в профессию", progress: 100, icon: Hand },
-  { id: 2, title: "Создание GPT бота и CRM", progress: 90, icon: MessageSquare },
-  { id: 3, title: "Интеграция amoCRM и Bitrix24", progress: 80, icon: Settings },
-  { id: 4, title: "Автоматизация при помощи Make", progress: 60, icon: Workflow },
-  { id: 5, title: "N8N автоматизация и работа с API", progress: 50, icon: Link },
-  { id: 6, title: "Реализация и закрытие проекта", progress: 40, icon: Package },
-  { id: 7, title: "Упаковка и продвижение", progress: 30, icon: Rocket },
-  { id: 8, title: "Продажи на высокий чек", progress: 20, icon: TrendingUp },
+  { id: 1, title: "Введение в профессию", progress: 100, icon: Sparkles },
+  { id: 2, title: "Создание GPT бота и CRM", progress: 90, icon: Bot },
+  { id: 3, title: "Интеграция amoCRM и Bitrix24", progress: 80, icon: Plug2 },
+  { id: 4, title: "Автоматизация при помощи Make", progress: 60, icon: Cpu },
+  { id: 5, title: "N8N автоматизация и работа с API", progress: 50, icon: Network },
+  { id: 6, title: "Реализация и закрытие проекта", progress: 40, icon: FileCheck2 },
+  { id: 7, title: "Упаковка и продвижение", progress: 30, icon: Megaphone },
+  { id: 8, title: "Продажи на высокий чек", progress: 20, icon: DollarSign },
   { id: 9, title: "Бонусы", progress: 10, icon: Gift },
-  { id: 10, title: "Воркшопы", progress: 0, icon: Search }
+  { id: 10, title: "Воркшопы", progress: 0, icon: Users }
 ];
 
 const Course = () => {

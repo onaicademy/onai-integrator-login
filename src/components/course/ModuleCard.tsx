@@ -48,12 +48,19 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
       <div className="relative h-48 flex items-center justify-center p-8 bg-gradient-to-br from-card/20 to-transparent">
         <motion.div 
           className="relative"
-          whileHover={{ 
-            scale: 1.1,
-            rotateY: 15,
-            rotateX: -10,
+          animate={{ 
+            rotateY: [0, 360],
+            scale: [1, 1.05, 1]
           }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          transition={{ 
+            rotateY: { duration: 20, repeat: Infinity, ease: "linear" },
+            scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+          }}
+          whileHover={{ 
+            scale: 1.2,
+            rotateY: 0,
+            transition: { duration: 0.3 }
+          }}
           style={{
             transformStyle: "preserve-3d",
             perspective: "1000px"
@@ -64,16 +71,27 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
             style={{
               transform: "perspective(1000px) rotateX(5deg) rotateY(-5deg)",
               filter: `
-                drop-shadow(0 20px 40px rgba(177, 255, 50, 0.3))
-                drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5))
+                drop-shadow(0 20px 40px rgba(177, 255, 50, 0.4))
+                drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6))
               `
             }}
           >
-            <Icon 
-              className="w-24 h-24 text-white/90" 
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
+            <motion.div
+              animate={{
+                y: [0, -10, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <Icon 
+                className="w-24 h-24 text-neon" 
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+            </motion.div>
           </div>
         </motion.div>
       </div>
