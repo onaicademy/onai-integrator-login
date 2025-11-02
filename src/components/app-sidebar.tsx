@@ -1,4 +1,4 @@
-import { Home, GraduationCap, Award, Bot, MessageSquare, Settings, LayoutDashboard, Users, Puzzle, UserCog } from "lucide-react";
+import { Home, GraduationCap, Award, Bot, MessageSquare, Settings, LayoutDashboard, Users, Puzzle, UserCog, Gauge } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -25,6 +25,7 @@ interface MenuItem {
 
 const studentMenuItems: MenuItem[] = [
   { title: "Главная", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: Gauge },
   { title: "Мои курсы", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "AI-помощник", url: "/ai-assistant", icon: Bot },

@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Settings, Video, Sparkles, ArrowRight } from "lucide-react";
+import { Settings, Video, Sparkles, ArrowRight, LayoutDashboard } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface CourseModule {
   id: number;
@@ -14,6 +15,8 @@ interface CourseModule {
 }
 
 export const CourseModules = () => {
+  const navigate = useNavigate();
+  
   const modules: CourseModule[] = [
     {
       id: 1,
@@ -50,6 +53,23 @@ export const CourseModules = () => {
         <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Курсы</h3>
         <span className="text-[10px] sm:text-xs text-muted-foreground">{modules.length} модулей</span>
       </div>
+
+      {/* Dashboard Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button
+          onClick={() => navigate("/dashboard")}
+          variant="outline"
+          className="w-full border-neon/40 hover:bg-neon/10 hover:border-neon group transition-all duration-300"
+        >
+          <LayoutDashboard className="w-4 h-4 mr-2 text-neon" />
+          <span>Перейти в личный кабинет</span>
+          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+        </Button>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {modules.map((module, index) => {
