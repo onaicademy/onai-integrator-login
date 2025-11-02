@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -14,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   email: z
     .string()
     .min(1, "Email обязателен для заполнения")
@@ -25,14 +26,14 @@ const loginSchema = z.object({
     .min(6, "Пароль должен содержать минимум 6 символов"),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-const Index = () => {
+const Register = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -40,16 +41,15 @@ const Index = () => {
     mode: "onChange",
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     setIsSubmitting(true);
     
     // Имитация запроса к серверу
     await new Promise((resolve) => setTimeout(resolve, 500));
     
-    console.log("Login attempt:", data);
+    console.log("Registration attempt:", data);
     
-    // После успешного входа перенаправляем на страницу выбора аватара
-    // (можно изменить на нужный маршрут)
+    // После успешной регистрации перенаправляем на страницу выбора аватара
     navigate("/avatar");
     
     setIsSubmitting(false);
@@ -58,7 +58,7 @@ const Index = () => {
   const isFormValid = form.formState.isValid && form.watch("email") && form.watch("password");
 
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col items-center justify-center px-4"
       style={{ backgroundColor: "#0f0f0f" }}
     >
@@ -69,11 +69,15 @@ const Index = () => {
             <span className="text-neon">on</span>
             <span className="text-foreground">AI</span>
           </h1>
-          <span className="font-gilroy text-3xl font-semibold text-foreground">Academy</span>
+          <span className="font-gilroy text-3xl font-semibold text-foreground">
+            Academy
+          </span>
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl md:text-4xl font-semibold text-center text-foreground">Вход в платформу</h1>
+        <h1 className="text-3xl md:text-4xl font-semibold text-center text-foreground">
+          Завершите авторизацию
+        </h1>
 
         {/* Form */}
         <Form {...form}>
@@ -106,7 +110,7 @@ const Index = () => {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Минимум 6 символов"
                       className="bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#B1FF32]"
                       {...field}
                     />
@@ -130,38 +134,13 @@ const Index = () => {
               `}
               disabled={!isFormValid || isSubmitting}
             >
-              {isSubmitting ? "Вход..." : "Войти"}
+              {isSubmitting ? "Регистрация..." : "Войти"}
             </Button>
           </form>
         </Form>
-
-        {/* Links */}
-        <div className="space-y-2 text-center">
-          <div>
-            <Link 
-              to="/register" 
-              className="text-sm text-muted-foreground hover:text-[#B1FF32] transition-colors"
-            >
-              Нет аккаунта? Зарегистрироваться
-            </Link>
-          </div>
-          <div>
-            <a 
-              href="#" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                // Можно добавить функциональность восстановления пароля
-                console.log("Forgot password clicked");
-              }}
-            >
-              Забыли пароль?
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   );
 };
 
-export default Index;
+export default Register;
