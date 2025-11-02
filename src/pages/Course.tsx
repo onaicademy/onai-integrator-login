@@ -57,7 +57,7 @@ const Course = () => {
                 <span className="sm:hidden"> </span>при помощи нейросетей
               </p>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 text-white font-gilroy leading-tight">
-                Интегратор<span className="block sm:inline sm:ml-2 text-white/30">2.0</span>
+                Интегратор<span className="block sm:inline sm:ml-2 text-primary drop-shadow-[0_0_15px_rgba(177,255,50,0.8)]">2.0</span>
               </h1>
               <Button 
                 size="lg" 
