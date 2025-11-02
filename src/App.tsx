@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "./components/layouts/MainLayout";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
-import Dashboard from "./pages/Dashboard";
+import NeuroHub from "./pages/NeuroHub";
 import Course from "./pages/Course";
 import Module from "./pages/Module";
 import Lesson from "./pages/Lesson";
@@ -23,7 +23,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
-          <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
+          <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
           <Route path="/course/:id" element={<Course />} />
           <Route path="/course/:id/module/:moduleId" element={<Module />} />
           <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<Lesson />} />

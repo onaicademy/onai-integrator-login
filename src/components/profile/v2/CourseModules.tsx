@@ -61,7 +61,7 @@ export const CourseModules = () => {
         transition={{ duration: 0.3 }}
       >
         <Button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/neurohub")}
           variant="outline"
           className="w-full border-neon/40 hover:bg-neon/10 hover:border-neon group transition-all duration-300"
         >
