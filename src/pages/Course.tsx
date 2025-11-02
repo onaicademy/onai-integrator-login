@@ -114,10 +114,10 @@ const Course = () => {
               </h3>
               <Button 
                 className="w-full bg-black text-neon hover:bg-black/90 font-bold rounded-xl mb-4"
-                aria-label="Скачать договор-оферту"
+                aria-label="Посмотреть договор-оферту"
               >
                 <Download className="w-4 h-4" />
-                Скачать договор-оферту
+                Посмотреть договор-оферту
               </Button>
               <div className="text-black text-sm mb-4">
                 <p className="font-semibold">Режим работы общего чата</p>
