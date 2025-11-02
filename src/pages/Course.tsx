@@ -68,7 +68,7 @@ const Course = () => {
               </h1>
               <Button 
                 size="lg" 
-                className="bg-neon text-black hover:bg-neon/90 font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 rounded-full shadow-[0_0_30px_rgba(177,255,50,0.5)] hover:shadow-[0_0_40px_rgba(177,255,50,0.7)] transition-all w-full sm:w-auto"
+                className="bg-neon text-black hover:bg-neon/20 font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 rounded-full shadow-[0_0_30px_rgba(177,255,50,0.5)] hover:shadow-[0_0_40px_rgba(177,255,50,0.7)] transition-all w-full sm:w-auto"
                 aria-label="onAI Куратор"
               >
                 <Bot className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-2 flex-shrink-0" />

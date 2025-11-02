@@ -157,7 +157,7 @@ const Lesson = () => {
                 size="lg"
                 onClick={handleComplete}
                 disabled={isCompleted}
-                className="flex-1 bg-neon text-neon-foreground hover:bg-neon/90 font-bold shadow-[0_0_20px_rgba(177,255,50,0.3)] hover:shadow-[0_0_30px_rgba(177,255,50,0.5)]"
+                className="flex-1 bg-neon text-neon-foreground hover:bg-neon/20 font-bold shadow-[0_0_20px_rgba(177,255,50,0.3)] hover:shadow-[0_0_30px_rgba(177,255,50,0.5)] transition-all"
               >
                 <CheckCircle2 className="w-5 h-5 mr-2" />
                 {isCompleted ? "Урок завершён" : "Завершить урок"}

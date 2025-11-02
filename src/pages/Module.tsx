@@ -191,7 +191,7 @@ const Module = () => {
                       <Button
                         size="sm"
                         variant={lesson.status === "active" ? "default" : "outline"}
-                        className={lesson.status === "active" ? "bg-neon text-neon-foreground hover:bg-neon/90" : ""}
+                        className={lesson.status === "active" ? "bg-neon text-neon-foreground hover:bg-neon/20 transition-all" : ""}
                       >
                         {lesson.status === "completed" ? "Повторить" : "Начать"}
                       </Button>
