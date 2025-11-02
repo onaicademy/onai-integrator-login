@@ -35,13 +35,20 @@ const Lesson = () => {
   const navigate = useNavigate();
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const lesson = lessonData[lessonId as keyof typeof lessonData];
+  console.log("Lesson params:", { id, moduleId, lessonId });
+
+  // Используем lessonId или fallback на "3"
+  const lesson = lessonData[lessonId as keyof typeof lessonData] || lessonData["3"];
 
   useEffect(() => {
+    if (!lesson) {
+      console.log("Lesson not found for lessonId:", lessonId);
+      return;
+    }
     // Проверяем localStorage
     const completed = localStorage.getItem(`lesson-${lessonId}-completed`);
     setIsCompleted(completed === "true");
-  }, [lessonId]);
+  }, [lessonId, lesson]);
 
   const handleComplete = () => {
     localStorage.setItem(`lesson-${lessonId}-completed`, "true");
@@ -55,7 +62,8 @@ const Lesson = () => {
   };
 
   if (!lesson) {
-    return <div className="text-white">Урок не найден</div>;
+    console.log("Rendering lesson not found");
+    return <div className="text-white p-8">Урок не найден</div>;
   }
 
   const getMaterialIcon = (type: string) => {

@@ -32,10 +32,14 @@ const Module = () => {
   const { id, moduleId } = useParams();
   const navigate = useNavigate();
   
-  const module = moduleData[moduleId as keyof typeof moduleData];
+  console.log("Module params:", { id, moduleId });
+  
+  // Используем moduleId или fallback на "2"
+  const module = moduleData[moduleId as keyof typeof moduleData] || moduleData["2"];
 
   if (!module) {
-    return <div className="text-white">Модуль не найден</div>;
+    console.log("Module not found for moduleId:", moduleId);
+    return <div className="text-white p-8">Модуль не найден</div>;
   }
 
   const getStatusIcon = (status: string) => {
