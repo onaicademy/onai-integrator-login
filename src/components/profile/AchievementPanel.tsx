@@ -1,4 +1,5 @@
 import { Progress } from "@/components/ui/progress";
+import { Zap } from "lucide-react";
 
 export const AchievementPanel = () => {
   const stats = {
@@ -10,7 +11,7 @@ export const AchievementPanel = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-card to-secondary border border-neon/30 rounded-lg p-6 space-y-6 shadow-xl hover:shadow-neon/30 transition-all duration-300">
+    <div className="bg-[#111111]/80 backdrop-blur-md border border-border/50 rounded-2xl p-6 space-y-6 shadow-2xl">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground">Панель достижений</h2>
         <div className="flex items-center gap-2">
@@ -40,7 +41,10 @@ export const AchievementPanel = () => {
         <div className="space-y-2">
           <div className="flex justify-between items-baseline">
             <span className="text-sm text-muted-foreground">Уровень энергии</span>
-            <span className="text-2xl font-bold text-neon">⚡ {stats.energy}%</span>
+            <span className="text-2xl font-bold text-neon flex items-center gap-1">
+              <Zap className="w-5 h-5" />
+              {stats.energy}%
+            </span>
           </div>
           <Progress 
             value={stats.energy} 
@@ -55,8 +59,8 @@ export const AchievementPanel = () => {
           <span className="text-muted-foreground">Последний вход</span>
           <span className="text-foreground">{stats.lastSeen}</span>
         </div>
-        <p className="text-xs text-muted-foreground italic">
-          AI-ассистент следит за твоим прогрессом и выдаёт бонус XP.
+        <p className="text-xs text-muted-foreground">
+          AI-ассистент следит за твоим прогрессом и выдаёт бонус XP
         </p>
       </div>
     </div>
