@@ -26,7 +26,7 @@ interface MenuItem {
 const studentMenuItems: MenuItem[] = [
   { title: "Главная", url: "/", icon: Home },
   { title: "Dashboard", url: "/dashboard", icon: Gauge },
-  { title: "Мои курсы", url: "/profile", icon: GraduationCap },
+  { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "AI-помощник", url: "/ai-assistant", icon: Bot },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
