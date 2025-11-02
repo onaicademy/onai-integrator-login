@@ -62,10 +62,10 @@ const Course = () => {
               <Button 
                 size="lg" 
                 className="bg-neon text-black hover:bg-neon/90 font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(177,255,50,0.5)] hover:shadow-[0_0_40px_rgba(177,255,50,0.7)] transition-all"
-                aria-label="Начать изучать курс Интегратор 2.0"
+                aria-label="Запустить ИИ Куратора"
               >
-                начать изучать курс
-                <Download className="w-5 h-5 ml-2" />
+                запустить ИИ Куратора
+                <MessageCircle className="w-5 h-5 ml-2" />
               </Button>
             </div>
             
