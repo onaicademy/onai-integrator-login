@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { CourseStats } from "@/components/course/CourseStats";
-import { 
+import {
   DoorOpen,
   MessagesSquare,
   Cable,
@@ -31,9 +32,15 @@ const modules = [
 ];
 
 const Course = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const courseProgress = 45;
   const studyTime = "6ч 30м";
   const modulesCount = "8 + бонусы";
+
+  const handleModuleClick = (moduleId: number) => {
+    navigate(`/course/${id}/module/${moduleId}`);
+  };
 
   return (
     <div>
@@ -84,6 +91,7 @@ const Course = () => {
                   key={module.id}
                   {...module}
                   index={index}
+                  onClick={() => handleModuleClick(module.id)}
                 />
               ))}
             </div>

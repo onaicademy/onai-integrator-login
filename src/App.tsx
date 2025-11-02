@@ -7,6 +7,8 @@ import { MainLayout } from "./components/layouts/MainLayout";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import Course from "./pages/Course";
+import Module from "./pages/Module";
+import Lesson from "./pages/Lesson";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +23,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
           <Route path="/course/:id" element={<MainLayout><Course /></MainLayout>} />
+          <Route path="/course/:id/module/:moduleId" element={<MainLayout><Module /></MainLayout>} />
+          <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<MainLayout><Lesson /></MainLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

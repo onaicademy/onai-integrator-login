@@ -9,9 +9,10 @@ interface ModuleCardProps {
   progress: number;
   icon: LucideIcon;
   index: number;
+  onClick?: () => void;
 }
 
-export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCardProps) => {
+export const ModuleCard = ({ id, title, progress, icon: Icon, index, onClick }: ModuleCardProps) => {
   const isCompleted = progress === 100;
   const isStarted = progress > 0;
 
@@ -21,6 +22,7 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ scale: 1.02 }}
+      onClick={onClick}
       className="relative bg-black border border-border/30 rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer"
       role="article"
       aria-label={`Модуль ${id}: ${title}, прогресс ${progress}%`}
