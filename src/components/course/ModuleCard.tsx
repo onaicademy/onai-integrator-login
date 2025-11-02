@@ -1,17 +1,16 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { LucideIcon } from "lucide-react";
 
 interface ModuleCardProps {
   id: number;
   title: string;
   progress: number;
-  icon: LucideIcon;
+  iconUrl: string;
   index: number;
 }
 
-export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCardProps) => {
+export const ModuleCard = ({ id, title, progress, iconUrl, index }: ModuleCardProps) => {
   const isCompleted = progress === 100;
   const isStarted = progress > 0;
 
@@ -48,17 +47,17 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
       <div className="relative h-48 flex items-center justify-center p-8 bg-gradient-to-br from-card/20 to-transparent overflow-hidden">
         {/* AI Glow Background */}
         <div 
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-20"
           style={{
-            background: "radial-gradient(circle at center, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2), transparent 70%)"
+            background: "radial-gradient(circle at center, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.3), transparent 70%)"
           }}
         />
         
         <motion.div 
           className="relative z-10"
           animate={{ 
-            rotateY: [0, 3, -3, 5, -5, 0],
-            rotateZ: [0, -1, 1, -0.5, 0.5, 0],
+            y: [0, -6, 0, -4, 0],
+            rotateY: [0, 2, -2, 3, -3, 0],
             scale: [1, 1.02, 0.99, 1.03, 0.98, 1]
           }}
           transition={{ 
@@ -68,6 +67,7 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
           }}
           whileHover={{ 
             scale: 1.15,
+            y: -10,
             transition: { duration: 0.3 }
           }}
           style={{
@@ -75,68 +75,30 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
             perspective: "1000px"
           }}
         >
-          <div 
-            className="relative p-8 rounded-2xl"
+          <motion.img
+            src={iconUrl}
+            alt=""
+            className="w-32 h-32 object-contain"
             style={{
-              background: "linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1))"
+              filter: "drop-shadow(0 10px 30px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))"
             }}
-          >
-            <motion.div
-              animate={{
-                y: [0, -6, 0, -4, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <motion.div
-                animate={{
-                  opacity: [0.9, 1, 0.9],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              >
-                <div className="relative">
-                  {/* Gradient overlay for AI effect */}
-                  <div 
-                    className="absolute inset-0 rounded-lg blur-xl"
-                    style={{
-                      background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)",
-                      opacity: 0.6
-                    }}
-                  />
-                  <Icon 
-                    className="relative w-24 h-24 text-white" 
-                    strokeWidth={2}
-                    aria-hidden="true"
-                    style={{
-                      filter: "drop-shadow(0 0 20px rgba(139, 92, 246, 0.8))",
-                      stroke: "url(#aiGradient)"
-                    }}
-                  />
-                  {/* SVG Gradient Definition */}
-                  <svg width="0" height="0" style={{ position: 'absolute' }}>
-                    <defs>
-                      <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#6366f1" />
-                        <stop offset="50%" stopColor="#8b5cf6" />
-                        <stop offset="100%" stopColor="#ec4899" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
+            animate={{
+              filter: [
+                "drop-shadow(0 10px 30px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))",
+                "drop-shadow(0 10px 35px rgba(99, 102, 241, 0.7)) drop-shadow(0 0 25px rgba(139, 92, 246, 0.6))",
+                "drop-shadow(0 10px 30px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))"
+              ]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+         </motion.div>
+       </div>
 
-      {/* Module Info */}
+       {/* Module Info */}
       <div className="p-6 pt-4">
         <h3 className="font-bold text-white text-lg leading-tight mb-3">
           {title}

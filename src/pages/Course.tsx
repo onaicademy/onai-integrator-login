@@ -3,31 +3,32 @@ import { Button } from "@/components/ui/button";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { CourseStats } from "@/components/course/CourseStats";
 import { 
-  Sparkles, 
-  Bot, 
-  Plug2, 
-  Cpu, 
-  Network, 
-  FileCheck2, 
-  Megaphone, 
-  DollarSign,
-  Gift,
-  Users,
   Download,
   MessageCircle
 } from "lucide-react";
 
+import introIcon from "@/assets/module-icons/intro.png";
+import gptBotIcon from "@/assets/module-icons/gpt-bot.png";
+import integrationIcon from "@/assets/module-icons/integration.png";
+import automationIcon from "@/assets/module-icons/automation.png";
+import networkIcon from "@/assets/module-icons/network.png";
+import projectIcon from "@/assets/module-icons/project.png";
+import marketingIcon from "@/assets/module-icons/marketing.png";
+import salesIcon from "@/assets/module-icons/sales.png";
+import bonusIcon from "@/assets/module-icons/bonus.png";
+import workshopIcon from "@/assets/module-icons/workshop.png";
+
 const modules = [
-  { id: 1, title: "Введение в профессию", progress: 100, icon: Sparkles },
-  { id: 2, title: "Создание GPT бота и CRM", progress: 90, icon: Bot },
-  { id: 3, title: "Интеграция amoCRM и Bitrix24", progress: 80, icon: Plug2 },
-  { id: 4, title: "Автоматизация при помощи Make", progress: 60, icon: Cpu },
-  { id: 5, title: "N8N автоматизация и работа с API", progress: 50, icon: Network },
-  { id: 6, title: "Реализация и закрытие проекта", progress: 40, icon: FileCheck2 },
-  { id: 7, title: "Упаковка и продвижение", progress: 30, icon: Megaphone },
-  { id: 8, title: "Продажи на высокий чек", progress: 20, icon: DollarSign },
-  { id: 9, title: "Бонусы", progress: 10, icon: Gift },
-  { id: 10, title: "Воркшопы", progress: 0, icon: Users }
+  { id: 1, title: "Введение в профессию", progress: 100, iconUrl: introIcon },
+  { id: 2, title: "Создание GPT бота и CRM", progress: 90, iconUrl: gptBotIcon },
+  { id: 3, title: "Интеграция amoCRM и Bitrix24", progress: 80, iconUrl: integrationIcon },
+  { id: 4, title: "Автоматизация при помощи Make", progress: 60, iconUrl: automationIcon },
+  { id: 5, title: "N8N автоматизация и работа с API", progress: 50, iconUrl: networkIcon },
+  { id: 6, title: "Реализация и закрытие проекта", progress: 40, iconUrl: projectIcon },
+  { id: 7, title: "Упаковка и продвижение", progress: 30, iconUrl: marketingIcon },
+  { id: 8, title: "Продажи на высокий чек", progress: 20, iconUrl: salesIcon },
+  { id: 9, title: "Бонусы", progress: 10, iconUrl: bonusIcon },
+  { id: 10, title: "Воркшопы", progress: 0, iconUrl: workshopIcon }
 ];
 
 const Course = () => {
