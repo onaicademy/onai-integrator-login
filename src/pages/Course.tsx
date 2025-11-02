@@ -109,9 +109,16 @@ const Course = () => {
               className="bg-neon rounded-2xl p-6"
               aria-labelledby="materials-heading"
             >
-              <h3 id="materials-heading" className="text-xl font-bold text-black mb-4">
-                договор-оферта курса<br />интегратор 2.0
+              <h3 id="materials-heading" className="text-lg font-bold text-black mb-4">
+                договор-оферта курса интегратор 2.0
               </h3>
+              <Button 
+                className="w-full bg-black text-neon hover:bg-black/90 font-bold rounded-xl mb-4"
+                aria-label="Скачать договор-оферту"
+              >
+                <Download className="w-4 h-4" />
+                Скачать договор-оферту
+              </Button>
               <div className="text-black text-sm mb-4">
                 <p className="font-semibold">Режим работы общего чата</p>
                 <p className="text-2xl font-bold">10:00—22:00</p>
