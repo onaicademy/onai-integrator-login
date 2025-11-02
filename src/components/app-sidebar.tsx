@@ -53,20 +53,20 @@ export function AppSidebar({ role = "student" }: AppSidebarProps) {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="border-b border-sidebar-border px-4 sm:px-6 py-4 sm:py-6">
+      <SidebarHeader className="border-b border-sidebar-border px-3 sm:px-4 py-3 sm:py-4">
         <div className={cn(
           "flex items-baseline transition-all duration-300",
-          isCollapsed ? "justify-center gap-0" : "justify-start gap-1"
+          isCollapsed ? "justify-center gap-0" : "justify-start gap-0.5 sm:gap-1"
         )}>
           {isCollapsed ? (
-            <span className="font-gilroy text-2xl sm:text-3xl font-semibold text-primary">oA</span>
+            <span className="font-gilroy text-xl sm:text-2xl font-semibold text-primary">oA</span>
           ) : (
             <>
-              <h1 className="font-gilroy text-3xl sm:text-4xl md:text-5xl font-semibold">
+              <h1 className="font-gilroy text-2xl sm:text-3xl md:text-4xl font-semibold whitespace-nowrap">
                 <span className="text-primary">on</span>
                 <span className="text-foreground">AI</span>
               </h1>
-              <span className="font-gilroy text-xl sm:text-2xl md:text-3xl font-semibold text-foreground">
+              <span className="font-gilroy text-lg sm:text-xl md:text-2xl font-semibold text-foreground whitespace-nowrap">
                 Academy
               </span>
             </>
@@ -105,11 +105,11 @@ export function AppSidebar({ role = "student" }: AppSidebarProps) {
                       {({ isActive }) => (
                         <>
                           <item.icon className={cn(
-                            "w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-all duration-200",
+                            "w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all duration-200",
                             isActive ? "text-primary drop-shadow-[0_0_8px_rgba(177,255,50,0.6)]" : "text-sidebar-foreground"
                           )} />
                           {!isCollapsed && (
-                            <span className="text-sm sm:text-base truncate">{item.title}</span>
+                            <span className="text-xs sm:text-sm md:text-base truncate leading-tight">{item.title}</span>
                           )}
                         </>
                       )}
@@ -122,13 +122,13 @@ export function AppSidebar({ role = "student" }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 sm:p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-2 sm:p-3">
         <div className={cn(
-          "text-center text-xs sm:text-sm text-muted-foreground transition-opacity",
+          "text-center text-[10px] sm:text-xs text-muted-foreground transition-opacity leading-tight",
           isCollapsed && "opacity-0"
         )}>
-          <p className="font-medium">onAI Academy kz</p>
-          <p className="text-[10px] sm:text-xs">© 2025</p>
+          <p className="font-medium whitespace-nowrap">onAI Academy kz</p>
+          <p className="text-[9px] sm:text-[10px] whitespace-nowrap">© 2025</p>
         </div>
       </SidebarFooter>
     </Sidebar>
