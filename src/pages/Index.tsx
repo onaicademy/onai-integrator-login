@@ -1,67 +1,19 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email обязателен для заполнения")
-    .email("Некорректный формат email"),
-  password: z
-    .string()
-    .min(1, "Пароль обязателен для заполнения")
-    .min(6, "Пароль должен содержать минимум 6 символов"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { Label } from "@/components/ui/label";
 
 const Index = () => {
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    mode: "onChange",
-  });
-
-  const onSubmit = async (data: LoginFormValues) => {
-    setIsSubmitting(true);
-    
-    // Имитация запроса к серверу
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    console.log("Login attempt:", data);
-    
-    // После успешного входа перенаправляем на страницу выбора аватара
-    // (можно изменить на нужный маршрут)
-    navigate("/avatar");
-    
-    setIsSubmitting(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Login attempt:", { email, password });
   };
 
-  const isFormValid = form.formState.isValid && form.watch("email") && form.watch("password");
-
   return (
-    <div 
-      className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ backgroundColor: "#0f0f0f" }}
-    >
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="flex justify-center items-baseline gap-1">
@@ -73,91 +25,50 @@ const Index = () => {
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl md:text-4xl font-semibold text-center text-foreground">Вход в платформу</h1>
+        <h1 className="text-3xl font-semibold text-center">Вход в платформу</h1>
 
         {/* Form */}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground">Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="example@email.com"
-                      className="bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#B1FF32]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground"
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground">Пароль</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#B1FF32]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-foreground">
+              Пароль
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground"
             />
-
-            <Button
-              type="submit"
-              variant="neon"
-              size="lg"
-              className={`
-                w-full
-                transition-all duration-200
-                ${isFormValid
-                  ? "opacity-100 cursor-pointer"
-                  : "opacity-50 cursor-not-allowed"
-                }
-              `}
-              disabled={!isFormValid || isSubmitting}
-            >
-              {isSubmitting ? "Вход..." : "Войти"}
-            </Button>
-          </form>
-        </Form>
-
-        {/* Links */}
-        <div className="space-y-2 text-center">
-          <div>
-            <Link 
-              to="/register" 
-              className="text-sm text-muted-foreground hover:text-[#B1FF32] transition-colors"
-            >
-              Нет аккаунта? Зарегистрироваться
-            </Link>
           </div>
-          <div>
-            <a 
-              href="#" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                // Можно добавить функциональность восстановления пароля
-                console.log("Forgot password clicked");
-              }}
-            >
-              Забыли пароль?
-            </a>
-          </div>
+
+          <Button type="submit" variant="neon" className="w-full" size="lg">
+            Войти
+          </Button>
+        </form>
+
+        {/* Forgot password */}
+        <div className="text-center">
+          <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Забыли пароль?
+          </a>
         </div>
       </div>
     </div>
