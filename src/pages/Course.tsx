@@ -64,14 +64,6 @@ const Course = () => {
                 Самый полный курс по автоматизации при помощи нейросетей
               </p>
             </div>
-            <Button 
-              size="lg" 
-              variant="neon"
-              className="shadow-[0_0_20px_rgba(177,255,50,0.4)] hover:shadow-[0_0_30px_rgba(177,255,50,0.6)] transition-all focus-visible:ring-2 focus-visible:ring-neon focus-visible:ring-offset-2 focus-visible:ring-offset-background w-full lg:w-auto"
-              aria-label="Продолжить обучение курса Интегратор 2.0"
-            >
-              Продолжить обучение
-            </Button>
           </div>
 
           {/* Stats Cards */}
