@@ -40,34 +40,46 @@ const Course = () => {
     <div className="min-h-screen bg-background">
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[hsl(var(--cyber-blue))]/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute inset-0 bg-black" />
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8 md:py-12">
-        {/* Hero Header */}
+        {/* Hero Banner */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 md:mb-12"
+          className="mb-12"
         >
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
-            <div className="flex-1">
-              <h1 className="text-6xl md:text-7xl font-bold mb-4 text-white font-gilroy">
+          <div className="relative bg-black rounded-3xl overflow-hidden border border-border/30 p-8 md:p-12 lg:p-16">
+            {/* Hero Content */}
+            <div className="relative z-10 max-w-2xl">
+              <p className="text-base md:text-lg text-muted-foreground mb-4 uppercase tracking-wide">
+                самый полный курс по автоматизации<br />при помощи нейросетей
+              </p>
+              <h1 className="text-6xl md:text-7xl font-bold mb-8 text-white font-gilroy">
                 Интегратор 2.0
               </h1>
-              <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                Самый полный курс по автоматизации при помощи нейросетей
-              </p>
+              <Button 
+                size="lg" 
+                className="bg-neon text-black hover:bg-neon/90 font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(177,255,50,0.5)] hover:shadow-[0_0_40px_rgba(177,255,50,0.7)] transition-all"
+                aria-label="Начать изучать курс Интегратор 2.0"
+              >
+                начать изучать курс
+                <Download className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
+            
+            {/* 3D Robot Placeholder - Right Side */}
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black z-10" />
+              <div 
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-full"
+                style={{
+                  background: "radial-gradient(circle at center, rgba(177, 255, 50, 0.1) 0%, transparent 70%)"
+                }}
+              />
             </div>
           </div>
-
-          {/* Stats Cards */}
-          <CourseStats 
-            courseProgress={courseProgress}
-            studyTime={studyTime}
-            modulesCount={modulesCount}
-          />
         </motion.header>
 
         {/* Main Content Grid */}
@@ -95,19 +107,21 @@ const Course = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6"
+              className="bg-neon rounded-2xl p-6"
               aria-labelledby="materials-heading"
             >
-              <h3 id="materials-heading" className="text-lg font-bold text-foreground mb-4">
-                Материалы курса
+              <h3 id="materials-heading" className="text-xl font-bold text-black mb-4">
+                договор-оферта курса<br />интегратор 2.0
               </h3>
+              <div className="text-black text-sm mb-4">
+                <p className="font-semibold">Режим работы общего чата</p>
+                <p className="text-2xl font-bold">10:00—22:00</p>
+              </div>
               <Button 
-                variant="outline" 
-                className="w-full justify-start gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                aria-label="Скачать договор-оферту курса"
+                className="w-full bg-black text-neon hover:bg-black/90 font-bold rounded-xl"
+                aria-label="Перейти в общий чат"
               >
-                <Download className="w-4 h-4" aria-hidden="true" />
-                Договор-оферта курса
+                Перейти в общий чат
               </Button>
             </motion.section>
 
@@ -119,18 +133,17 @@ const Course = () => {
               className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6"
               aria-labelledby="schedule-heading"
             >
-              <h3 id="schedule-heading" className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-neon" aria-hidden="true" />
-                Расписание созвонов
+              <h3 id="schedule-heading" className="text-lg font-bold text-foreground mb-4">
+                Расписание Zoom-созвонов
               </h3>
               <div className="space-y-3" role="list">
-                <div className="flex items-center justify-between py-2" role="listitem">
-                  <span className="text-muted-foreground text-base">Понедельник</span>
-                  <time className="text-neon font-semibold text-lg">20:00</time>
+                <div className="flex items-center gap-2" role="listitem">
+                  <div className="w-2 h-2 rounded-full bg-foreground" />
+                  <span className="text-muted-foreground text-base">Каждый понедельник в 20:00</span>
                 </div>
-                <div className="flex items-center justify-between py-2" role="listitem">
-                  <span className="text-muted-foreground text-base">Четверг</span>
-                  <time className="text-neon font-semibold text-lg">14:00</time>
+                <div className="flex items-center gap-2" role="listitem">
+                  <div className="w-2 h-2 rounded-full bg-foreground" />
+                  <span className="text-muted-foreground text-base">Каждый четверг в 14:00</span>
                 </div>
               </div>
             </motion.section>
@@ -140,52 +153,56 @@ const Course = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6"
+              className="space-y-4"
               aria-labelledby="curators-heading"
             >
-              <h3 id="curators-heading" className="text-lg font-bold text-foreground mb-4">
-                Кураторы
-              </h3>
-              <div className="space-y-4 mb-4" role="list">
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/20 transition-colors" role="listitem">
+              <h3 id="curators-heading" className="sr-only">Кураторы</h3>
+              
+              {/* Curator 1 */}
+              <div className="bg-neon rounded-2xl p-6" role="listitem">
+                <div className="flex items-center gap-3 mb-4">
                   <div 
-                    className="w-12 h-12 rounded-full bg-neon/20 border-2 border-neon/50 flex items-center justify-center flex-shrink-0"
-                    style={{
-                      boxShadow: "0 4px 12px rgba(177, 255, 50, 0.3)"
-                    }}
+                    className="w-12 h-12 rounded-full bg-black flex items-center justify-center flex-shrink-0"
                     aria-hidden="true"
                   >
                     <span className="text-neon font-bold text-lg">Е</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-base">Ерке</p>
-                    <p className="text-sm text-muted-foreground">онлайн 10:00–22:00</p>
+                    <p className="text-sm text-black/70">Куратор</p>
+                    <p className="font-bold text-black text-xl">Ерке</p>
+                    <p className="text-sm text-black/70">Онлайн 10:00–22:00</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/20 transition-colors" role="listitem">
+                <Button 
+                  className="w-full bg-black text-neon hover:bg-black/90 font-bold rounded-xl"
+                  aria-label="Написать куратору Ерке"
+                >
+                  Написать куратору
+                </Button>
+              </div>
+
+              {/* Curator 2 */}
+              <div className="bg-neon rounded-2xl p-6" role="listitem">
+                <div className="flex items-center gap-3 mb-4">
                   <div 
-                    className="w-12 h-12 rounded-full bg-[hsl(var(--cyber-blue))]/20 border-2 border-[hsl(var(--cyber-blue))]/50 flex items-center justify-center flex-shrink-0"
-                    style={{
-                      boxShadow: "0 4px 12px rgba(0, 200, 255, 0.3)"
-                    }}
+                    className="w-12 h-12 rounded-full bg-black flex items-center justify-center flex-shrink-0"
                     aria-hidden="true"
                   >
-                    <span className="text-[hsl(var(--cyber-blue))] font-bold text-lg">Р</span>
+                    <span className="text-neon font-bold text-lg">Р</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-base">Раймжан</p>
-                    <p className="text-sm text-muted-foreground">онлайн 10:00–22:00</p>
+                    <p className="text-sm text-black/70">Куратор</p>
+                    <p className="font-bold text-black text-xl">Раймжан</p>
+                    <p className="text-sm text-black/70">Онлайн 10:00–22:00</p>
                   </div>
                 </div>
+                <Button 
+                  className="w-full bg-black text-neon hover:bg-black/90 font-bold rounded-xl"
+                  aria-label="Написать куратору Раймжан"
+                >
+                  Написать куратору
+                </Button>
               </div>
-              <Button 
-                variant="neon" 
-                className="w-full gap-2 focus-visible:ring-2 focus-visible:ring-neon focus-visible:ring-offset-2"
-                aria-label="Написать сообщение куратору"
-              >
-                <MessageCircle className="w-4 h-4" aria-hidden="true" />
-                Написать куратору
-              </Button>
             </motion.section>
           </aside>
         </div>
