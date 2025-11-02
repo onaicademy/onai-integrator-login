@@ -90,7 +90,7 @@ const Module = () => {
           <Button
             variant="ghost"
             onClick={() => navigate(`/course/${id}`)}
-            className="text-muted-foreground hover:text-foreground gap-2"
+            className="text-muted-foreground hover:bg-neon hover:text-neon-foreground gap-2"
           >
             <ChevronLeft className="w-4 h-4" />
             Назад к курсу
