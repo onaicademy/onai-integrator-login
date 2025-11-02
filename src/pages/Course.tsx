@@ -43,7 +43,7 @@ const Course = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-background">
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0 bg-black" />
