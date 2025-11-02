@@ -1,16 +1,17 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { LucideIcon } from "lucide-react";
 
 interface ModuleCardProps {
   id: number;
   title: string;
   progress: number;
-  iconUrl: string;
+  icon: LucideIcon;
   index: number;
 }
 
-export const ModuleCard = ({ id, title, progress, iconUrl, index }: ModuleCardProps) => {
+export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCardProps) => {
   const isCompleted = progress === 100;
   const isStarted = progress > 0;
 
@@ -45,11 +46,11 @@ export const ModuleCard = ({ id, title, progress, iconUrl, index }: ModuleCardPr
 
       {/* 3D Icon/Image Container */}
       <div className="relative h-48 flex items-center justify-center p-8 bg-gradient-to-br from-card/20 to-transparent overflow-hidden">
-        {/* AI Glow Background */}
+        {/* Cyberpunk Background Glow */}
         <div 
           className="absolute inset-0 opacity-20"
           style={{
-            background: "radial-gradient(circle at center, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.3), transparent 70%)"
+            background: "radial-gradient(circle at center, rgba(177, 255, 50, 0.3), rgba(99, 102, 241, 0.2), transparent 70%)"
           }}
         />
         
@@ -57,7 +58,7 @@ export const ModuleCard = ({ id, title, progress, iconUrl, index }: ModuleCardPr
           className="relative z-10"
           animate={{ 
             y: [0, -6, 0, -4, 0],
-            rotateY: [0, 2, -2, 3, -3, 0],
+            rotateZ: [0, 1, -1, 2, -2, 0],
             scale: [1, 1.02, 0.99, 1.03, 0.98, 1]
           }}
           transition={{ 
@@ -70,23 +71,13 @@ export const ModuleCard = ({ id, title, progress, iconUrl, index }: ModuleCardPr
             y: -10,
             transition: { duration: 0.3 }
           }}
-          style={{
-            transformStyle: "preserve-3d",
-            perspective: "1000px"
-          }}
         >
-          <motion.img
-            src={iconUrl}
-            alt=""
-            className="w-32 h-32 object-contain"
-            style={{
-              filter: "drop-shadow(0 10px 30px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))"
-            }}
+          <motion.div
             animate={{
               filter: [
-                "drop-shadow(0 10px 30px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))",
-                "drop-shadow(0 10px 35px rgba(99, 102, 241, 0.7)) drop-shadow(0 0 25px rgba(139, 92, 246, 0.6))",
-                "drop-shadow(0 10px 30px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))"
+                "drop-shadow(0 0 20px rgba(177, 255, 50, 0.6)) drop-shadow(0 0 40px rgba(99, 102, 241, 0.3))",
+                "drop-shadow(0 0 30px rgba(177, 255, 50, 0.8)) drop-shadow(0 0 50px rgba(99, 102, 241, 0.5))",
+                "drop-shadow(0 0 20px rgba(177, 255, 50, 0.6)) drop-shadow(0 0 40px rgba(99, 102, 241, 0.3))"
               ]
             }}
             transition={{
@@ -94,8 +85,14 @@ export const ModuleCard = ({ id, title, progress, iconUrl, index }: ModuleCardPr
               repeat: Infinity,
               ease: "easeInOut"
             }}
-          />
-         </motion.div>
+          >
+            <Icon 
+              className="w-28 h-28 text-neon" 
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          </motion.div>
+        </motion.div>
        </div>
 
        {/* Module Info */}
