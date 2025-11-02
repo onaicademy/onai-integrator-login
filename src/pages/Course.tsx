@@ -68,17 +68,6 @@ const Course = () => {
                 <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 ml-2 flex-shrink-0" />
               </Button>
             </div>
-            
-            {/* 3D Robot Placeholder - Right Side */}
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black z-10" />
-              <div 
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-full"
-                style={{
-                  background: "radial-gradient(circle at center, rgba(177, 255, 50, 0.1) 0%, transparent 70%)"
-                }}
-              />
-            </div>
           </div>
         </motion.header>
 
