@@ -36,7 +36,7 @@ export const UserDashboard = () => {
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon/10 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-[hsl(var(--cyber-blue))]/10 rounded-full blur-2xl" />
 
-        <div className="relative z-10 space-y-6">
+        <div className="relative z-10 space-y-4 sm:space-y-6">
           {/* Avatar with Circular Progress */}
           <div className="flex flex-col items-center">
             <div className="relative">
@@ -96,23 +96,23 @@ export const UserDashboard = () => {
           </div>
 
           {/* User Info */}
-          <div className="text-center space-y-3">
+          <div className="text-center space-y-2 sm:space-y-3">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Александр</h2>
-              <div className="flex items-center justify-center gap-2 mt-1">
-                <p className="text-sm text-neon font-medium">Интегратор I</p>
-                <span className="text-muted-foreground">•</span>
-                <p className="text-sm text-[hsl(var(--cyber-blue))] font-medium">Уровень {level}</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Александр</h2>
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-1">
+                <p className="text-xs sm:text-sm text-neon font-medium">Интегратор I</p>
+                <span className="text-muted-foreground text-xs sm:text-sm">•</span>
+                <p className="text-xs sm:text-sm text-[hsl(var(--cyber-blue))] font-medium">Уровень {level}</p>
               </div>
             </div>
 
             {/* XP Display */}
-            <div className="bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-xl p-3">
-              <div className="flex items-center justify-between text-sm mb-1">
+            <div className="bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-xl p-2.5 sm:p-3">
+              <div className="flex items-center justify-between text-xs sm:text-sm mb-1">
                 <span className="text-muted-foreground">Опыт</span>
                 <span className="text-neon font-bold">{percentage.toFixed(0)}%</span>
               </div>
-              <div className="relative h-2 bg-background rounded-full overflow-hidden">
+              <div className="relative h-1.5 sm:h-2 bg-background rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${percentage}%` }}

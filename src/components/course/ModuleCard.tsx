@@ -21,31 +21,32 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ scale: 1.02 }}
-      className="relative bg-black border border-border/30 rounded-2xl overflow-hidden group cursor-pointer"
+      className="relative bg-black border border-border/30 rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer"
       role="article"
       aria-label={`Модуль ${id}: ${title}, прогресс ${progress}%`}
     >
       {/* Module Number Badge */}
-      <div className="absolute top-4 left-4 z-20">
-        <span className="text-xs text-muted-foreground uppercase tracking-wider">
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20">
+        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
           модуль {id}
         </span>
       </div>
 
       {/* Action Button */}
-      <div className="absolute top-4 right-4 z-20">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
         <Button 
           size="sm"
-          className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/20 rounded-full px-4 font-medium"
+          className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/20 rounded-full px-2 sm:px-3 md:px-4 font-medium text-[10px] sm:text-xs md:text-sm"
           aria-label={`${isCompleted ? 'Повторить' : isStarted ? 'Продолжить' : 'Пройти'} модуль: ${title}`}
         >
-          {isCompleted ? "повторить" : isStarted ? "продолжить" : "пройти"}
-          <span className="ml-2 text-lg">→</span>
+          <span className="hidden sm:inline">{isCompleted ? "повторить" : isStarted ? "продолжить" : "пройти"}</span>
+          <span className="sm:hidden">{isCompleted ? "↻" : isStarted ? "→" : "▶"}</span>
+          <span className="ml-1 sm:ml-2 text-sm sm:text-lg hidden sm:inline">→</span>
         </Button>
       </div>
 
       {/* 3D Icon/Image Container */}
-      <div className="relative h-48 flex items-center justify-center p-8 bg-gradient-to-br from-card/20 to-transparent overflow-hidden">
+      <div className="relative h-36 sm:h-40 md:h-48 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-card/20 to-transparent overflow-hidden">
         {/* Cyberpunk Background Glow */}
         <div 
           className="absolute inset-0 opacity-20"
@@ -87,7 +88,7 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
             }}
           >
             <Icon 
-              className="w-28 h-28 text-neon" 
+              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 text-neon" 
               strokeWidth={1.5}
               aria-hidden="true"
             />
@@ -96,17 +97,17 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index }: ModuleCar
        </div>
 
        {/* Module Info */}
-      <div className="p-6 pt-4">
-        <h3 className="font-bold text-white text-lg leading-tight mb-3">
+      <div className="p-4 sm:p-5 md:p-6 pt-3 sm:pt-4">
+        <h3 className="font-bold text-white text-sm sm:text-base md:text-lg leading-tight mb-2 sm:mb-3">
           {title}
         </h3>
         
         {/* Progress Bar */}
         {isStarted && (
-          <div className="mt-4">
+          <div className="mt-3 sm:mt-4">
             <Progress 
               value={progress} 
-              className="h-1.5" 
+              className="h-1 sm:h-1.5" 
               aria-label={`Прогресс модуля: ${progress}%`}
             />
           </div>

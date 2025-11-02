@@ -18,9 +18,9 @@ export const LearningStats = () => {
   ];
 
   return (
-    <div className="bg-[#1B1B1B]/80 backdrop-blur-md border border-border/50 rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-foreground">Статистика обучения</h3>
+    <div className="bg-[#1B1B1B]/80 backdrop-blur-md border border-border/50 rounded-2xl p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Статистика обучения</h3>
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon opacity-75"></span>
@@ -30,7 +30,7 @@ export const LearningStats = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           const colorClass = stat.color === "neon" ? "text-neon" : stat.color === "cyber-blue" ? "text-[hsl(var(--cyber-blue))]" : "text-foreground";
@@ -45,18 +45,18 @@ export const LearningStats = () => {
               whileHover={{ y: -5, scale: 1.03 }}
               className="group relative"
             >
-              <div className={`bg-secondary/50 backdrop-blur-sm border ${borderColor} rounded-xl p-4 transition-all duration-300 hover:bg-secondary/70`}>
+              <div className={`bg-secondary/50 backdrop-blur-sm border ${borderColor} rounded-xl p-3 sm:p-4 transition-all duration-300 hover:bg-secondary/70`}>
                 {/* Icon */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.color === "neon" ? "from-neon/20 to-neon/5" : "from-[hsl(var(--cyber-blue))]/20 to-[hsl(var(--cyber-blue))]/5"}`}>
-                    <Icon className={`w-5 h-5 ${colorClass}`} />
+                <div className="flex items-start justify-between mb-2 sm:mb-3">
+                  <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-br ${stat.color === "neon" ? "from-neon/20 to-neon/5" : "from-[hsl(var(--cyber-blue))]/20 to-[hsl(var(--cyber-blue))]/5"}`}>
+                    <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${colorClass}`} />
                   </div>
                 </div>
 
                 {/* Value */}
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <div className="space-y-0.5 sm:space-y-1">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</p>
                 </div>
 
                 {/* Optional progress bar */}

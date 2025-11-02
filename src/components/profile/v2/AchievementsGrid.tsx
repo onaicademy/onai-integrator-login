@@ -90,15 +90,15 @@ export const AchievementsGrid = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-foreground">Достижения</h3>
-        <span className="text-xs text-muted-foreground">
+        <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Достижения</h3>
+        <span className="text-[10px] sm:text-xs text-muted-foreground">
           {achievements.filter(a => a.completed).length} из {achievements.length}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
         {achievements.map((achievement, index) => {
           const Icon = achievement.icon;
           const colors = getRarityColors(achievement.rarity);
@@ -113,7 +113,7 @@ export const AchievementsGrid = () => {
               className="group relative"
             >
               <div
-                className={`relative bg-[#1B1B1B]/80 backdrop-blur-md border rounded-2xl p-4 transition-all duration-300 ${
+                className={`relative bg-[#1B1B1B]/80 backdrop-blur-md border rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-300 ${
                   achievement.completed
                     ? `${colors.border} hover:${colors.border.replace("/50", "/80")}`
                     : "border-border/30 opacity-50 hover:opacity-70"
@@ -126,17 +126,17 @@ export const AchievementsGrid = () => {
                   </div>
                 )}
 
-                <div className="relative z-10 flex flex-col items-center space-y-3">
+                <div className="relative z-10 flex flex-col items-center space-y-2 sm:space-y-3">
                   {/* Icon */}
                   <div
-                    className={`p-3 rounded-xl border transition-all duration-300 ${
+                    className={`p-2 sm:p-3 rounded-xl border transition-all duration-300 ${
                       achievement.completed
                         ? `bg-gradient-to-br ${colors.bg} ${colors.border}`
                         : "bg-secondary/50 border-border/30"
                     }`}
                   >
                     <Icon
-                      className={`w-6 h-6 ${
+                      className={`w-5 h-5 sm:w-6 sm:h-6 ${
                         achievement.completed ? colors.text : "text-muted-foreground"
                       }`}
                     />
@@ -145,14 +145,14 @@ export const AchievementsGrid = () => {
                   {/* Title */}
                   <div className="text-center space-y-0.5">
                     <p
-                      className={`text-xs font-bold ${
+                      className={`text-[10px] sm:text-xs font-bold leading-tight ${
                         achievement.completed ? "text-foreground" : "text-muted-foreground"
                       }`}
                     >
                       {achievement.title}
                     </p>
                     {achievement.completed && (
-                      <span className={`text-[10px] ${colors.text} font-medium uppercase tracking-wide`}>
+                      <span className={`text-[8px] sm:text-[10px] ${colors.text} font-medium uppercase tracking-wide`}>
                         {achievement.rarity}
                       </span>
                     )}
@@ -160,9 +160,9 @@ export const AchievementsGrid = () => {
                 </div>
 
                 {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-card border border-border/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-20 backdrop-blur-md">
-                  <p className="text-xs text-foreground font-medium">{achievement.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{achievement.description}</p>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-card border border-border/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-20 backdrop-blur-md max-w-[200px]">
+                  <p className="text-[10px] sm:text-xs text-foreground font-medium truncate">{achievement.title}</p>
+                  <p className="text-[8px] sm:text-[10px] text-muted-foreground truncate">{achievement.description}</p>
                 </div>
               </div>
             </motion.div>
