@@ -11,37 +11,36 @@ import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
 import { supabase } from "@/lib/supabase";
 
 const Profile = () => {
-  const [loading, setLoading] = useState(true);
   const [userExists, setUserExists] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is authenticated and exists in database
+    // Check auth in background (non-blocking)
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         // Redirect to login if not authenticated
         navigate('/');
-      } else {
-        // Check if user exists in users table
-        const { data: userData, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error || !userData) {
-          console.warn('User not found in database:', error);
-          setUserExists(false);
-        }
-        
-        setLoading(false);
+        return;
+      }
+      
+      // Check if user exists in users table (background)
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (error || !userData) {
+        console.warn('User not found in database:', error);
+        setUserExists(false);
       }
     };
 
-    checkAuth();
+    // Non-blocking auth check
+    checkAuth().catch(console.error);
   }, [navigate]);
 
   const handleSyncUser = async () => {
@@ -75,16 +74,7 @@ const Profile = () => {
     setSyncing(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
+  // Removed loading block - show UI immediately
 
   if (!userExists) {
     return (

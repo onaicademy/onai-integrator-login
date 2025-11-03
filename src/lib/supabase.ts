@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { setSession } from '@/store/session'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -11,8 +12,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   }
 })
 
+// Initialize session store (non-blocking)
+supabase.auth.getSession().then(({ data }) => setSession(data?.session ?? null))
+
 // Listen for auth state changes and sync user to database
 supabase.auth.onAuthStateChange(async (event, session) => {
+  setSession(session)
+  
   if (event === 'SIGNED_IN' && session?.user) {
     const { id, email, user_metadata } = session.user
     

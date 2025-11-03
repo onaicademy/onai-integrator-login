@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,24 +8,7 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    // Тестовый вызов Supabase
-    const testSupabase = async () => {
-      console.log("Testing Supabase connection...");
-      console.log("URL:", import.meta.env.VITE_SUPABASE_URL);
-      console.log("Key:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "Loaded" : "Not loaded");
-      
-      try {
-        const { data, error } = await supabase.from('users').select('*');
-        console.log("Supabase users data:", data);
-        console.log("Supabase error:", error);
-      } catch (err) {
-        console.error("Supabase connection error:", err);
-      }
-    };
-
-    testSupabase();
-  }, []);
+  // Removed blocking Supabase test - connection happens in background
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
