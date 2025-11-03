@@ -7,6 +7,7 @@ import { MainLayout } from "./components/layouts/MainLayout";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
+import Welcome from "./pages/Welcome";
 import Course from "./pages/Course";
 import Module from "./pages/Module";
 import Lesson from "./pages/Lesson";
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
           <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
           <Route path="/course/:id" element={<Course />} />

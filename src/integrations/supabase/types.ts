@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      user_survey: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          expectation: string | null
+          experience: string | null
+          goal: string | null
+          id: string
+          job_role: string | null
+          learning_style: string | null
+          motivation: string | null
+          name: string | null
+          study_hours: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          expectation?: string | null
+          experience?: string | null
+          goal?: string | null
+          id?: string
+          job_role?: string | null
+          learning_style?: string | null
+          motivation?: string | null
+          name?: string | null
+          study_hours?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          expectation?: string | null
+          experience?: string | null
+          goal?: string | null
+          id?: string
+          job_role?: string | null
+          learning_style?: string | null
+          motivation?: string | null
+          name?: string | null
+          study_hours?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
