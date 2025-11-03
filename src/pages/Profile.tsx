@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ProfileHeader } from "@/components/profile/v2/ProfileHeader";
 import { UserDashboard } from "@/components/profile/v2/UserDashboard";
@@ -5,8 +7,38 @@ import { LearningStats } from "@/components/profile/v2/LearningStats";
 import { CourseModules } from "@/components/profile/v2/CourseModules";
 import { AchievementsGrid } from "@/components/profile/v2/AchievementsGrid";
 import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
+import { supabase } from "@/lib/supabase";
 
 const Profile = () => {
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Redirect to login if not authenticated
+        navigate('/');
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative overflow-hidden">
       {/* Ambient background effects */}
