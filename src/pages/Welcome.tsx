@@ -1,226 +1,257 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { externalSupabase } from '@/lib/external-supabase'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
 
-type Answer = {
-  name: string;
-  jobRole: string;
-  city: string;
-  motivation: string;
-  studyHours: string;
-  experience: string;
-  goal: string;
-  learningStyle: string;
-  expectation: string;
-};
+interface Answer {
+  name?: string
+  job_role?: string
+  city?: string
+  motivation?: string
+  study_hours?: string
+  experience?: string
+  goal?: string
+  learning_style?: string
+  expectation?: string
+}
 
 const Welcome = () => {
-  const navigate = useNavigate();
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answer>({
-    name: "",
-    jobRole: "",
-    city: "",
-    motivation: "",
-    studyHours: "",
-    experience: "",
-    goal: "",
-    learningStyle: "",
-    expectation: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [step, setStep] = useState(0)
+  const [answers, setAnswers] = useState<Answer>({})
+  const [loading, setLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { toast } = useToast()
 
   useEffect(() => {
-    checkExistingSurvey();
-  }, []);
+    checkExistingSurvey()
+  }, [])
 
   const checkExistingSurvey = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/");
-      return;
-    }
-    setUserId(user.id);
+    try {
+      const { data: { user } } = await externalSupabase.auth.getUser()
+      
+      if (!user) {
+        navigate('/')
+        return
+      }
 
-    // Check if survey already filled
-    const { data } = await supabase
-      .from("user_survey")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+      setUserId(user.id)
 
-    if (data) {
-      navigate("/profile");
+      const { data: existingSurvey } = await externalSupabase
+        .from('user_survey')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (existingSurvey) {
+        navigate('/profile')
+      }
+    } catch (error) {
+      console.error('Error checking survey:', error)
     }
-  };
+  }
 
   const handleNext = () => {
-    if (step < questions.length) {
-      setStep(step + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    }
-  };
+    setStep(prev => prev + 1)
+  }
 
   const handleSubmit = async () => {
-    if (!userId) return;
-    
-    setLoading(true);
+    if (!userId) return
+
+    setLoading(true)
     try {
-      // Save to user_survey table
-      const { error: surveyError } = await supabase
-        .from("user_survey")
+      const { error: insertError } = await externalSupabase
+        .from('user_survey')
         .insert({
           user_id: userId,
-          name: answers.name,
-          job_role: answers.jobRole,
-          city: answers.city,
-          motivation: answers.motivation,
-          study_hours: answers.studyHours,
-          experience: answers.experience,
-          goal: answers.goal,
-          learning_style: answers.learningStyle,
-          expectation: answers.expectation,
-        });
+          ...answers,
+        })
 
-      if (surveyError) throw surveyError;
+      if (insertError) throw insertError
 
-      // Update user_metadata
-      const { error: metadataError } = await supabase.auth.updateUser({
+      await externalSupabase.auth.updateUser({
         data: {
           name: answers.name,
-          job_role: answers.jobRole,
+          job_role: answers.job_role,
           city: answers.city,
-          onboarding_completed: true,
+          motivation: answers.motivation,
+          goal: answers.goal,
         },
-      });
+      })
 
-      if (metadataError) throw metadataError;
+      toast({
+        title: "✅ Анкета сохранена",
+        description: "Добро пожаловать в onAI Academy!",
+      })
 
-      toast.success("Добро пожаловать в onAI Academy! 🎉");
-      navigate("/profile");
-    } catch (error) {
-      console.error("Error saving survey:", error);
-      toast.error("Ошибка при сохранении данных");
+      navigate('/profile')
+    } catch (error: any) {
+      console.error('Error saving survey:', error)
+      toast({
+        title: "❌ Ошибка",
+        description: error.message || "Не удалось сохранить данные",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const questions = [
     {
-      title: "Добро пожаловать в onAI Academy 👋",
-      subtitle: "Мы рады тебя видеть! Расскажи немного о себе, чтобы обучение было комфортным и максимально полезным для тебя.",
-      type: "intro",
+      id: 'intro',
+      title: 'Добро пожаловать в onAI Academy 👋',
+      subtitle: 'Мы рады тебя видеть!\nРасскажи немного о себе, чтобы обучение было комфортным и максимально полезным для тебя.',
+      type: 'intro',
     },
     {
-      title: "Как нам к тебе обращаться?",
-      type: "input",
-      field: "name",
-      placeholder: "Имя или псевдоним",
+      id: 'name',
+      title: 'Как нам к тебе обращаться?',
+      subtitle: '',
+      type: 'input',
+      placeholder: 'Имя или псевдоним',
+      field: 'name',
     },
     {
-      title: "Чем ты сейчас занимаешься?",
-      subtitle: "Это поможет нам сделать обучение для тебя комфортнее.",
-      type: "select",
-      field: "jobRole",
+      id: 'job_role',
+      title: 'Чем ты сейчас занимаешься?',
+      subtitle: 'Это поможет нам сделать обучение для тебя комфортнее.',
+      type: 'select',
+      field: 'job_role',
       options: [
-        "Маркетолог / Таргетолог",
-        "Продюсер / Запускаю продукты",
-        "Фрилансер / Работаю на себя",
-        "Предприниматель",
-        "Студент",
-        "Специалист в найме",
-        "Другое",
+        'Маркетолог / Таргетолог',
+        'Продюсер / Запускаю продукты',
+        'Фрилансер / Работаю на себя',
+        'Предприниматель',
+        'Студент',
+        'Специалист в найме',
+        'Другое',
       ],
     },
     {
-      title: "Из какого ты города или страны?",
-      type: "input",
-      field: "city",
-      placeholder: "Город или страна",
+      id: 'city',
+      title: 'Из какого ты города или страны?',
+      subtitle: '',
+      type: 'input',
+      placeholder: 'Город, страна',
+      field: 'city',
     },
     {
-      title: "Почему решил изучать автоматизацию и нейросети?",
-      type: "select",
-      field: "motivation",
+      id: 'motivation',
+      title: 'Почему решил изучать автоматизацию и нейросети?',
+      subtitle: '',
+      type: 'select',
+      field: 'motivation',
       options: [
-        "Хочу зарабатывать больше",
-        "Хочу оптимизировать работу / экономить время",
-        "Просто интересно и хочу быть в тренде",
-        "Хочу создать свой продукт / бизнес",
-        "Не знаю, но чувствую, что это важно",
+        'Хочу зарабатывать больше',
+        'Хочу оптимизировать работу / экономить время',
+        'Просто интересно',
+        'Хочу создать свой продукт / бизнес',
+        'Не знаю, но чувствую, что это важно',
       ],
     },
     {
-      title: "Сколько времени в неделю ты готов уделять обучению?",
-      type: "select",
-      field: "studyHours",
-      options: ["1–2 часа", "5–7 часов", "Больше 7 часов"],
+      id: 'study_hours',
+      title: 'Сколько времени в неделю готов уделять обучению?',
+      subtitle: '',
+      type: 'select',
+      field: 'study_hours',
+      options: ['1–2 часа', '5–7 часов', 'Больше 7 часов'],
     },
     {
-      title: "Какой у тебя уровень владения нейросетями и автоматизацией?",
-      type: "select",
-      field: "experience",
+      id: 'experience',
+      title: 'Какой у тебя уровень владения нейросетями и автоматизацией?',
+      subtitle: '',
+      type: 'select',
+      field: 'experience',
       options: [
-        "Только начинаю",
-        "Уже пробовал GPT / Make / n8n",
-        "Продвинутый (уже создаю свои автоматизации)",
+        'Только начинаю',
+        'Уже пробовал GPT / Make / n8n',
+        'Продвинутый',
       ],
     },
     {
-      title: "Что тебе важно получить от этого курса?",
-      type: "select",
-      field: "goal",
+      id: 'goal',
+      title: 'Что тебе важно получить от курса?',
+      subtitle: '',
+      type: 'select',
+      field: 'goal',
       options: [
-        "Готовые схемы и шаблоны",
-        "Навык \"с нуля до работы\"",
-        "Поддержку и сообщество",
-        "Сертификат / карьерное развитие",
+        'Готовые схемы и шаблоны',
+        'Навык "с нуля до работы"',
+        'Поддержку и сообщество',
+        'Сертификат / карьерное развитие',
       ],
     },
     {
-      title: "Как ты обычно учишься?",
-      type: "select",
-      field: "learningStyle",
+      id: 'learning_style',
+      title: 'Как ты обычно учишься?',
+      subtitle: '',
+      type: 'select',
+      field: 'learning_style',
       options: [
-        "Смотрю короткие видео",
-        "Читаю инструкции / гайды",
-        "Экспериментирую сам",
-        "Учусь у наставников",
+        'Смотрю короткие видео',
+        'Читаю инструкции / гайды',
+        'Экспериментирую сам',
+        'Учусь у наставников',
       ],
     },
     {
-      title: "Какое у тебя главное ожидание от onAI Academy?",
-      type: "textarea",
-      field: "expectation",
-      placeholder: "Напиши свой ответ...",
+      id: 'expectation',
+      title: 'Какое у тебя главное ожидание от onAI Academy?',
+      subtitle: '',
+      type: 'textarea',
+      placeholder: 'Напиши свой ответ...',
+      field: 'expectation',
     },
     {
-      title: "Отлично! Мы уже лучше понимаем тебя 🔥",
-      subtitle: "Добро пожаловать в личный кабинет onAI Academy.",
-      type: "final",
+      id: 'final',
+      title: 'Отлично! Мы уже лучше понимаем тебя 🔥',
+      subtitle: 'Добро пожаловать в личный кабинет onAI Academy.',
+      type: 'final',
     },
-  ];
+  ]
 
-  const currentQuestion = questions[step];
-  const isIntro = currentQuestion.type === "intro";
-  const isFinal = currentQuestion.type === "final";
-  const canProceed = isIntro || isFinal || (currentQuestion.field && answers[currentQuestion.field as keyof Answer]);
+  const currentQuestion = questions[step]
+  const canProceed =
+    currentQuestion.type === 'intro' ||
+    currentQuestion.type === 'final' ||
+    (currentQuestion.field && answers[currentQuestion.field as keyof Answer])
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen w-full bg-background flex items-center justify-center p-4">
+      {/* Ambient Background Effect */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-2xl mx-auto">
+        {/* Progress Bar */}
+        {step > 0 && step < questions.length - 1 && (
+          <div className="mb-8">
+            <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-neon to-accent"
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${((step - 1) / (questions.length - 2)) * 100}%`,
+                }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+            <p className="text-muted-foreground text-sm mt-2 text-center">
+              Вопрос {step} из {questions.length - 2}
+            </p>
+          </div>
+        )}
+
+        {/* Question Content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -228,133 +259,126 @@ const Welcome = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 md:p-12"
+            className="space-y-8"
           >
-            {/* Logo */}
-            {isIntro && (
-              <div className="flex justify-center mb-8">
-                <div className="text-4xl font-bold">
-                  <span className="text-white">onAI</span>
-                  <span className="text-[#B1FF32]">Academy</span>
-                </div>
-              </div>
-            )}
-
-            {/* Question */}
-            <div className="mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground">
                 {currentQuestion.title}
-              </h2>
+              </h1>
               {currentQuestion.subtitle && (
-                <p className="text-zinc-400 text-base md:text-lg">
+                <p className="text-lg text-muted-foreground whitespace-pre-line max-w-xl mx-auto">
                   {currentQuestion.subtitle}
                 </p>
               )}
             </div>
 
             {/* Input Fields */}
-            {currentQuestion.type === "input" && (
-              <Input
-                value={answers[currentQuestion.field as keyof Answer]}
-                onChange={(e) =>
-                  setAnswers({
-                    ...answers,
-                    [currentQuestion.field as string]: e.target.value,
-                  })
-                }
-                placeholder={currentQuestion.placeholder}
-                className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500 text-lg py-6"
-              />
-            )}
-
-            {currentQuestion.type === "textarea" && (
-              <Textarea
-                value={answers[currentQuestion.field as keyof Answer]}
-                onChange={(e) =>
-                  setAnswers({
-                    ...answers,
-                    [currentQuestion.field as string]: e.target.value,
-                  })
-                }
-                placeholder={currentQuestion.placeholder}
-                className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500 text-lg min-h-32"
-              />
-            )}
-
-            {currentQuestion.type === "select" && (
-              <div className="space-y-3">
-                {currentQuestion.options?.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() =>
-                      setAnswers({
-                        ...answers,
-                        [currentQuestion.field as string]: option,
-                      })
-                    }
-                    className={`w-full text-left p-4 rounded-xl border transition-all ${
-                      answers[currentQuestion.field as keyof Answer] === option
-                        ? "bg-[#B1FF32]/10 border-[#B1FF32] text-white"
-                        : "bg-zinc-800/30 border-zinc-700 text-zinc-300 hover:border-zinc-600"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Progress */}
-            <div className="mt-8 mb-6">
-              <div className="flex justify-between text-sm text-zinc-500 mb-2">
-                <span>Прогресс</span>
-                <span>{step} / {questions.length - 1}</span>
-              </div>
-              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-[#B1FF32]"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(step / (questions.length - 1)) * 100}%` }}
-                  transition={{ duration: 0.3 }}
+            <div className="space-y-4 max-w-md mx-auto">
+              {currentQuestion.type === 'input' && (
+                <Input
+                  value={answers[currentQuestion.field as keyof Answer] || ''}
+                  onChange={(e) =>
+                    setAnswers({
+                      ...answers,
+                      [currentQuestion.field!]: e.target.value,
+                    })
+                  }
+                  placeholder={currentQuestion.placeholder}
+                  className="w-full h-14 text-lg bg-card border-border focus:border-neon"
                 />
-              </div>
+              )}
+
+              {currentQuestion.type === 'textarea' && (
+                <Textarea
+                  value={answers[currentQuestion.field as keyof Answer] || ''}
+                  onChange={(e) =>
+                    setAnswers({
+                      ...answers,
+                      [currentQuestion.field!]: e.target.value,
+                    })
+                  }
+                  placeholder={currentQuestion.placeholder}
+                  className="w-full min-h-32 text-lg bg-card border-border focus:border-neon resize-none"
+                />
+              )}
+
+              {currentQuestion.type === 'select' && (
+                <div className="grid gap-3">
+                  {currentQuestion.options?.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() =>
+                        setAnswers({
+                          ...answers,
+                          [currentQuestion.field!]: option,
+                        })
+                      }
+                      className={`
+                        p-4 rounded-lg border-2 transition-all text-left font-medium
+                        ${
+                          answers[currentQuestion.field as keyof Answer] ===
+                          option
+                            ? 'border-neon bg-neon/10 text-foreground shadow-[0_0_20px_rgba(177,255,50,0.3)]'
+                            : 'border-border bg-card hover:border-neon/50 hover:bg-neon/5 text-foreground'
+                        }
+                      `}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Navigation */}
-            <div className="flex gap-4">
-              {step > 0 && !isFinal && (
+            {/* Action Buttons */}
+            <div className="flex justify-center pt-8">
+              {currentQuestion.type === 'intro' && (
                 <Button
-                  onClick={handlePrevious}
-                  variant="outline"
-                  className="flex-1 py-6 text-lg"
+                  onClick={handleNext}
+                  size="lg"
+                  className="px-12 h-14 text-lg font-semibold bg-neon text-neon-foreground hover:bg-neon/90 shadow-[0_0_30px_rgba(177,255,50,0.4)] hover:shadow-[0_0_40px_rgba(177,255,50,0.6)] transition-all"
                 >
-                  Назад
+                  Начать
                 </Button>
               )}
-              
-              {isFinal ? (
+
+              {currentQuestion.type === 'final' && (
                 <Button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 py-6 text-lg bg-[#B1FF32] text-black hover:bg-[#B1FF32]/90"
+                  size="lg"
+                  className="px-12 h-14 text-lg font-semibold bg-neon text-neon-foreground hover:bg-neon/90 shadow-[0_0_30px_rgba(177,255,50,0.4)] hover:shadow-[0_0_40px_rgba(177,255,50,0.6)] transition-all"
                 >
-                  {loading ? "Сохранение..." : "Перейти в кабинет"}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  disabled={!canProceed}
-                  className="flex-1 py-6 text-lg bg-[#B1FF32] text-black hover:bg-[#B1FF32]/90 disabled:opacity-50"
-                >
-                  {isIntro ? "Начать" : "Далее"}
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-neon-foreground/30 border-t-neon-foreground rounded-full animate-spin" />
+                      Сохранение...
+                    </div>
+                  ) : (
+                    'Перейти в кабинет'
+                  )}
                 </Button>
               )}
+
+              {currentQuestion.type !== 'intro' &&
+                currentQuestion.type !== 'final' && (
+                  <Button
+                    onClick={
+                      step === questions.length - 2 ? handleNext : handleNext
+                    }
+                    disabled={!canProceed || loading}
+                    size="lg"
+                    className="px-12 h-14 text-lg font-semibold bg-neon text-neon-foreground hover:bg-neon/90 shadow-[0_0_30px_rgba(177,255,50,0.4)] hover:shadow-[0_0_40px_rgba(177,255,50,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                  >
+                    Далее
+                  </Button>
+                )}
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Welcome;
+export default Welcome
