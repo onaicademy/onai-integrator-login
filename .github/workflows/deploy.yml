@@ -28,6 +28,13 @@ jobs:
             cd /var/www/onai-integrator-login
             git pull origin main
             npm install
+            # Ensure .env exists
+            if [ ! -f .env ]; then
+              echo "Creating .env file..."
+              echo 'VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co' > .env
+              echo 'VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhcGRqdm9ramRpdnhqZmRkZG14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjc5MDUsImV4cCI6MjA3Nzc0MzkwNX0.bsikIoF86BjthWauzbLXq3SZbNQFodppZ2TC64NniJs' >> .env
+              echo 'VITE_SITE_URL=https://integratoronai.kz' >> .env
+            fi
             npm run build
             pm2 restart onai-app || pm2 start npm --name "onai-app" -- run serve
             pm2 save
