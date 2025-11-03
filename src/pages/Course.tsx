@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { logActivity } from "@/utils/activityLogger";
+import { AIAssistant } from "@/components/AIAssistant";
 
 const modules = [
   { id: 1, title: "Введение в профессию", progress: 100, icon: DoorOpen },
@@ -233,6 +234,8 @@ const Course = () => {
           </p>
         </motion.footer>
       </div>
+      
+      <AIAssistant />
     </div>
   );
 };

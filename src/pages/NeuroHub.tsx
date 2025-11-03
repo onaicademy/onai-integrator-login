@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Brain, Target, MessageCircle, TrendingUp, Flame, CheckCircle, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AIAssistant } from "@/components/AIAssistant";
 
 const NeuroHub = () => {
   const navigate = useNavigate();
@@ -239,6 +240,8 @@ const NeuroHub = () => {
           </Card>
         </motion.div>
       </div>
+      
+      <AIAssistant />
     </div>
   );
 };

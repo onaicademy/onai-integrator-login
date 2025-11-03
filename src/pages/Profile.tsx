@@ -8,6 +8,7 @@ import { LearningStats } from "@/components/profile/v2/LearningStats";
 import { CourseModules } from "@/components/profile/v2/CourseModules";
 import { AchievementsGrid } from "@/components/profile/v2/AchievementsGrid";
 import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
+import { AIAssistant } from "@/components/AIAssistant";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/utils/activityLogger";
 
@@ -226,6 +227,8 @@ const Profile = () => {
           </div>
         </motion.footer>
       </div>
+      
+      <AIAssistant />
     </div>
   );
 };
