@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/profile/v2/ProfileHeader";
 import { UserDashboard } from "@/components/profile/v2/UserDashboard";
 import { LearningStats } from "@/components/profile/v2/LearningStats";
@@ -11,10 +12,12 @@ import { supabase } from "@/lib/supabase";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
+  const [userExists, setUserExists] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is authenticated
+    // Check if user is authenticated and exists in database
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -22,12 +25,55 @@ const Profile = () => {
         // Redirect to login if not authenticated
         navigate('/');
       } else {
+        // Check if user exists in users table
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error || !userData) {
+          console.warn('User not found in database:', error);
+          setUserExists(false);
+        }
+        
         setLoading(false);
       }
     };
 
     checkAuth();
   }, [navigate]);
+
+  const handleSyncUser = async () => {
+    setSyncing(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.user) {
+      const { id, email, user_metadata } = session.user;
+      
+      const { error } = await supabase.from('users').upsert({
+        id,
+        email,
+        full_name: user_metadata.full_name || user_metadata.name || '',
+        avatar_url: user_metadata.avatar_url || user_metadata.picture || '',
+        created_at: new Date().toISOString(),
+      }, {
+        onConflict: 'id'
+      });
+      
+      if (error) {
+        console.error('❌ Ошибка при повторной синхронизации:', error);
+        alert('Ошибка: не удалось синхронизировать профиль');
+      } else {
+        console.log('✅ Профиль успешно синхронизирован');
+        setUserExists(true);
+        // Reload page to show profile
+        window.location.reload();
+      }
+    }
+    
+    setSyncing(false);
+  };
 
   if (loading) {
     return (
@@ -39,6 +85,45 @@ const Profile = () => {
       </div>
     );
   }
+
+  if (!userExists) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full space-y-6 text-center">
+          <div className="space-y-2">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-foreground">
+              Ошибка: профиль не найден
+            </h2>
+            <p className="text-muted-foreground">
+              Ваш профиль не был найден в базе данных. 
+              Попробуйте синхронизировать данные снова.
+            </p>
+          </div>
+          
+          <Button
+            onClick={handleSyncUser}
+            disabled={syncing}
+            variant="neon"
+            size="lg"
+            className="w-full"
+          >
+            {syncing ? 'Синхронизация...' : 'Повторить синхронизацию'}
+          </Button>
+          
+          <Button
+            onClick={() => navigate('/')}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          >
+            Вернуться на главную
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative overflow-hidden">
       {/* Ambient background effects */}

@@ -17,16 +17,25 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     const { id, email, user_metadata } = session.user
     
     // Create or update user in users table
-    await supabase.from('users').upsert({
+    const { error } = await supabase.from('users').upsert({
       id,
       email,
-      full_name: user_metadata.full_name || user_metadata.name,
-      avatar_url: user_metadata.avatar_url || user_metadata.picture,
+      full_name: user_metadata.full_name || user_metadata.name || '',
+      avatar_url: user_metadata.avatar_url || user_metadata.picture || '',
+      created_at: new Date().toISOString(),
     }, {
       onConflict: 'id'
     })
     
-    console.log('User synced to database:', { id, email })
+    if (error) {
+      console.error('❌ Ошибка при синхронизации user:', error)
+    } else {
+      console.log('✅ Пользователь синхронизирован с таблицей users')
+    }
+  }
+  
+  if (event === 'SIGNED_OUT') {
+    console.log('👋 Пользователь вышел из системы')
   }
 })
 
