@@ -66,6 +66,16 @@ create table if not exists user_achievements (
   unlocked_at timestamptz default now()
 );
 
+-- USER_ACTIVITY
+create table if not exists user_activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references users(id) on delete cascade,
+  page text,
+  action text,
+  meta jsonb,
+  created_at timestamptz default now()
+);
+
 -- ROW LEVEL SECURITY
 
 -- USERS
@@ -97,4 +107,9 @@ create policy "All users can read achievements" on achievements for select using
 alter table user_achievements enable row level security;
 create policy "Users can view only their own achievements"
   on user_achievements for select using (auth.uid() = user_id);
+
+-- USER_ACTIVITY
+alter table user_activity enable row level security;
+create policy "Users can insert and view only their own activity"
+  on user_activity for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
