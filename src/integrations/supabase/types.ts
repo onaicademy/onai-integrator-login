@@ -14,6 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_reports: {
+        Row: {
+          active_users: number | null
+          created_at: string | null
+          end_date: string
+          id: string
+          issues_count: number | null
+          key_points: Json | null
+          period_label: string
+          recommendations: Json | null
+          report_file_url: string | null
+          sentiment: string | null
+          start_date: string
+          summary: string | null
+        }
+        Insert: {
+          active_users?: number | null
+          created_at?: string | null
+          end_date: string
+          id?: string
+          issues_count?: number | null
+          key_points?: Json | null
+          period_label: string
+          recommendations?: Json | null
+          report_file_url?: string | null
+          sentiment?: string | null
+          start_date: string
+          summary?: string | null
+        }
+        Update: {
+          active_users?: number | null
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          issues_count?: number | null
+          key_points?: Json | null
+          period_label?: string
+          recommendations?: Json | null
+          report_file_url?: string | null
+          sentiment?: string | null
+          start_date?: string
+          summary?: string | null
+        }
+        Relationships: []
+      }
+      dashboard_stats: {
+        Row: {
+          active_today: number | null
+          active_today_change: number | null
+          active_week: number | null
+          active_week_change: number | null
+          at_risk: number | null
+          id: string
+          messages_today: number | null
+          messages_today_change: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_today?: number | null
+          active_today_change?: number | null
+          active_week?: number | null
+          active_week_change?: number | null
+          at_risk?: number | null
+          id?: string
+          messages_today?: number | null
+          messages_today_change?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_today?: number | null
+          active_today_change?: number | null
+          active_week?: number | null
+          active_week_change?: number | null
+          at_risk?: number | null
+          id?: string
+          messages_today?: number | null
+          messages_today_change?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_survey: {
         Row: {
           city: string | null
@@ -64,10 +166,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -194,6 +302,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
