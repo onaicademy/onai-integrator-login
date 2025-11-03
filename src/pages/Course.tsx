@@ -17,6 +17,8 @@ import {
   Download,
   Bot
 } from "lucide-react";
+import { useEffect } from "react";
+import { logActivity } from "@/utils/activityLogger";
 
 const modules = [
   { id: 1, title: "Введение в профессию", progress: 100, icon: DoorOpen },
@@ -37,6 +39,13 @@ const Course = () => {
   const courseProgress = 45;
   const studyTime = "6ч 30м";
   const modulesCount = "8 + бонусы";
+
+  // Log course view
+  useEffect(() => {
+    if (id) {
+      logActivity("course_view", { course_id: id });
+    }
+  }, [id]);
 
   const handleModuleClick = (moduleId: number) => {
     navigate(`/course/${id}/module/${moduleId}`);
