@@ -9,6 +9,7 @@ import { CourseModules } from "@/components/profile/v2/CourseModules";
 import { AchievementsGrid } from "@/components/profile/v2/AchievementsGrid";
 import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
 import { supabase } from "@/lib/supabase";
+import { logActivity } from "@/utils/activityLogger";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
@@ -35,6 +36,9 @@ const Profile = () => {
         if (error || !userData) {
           console.warn('User not found in database:', error);
           setUserExists(false);
+        } else {
+          // Log profile open activity
+          await logActivity("profile_open");
         }
         
         setLoading(false);

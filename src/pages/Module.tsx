@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   FileText
 } from "lucide-react";
+import { useEffect } from "react";
+import { logActivity } from "@/utils/activityLogger";
 
 // Mock data - в реальном приложении это будет из API
 const moduleData = {
@@ -36,6 +38,13 @@ const Module = () => {
   
   // Используем moduleId или fallback на "2"
   const module = moduleData[moduleId as keyof typeof moduleData] || moduleData["2"];
+
+  // Log module view
+  useEffect(() => {
+    if (moduleId) {
+      logActivity("module_view", { module_id: moduleId, course_id: id });
+    }
+  }, [moduleId, id]);
 
   if (!module) {
     console.log("Module not found for moduleId:", moduleId);

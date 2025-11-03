@@ -5,6 +5,8 @@ create table if not exists users (
   full_name text,
   avatar_url text,
   role text check (role in ('student','admin')) default 'student',
+  xp integer default 0,
+  level integer default 1,
   created_at timestamptz default now()
 );
 

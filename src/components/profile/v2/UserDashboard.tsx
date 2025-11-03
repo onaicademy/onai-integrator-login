@@ -4,19 +4,47 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { User, Edit3 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export const UserDashboard = () => {
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [xp, setXp] = useState<number>(0);
+  const [level, setLevel] = useState<number>(1);
+  const [fullName, setFullName] = useState<string>("");
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedAvatar");
     if (saved) setAvatarUrl(saved);
+    
+    // Load user data from Supabase
+    const loadUserData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('full_name, avatar_url, xp, level')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (error) {
+        console.error('Failed to load user data:', error);
+        return;
+      }
+      
+      if (data) {
+        setXp(data.xp || 0);
+        setLevel(data.level || 1);
+        setFullName(data.full_name || 'Пользователь');
+        if (data.avatar_url) setAvatarUrl(data.avatar_url);
+      }
+    };
+    
+    loadUserData();
   }, []);
 
-  const xp = 1240;
   const maxXp = 2000;
-  const level = 3;
   const percentage = (xp / maxXp) * 100;
 
   // Circle parameters
@@ -98,7 +126,7 @@ export const UserDashboard = () => {
           {/* User Info */}
           <div className="text-center space-y-2 sm:space-y-3">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Александр</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{fullName || 'Загрузка...'}</h2>
               <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-1">
                 <p className="text-xs sm:text-sm text-neon font-medium">Интегратор I</p>
                 <span className="text-muted-foreground text-xs sm:text-sm">•</span>
