@@ -371,56 +371,18 @@ export default function Activity() {
     conversion_rate: 4.2,
   };
 
-  // Проверка авторизации и прав админа
+  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации и прав админа для свободного тестирования UI
   useEffect(() => {
-    checkAdminAccess();
+    // Убираем все проверки, просто загружаем страницу
+    setIsAdmin(true);
+    setLoading(false);
+    fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkAdminAccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Требуется авторизация",
-          description: "Пожалуйста, войдите в систему",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-
-      // Проверяем роль пользователя
-      const { data: userRole, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (roleError || userRole?.role !== 'admin') {
-        toast({
-          title: "Доступ запрещен",
-          description: "Требуются права администратора",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-
-      setIsAdmin(true);
-      await fetchData();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось проверить права доступа",
-        variant: "destructive"
-      });
-      navigate('/');
-    } finally {
-      setLoading(false);
-    }
+    // ОТКЛЮЧЕНО: для свободного доступа к странице
+    // Раскомментировать когда нужно будет включить авторизацию обратно
   };
 
   const fetchData = async () => {
