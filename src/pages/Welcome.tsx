@@ -243,7 +243,7 @@ const Welcome = () => {
             className="space-y-8"
           >
             <div className="text-center space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground whitespace-pre-line">
                 {currentQuestion.title}
               </h1>
               {currentQuestion.subtitle && (
