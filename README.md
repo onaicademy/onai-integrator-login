@@ -80,16 +80,21 @@ onai-integrator-login/
 │   │   ├── Welcome.tsx     # Опросник
 │   │   ├── NeuroHub.tsx    # Центр обучения
 │   │   └── admin/
-│   │       └── Activity.tsx # Админ-панель
+│   │       └── Activity.tsx # 🎯 Админ-панель (интегрирована с Supabase)
 │   ├── components/         # React компоненты
 │   ├── lib/               # Утилиты и конфигурация
 │   │   ├── supabase.ts    # Supabase клиент
+│   │   ├── admin-utils.ts # 🆕 Утилиты для админ-панели
 │   │   └── utils.ts       # Вспомогательные функции
 │   └── integrations/      # Интеграции
 │       └── supabase/      # Supabase типы и клиент
 ├── supabase/              # Supabase конфигурация
 │   ├── functions/         # Edge Functions
+│   │   ├── diagnose-user/ # 🤖 AI-диагност пользователей
+│   │   └── generate-report/ # Генерация отчётов
 │   └── migrations/        # SQL миграции
+│       ├── 20251104_add_diagnostics_tables.sql # 🆕 Таблицы для AI
+│       └── ...
 ├── public/                # Статические файлы
 └── dist/                  # Production сборка
 ```
@@ -110,7 +115,15 @@ onai-integrator-login/
 - `/course/:id/module/:moduleId/lesson/:lessonId` - Урок
 
 ### Админские страницы:
-- `/admin/activity` - Панель аналитики (требует роль admin)
+- `/admin/activity` - 🎯 Панель аналитики (требует роль admin)
+  - **Реальные метрики платформы** из Supabase
+  - **Таблица всех пользователей** с детальной информацией
+  - **Модальное окно пользователя** с 3 вкладками:
+    - Обзор (XP, уроки, достижения, стрик)
+    - Достижения (все достижения с отметками выполнения)
+    - Диагностика (AI-анализ и рекомендации)
+  - **Графики активности** за неделю
+  - **История отчётов** (если есть)
 
 ---
 
@@ -141,16 +154,23 @@ onai-integrator-login/
 
 ## 📚 Документация
 
+### Основная документация:
 - **[PROBLEM_SOLUTION_SUMMARY.md](./PROBLEM_SOLUTION_SUMMARY.md)** - Резюме проблем и решений
 - **[AUTH_DISABLED_README.md](./AUTH_DISABLED_README.md)** - Работа без авторизации
 - **[FIX_SUMMARY.md](./FIX_SUMMARY.md)** - Сводка исправлений
 - **[TESTING_INSTRUCTIONS.md](./TESTING_INSTRUCTIONS.md)** - Инструкции по тестированию
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Инструкции по деплою
+
+### Настройка и интеграции:
 - **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Настройка Supabase
 - **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Настройка Google OAuth
+- **[MCP_TROUBLESHOOTING.md](./MCP_TROUBLESHOOTING.md)** 🔧 - Устранение проблем MCP сервера
+
+### AI-функциональность:
 - **[DIAGNOSTICS_QUICK_START.md](./DIAGNOSTICS_QUICK_START.md)** 🤖 - AI-Диагност: Быстрый старт
 - **[DIAGNOSTICS_SETUP_GUIDE.md](./DIAGNOSTICS_SETUP_GUIDE.md)** - AI-Диагност: Полная документация
-- **[MCP_TROUBLESHOOTING.md](./MCP_TROUBLESHOOTING.md)** 🔧 - Устранение проблем MCP сервера
+- **[ADMIN_PANEL_SUPABASE_INTEGRATION.md](./ADMIN_PANEL_SUPABASE_INTEGRATION.md)** 🎯 - Интеграция Supabase в админ-панель
+- **[ACTIVITY_PANEL_README.md](./ACTIVITY_PANEL_README.md)** 📊 **НОВОЕ v2.0!** - Полная документация панели активности
 
 ---
 
