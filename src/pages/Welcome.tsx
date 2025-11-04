@@ -86,7 +86,7 @@ const Welcome = () => {
   const questions = [
     {
       id: 'intro',
-      title: 'Добро пожаловать в onAI Academy 👋',
+      title: 'onAI Academy 👋',
       subtitle: 'Мы рады тебя видеть!\nРасскажи немного о себе, чтобы обучение было комфортным и максимально полезным для тебя.',
       type: 'intro',
     },
