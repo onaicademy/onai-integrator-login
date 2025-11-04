@@ -11,7 +11,8 @@ import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
 import { supabase } from "@/lib/supabase";
 
 const Profile = () => {
-  const [loading, setLoading] = useState(true);
+  // TEMPORARY: Auth check disabled for testing UI
+  const [loading, setLoading] = useState(false);
   const [userExists, setUserExists] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const navigate = useNavigate();
@@ -54,54 +55,55 @@ const Profile = () => {
     setSyncing(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
+  // TEMPORARY: Disabled loading and userExists checks
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon mx-auto"></div>
+  //         <p className="mt-4 text-muted-foreground">Загрузка...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  if (!userExists) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-md w-full space-y-6 text-center">
-          <div className="space-y-2">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-foreground">
-              Ошибка: профиль не найден
-            </h2>
-            <p className="text-muted-foreground">
-              Ваш профиль не был найден в базе данных. 
-              Попробуйте синхронизировать данные снова.
-            </p>
-          </div>
-          
-          <Button
-            onClick={handleSyncUser}
-            disabled={syncing}
-            variant="neon"
-            size="lg"
-            className="w-full"
-          >
-            {syncing ? 'Синхронизация...' : 'Повторить синхронизацию'}
-          </Button>
-          
-          <Button
-            onClick={() => navigate('/')}
-            variant="outline"
-            size="lg"
-            className="w-full"
-          >
-            Вернуться на главную
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // if (!userExists) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center px-4">
+  //       <div className="max-w-md w-full space-y-6 text-center">
+  //         <div className="space-y-2">
+  //           <div className="text-6xl mb-4">⚠️</div>
+  //           <h2 className="text-2xl font-bold text-foreground">
+  //             Ошибка: профиль не найден
+  //           </h2>
+  //           <p className="text-muted-foreground">
+  //             Ваш профиль не был найден в базе данных. 
+  //             Попробуйте синхронизировать данные снова.
+  //           </p>
+  //         </div>
+  //         
+  //         <Button
+  //           onClick={handleSyncUser}
+  //           disabled={syncing}
+  //           variant="neon"
+  //           size="lg"
+  //           className="w-full"
+  //         >
+  //           {syncing ? 'Синхронизация...' : 'Повторить синхронизацию'}
+  //         </Button>
+  //         
+  //         <Button
+  //           onClick={() => navigate('/')}
+  //           variant="outline"
+  //           size="lg"
+  //           className="w-full"
+  //         >
+  //           Вернуться на главную
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="relative overflow-hidden">

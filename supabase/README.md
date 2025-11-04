@@ -48,7 +48,7 @@ psql -h db.onai-academy.supabase.co -U postgres -d postgres -f schema.sql
 В файле `.env` должны быть настроены:
 ```
 VITE_SUPABASE_URL=https://onai-academy.supabase.co
-VITE_SUPABASE_ANON_KEY=ваш_anon_key
+VITE_SUPABASE_PUBLISHABLE_KEY=ваш_anon_key
 ```
 
 ## 📝 Примечания

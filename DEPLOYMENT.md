@@ -116,7 +116,7 @@ nano .env
 Add:
 ```
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 **Rebuild after changing .env**:
