@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,25 +8,18 @@ import { supabase } from "@/lib/supabase";
 const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Тестовый вызов Supabase
-    const testSupabase = async () => {
-      console.log("Testing Supabase connection...");
-      console.log("URL:", import.meta.env.VITE_SUPABASE_URL);
-      console.log("Key:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "Loaded" : "Not loaded");
-      
-      try {
-        const { data, error } = await supabase.from('users').select('*');
-        console.log("Supabase users data:", data);
-        console.log("Supabase error:", error);
-      } catch (err) {
-        console.error("Supabase connection error:", err);
-      }
-    };
-
-    testSupabase();
-  }, []);
+  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     const { data: { session } } = await supabase.auth.getSession();
+  //     if (session) {
+  //       navigate('/profile');
+  //     }
+  //   };
+  //   checkAuth();
+  // }, [navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

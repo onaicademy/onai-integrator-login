@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -68,44 +68,16 @@ export default function Activity() {
   const [endDate, setEndDate] = useState<Date>();
   const [generating, setGenerating] = useState(false);
 
+  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации и прав админа
   useEffect(() => {
-    checkAdminAccess();
+    // Убираем все проверки, просто загружаем страницу
+    setIsAdmin(true);
+    setLoading(false);
+    fetchData();
   }, []);
 
   const checkAdminAccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate('/');
-        return;
-      }
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (!roles) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to access this page",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-
-      setIsAdmin(true);
-      await fetchData();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      navigate('/');
-    } finally {
-      setLoading(false);
-    }
+    // Отключено
   };
 
   const fetchData = async () => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { externalSupabase } from '@/lib/external-supabase'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -27,33 +27,13 @@ const Welcome = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
 
+  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации и редиректы
   useEffect(() => {
-    checkExistingSurvey()
+    // Просто показываем страницу без проверок
   }, [])
 
   const checkExistingSurvey = async () => {
-    try {
-      const { data: { user } } = await externalSupabase.auth.getUser()
-      
-      if (!user) {
-        navigate('/')
-        return
-      }
-
-      setUserId(user.id)
-
-      const { data: existingSurvey } = await externalSupabase
-        .from('user_survey')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (existingSurvey) {
-        navigate('/profile')
-      }
-    } catch (error) {
-      console.error('Error checking survey:', error)
-    }
+    // Отключено
   }
 
   const handleNext = () => {
@@ -65,7 +45,7 @@ const Welcome = () => {
 
     setLoading(true)
     try {
-      const { error: insertError } = await externalSupabase
+      const { error: insertError } = await supabase
         .from('user_survey')
         .insert({
           user_id: userId,
@@ -74,7 +54,7 @@ const Welcome = () => {
 
       if (insertError) throw insertError
 
-      await externalSupabase.auth.updateUser({
+      await supabase.auth.updateUser({
         data: {
           name: answers.name,
           job_role: answers.job_role,
@@ -90,11 +70,12 @@ const Welcome = () => {
       })
 
       navigate('/profile')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving survey:', error)
+      const errorMessage = error instanceof Error ? error.message : "Не удалось сохранить данные"
       toast({
         title: "❌ Ошибка",
-        description: error.message || "Не удалось сохранить данные",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {

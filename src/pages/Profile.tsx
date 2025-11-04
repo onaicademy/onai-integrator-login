@@ -16,32 +16,11 @@ const Profile = () => {
   const [syncing, setSyncing] = useState(false);
   const navigate = useNavigate();
 
+  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации
   useEffect(() => {
-    // Check if user is authenticated and exists in database
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        // Redirect to login if not authenticated
-        navigate('/');
-      } else {
-        // Check if user exists in users table
-        const { data: userData, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error || !userData) {
-          console.warn('User not found in database:', error);
-          setUserExists(false);
-        }
-        
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
+    // Убираем редирект, просто загружаем страницу
+    setLoading(false);
+    setUserExists(true);
   }, [navigate]);
 
   const handleSyncUser = async () => {
