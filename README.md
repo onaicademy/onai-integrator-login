@@ -150,6 +150,7 @@ onai-integrator-login/
 - **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Настройка Google OAuth
 - **[DIAGNOSTICS_QUICK_START.md](./DIAGNOSTICS_QUICK_START.md)** 🤖 - AI-Диагност: Быстрый старт
 - **[DIAGNOSTICS_SETUP_GUIDE.md](./DIAGNOSTICS_SETUP_GUIDE.md)** - AI-Диагност: Полная документация
+- **[MCP_TROUBLESHOOTING.md](./MCP_TROUBLESHOOTING.md)** 🔧 - Устранение проблем MCP сервера
 
 ---
 
