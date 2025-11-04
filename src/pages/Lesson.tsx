@@ -12,8 +12,6 @@ import {
   Link as LinkIcon,
   Play
 } from "lucide-react";
-import { logActivity } from "@/utils/activityLogger";
-import { addXP } from "@/utils/xpManager";
 
 // Mock data
 const lessonData = {
@@ -47,24 +45,14 @@ const Lesson = () => {
       console.log("Lesson not found for lessonId:", lessonId);
       return;
     }
-    // Check localStorage for completion
+    // Проверяем localStorage
     const completed = localStorage.getItem(`lesson-${lessonId}-completed`);
     setIsCompleted(completed === "true");
-    
-    // Log lesson view
-    logActivity("lesson_view", { lesson_id: lessonId, module_id: moduleId });
-  }, [lessonId, lesson, moduleId]);
+  }, [lessonId, lesson]);
 
-  const handleComplete = async () => {
-    // Check if already completed to avoid double XP
-    if (isCompleted) return;
-    
+  const handleComplete = () => {
     localStorage.setItem(`lesson-${lessonId}-completed`, "true");
     setIsCompleted(true);
-    
-    // Log lesson completion and add XP
-    await logActivity("lesson_complete", { lesson_id: lessonId, module_id: moduleId });
-    await addXP(25, `lesson_completed_${lessonId}`);
   };
 
   const handleNext = () => {
