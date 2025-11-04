@@ -1,9 +1,11 @@
 name: Deploy to DigitalOcean Droplet
 
+# Автодеплой ОТКЛЮЧЕН - запускается только вручную через GitHub UI
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Ручной запуск через Actions -> Run workflow
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   deploy:
