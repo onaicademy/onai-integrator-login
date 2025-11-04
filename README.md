@@ -148,6 +148,8 @@ onai-integrator-login/
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Инструкции по деплою
 - **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Настройка Supabase
 - **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Настройка Google OAuth
+- **[DIAGNOSTICS_QUICK_START.md](./DIAGNOSTICS_QUICK_START.md)** 🤖 - AI-Диагност: Быстрый старт
+- **[DIAGNOSTICS_SETUP_GUIDE.md](./DIAGNOSTICS_SETUP_GUIDE.md)** - AI-Диагност: Полная документация
 
 ---
 
