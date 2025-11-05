@@ -146,3 +146,4 @@ const [showTopStudentsModal, setShowTopStudentsModal] = useState(false);
 
 - `src/pages/admin/Activity.tsx` - основная логика и UI
 
+
