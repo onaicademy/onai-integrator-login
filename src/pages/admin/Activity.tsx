@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -51,6 +51,20 @@ import {
 import { StatCard } from "@/components/admin/StatCard";
 import { MetricCard } from "@/components/admin/MetricCard";
 import { ActivitySection } from "@/components/admin/ActivitySection";
+import {
+  USE_MOCK_DATA,
+  MOCK_USERS,
+  MOCK_PLATFORM_STATS,
+  MOCK_WEEKLY_ACTIVITY,
+  MOCK_WEEKLY_TREND,
+  MOCK_ACHIEVEMENTS_DATA,
+  MOCK_AI_DIAGNOSTICS_DATA,
+  MOCK_AI_CURATOR_DATA,
+  MOCK_MARKETING_DATA,
+  generateMockUserAchievements,
+  generateMockUserDiagnostics,
+  type MockUser
+} from "@/lib/mock-data";
 
 interface DashboardStats {
   active_today: number;
@@ -128,52 +142,12 @@ export default function Activity() {
   // Состояние для топ учеников (реальные данные из Supabase)
   const [topStudents, setTopStudents] = useState<UserWithStats[]>([]);
 
-  // Mock data for analytics (будут заменены на данные из Supabase)
-  const weeklyTrend = [
-    { week: 'Нед 1', active: 320, atRisk: 12 },
-    { week: 'Нед 2', active: 345, atRisk: 8 },
-    { week: 'Нед 3', active: 380, atRisk: 15 },
-    { week: 'Нед 4', active: 420, atRisk: 10 },
-  ];
-
-  // Mock: AI Diagnostician метрики
-  const aiDiagnosticsData = {
-    engagement_score: 78,
-    at_risk_students: 12,
-    stuck_lessons_count: 8,
-    avg_response_time: 4.2,
-    recommendations_sent: 156,
-    success_rate: 85,
-  };
-
-  // Mock: AI Curator метрики  
-  const aiCuratorData = {
-    motivation_messages: 234,
-    personalized_paths: 45,
-    engagement_boost: 23,
-    retention_rate: 89,
-  };
-
-  // Mock: Достижения учеников
-  const achievementsData = {
-    total_xp_earned: 45230,
-    avg_streak: 12,
-    modules_completed: 189,
-    top_performers: 15,
-  };
-
-  // Mock: Маркетинг
-  const marketingData = {
-    traffic_sources: [
-      { name: 'Органика', value: 45, color: '#10b981' },
-      { name: 'Реклама', value: 30, color: '#3b82f6' },
-      { name: 'Соц. сети', value: 15, color: '#8b5cf6' },
-      { name: 'Прямой', value: 10, color: '#f59e0b' },
-    ],
-    bounce_rate: 23,
-    avg_session: 8.5,
-    conversion_rate: 4.2,
-  };
+  // Используем mock данные или реальные данные из Supabase
+  const weeklyTrend = MOCK_WEEKLY_TREND;
+  const aiDiagnosticsData = MOCK_AI_DIAGNOSTICS_DATA;
+  const aiCuratorData = MOCK_AI_CURATOR_DATA;
+  const achievementsData = MOCK_ACHIEVEMENTS_DATA;
+  const marketingData = MOCK_MARKETING_DATA;
 
   // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации и прав админа для свободного тестирования UI
   useEffect(() => {
@@ -191,38 +165,59 @@ export default function Activity() {
 
   const fetchData = async () => {
     try {
-      // Получаем статистику платформы из реальных данных
-      const platformStats = await getPlatformStats();
-      setStats(platformStats);
+      if (USE_MOCK_DATA) {
+        // Используем mock данные для демонстрации
+        console.log('📊 Загружаем mock данные для демонстрации админ-панели');
+        
+        setStats(MOCK_PLATFORM_STATS);
+        setActivityData(MOCK_WEEKLY_ACTIVITY);
+        
+        // Преобразуем mock пользователей в формат UserWithStats
+        const mockUsersConverted = MOCK_USERS.map(user => ({
+          ...user,
+          stats: user.stats,
+          lastActive: user.lastActive,
+        })) as UserWithStats[];
+        
+        setUsers(mockUsersConverted);
+        setTopStudents(mockUsersConverted.slice(0, 15));
+        
+        console.log(`✅ Загружено ${mockUsersConverted.length} mock пользователей`);
+        console.log(`🏆 Топ-15 учеников готовы к отображению`);
+      } else {
+        // Получаем статистику платформы из реальных данных
+        const platformStats = await getPlatformStats();
+        setStats(platformStats);
 
-      // Получаем данные активности за неделю для графика
-      const weeklyData = await getWeeklyActivityData();
-      setActivityData(weeklyData);
+        // Получаем данные активности за неделю для графика
+        const weeklyData = await getWeeklyActivityData();
+        setActivityData(weeklyData);
 
-      // Получаем всех пользователей
-      const allUsers = await getAllUsers();
-      setUsers(allUsers);
+        // Получаем всех пользователей
+        const allUsers = await getAllUsers();
+        setUsers(allUsers);
 
-      // Создаём топ-15 учеников, отсортированных по XP
-      const sortedByXp = [...allUsers].sort((a, b) => {
-        const aXp = a.stats?.total_xp || 0;
-        const bXp = b.stats?.total_xp || 0;
-        return bXp - aXp;
-      });
-      setTopStudents(sortedByXp.slice(0, 15));
+        // Создаём топ-15 учеников, отсортированных по XP
+        const sortedByXp = [...allUsers].sort((a, b) => {
+          const aXp = a.stats?.total_xp || 0;
+          const bXp = b.stats?.total_xp || 0;
+          return bXp - aXp;
+        });
+        setTopStudents(sortedByXp.slice(0, 15));
 
-      // Получаем отчёты (если есть таблица)
-      try {
-        const { data: reportsData } = await supabase
-          .from('admin_reports')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(10);
+        // Получаем отчёты (если есть таблица)
+        try {
+          const { data: reportsData } = await supabase
+            .from('admin_reports')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
 
-        if (reportsData) setReports(reportsData as unknown as AdminReport[]);
-      } catch (error) {
-        // Таблица admin_reports может не существовать - это нормально
-        console.log('admin_reports table not found, skipping...');
+          if (reportsData) setReports(reportsData as unknown as AdminReport[]);
+        } catch (error) {
+          // Таблица admin_reports может не существовать - это нормально
+          console.log('admin_reports table not found, skipping...');
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -240,18 +235,29 @@ export default function Activity() {
       setSelectedUser(user);
       setShowUserModal(true);
 
-      // Загружаем статистику пользователя
-      const stats = await getUserStats(user.id);
-      setSelectedUser(prev => prev ? { ...prev, stats } : null);
+      if (USE_MOCK_DATA) {
+        // Используем mock данные для достижений и диагностики
+        const mockAchievements = generateMockUserAchievements(user.id);
+        setUserAchievements(mockAchievements as unknown as AchievementWithStatus[]);
+        
+        const mockDiagnostics = generateMockUserDiagnostics(user as MockUser);
+        setUserDiagnostics(mockDiagnostics as unknown as DiagnosticsData);
+        
+        console.log(`👤 Загружены mock данные для пользователя: ${user.full_name || user.email}`);
+      } else {
+        // Загружаем статистику пользователя
+        const stats = await getUserStats(user.id);
+        setSelectedUser(prev => prev ? { ...prev, stats } : null);
 
-      // Загружаем достижения пользователя
-      const achievements = await getUserAchievementsWithDetails(user.id);
-      setUserAchievements(achievements);
+        // Загружаем достижения пользователя
+        const achievements = await getUserAchievementsWithDetails(user.id);
+        setUserAchievements(achievements);
 
-      // Загружаем диагностику
-      const diagnostics = await getUserLatestDiagnostics(user.id);
-      if (diagnostics) {
-        setUserDiagnostics(diagnostics.data_json);
+        // Загружаем диагностику
+        const diagnostics = await getUserLatestDiagnostics(user.id);
+        if (diagnostics) {
+          setUserDiagnostics(diagnostics.data_json);
+        }
       }
     } catch (error) {
       console.error('Error loading user details:', error);
