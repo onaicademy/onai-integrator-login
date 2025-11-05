@@ -124,6 +124,9 @@ export default function Activity() {
   
   // Состояние для модального окна топ учеников
   const [showTopStudentsModal, setShowTopStudentsModal] = useState(false);
+  
+  // Состояние для топ учеников (реальные данные из Supabase)
+  const [topStudents, setTopStudents] = useState<UserWithStats[]>([]);
 
   // Mock data for analytics (будут заменены на данные из Supabase)
   const weeklyTrend = [
@@ -158,205 +161,6 @@ export default function Activity() {
     modules_completed: 189,
     top_performers: 15,
   };
-
-  // Mock: Топ ученики (детальные данные) - 15 лучших учеников
-  const topStudentsData = [
-    {
-      id: '1',
-      name: 'Иван',
-      avatar: '👨‍💻',
-      xp: 2000,
-      streak: 9,
-      modules_completed: 58,
-      questions_to_curator: 45,
-      productivity: 95,
-      rating: 4.9,
-      behavior: 'Отличное',
-      last_active: '1 час назад',
-    },
-    {
-      id: '2',
-      name: 'Алиса',
-      avatar: '👩‍🎓',
-      xp: 1850,
-      streak: 10,
-      modules_completed: 52,
-      questions_to_curator: 52,
-      productivity: 92,
-      rating: 4.8,
-      behavior: 'Отличное',
-      last_active: '2 часа назад',
-    },
-    {
-      id: '3',
-      name: 'Алина Смирнова',
-      avatar: '👩‍🎓',
-      xp: 1780,
-      streak: 28,
-      modules_completed: 50,
-      questions_to_curator: 38,
-      productivity: 90,
-      rating: 4.7,
-      behavior: 'Отличное',
-      last_active: '3 часа назад',
-    },
-    {
-      id: '4',
-      name: 'Дмитрий Иванов',
-      avatar: '👨‍💻',
-      xp: 1690,
-      streak: 24,
-      modules_completed: 48,
-      questions_to_curator: 41,
-      productivity: 88,
-      rating: 4.6,
-      behavior: 'Хорошее',
-      last_active: '5 часов назад',
-    },
-    {
-      id: '5',
-      name: 'Екатерина Петрова',
-      avatar: '👩‍💼',
-      xp: 1620,
-      streak: 21,
-      modules_completed: 46,
-      questions_to_curator: 35,
-      productivity: 87,
-      rating: 4.7,
-      behavior: 'Отличное',
-      last_active: '4 часа назад',
-    },
-    {
-      id: '6',
-      name: 'Максим Сидоров',
-      avatar: '👨‍🔬',
-      xp: 1580,
-      streak: 19,
-      modules_completed: 45,
-      questions_to_curator: 31,
-      productivity: 85,
-      rating: 4.5,
-      behavior: 'Хорошее',
-      last_active: '6 часов назад',
-    },
-    {
-      id: '7',
-      name: 'София Козлова',
-      avatar: '👩‍🎨',
-      xp: 1540,
-      streak: 17,
-      modules_completed: 43,
-      questions_to_curator: 42,
-      productivity: 84,
-      rating: 4.6,
-      behavior: 'Отличное',
-      last_active: 'Вчера',
-    },
-    {
-      id: '8',
-      name: 'Артём Волков',
-      avatar: '👨‍🎓',
-      xp: 1490,
-      streak: 15,
-      modules_completed: 41,
-      questions_to_curator: 29,
-      productivity: 82,
-      rating: 4.4,
-      behavior: 'Хорошее',
-      last_active: '7 часов назад',
-    },
-    {
-      id: '9',
-      name: 'Мария Новикова',
-      avatar: '👩‍💼',
-      xp: 1450,
-      streak: 14,
-      modules_completed: 40,
-      questions_to_curator: 33,
-      productivity: 81,
-      rating: 4.5,
-      behavior: 'Хорошее',
-      last_active: '8 часов назад',
-    },
-    {
-      id: '10',
-      name: 'Андрей Соколов',
-      avatar: '👨‍💼',
-      xp: 1410,
-      streak: 13,
-      modules_completed: 38,
-      questions_to_curator: 27,
-      productivity: 80,
-      rating: 4.3,
-      behavior: 'Хорошее',
-      last_active: '10 часов назад',
-    },
-    {
-      id: '11',
-      name: 'Ольга Морозова',
-      avatar: '👩‍🔬',
-      xp: 1380,
-      streak: 12,
-      modules_completed: 37,
-      questions_to_curator: 30,
-      productivity: 79,
-      rating: 4.4,
-      behavior: 'Хорошее',
-      last_active: 'Вчера',
-    },
-    {
-      id: '12',
-      name: 'Павел Кузнецов',
-      avatar: '👨‍🎨',
-      xp: 1340,
-      streak: 11,
-      modules_completed: 36,
-      questions_to_curator: 25,
-      productivity: 78,
-      rating: 4.2,
-      behavior: 'Хорошее',
-      last_active: 'Вчера',
-    },
-    {
-      id: '13',
-      name: 'Наталья Лебедева',
-      avatar: '👩‍💻',
-      xp: 1310,
-      streak: 10,
-      modules_completed: 35,
-      questions_to_curator: 28,
-      productivity: 77,
-      rating: 4.3,
-      behavior: 'Хорошее',
-      last_active: '2 дня назад',
-    },
-    {
-      id: '14',
-      name: 'Сергей Попов',
-      avatar: '👨‍🏫',
-      xp: 1280,
-      streak: 9,
-      modules_completed: 34,
-      questions_to_curator: 24,
-      productivity: 76,
-      rating: 4.2,
-      behavior: 'Среднее',
-      last_active: '2 дня назад',
-    },
-    {
-      id: '15',
-      name: 'Елена Васильева',
-      avatar: '👩‍🏫',
-      xp: 1250,
-      streak: 8,
-      modules_completed: 33,
-      questions_to_curator: 26,
-      productivity: 75,
-      rating: 4.1,
-      behavior: 'Среднее',
-      last_active: '3 дня назад',
-    },
-  ];
 
   // Mock: Маркетинг
   const marketingData = {
@@ -398,6 +202,14 @@ export default function Activity() {
       // Получаем всех пользователей
       const allUsers = await getAllUsers();
       setUsers(allUsers);
+
+      // Создаём топ-15 учеников, отсортированных по XP
+      const sortedByXp = [...allUsers].sort((a, b) => {
+        const aXp = a.stats?.total_xp || 0;
+        const bXp = b.stats?.total_xp || 0;
+        return bXp - aXp;
+      });
+      setTopStudents(sortedByXp.slice(0, 15));
 
       // Получаем отчёты (если есть таблица)
       try {
@@ -1143,92 +955,105 @@ export default function Activity() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {topStudentsData.map((student, index) => (
-                    <TableRow 
-                      key={student.id} 
-                      className="border-border/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
-                    >
-                      <TableCell className="font-medium">
-                        <Badge 
-                          variant={index < 3 ? "default" : "secondary"}
-                          className={cn(
-                            "transition-transform group-hover:scale-110",
-                            index === 0 && "bg-yellow-500/20 text-yellow-500 border-yellow-500/50",
-                            index === 1 && "bg-gray-400/20 text-gray-400 border-gray-400/50",
-                            index === 2 && "bg-orange-600/20 text-orange-600 border-orange-600/50"
-                          )}
-                        >
-                          {index + 1}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{student.avatar}</span>
-                          <div>
-                            <p className="font-medium">{student.name}</p>
+                  {topStudents.map((student, index) => {
+                    const xp = student.stats?.total_xp || 0;
+                    const streak = student.stats?.current_streak || 0;
+                    const modulesCompleted = student.stats?.lessons_completed || 0;
+                    const questionsAsked = student.stats?.questions_asked || 0;
+                    const productivity = student.stats?.completion_rate || 0;
+                    const rating = student.stats?.average_score || 0;
+                    const behavior = productivity >= 85 ? 'Отличное' : productivity >= 70 ? 'Хорошее' : 'Среднее';
+                    const lastActive = student.lastActive || format(new Date(student.created_at), 'dd.MM.yyyy');
+                    
+                    return (
+                      <TableRow 
+                        key={student.id} 
+                        className="border-border/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
+                        onClick={() => handleViewUser(student)}
+                      >
+                        <TableCell className="font-medium">
+                          <Badge 
+                            variant={index < 3 ? "default" : "secondary"}
+                            className={cn(
+                              "transition-transform group-hover:scale-110",
+                              index === 0 && "bg-yellow-500/20 text-yellow-500 border-yellow-500/50",
+                              index === 1 && "bg-gray-400/20 text-gray-400 border-gray-400/50",
+                              index === 2 && "bg-orange-600/20 text-orange-600 border-orange-600/50"
+                            )}
+                          >
+                            {index + 1}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">👤</span>
+                            <div>
+                              <p className="font-medium">{student.full_name || student.email}</p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Zap className="h-4 w-4 text-yellow-500" />
-                          <span className="font-bold text-yellow-500">{student.xp.toLocaleString()}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Flame className="h-4 w-4 text-orange-500" />
-                          <span className="font-medium">{student.streak}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
-                          {student.modules_completed}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <MessageSquare className="h-4 w-4 text-blue-500" />
-                          <span className="font-medium">{student.questions_to_curator}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Target className="h-4 w-4 text-purple-500" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Zap className="h-4 w-4 text-yellow-500" />
+                            <span className="font-bold text-yellow-500">{xp.toLocaleString()}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Flame className="h-4 w-4 text-orange-500" />
+                            <span className="font-medium">{streak}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                            {modulesCompleted}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <MessageSquare className="h-4 w-4 text-blue-500" />
+                            <span className="font-medium">{questionsAsked}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Target className="h-4 w-4 text-purple-500" />
+                            <Badge 
+                              variant="outline"
+                              className={cn(
+                                productivity >= 90 && "bg-green-500/10 text-green-500 border-green-500/30",
+                                productivity >= 80 && productivity < 90 && "bg-blue-500/10 text-blue-500 border-blue-500/30",
+                                productivity < 80 && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                              )}
+                            >
+                              {productivity.toFixed(0)}%
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Trophy className="h-4 w-4 text-yellow-500" />
+                            <span className="font-bold">{rating > 0 ? rating.toFixed(1) : '-'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
                           <Badge 
                             variant="outline"
                             className={cn(
-                              student.productivity >= 90 && "bg-green-500/10 text-green-500 border-green-500/30",
-                              student.productivity >= 80 && student.productivity < 90 && "bg-blue-500/10 text-blue-500 border-blue-500/30",
-                              student.productivity < 80 && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                              behavior === 'Отличное' && "bg-green-500/10 text-green-500 border-green-500/30",
+                              behavior === 'Хорошее' && "bg-blue-500/10 text-blue-500 border-blue-500/30",
+                              behavior === 'Среднее' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
                             )}
                           >
-                            {student.productivity}%
+                            {behavior}
                           </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Trophy className="h-4 w-4 text-yellow-500" />
-                          <span className="font-bold">{student.rating.toFixed(1)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge 
-                          variant="outline"
-                          className={cn(
-                            student.behavior === 'Отличное' && "bg-green-500/10 text-green-500 border-green-500/30",
-                            student.behavior === 'Хорошее' && "bg-blue-500/10 text-blue-500 border-blue-500/30"
-                          )}
-                        >
-                          {student.behavior}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center text-sm text-muted-foreground">
-                        {student.last_active}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-muted-foreground">
+                          {lastActive}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -1238,13 +1063,13 @@ export default function Activity() {
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
                   <p className="text-sm font-medium">
-                    Средняя продуктивность топ-15: <span className="text-primary font-bold">{(topStudentsData.reduce((acc, s) => acc + s.productivity, 0) / topStudentsData.length).toFixed(0)}%</span>
+                    Средняя продуктивность топ-15: <span className="text-primary font-bold">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.completion_rate || 0), 0) / topStudents.length).toFixed(0) : 0}%</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-yellow-500" />
                   <p className="text-sm font-medium">
-                    Суммарный XP: <span className="text-yellow-500 font-bold">{topStudentsData.reduce((acc, s) => acc + s.xp, 0).toLocaleString()}</span>
+                    Суммарный XP: <span className="text-yellow-500 font-bold">{topStudents.reduce((acc, s) => acc + (s.stats?.total_xp || 0), 0).toLocaleString()}</span>
                   </p>
                 </div>
               </div>
@@ -1252,17 +1077,17 @@ export default function Activity() {
                 <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20 text-center">
                   <BookOpen className="h-5 w-5 text-green-500 mx-auto mb-1" />
                   <p className="text-xs text-muted-foreground">Всего уроков</p>
-                  <p className="text-lg font-bold text-green-500">{topStudentsData.reduce((acc, s) => acc + s.modules_completed, 0)}</p>
+                  <p className="text-lg font-bold text-green-500">{topStudents.reduce((acc, s) => acc + (s.stats?.lessons_completed || 0), 0)}</p>
                 </div>
                 <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 text-center">
                   <Flame className="h-5 w-5 text-orange-500 mx-auto mb-1" />
                   <p className="text-xs text-muted-foreground">Средний стрик</p>
-                  <p className="text-lg font-bold text-orange-500">{(topStudentsData.reduce((acc, s) => acc + s.streak, 0) / topStudentsData.length).toFixed(0)} дней</p>
+                  <p className="text-lg font-bold text-orange-500">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.current_streak || 0), 0) / topStudents.length).toFixed(0) : 0} дней</p>
                 </div>
                 <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20 text-center">
                   <MessageSquare className="h-5 w-5 text-blue-500 mx-auto mb-1" />
                   <p className="text-xs text-muted-foreground">Всего вопросов</p>
-                  <p className="text-lg font-bold text-blue-500">{topStudentsData.reduce((acc, s) => acc + s.questions_to_curator, 0)}</p>
+                  <p className="text-lg font-bold text-blue-500">{topStudents.reduce((acc, s) => acc + (s.stats?.questions_asked || 0), 0)}</p>
                 </div>
               </div>
             </div>
