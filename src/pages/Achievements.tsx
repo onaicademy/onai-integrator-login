@@ -283,25 +283,62 @@ export default function Achievements() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <motion.div 
+                  className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.15,
+                        delayChildren: 0.6
+                      }
+                    }
+                  }}
+                >
                   {stats.nearest.map((achievement, index) => (
-                    <div key={achievement.id} className="relative">
+                    <motion.div 
+                      key={achievement.id} 
+                      className="relative"
+                      variants={{
+                        hidden: { 
+                          opacity: 0, 
+                          x: -50,
+                          scale: 0.8
+                        },
+                        visible: { 
+                          opacity: 1, 
+                          x: 0,
+                          scale: 1,
+                          transition: {
+                            type: "spring",
+                            stiffness: 100,
+                            damping: 15
+                          }
+                        }
+                      }}
+                    >
                       <AchievementCard
                         achievement={achievement}
                         currentValue={achievement.currentValue}
                         isCompleted={achievement.isCompleted}
                       />
                       {index === 0 && (
-                        <div className="absolute -top-2 -right-2">
+                        <motion.div 
+                          className="absolute -top-2 -right-2"
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ delay: 0.9, type: "spring", stiffness: 200 }}
+                        >
                           <Badge className="bg-primary text-primary-foreground shadow-lg">
                             <Star className="h-3 w-3 mr-1" />
                             Почти готово!
                           </Badge>
-                        </div>
+                        </motion.div>
                       )}
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </CardContent>
             </Card>
           </motion.div>
@@ -365,7 +402,12 @@ export default function Achievements() {
                   
                   return (
                     <div key={rarity}>
-                      <div className="flex items-center gap-3 mb-4">
+                      <motion.div 
+                        className="flex items-center gap-3 mb-4"
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4 }}
+                      >
                         <div
                           className="w-1 h-6 rounded"
                           style={{ backgroundColor: rarityConfig.color }}
@@ -376,17 +418,48 @@ export default function Achievements() {
                         <Badge variant="outline" style={{ borderColor: rarityConfig.color, color: rarityConfig.color }}>
                           {achievements.length}
                         </Badge>
-                      </div>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {achievements.map(achievement => (
-                          <AchievementCard
+                      </motion.div>
+                      <motion.div 
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                          visible: {
+                            transition: {
+                              staggerChildren: 0.08
+                            }
+                          }
+                        }}
+                      >
+                        {achievements.map((achievement, idx) => (
+                          <motion.div
                             key={achievement.id}
-                            achievement={achievement}
-                            currentValue={achievement.currentValue}
-                            isCompleted={achievement.isCompleted}
-                          />
+                            variants={{
+                              hidden: { 
+                                opacity: 0, 
+                                y: 20,
+                                scale: 0.95
+                              },
+                              visible: { 
+                                opacity: 1, 
+                                y: 0,
+                                scale: 1,
+                                transition: {
+                                  type: "spring",
+                                  stiffness: 100,
+                                  damping: 12
+                                }
+                              }
+                            }}
+                          >
+                            <AchievementCard
+                              achievement={achievement}
+                              currentValue={achievement.currentValue}
+                              isCompleted={achievement.isCompleted}
+                            />
+                          </motion.div>
                         ))}
-                      </div>
+                      </motion.div>
                     </div>
                   );
                 })}
