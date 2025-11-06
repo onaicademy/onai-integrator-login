@@ -1,0 +1,244 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { User, Mail, Key, Camera, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+
+export default function ProfileSettings() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Форма
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        setEmail(user.email || "");
+        setFullName(user.user_metadata?.full_name || "");
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки данных:", error);
+    }
+  };
+
+  // Обновить профиль
+  const handleUpdateProfile = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: email,
+        data: { full_name: fullName },
+      });
+      if (error) throw error;
+
+      toast({
+        title: "✅ Профиль обновлён",
+        description: "Изменения сохранены",
+      });
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Сменить пароль
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Пароли не совпадают",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Пароль должен быть минимум 6 символов",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+
+      setNewPassword("");
+      setConfirmPassword("");
+
+      toast({
+        title: "✅ Пароль изменён",
+        description: "Новый пароль установлен",
+      });
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Получить инициалы для аватарки
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      {/* Заголовок */}
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] bg-clip-text text-transparent">
+          ⚙️ Настройки профиля
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Управление вашим аккаунтом
+        </p>
+      </motion.div>
+
+      <div className="space-y-6">
+        {/* Аватарка */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Аватар</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-6">
+              <Avatar className="w-24 h-24 border-4 border-neon/30">
+                <AvatarFallback className="bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 text-2xl font-bold">
+                  {fullName ? getInitials(fullName) : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  3D аватары будут доступны позже
+                </p>
+                <Button variant="outline" disabled>
+                  <Camera className="w-4 h-4 mr-2" />
+                  Загрузить фото (скоро)
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Основная информация */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Основная информация</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="fullName">Полное имя</Label>
+              <Input
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Иван Иванов"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@example.com"
+              />
+            </div>
+            <Button onClick={handleUpdateProfile} disabled={loading}>
+              <Save className="w-4 h-4 mr-2" />
+              Сохранить изменения
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Смена пароля */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Смена пароля</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="newPassword">Новый пароль</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Минимум 6 символов"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Повторите пароль"
+              />
+            </div>
+            <Button onClick={handleChangePassword} disabled={loading}>
+              <Key className="w-4 h-4 mr-2" />
+              Изменить пароль
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Уведомления */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Уведомления</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Настройки уведомлений будут добавлены позже
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+

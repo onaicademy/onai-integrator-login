@@ -16,6 +16,11 @@ import NotFound from "./pages/NotFound";
 import Activity from "./pages/admin/Activity";
 import AICuratorChats from "./pages/admin/AICuratorChats";
 import TokenUsage from "./pages/admin/TokenUsage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import StudentsActivity from "./pages/admin/StudentsActivity";
+import AIAnalytics from "./pages/admin/AIAnalytics";
+import ProfileSettings from "./pages/ProfileSettings";
+import Messages from "./pages/Messages";
 import { FloatingAIButton } from "./components/FloatingAIButton";
 
 const queryClient = new QueryClient();
@@ -35,9 +40,18 @@ const AppRoutes = () => {
       <Route path="/course/:id" element={<Course />} />
       <Route path="/course/:id/module/:moduleId" element={<Module />} />
       <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<Lesson />} />
+      {/* Админ-панель */}
+      <Route path="/admin" element={<MainLayout><AdminDashboard /></MainLayout>} />
       <Route path="/admin/activity" element={<MainLayout><Activity /></MainLayout>} />
+      <Route path="/admin/students-activity" element={<MainLayout><StudentsActivity /></MainLayout>} />
+      <Route path="/admin/ai-analytics" element={<MainLayout><AIAnalytics /></MainLayout>} />
       <Route path="/admin/ai-curator-chats" element={<MainLayout><AICuratorChats /></MainLayout>} />
       <Route path="/admin/token-usage" element={<MainLayout><TokenUsage /></MainLayout>} />
+      
+      {/* Настройки и чат */}
+      <Route path="/profile/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
+      <Route path="/messages" element={<MainLayout><Messages /></MainLayout>} />
+      
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
