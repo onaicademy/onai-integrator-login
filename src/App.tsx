@@ -15,6 +15,7 @@ import Lesson from "./pages/Lesson";
 import NotFound from "./pages/NotFound";
 import Activity from "./pages/admin/Activity";
 import AICuratorChats from "./pages/admin/AICuratorChats";
+import TokenUsage from "./pages/admin/TokenUsage";
 import { FloatingAIButton } from "./components/FloatingAIButton";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const AppRoutes = () => {
       <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<Lesson />} />
       <Route path="/admin/activity" element={<MainLayout><Activity /></MainLayout>} />
       <Route path="/admin/ai-curator-chats" element={<MainLayout><AICuratorChats /></MainLayout>} />
+      <Route path="/admin/token-usage" element={<MainLayout><TokenUsage /></MainLayout>} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
