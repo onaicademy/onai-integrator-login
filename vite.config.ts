@@ -40,4 +40,24 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    minify: 'esbuild', // Используем esbuild (быстрее, встроен в Vite)
+    sourcemap: mode === "development", // Source maps только в development
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion'],
+          'openai': ['openai'],
+          'supabase': ['@supabase/supabase-js'],
+        },
+      },
+    },
+    // Удаляем console.log в production через esbuild
+    target: 'esnext',
+    esbuild: {
+      drop: mode === "production" ? ['console', 'debugger'] : [],
+    },
+  },
 }));
