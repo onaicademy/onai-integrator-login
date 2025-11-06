@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { getUserAchievementsForAI, formatAchievementsForAI } from './achievements-api';
+import { logTokenUsage, logWhisperUsage } from './token-tracker';
 
 // Инициализация OpenAI клиента
 let openai: OpenAI | null = null;
@@ -427,6 +428,27 @@ export async function sendMessageToAI(
     }
 
     if (runStatus.status === "completed") {
+      // Логируем использование токенов
+      if (runStatus.usage) {
+        try {
+          const hasImages = imageFileIds.length > 0;
+          await logTokenUsage({
+            agentType: 'ai_curator',
+            model: 'gpt-4o',
+            operationType: hasImages ? 'image_analysis' : 'text_message',
+            promptTokens: runStatus.usage.prompt_tokens || 0,
+            completionTokens: runStatus.usage.completion_tokens || 0,
+            userId: userId,
+            threadId: threadId,
+            requestId: run.id
+          });
+          console.log(`💰 Токены залогированы: ${runStatus.usage.prompt_tokens + runStatus.usage.completion_tokens} tokens`);
+        } catch (logError) {
+          console.error('⚠️ Ошибка логирования токенов:', logError);
+          // Не прерываем работу, если логирование не удалось
+        }
+      }
+      
       // Получаем только последнее сообщение от assistant (самое новое)
       const messages = await client.beta.threads.messages.list(threadId, {
         limit: 1, // Получаем только последнее сообщение для скорости
@@ -536,10 +558,13 @@ export async function startNewConversation(): Promise<void> {
 /**
  * Транскрипция аудио через Whisper
  */
-export async function transcribeAudioToText(audioBlob: Blob): Promise<string> {
+export async function transcribeAudioToText(audioBlob: Blob, userId?: string, threadId?: string): Promise<string> {
   try {
     const client = initOpenAI();
     console.log("🎙️ Транскрибируем аудио...");
+    
+    // Вычисляем длительность аудио (примерная оценка)
+    const audioDurationSeconds = await getAudioDuration(audioBlob);
     
     // Конвертируем Blob в File
     const file = new File([audioBlob], "recording.webm", { 
@@ -553,11 +578,51 @@ export async function transcribeAudioToText(audioBlob: Blob): Promise<string> {
       response_format: "text",
     });
 
+    // Логируем использование Whisper
+    try {
+      await logWhisperUsage(audioDurationSeconds, { userId, threadId });
+      console.log(`💰 Whisper логирован: ${audioDurationSeconds}s`);
+    } catch (logError) {
+      console.error('⚠️ Ошибка логирования Whisper:', logError);
+      // Не прерываем работу
+    }
+
     console.log("✅ Транскрипция получена:", response);
     return response as string;
   } catch (error) {
     console.error("❌ Ошибка транскрипции:", error);
     throw error;
   }
+}
+
+/**
+ * Получить длительность аудио из Blob
+ */
+async function getAudioDuration(audioBlob: Blob): Promise<number> {
+  return new Promise((resolve) => {
+    try {
+      const audio = new Audio();
+      const url = URL.createObjectURL(audioBlob);
+      
+      audio.addEventListener('loadedmetadata', () => {
+        URL.revokeObjectURL(url);
+        resolve(Math.ceil(audio.duration)); // Округляем вверх до секунд
+      });
+      
+      audio.addEventListener('error', () => {
+        URL.revokeObjectURL(url);
+        // Если не удалось получить длительность, оцениваем по размеру файла
+        // Примерно 1 МБ = 90 секунд для WebM
+        const estimatedDuration = Math.ceil(audioBlob.size / 1024 / 1024 * 90);
+        resolve(estimatedDuration);
+      });
+      
+      audio.src = url;
+    } catch (error) {
+      // Фоллбэк: оцениваем по размеру
+      const estimatedDuration = Math.ceil(audioBlob.size / 1024 / 1024 * 90);
+      resolve(estimatedDuration);
+    }
+  });
 }
 
