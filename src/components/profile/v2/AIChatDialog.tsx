@@ -399,19 +399,20 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
           console.log("⏱️ [TOGGLE] Достигнуто максимальное время записи (2 минуты), останавливаем...");
           isRecordingRef.current = false;
           handleStopRecording(); // Автоматическая остановка по таймеру
-          toast({
-            title: "⏱️ Запись остановлена",
-            description: `Достигнут максимум ${MAX_RECORDING_DURATION} секунд. Запись автоматически остановлена.`,
-            duration: 3000,
-          });
+        // Минималистичный toast
+        toast({
+          title: "⏱️ Максимум 2 минуты",
+          duration: 2000,
+        });
         }
       }, MAX_RECORDING_DURATION * 1000);
       
-      toast({
-        title: "🎤 Запись начата",
-        description: `Говорите... Нажмите кнопку снова для остановки (максимум ${MAX_RECORDING_DURATION} секунд)`,
-        duration: 3000,
-      });
+      // Убираем toast при старте записи - индикатор и так виден
+      // toast({
+      //   title: "🎤 Запись начата",
+      //   description: `Говорите... Нажмите кнопку снова для остановки (максимум ${MAX_RECORDING_DURATION} секунд)`,
+      //   duration: 3000,
+      // });
     } catch (error: any) {
       console.error("❌ === ОШИБКА В handleStartRecording ===");
       console.error("❌ Ошибка:", error);
@@ -426,17 +427,15 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         console.error("❌ Показываем ошибку: Браузер не поддерживается");
         toast({
           title: "❌ Браузер не поддерживается",
-          description: "Используйте современный браузер (Chrome, Safari, Firefox). Проверьте консоль для деталей.",
           variant: "destructive",
-          duration: 5000,
+          duration: 3000,
         });
       } else if (errorMessage === "HTTPS_REQUIRED") {
         console.error("❌ Показываем ошибку: Требуется HTTPS или localhost");
         toast({
-          title: "🔒 Нужен localhost или HTTPS",
-          description: "Браузер блокирует доступ к микрофону на HTTP с IP-адресом. Используйте localhost:8080 вместо IP или настройте HTTPS.",
+          title: "🔒 Нужен HTTPS",
           variant: "destructive",
-          duration: 10000,
+          duration: 3000,
         });
         // Также показываем инструкцию
         setShowMicrophoneInstructions(true);
@@ -445,40 +444,27 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         // Показываем инструкцию по разрешению микрофона
         setShowMicrophoneInstructions(true);
         toast({
-          title: "🎤 Разрешите доступ к микрофону",
-          description: "Нажмите на уведомление, чтобы увидеть инструкцию",
+          title: "🎤 Разрешите доступ",
           variant: "destructive",
-          duration: 7000,
-          action: (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowMicrophoneInstructions(true)}
-            >
-              Инструкция
-            </Button>
-          ),
+          duration: 3000,
         });
       } else if (errorMessage === "DEVICE_NOT_FOUND") {
         toast({
           title: "❌ Микрофон не найден",
-          description: "Убедитесь, что микрофон подключён",
           variant: "destructive",
-          duration: 5000,
+          duration: 3000,
         });
       } else if (errorMessage === "DEVICE_IN_USE") {
         toast({
           title: "❌ Микрофон занят",
-          description: "Закройте другие приложения, использующие микрофон",
           variant: "destructive",
-          duration: 5000,
+          duration: 3000,
         });
       } else {
         toast({
-          title: "❌ Ошибка доступа к микрофону",
-          description: errorMessage || "Попробуйте ещё раз",
+          title: "❌ Ошибка доступа",
           variant: "destructive",
-          duration: 5000,
+          duration: 3000,
         });
       }
     } finally {
@@ -535,10 +521,9 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       }
       
       toast({
-        title: "⚠️ Запись слишком короткая",
-        description: `Запись длилась ${(recordingDuration / 1000).toFixed(1)}с. Запишите сообщение длиннее (минимум ${MIN_RECORDING_DURATION / 1000}с).`,
+        title: "⚠️ Слишком короткая запись",
         variant: "destructive",
-        duration: 3000,
+        duration: 2000,
       });
       return;
     }
@@ -563,12 +548,9 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       console.warn("⚠️ [ДИАГНОСТИКА] audioBlob =", audioBlob);
       
       toast({
-        title: "⚠️ Не удалось записать аудио",
-        description: recordingDuration < 500 
-          ? `Запись была слишком короткой (${(recordingDuration / 1000).toFixed(1)}с). Попробуйте записать дольше.`
-          : "Произошла ошибка при записи. Попробуйте еще раз.",
+        title: "⚠️ Ошибка записи",
         variant: "destructive",
-        duration: 3000,
+        duration: 2000,
       });
       return;
     }
@@ -577,8 +559,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     if (audioBlob.size === 0) {
       console.warn("⚠️ [ДИАГНОСТИКА] Файл пустой, размер:", audioBlob.size, "байт");
       toast({
-        title: "⚠️ Запись пустая",
-        description: "Не удалось записать аудио. Попробуйте еще раз.",
+        title: "⚠️ Пустая запись",
         variant: "destructive",
         duration: 2000,
       });
@@ -590,11 +571,11 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     setIsLoading(true);
     
     try {
-      // Транскрибируем
-      toast({
-        title: "🎙️ Транскрибируем...",
-        description: "Преобразуем речь в текст",
-      });
+      // Убираем toast при транскрипции - индикатор загрузки и так есть
+      // toast({
+      //   title: "🎙️ Транскрибируем...",
+      //   description: "Преобразуем речь в текст",
+      // });
 
       const transcription = await transcribeAudioToText(audioBlob);
       
@@ -612,16 +593,17 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         return `${prevInput.trim()} ${transcription.trim()}`;
       });
       
-      toast({
-        title: "✅ Готово!",
-        description: "Голос распознан, можешь отправить",
-      });
+      // Убираем toast при успехе - текст уже в поле
+      // toast({
+      //   title: "✅ Готово!",
+      //   description: "Голос распознан, можешь отправить",
+      // });
     } catch (error: any) {
       console.error("❌ Ошибка транскрипции:", error);
       toast({
-        title: "❌ Ошибка",
-        description: error.message || "Не удалось распознать голос",
+        title: "❌ Ошибка распознавания",
         variant: "destructive",
+        duration: 3000,
       });
     } finally {
       setIsLoading(false);
@@ -867,14 +849,14 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                     }`}
                   >
                     {/* Message content with Markdown support */}
-                    <div className="text-sm prose-custom">
+                    <div className="text-sm prose-custom break-words overflow-wrap-anywhere max-w-full">
                       {message.role === "assistant" ? (
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
                             // Параграфы
                             p: ({ children }) => (
-                              <p className="mb-2 last:mb-0 leading-relaxed text-sm">{children}</p>
+                              <p className="mb-2 last:mb-0 leading-relaxed text-sm break-words overflow-wrap-anywhere">{children}</p>
                             ),
                             
                             // Жирный текст (**текст**)
@@ -916,7 +898,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                                   {children}
                                 </code>
                               ) : (
-                                <code className="block p-3 bg-secondary/80 rounded-lg text-xs font-mono overflow-x-auto my-2 border border-border/40" {...props}>
+                                <code className="block p-3 bg-secondary/80 rounded-lg text-xs font-mono overflow-x-auto my-2 border border-border/40 break-words overflow-wrap-anywhere" {...props}>
                                   {children}
                                 </code>
                               ),
@@ -928,7 +910,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                             
                             // Цитаты (> текст)
                             blockquote: ({ children }) => (
-                              <blockquote className="border-l-4 border-neon/60 pl-3 py-1 italic text-muted-foreground mb-2 bg-secondary/30 rounded-r text-sm">
+                              <blockquote className="border-l-4 border-neon/60 pl-3 py-1 italic text-muted-foreground mb-2 bg-secondary/30 rounded-r text-sm break-words overflow-wrap-anywhere">
                                 {children}
                               </blockquote>
                             ),
@@ -939,7 +921,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                                 href={href} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="text-neon underline hover:text-neon/80 transition-colors text-sm"
+                                className="text-neon underline hover:text-neon/80 transition-colors text-sm break-all"
                               >
                                 {children}
                               </a>
@@ -954,7 +936,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                           {message.content}
                         </ReactMarkdown>
                       ) : (
-                        <div className="whitespace-pre-wrap break-words text-sm">
+                        <div className="whitespace-pre-wrap break-words text-sm overflow-wrap-anywhere word-break-break-word">
                           {message.content}
                         </div>
                       )}
@@ -1013,11 +995,11 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                                 <div className="flex-shrink-0 text-neon">
                                   {getFileIcon(attachment.type)}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-foreground truncate">
+                                <div className="flex-1 min-w-0 overflow-hidden">
+                                  <p className="text-xs font-medium text-foreground truncate break-all">
                                     {attachment.name}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-muted-foreground truncate">
                                     {formatFileSize(attachment.size)}
                                   </p>
                                 </div>
@@ -1160,7 +1142,6 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               <div className="flex items-center gap-2 text-xs text-red-500">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 <span>Запись... {duration}с / {MAX_RECORDING_DURATION}с</span>
-                <span className="text-muted-foreground">(нажмите кнопку микрофона для остановки)</span>
               </div>
               {/* Прогресс-бар максимального времени */}
               <div className="w-full h-1 bg-background/50 rounded-full overflow-hidden">
