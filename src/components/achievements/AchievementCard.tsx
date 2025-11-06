@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Lock, Check } from 'lucide-react';
+import { Lock, Check, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Achievement, RARITY_CONFIG } from '@/lib/achievements-config';
 
@@ -12,6 +12,7 @@ interface AchievementCardProps {
   isCompleted: boolean;
   isLocked?: boolean;
   onClick?: () => void;
+  showExpandHint?: boolean;
 }
 
 export function AchievementCard({
@@ -19,7 +20,8 @@ export function AchievementCard({
   currentValue,
   isCompleted,
   isLocked = false,
-  onClick
+  onClick,
+  showExpandHint = true
 }: AchievementCardProps) {
   const progress = Math.min((currentValue / achievement.requirement.value) * 100, 100);
   const rarity = RARITY_CONFIG[achievement.rarity];
@@ -27,9 +29,10 @@ export function AchievementCard({
   return (
     <motion.div
       whileHover={{ scale: 1.03, y: -4 }}
+      whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
       onClick={onClick}
-      className="cursor-pointer"
+      className="cursor-pointer group"
     >
       <Card
         className={cn(
@@ -110,11 +113,11 @@ export function AchievementCard({
               {/* Progress */}
               {!isLocked && (
                 <div className="space-y-2 mt-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground truncate flex-1 min-w-0">
                       {achievement.requirement.description}
                     </span>
-                    <span className="font-medium text-foreground">
+                    <span className="font-medium text-foreground whitespace-nowrap flex-shrink-0">
                       {currentValue} / {achievement.requirement.value}
                     </span>
                   </div>
@@ -124,14 +127,23 @@ export function AchievementCard({
 
               {/* XP Reward */}
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
-                <div className="flex items-center gap-1 text-sm">
+                <div className="flex items-center gap-1 text-sm flex-1">
                   <span className="text-primary font-semibold">+{achievement.xpReward}</span>
                   <span className="text-muted-foreground">XP</span>
                 </div>
-                {isCompleted && (
+                {isCompleted ? (
                   <Badge variant="default" className="bg-primary/20 text-primary hover:bg-primary/30">
                     ✓ Разблокировано
                   </Badge>
+                ) : showExpandHint && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors"
+                  >
+                    <span>Подробнее</span>
+                    <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                  </motion.div>
                 )}
               </div>
             </div>

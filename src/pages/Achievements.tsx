@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { CircularProgress } from '@/components/achievements/CircularProgress';
 import { AchievementCard } from '@/components/achievements/AchievementCard';
+import { AchievementDetailModal } from '@/components/achievements/AchievementDetailModal';
 import {
   ACHIEVEMENTS,
   ACHIEVEMENT_CATEGORIES,
@@ -57,6 +58,14 @@ export default function Achievements() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
   const [timeUntilReset, setTimeUntilReset] = useState(formatTimeUntilReset());
+  const [selectedAchievement, setSelectedAchievement] = useState<{
+    achievement: any;
+    currentValue: number;
+    isCompleted: boolean;
+    isLocked?: boolean;
+    isDaily?: boolean;
+    bonusXP?: number;
+  } | null>(null);
   
   // Обновляем таймер каждую минуту
   useEffect(() => {
@@ -385,6 +394,13 @@ export default function Achievements() {
                               achievement={achievement}
                               currentValue={achievement.currentValue}
                               isCompleted={achievement.isCompleted}
+                              onClick={() => setSelectedAchievement({
+                                achievement,
+                                currentValue: achievement.currentValue,
+                                isCompleted: achievement.isCompleted,
+                                isDaily: true,
+                                bonusXP: achievement.xpReward * (DAILY_ACHIEVEMENT_BONUS_MULTIPLIER - 1)
+                              })}
                             />
                           </div>
                         </div>
@@ -535,6 +551,15 @@ export default function Achievements() {
                               achievement={achievement}
                               currentValue={achievement.currentValue}
                               isCompleted={achievement.isCompleted}
+                              onClick={() => setSelectedAchievement({
+                                achievement,
+                                currentValue: achievement.currentValue,
+                                isCompleted: achievement.isCompleted,
+                                isDaily: isDailyAchievement(achievement.id),
+                                bonusXP: isDailyAchievement(achievement.id) 
+                                  ? achievement.xpReward * (DAILY_ACHIEVEMENT_BONUS_MULTIPLIER - 1) 
+                                  : 0
+                              })}
                             />
                           </motion.div>
                         ))}
@@ -546,6 +571,20 @@ export default function Achievements() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Achievement Detail Modal */}
+        {selectedAchievement && (
+          <AchievementDetailModal
+            achievement={selectedAchievement.achievement}
+            currentValue={selectedAchievement.currentValue}
+            isCompleted={selectedAchievement.isCompleted}
+            isLocked={selectedAchievement.isLocked}
+            isDaily={selectedAchievement.isDaily}
+            bonusXP={selectedAchievement.bonusXP}
+            open={!!selectedAchievement}
+            onOpenChange={(open) => !open && setSelectedAchievement(null)}
+          />
+        )}
       </div>
     </div>
   );
