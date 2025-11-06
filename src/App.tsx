@@ -7,6 +7,7 @@ import { MainLayout } from "./components/layouts/MainLayout";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
+import Achievements from "./pages/Achievements";
 import Welcome from "./pages/Welcome";
 import Course from "./pages/Course";
 import Module from "./pages/Module";
@@ -29,6 +30,7 @@ const AppRoutes = () => {
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/profile" element={isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>} />
       <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
+      <Route path="/achievements" element={<MainLayout><Achievements /></MainLayout>} />
       <Route path="/course/:id" element={<Course />} />
       <Route path="/course/:id/module/:moduleId" element={<Module />} />
       <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<Lesson />} />
