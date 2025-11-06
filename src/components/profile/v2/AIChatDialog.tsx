@@ -363,17 +363,19 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     }
   }, [input]);
 
-  // Функция для СТАРТА записи (только запуск)
-  const handleStartRecording = async (e: React.PointerEvent) => {
+  // Функция для СТАРТА записи (toggle-паттерн)
+  const handleStartRecording = async (e?: React.MouseEvent | React.PointerEvent) => {
     // Предотвращаем всплытие события
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
-    console.log("🎤 [HOLD-TO-RECORD] Начало записи (PointerDown)");
+    console.log("🎤 [TOGGLE] Начало записи");
     
     // Защита от повторного запуска
     if (isRecording || isProcessingRef.current) {
-      console.log("⚠️ [HOLD-TO-RECORD] Запись уже идёт или обрабатывается, игнорируем");
+      console.log("⚠️ [TOGGLE] Запись уже идёт или обрабатывается, игнорируем");
       return;
     }
     
@@ -382,7 +384,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     try {
       // Устанавливаем время начала ДО начала записи
       recordingStartTimeRef.current = Date.now();
-      console.log("⏱️ [HOLD-TO-RECORD] Время начала установлено:", new Date(recordingStartTimeRef.current).toISOString());
+      console.log("⏱️ [TOGGLE] Время начала установлено:", new Date(recordingStartTimeRef.current).toISOString());
       
       // Для iOS Safari важно запрашивать разрешение в контексте пользовательского взаимодействия
       await startRecording();
@@ -394,9 +396,9 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       maxDurationTimeoutRef.current = setTimeout(() => {
         // Проверяем через ref, так как состояние может быть устаревшим в замыкании
         if (isRecordingRef.current) {
-          console.log("⏱️ [HOLD-TO-RECORD] Достигнуто максимальное время записи (2 минуты), останавливаем...");
+          console.log("⏱️ [TOGGLE] Достигнуто максимальное время записи (2 минуты), останавливаем...");
           isRecordingRef.current = false;
-          handleStopRecording(); // Без параметра для автоматической остановки
+          handleStopRecording(); // Автоматическая остановка по таймеру
           toast({
             title: "⏱️ Запись остановлена",
             description: `Достигнут максимум ${MAX_RECORDING_DURATION} секунд. Запись автоматически остановлена.`,
@@ -407,7 +409,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       
       toast({
         title: "🎤 Запись начата",
-        description: `Держите кнопку и говорите... (максимум ${MAX_RECORDING_DURATION} секунд)`,
+        description: `Говорите... Нажмите кнопку снова для остановки (максимум ${MAX_RECORDING_DURATION} секунд)`,
         duration: 3000,
       });
     } catch (error: any) {
@@ -487,19 +489,13 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     }
   };
 
-  // Функция для ОСТАНОВКИ записи (только остановка с проверкой)
-  const handleStopRecording = async (e?: React.PointerEvent) => {
-    // Предотвращаем всплытие события
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    console.log("🛑 [HOLD-TO-RECORD] Остановка записи (PointerUp/Leave)");
+  // Функция для ОСТАНОВКИ записи (toggle-паттерн)
+  const handleStopRecording = async () => {
+    console.log("🛑 [TOGGLE] Остановка записи");
     
     // ВАЖНО: Проверяем, что запись действительно активна
     if (!isRecording) {
-      console.warn("⚠️ [HOLD-TO-RECORD] Запись не активна, игнорируем остановку");
+      console.warn("⚠️ [TOGGLE] Запись не активна, игнорируем остановку");
       return;
     }
     
@@ -507,22 +503,22 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     
     // Проверяем, что recordingStartTimeRef был установлен
     if (recordingStartTimeRef.current === 0) {
-      console.error("❌ [HOLD-TO-RECORD] recordingStartTimeRef не был установлен!");
+      console.error("❌ [TOGGLE] recordingStartTimeRef не был установлен!");
       // Не продолжаем, если время начала не установлено
       return;
     }
     
     const recordingDuration = stopTime - recordingStartTimeRef.current;
     
-    console.log("🛑 [HOLD-TO-RECORD] ===== ОСТАНОВКА ЗАПИСИ =====");
-    console.log("🛑 [HOLD-TO-RECORD] Время начала:", new Date(recordingStartTimeRef.current).toISOString());
-    console.log("🛑 [HOLD-TO-RECORD] Время остановки:", new Date(stopTime).toISOString());
-    console.log("🛑 [HOLD-TO-RECORD] Длительность:", recordingDuration, "ms (", (recordingDuration / 1000).toFixed(3), "сек)");
+    console.log("🛑 [TOGGLE] ===== ОСТАНОВКА ЗАПИСИ =====");
+    console.log("🛑 [TOGGLE] Время начала:", new Date(recordingStartTimeRef.current).toISOString());
+    console.log("🛑 [TOGGLE] Время остановки:", new Date(stopTime).toISOString());
+    console.log("🛑 [TOGGLE] Длительность:", recordingDuration, "ms (", (recordingDuration / 1000).toFixed(3), "сек)");
     
-    // КРИТИЧЕСКИ ВАЖНО: Проверяем минимальную длительность ЗДЕСЬ
+    // Проверяем минимальную длительность
     if (recordingDuration < MIN_RECORDING_DURATION) {
-      console.warn("⚠️ [HOLD-TO-RECORD] Запись слишком короткая:", recordingDuration, "ms <", MIN_RECORDING_DURATION, "ms");
-      console.warn("⚠️ [HOLD-TO-RECORD] Пропускаем обработку, запись будет игнорирована");
+      console.warn("⚠️ [TOGGLE] Запись слишком короткая:", recordingDuration, "ms <", MIN_RECORDING_DURATION, "ms");
+      console.warn("⚠️ [TOGGLE] Пропускаем обработку, запись будет игнорирована");
       
       // Обновляем ref и очищаем таймеры
       isRecordingRef.current = false;
@@ -540,7 +536,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       
       toast({
         title: "⚠️ Запись слишком короткая",
-        description: `Запись длилась ${(recordingDuration / 1000).toFixed(1)}с. Держите кнопку дольше (минимум ${MIN_RECORDING_DURATION / 1000}с).`,
+        description: `Запись длилась ${(recordingDuration / 1000).toFixed(1)}с. Запишите сообщение длиннее (минимум ${MIN_RECORDING_DURATION / 1000}с).`,
         variant: "destructive",
         duration: 3000,
       });
@@ -554,10 +550,10 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     if (maxDurationTimeoutRef.current) {
       clearTimeout(maxDurationTimeoutRef.current);
       maxDurationTimeoutRef.current = null;
-      console.log("🛑 [HOLD-TO-RECORD] Таймер максимальной длительности очищен");
+      console.log("🛑 [TOGGLE] Таймер максимальной длительности очищен");
     }
     
-    console.log("✅ [HOLD-TO-RECORD] Запись прошла проверку минимальной длительности, продолжаем обработку");
+    console.log("✅ [TOGGLE] Запись прошла проверку минимальной длительности, продолжаем обработку");
     
     const audioBlob = await stopRecording();
     if (!audioBlob) {
@@ -637,41 +633,23 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     }
   };
 
-  // Обработчики Pointer Events (объединяют mouse и touch события)
-  const handlePointerDown = (e: React.PointerEvent) => {
-    // Обрабатываем только primary pointer (основной указатель, левая кнопка мыши)
-    if (e.pointerType === 'mouse' && e.button !== 0) {
-      return; // Игнорируем правую кнопку мыши и другие кнопки
-    }
+  // Toggle-паттерн: клик = старт/стоп записи (лучше для веб-версии)
+  const handleMicrophoneToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    console.log("👆 [POINTER] PointerDown, type:", e.pointerType, "button:", e.button);
-    handleStartRecording(e);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    // Обрабатываем только primary pointer
-    if (e.pointerType === 'mouse' && e.button !== 0) {
+    console.log("🎤 [TOGGLE] Клик по микрофону, текущее состояние:", isRecording);
+    
+    // Если запись идет - останавливаем
+    if (isRecording) {
+      console.log("🛑 [TOGGLE] Останавливаем запись...");
+      await handleStopRecording();
       return;
     }
     
-    console.log("👆 [POINTER] PointerUp, type:", e.pointerType, "button:", e.button);
-    handleStopRecording(e);
-  };
-
-  const handlePointerLeave = (e: React.PointerEvent) => {
-    // Останавливаем запись при уходе с кнопки (отпустили кнопку вне элемента)
-    console.log("👆 [POINTER] PointerLeave, type:", e.pointerType);
-    if (isRecording) {
-      handleStopRecording(e);
-    }
-  };
-
-  const handlePointerCancel = (e: React.PointerEvent) => {
-    // Останавливаем запись при отмене (например, жест жеста на мобильном или системное событие)
-    console.log("👆 [POINTER] PointerCancel, type:", e.pointerType);
-    if (isRecording) {
-      handleStopRecording(e);
-    }
+    // Если запись не идет - начинаем
+    console.log("▶️ [TOGGLE] Начинаем запись...");
+    await handleStartRecording(e as any);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -1182,7 +1160,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               <div className="flex items-center gap-2 text-xs text-red-500">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 <span>Запись... {duration}с / {MAX_RECORDING_DURATION}с</span>
-                <span className="text-muted-foreground">(отпустите кнопку для остановки, минимум 0.5с)</span>
+                <span className="text-muted-foreground">(нажмите кнопку микрофона для остановки)</span>
               </div>
               {/* Прогресс-бар максимального времени */}
               <div className="w-full h-1 bg-background/50 rounded-full overflow-hidden">
@@ -1238,17 +1216,14 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               className="flex-1 min-h-[40px] max-h-[200px] resize-none overflow-y-auto"
               rows={1}
             />
-            {/* Кнопка микрофона - HOLD-TO-RECORD (удерживайте для записи) */}
+            {/* Кнопка микрофона - TOGGLE (клик = старт/стоп) */}
             <Button
               size="icon"
               variant={isRecording ? "destructive" : "outline"}
               className="flex-shrink-0 relative select-none"
-              onPointerDown={handlePointerDown}
-              onPointerUp={handlePointerUp}
-              onPointerLeave={handlePointerLeave}
-              onPointerCancel={handlePointerCancel}
+              onClick={handleMicrophoneToggle}
               disabled={isLoading}
-              style={{ touchAction: 'none' }}
+              title={isRecording ? "Нажмите для остановки записи" : "Нажмите для начала записи"}
             >
               <Mic className={`w-4 h-4 ${isRecording ? "animate-pulse" : ""}`} />
               {isRecording && (
