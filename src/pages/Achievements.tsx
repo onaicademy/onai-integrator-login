@@ -14,7 +14,9 @@ import {
   Search,
   Star,
   Crown,
-  Sparkles
+  Sparkles,
+  Clock,
+  Flame
 } from 'lucide-react';
 import { CircularProgress } from '@/components/achievements/CircularProgress';
 import { AchievementCard } from '@/components/achievements/AchievementCard';
@@ -26,6 +28,14 @@ import {
   type AchievementCategory,
   RARITY_CONFIG
 } from '@/lib/achievements-config';
+import {
+  getDailyAchievements,
+  isDailyAchievement,
+  getAchievementXP,
+  formatTimeUntilReset,
+  getTimeUntilNextDailyReset,
+  DAILY_ACHIEVEMENT_BONUS_MULTIPLIER
+} from '@/lib/daily-achievements';
 import { cn } from '@/lib/utils';
 
 // Mock данные для демонстрации (позже заменим на данные из Supabase)
@@ -46,6 +56,19 @@ const MOCK_USER_PROGRESS = {
 export default function Achievements() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
+  const [timeUntilReset, setTimeUntilReset] = useState(formatTimeUntilReset());
+  
+  // Обновляем таймер каждую минуту
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeUntilReset(formatTimeUntilReset());
+    }, 60000); // каждую минуту
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Достижения дня
+  const dailyAchievements = useMemo(() => getDailyAchievements(), []);
   
   // Расчёт прогресса для каждого достижения
   const achievementsWithProgress = useMemo(() => {
@@ -66,18 +89,29 @@ export default function Achievements() {
   const stats = useMemo(() => {
     const completed = achievementsWithProgress.filter(a => a.isCompleted).length;
     const total = achievementsWithProgress.length;
+    
+    // Подсчёт XP с учётом бонуса за "достижения дня"
     const totalXpEarned = achievementsWithProgress
       .filter(a => a.isCompleted)
-      .reduce((sum, a) => sum + a.xpReward, 0);
+      .reduce((sum, a) => {
+        const isDaily = isDailyAchievement(a.id);
+        return sum + getAchievementXP(a, isDaily);
+      }, 0);
     
     const inProgress = achievementsWithProgress.filter(
       a => !a.isCompleted && a.currentValue > 0
     ).length;
 
-    const nearest = achievementsWithProgress
-      .filter(a => !a.isCompleted && !a.hidden)
-      .sort((a, b) => b.progress - a.progress)
-      .slice(0, 3);
+    // Достижения дня с прогрессом
+    const dailyWithProgress = dailyAchievements.map(daily => {
+      const withProgress = achievementsWithProgress.find(a => a.id === daily.id);
+      return withProgress || {
+        ...daily,
+        currentValue: 0,
+        isCompleted: false,
+        progress: 0
+      };
+    });
 
     return {
       completed,
@@ -85,9 +119,9 @@ export default function Achievements() {
       percentage: (completed / total) * 100,
       totalXpEarned,
       inProgress,
-      nearest
+      dailyWithProgress
     };
-  }, [achievementsWithProgress]);
+  }, [achievementsWithProgress, dailyAchievements]);
 
   // Фильтрация достижений
   const filteredAchievements = useMemo(() => {
@@ -259,30 +293,52 @@ export default function Achievements() {
           </motion.div>
         </div>
 
-        {/* Достижения дня - ближайшие к разблокировке */}
-        {stats.nearest.length > 0 && (
+        {/* Достижения дня */}
+        {stats.dailyWithProgress.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Card className="bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/30">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Target className="h-6 w-6 text-primary" />
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">Достижения дня</CardTitle>
-                    <CardDescription>
-                      Ближайшие к разблокировке - сосредоточьтесь на них!
-                    </CardDescription>
+            <Card className="bg-gradient-to-br from-orange-500/10 via-primary/5 to-purple-500/10 border-orange-500/40 relative overflow-hidden">
+              {/* Animated glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-primary/10 to-purple-500/5 animate-pulse" />
+              
+              <CardHeader className="relative z-10">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-3 flex-1">
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 10, -10, 0],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 3
+                      }}
+                    >
+                      <Flame className="h-6 w-6 text-orange-500" />
+                    </motion.div>
+                    <div className="flex-1">
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        Достижения дня
+                        <Badge className="bg-orange-500 text-white hover:bg-orange-600">
+                          x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        Выполни до полуночи и получи двойной XP! 🔥
+                      </CardDescription>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="bg-primary/10 border-primary text-primary">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Рекомендуем
+                  <Badge variant="outline" className="bg-orange-500/10 border-orange-500 text-orange-500 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {timeUntilReset}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <motion.div 
                   className="grid grid-cols-1 lg:grid-cols-3 gap-4"
                   initial="hidden"
@@ -296,48 +352,71 @@ export default function Achievements() {
                     }
                   }}
                 >
-                  {stats.nearest.map((achievement, index) => (
-                    <motion.div 
-                      key={achievement.id} 
-                      className="relative"
-                      variants={{
-                        hidden: { 
-                          opacity: 0, 
-                          x: -50,
-                          scale: 0.8
-                        },
-                        visible: { 
-                          opacity: 1, 
-                          x: 0,
-                          scale: 1,
-                          transition: {
-                            type: "spring",
-                            stiffness: 100,
-                            damping: 15
+                  {stats.dailyWithProgress.map((achievement, index) => {
+                    const bonusXP = achievement.xpReward * (DAILY_ACHIEVEMENT_BONUS_MULTIPLIER - 1);
+                    
+                    return (
+                      <motion.div 
+                        key={achievement.id} 
+                        className="relative"
+                        variants={{
+                          hidden: { 
+                            opacity: 0, 
+                            x: -50,
+                            scale: 0.8
+                          },
+                          visible: { 
+                            opacity: 1, 
+                            x: 0,
+                            scale: 1,
+                            transition: {
+                              type: "spring",
+                              stiffness: 100,
+                              damping: 15
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <AchievementCard
-                        achievement={achievement}
-                        currentValue={achievement.currentValue}
-                        isCompleted={achievement.isCompleted}
-                      />
-                      {index === 0 && (
+                        }}
+                      >
+                        {/* Обёртка с дополнительным свечением */}
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-purple-500/20 rounded-lg blur-xl" />
+                          <div className="relative">
+                            <AchievementCard
+                              achievement={achievement}
+                              currentValue={achievement.currentValue}
+                              isCompleted={achievement.isCompleted}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Бейдж с бонусным XP */}
                         <motion.div 
-                          className="absolute -top-2 -right-2"
+                          className="absolute -top-2 -right-2 z-10"
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
-                          transition={{ delay: 0.9, type: "spring", stiffness: 200 }}
+                          transition={{ delay: 0.8 + index * 0.1, type: "spring", stiffness: 200 }}
                         >
-                          <Badge className="bg-primary text-primary-foreground shadow-lg">
-                            <Star className="h-3 w-3 mr-1" />
-                            Почти готово!
+                          <Badge className="bg-orange-500 text-white shadow-lg border-2 border-orange-400">
+                            <Zap className="h-3 w-3 mr-1" />
+                            +{bonusXP} бонус
                           </Badge>
                         </motion.div>
-                      )}
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+                
+                {/* Подсказка */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="mt-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg"
+                >
+                  <p className="text-sm text-muted-foreground text-center">
+                    💡 <span className="font-medium text-orange-500">Совет:</span> Достижения дня обновляются каждый день в полночь. 
+                    Выполни их сегодня, чтобы получить <span className="font-bold text-primary">x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP</span>!
+                  </p>
                 </motion.div>
               </CardContent>
             </Card>
