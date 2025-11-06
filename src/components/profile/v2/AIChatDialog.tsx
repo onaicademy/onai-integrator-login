@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
+import { supabase } from "@/lib/supabase";
 import {
   sendMessageToAI,
   getChatHistory,
@@ -259,9 +260,19 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       setIsTyping(true);
 
       // Отправляем сообщение в AI (с файлами если есть)
-      // TODO: Получить реальный userId из Supabase auth
-      // const { data: { user } } = await supabase.auth.getUser();
-      const userId = 'user-1'; // Mock для демонстрации
+      // Получаем реальный userId из Supabase auth
+      let userId = 'user-1'; // Fallback
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          userId = user.id;
+          console.log('✅ Используем реальный userId:', userId);
+        } else {
+          console.warn('⚠️  Пользователь не авторизован, используем mock userId');
+        }
+      } catch (authError) {
+        console.warn('⚠️  Ошибка получения userId:', authError);
+      }
       
       const response = await sendMessageToAI(
         messageToSend,

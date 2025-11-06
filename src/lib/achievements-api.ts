@@ -5,8 +5,9 @@
 
 import { ACHIEVEMENTS } from './achievements-config';
 import { isDailyAchievement, getAchievementXP } from './daily-achievements';
+import { supabase } from './supabase';
 
-// Mock данные для демонстрации (позже заменим на Supabase)
+// Mock данные для fallback (если БД недоступна)
 const MOCK_USER_ACHIEVEMENTS = {
   'user-1': {
     lessons_completed: 23,
@@ -29,28 +30,88 @@ const MOCK_USER_ACHIEVEMENTS = {
  */
 export async function getUserAchievementsForAI(userId: string) {
   try {
-    // TODO: Заменить на реальный запрос к Supabase
-    // const { data: stats } = await supabase
-    //   .from('user_statistics')
-    //   .select('*')
-    //   .eq('user_id', userId)
-    //   .single();
+    console.log('📊 Получаем достижения для пользователя:', userId);
     
-    // const { data: completedAchievements } = await supabase
-    //   .from('user_achievements')
-    //   .select('achievement_id')
-    //   .eq('user_id', userId)
-    //   .eq('is_completed', true);
+    // Попытка получить реальные данные из Supabase
+    let userStats: any;
+    let useMockData = false;
     
-    // Пока используем mock данные
-    const userStats = MOCK_USER_ACHIEVEMENTS[userId as keyof typeof MOCK_USER_ACHIEVEMENTS] || {
-      lessons_completed: 0,
-      modules_completed: 0,
-      streak_days: 0,
-      total_xp: 0,
-      level: 1,
-      completed_achievement_ids: []
-    };
+    try {
+      // Запрос статистики пользователя
+      const { data: stats, error: statsError } = await supabase
+        .from('user_statistics')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (statsError) {
+        if (statsError.code === '42P01') {
+          // Таблица не существует - миграции не применены
+          console.warn('⚠️  Таблица user_statistics не найдена. Используем mock данные.');
+          console.warn('💡 Примените миграции: см. APPLY_MIGRATIONS_NOW.md');
+          useMockData = true;
+        } else if (statsError.code === 'PGRST116') {
+          // Запись не найдена - создаём новую
+          console.log('ℹ️  Статистика пользователя не найдена, инициализируем...');
+          const { data: newStats, error: insertError } = await supabase
+            .from('user_statistics')
+            .insert({ user_id: userId })
+            .select()
+            .single();
+          
+          if (insertError) {
+            console.error('❌ Ошибка создания статистики:', insertError);
+            useMockData = true;
+          } else {
+            userStats = newStats;
+          }
+        } else {
+          console.error('❌ Ошибка получения статистики:', statsError);
+          useMockData = true;
+        }
+      } else {
+        userStats = stats;
+        console.log('✅ Статистика загружена из БД');
+      }
+      
+      // Запрос завершённых достижений
+      if (!useMockData && userStats) {
+        const { data: completedAchievements, error: achievementsError } = await supabase
+          .from('user_achievements')
+          .select('achievement_id')
+          .eq('user_id', userId)
+          .eq('is_completed', true);
+        
+        if (achievementsError) {
+          console.warn('⚠️  Ошибка получения достижений:', achievementsError);
+        } else {
+          userStats.completed_achievement_ids = completedAchievements?.map(a => a.achievement_id) || [];
+          console.log('✅ Завершённые достижения:', userStats.completed_achievement_ids.length);
+        }
+      }
+    } catch (dbError) {
+      console.error('❌ Ошибка подключения к БД:', dbError);
+      useMockData = true;
+    }
+    
+    // Fallback на mock данные
+    if (useMockData || !userStats) {
+      console.log('🔄 Используем mock данные для пользователя:', userId);
+      userStats = MOCK_USER_ACHIEVEMENTS[userId as keyof typeof MOCK_USER_ACHIEVEMENTS] || {
+        lessons_completed: 0,
+        modules_completed: 0,
+        courses_completed: 0,
+        streak_days: 0,
+        total_xp: 0,
+        level: 1,
+        perfect_lessons: 0,
+        messages_sent: 0,
+        ai_conversations: 0,
+        profile_completion: 0,
+        videos_watched: 0,
+        completed_achievement_ids: []
+      };
+    }
     
     // Расчёт прогресса по всем достижениям
     const achievementsProgress = ACHIEVEMENTS
