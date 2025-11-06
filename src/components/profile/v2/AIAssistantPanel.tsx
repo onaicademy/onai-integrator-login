@@ -2,18 +2,22 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Bot, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
+import { AIChatDialog } from "./AIChatDialog";
 
 export const AIAssistantPanel = () => {
   const [isActivating, setIsActivating] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleActivate = () => {
     setIsActivating(true);
-    console.log("Активация AI-помощника...");
+    console.log("🎯 Активация началась");
     
-    // Симуляция активации
+    // Анимация активации 1 секунда
     setTimeout(() => {
       setIsActivating(false);
-    }, 2500);
+      setIsChatOpen(true);
+      console.log("✅ Диалог должен открыться, isChatOpen =", true);
+    }, 1000);
   };
 
   return (
@@ -172,6 +176,9 @@ export const AIAssistantPanel = () => {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* AI Chat Dialog */}
+      <AIChatDialog open={isChatOpen} onOpenChange={setIsChatOpen} />
     </div>
   );
 };

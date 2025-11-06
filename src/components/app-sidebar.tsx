@@ -30,15 +30,16 @@ const studentMenuItems: MenuItem[] = [
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "AI-помощник", url: "/ai-assistant", icon: Bot },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
+  { title: "Админ панель", url: "/admin/activity", icon: LayoutDashboard },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
 const adminMenuItems: MenuItem[] = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/admin/activity", icon: LayoutDashboard },
+  { title: "Диалоги с AI-куратором", url: "/admin/ai-curator-chats", icon: MessageSquare },
   { title: "Курсы и модули", url: "/admin/courses", icon: GraduationCap },
   { title: "Ученики", url: "/admin/students", icon: Users },
   { title: "Достижения и XP", url: "/admin/achievements", icon: Puzzle },
-  { title: "Сообщения", url: "/messages", icon: MessageSquare },
   { title: "Настройки платформы", url: "/admin/settings", icon: Settings },
   { title: "Администраторы", url: "/admin/admins", icon: UserCog },
 ];
