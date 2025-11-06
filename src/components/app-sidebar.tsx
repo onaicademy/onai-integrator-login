@@ -28,10 +28,8 @@ const studentMenuItems: MenuItem[] = [
   { title: "NeuroHUB", url: "/neurohub", icon: Gauge },
   { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
-  { title: "AI-помощник", url: "/ai-assistant", icon: Bot },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
   { title: "Админ панель", url: "/admin/activity", icon: LayoutDashboard },
-  { title: "Диалоги AI-куратора", url: "/admin/ai-curator-chats", icon: MessageSquare },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
