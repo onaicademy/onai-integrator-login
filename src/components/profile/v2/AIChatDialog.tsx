@@ -259,9 +259,14 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       setIsTyping(true);
 
       // Отправляем сообщение в AI (с файлами если есть)
+      // TODO: Получить реальный userId из Supabase auth
+      // const { data: { user } } = await supabase.auth.getUser();
+      const userId = 'user-1'; // Mock для демонстрации
+      
       const response = await sendMessageToAI(
         messageToSend,
-        currentAttachments
+        currentAttachments,
+        userId
       );
 
       // Скрываем индикатор "печатает..."

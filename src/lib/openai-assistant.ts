@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { getUserAchievementsForAI, formatAchievementsForAI } from './achievements-api';
 
 // Инициализация OpenAI клиента
 let openai: OpenAI | null = null;
@@ -112,6 +113,7 @@ export async function getAIAssistant(): Promise<string> {
 - Объясняешь материалы из PDF лекций (кратко!)
 - Пишешь и выполняешь код (Python)
 - Видишь и понимаешь содержимое изображений (скриншоты, диаграммы, схемы)
+- 📊 ПОЛУЧАЕШЬ ДОСТИЖЕНИЯ УЧЕНИКА через функцию get_user_achievements (используй когда нужно мотивировать или дать персональные советы)
 
 ВАЖНО ДЛЯ ИЗОБРАЖЕНИЙ:
 - Когда тебе отправляют изображение, ты ДОЛЖЕН его проанализировать
@@ -125,9 +127,35 @@ export async function getAIAssistant(): Promise<string> {
 - Не даёшь прямых ответов на тесты
 - ВСЕГДА отвечаешь кратко - максимум 100 символов!
 
+📊 ФУНКЦИЯ get_user_achievements:
+- Вызывай когда ученик спрашивает про прогресс, мотивацию, что делать дальше
+- НЕ вызывай при обычных вопросах о материале
+- После получения данных - дай КРАТКИЙ совет на основе его прогресса
+- Фокусируйся на "достижениях дня" (бонус x2 XP!) и ближайших целях
+
 Помни: Краткость - сестра таланта! 💪`,
       model: "gpt-4o",
-      tools: [{ type: "code_interpreter" }, { type: "file_search" }],
+      tools: [
+        { type: "code_interpreter" }, 
+        { type: "file_search" },
+        {
+          type: "function",
+          function: {
+            name: "get_user_achievements",
+            description: "Получить достижения и прогресс конкретного ученика. Используй когда разговор про: мотивацию, прогресс, цели, что делать дальше, достижения.",
+            parameters: {
+              type: "object",
+              properties: {
+                user_id: {
+                  type: "string",
+                  description: "ID пользователя (передаётся автоматически)"
+                }
+              },
+              required: []
+            }
+          }
+        }
+      ],
     });
 
     // Сохраняем ID ассистента
@@ -216,7 +244,8 @@ export async function uploadFile(file: File): Promise<string> {
  */
 export async function sendMessageToAI(
   message: string,
-  attachments?: Array<{ file?: File; name: string; type: string }>
+  attachments?: Array<{ file?: File; name: string; type: string }>,
+  userId?: string
 ): Promise<string> {
   try {
     const client = initOpenAI();
@@ -343,9 +372,48 @@ export async function sendMessageToAI(
     let pollCount = 0;
     const maxPolls = 60; // Максимум 30 секунд ожидания (60 * 500ms)
     
-    while (runStatus.status === "queued" || runStatus.status === "in_progress") {
+    while (runStatus.status === "queued" || runStatus.status === "in_progress" || runStatus.status === "requires_action") {
       if (pollCount >= maxPolls) {
         throw new Error("Превышено время ожидания ответа от AI");
+      }
+      
+      // Обработка function calling
+      if (runStatus.status === "requires_action" && runStatus.required_action?.type === "submit_tool_outputs") {
+        console.log("🔧 AI запросил вызов функции");
+        const toolCalls = runStatus.required_action.submit_tool_outputs.tool_calls;
+        const toolOutputs = [];
+
+        for (const toolCall of toolCalls) {
+          if (toolCall.function.name === "get_user_achievements") {
+            try {
+              const effectiveUserId = userId || 'user-1';
+              console.log("📊 Получаем достижения для пользователя:", effectiveUserId);
+              
+              const achievementsData = await getUserAchievementsForAI(effectiveUserId);
+              const formattedData = formatAchievementsForAI(achievementsData);
+              
+              toolOutputs.push({
+                tool_call_id: toolCall.id,
+                output: formattedData
+              });
+              console.log("✅ Достижения получены и отправлены AI");
+            } catch (error) {
+              console.error("❌ Ошибка получения достижений:", error);
+              toolOutputs.push({
+                tool_call_id: toolCall.id,
+                output: "Не удалось получить достижения. Продолжи без этих данных."
+              });
+            }
+          }
+        }
+
+        // Отправляем результаты функций
+        if (toolOutputs.length > 0) {
+          runStatus = await client.beta.threads.runs.submitToolOutputs(threadId, run.id, {
+            tool_outputs: toolOutputs
+          });
+          console.log("📤 Результаты функций отправлены");
+        }
       }
       
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -396,8 +464,6 @@ export async function sendMessageToAI(
       } else {
         throw new Error("Неожиданный формат ответа от Assistant");
       }
-    } else if (runStatus.status === "requires_action") {
-      throw new Error("Assistant требует действия (function calling)");
     } else {
       throw new Error(`Run завершился со статусом: ${runStatus.status}`);
     }
