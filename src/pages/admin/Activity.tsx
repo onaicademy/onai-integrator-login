@@ -423,6 +423,14 @@ export default function Activity() {
                   <Users className="h-4 w-4" />
                   Все Ученики
                 </Button>
+                <Button
+                  variant="ghost"
+                  className="gap-2 hover:bg-primary/10 hover:text-primary"
+                  onClick={() => navigate("/admin/ai-curator-chats")}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Диалоги AI-куратора
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -573,26 +581,39 @@ export default function Activity() {
                 ]}
               />
               
-              <MetricCard
-                title="AI Curator"
-                description="Персонализация и мотивация"
-                icon={Heart}
-                iconColor="text-pink-500"
-                items={[
-                  { label: "Мотивационных сообщений", value: aiCuratorData.motivation_messages },
-                  { label: "Персонализированных путей", value: aiCuratorData.personalized_paths },
-                  { 
-                    label: "Прирост вовлечённости", 
-                    value: `+${aiCuratorData.engagement_boost}%`,
-                    badge: { text: "↑", variant: "default" }
-                  },
-                  { 
-                    label: "Уровень удержания", 
-                    value: `${aiCuratorData.retention_rate}%`,
-                    badge: { text: "Высокий", variant: "default" }
-                  },
-                ]}
-              />
+              <div className="relative">
+                <MetricCard
+                  title="AI Curator"
+                  description="Персонализация и мотивация"
+                  icon={Heart}
+                  iconColor="text-pink-500"
+                  items={[
+                    { label: "Мотивационных сообщений", value: aiCuratorData.motivation_messages },
+                    { label: "Персонализированных путей", value: aiCuratorData.personalized_paths },
+                    { 
+                      label: "Прирост вовлечённости", 
+                      value: `+${aiCuratorData.engagement_boost}%`,
+                      badge: { text: "↑", variant: "default" }
+                    },
+                    { 
+                      label: "Уровень удержания", 
+                      value: `${aiCuratorData.retention_rate}%`,
+                      badge: { text: "Высокий", variant: "default" }
+                    },
+                  ]}
+                />
+                <div className="absolute bottom-4 right-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/50"
+                    onClick={() => navigate("/admin/ai-curator-chats")}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Просмотреть диалоги
+                  </Button>
+                </div>
+              </div>
             </div>
           </ActivitySection>
 
