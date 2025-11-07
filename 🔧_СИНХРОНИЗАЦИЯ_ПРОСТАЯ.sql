@@ -125,21 +125,18 @@ BEGIN
     email,
     full_name,
     role,
-    created_at,
-    updated_at
+    created_at
   )
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
     COALESCE(NEW.raw_user_meta_data->>'role', 'student'),
-    NOW(),
     NOW()
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
-    full_name = COALESCE(EXCLUDED.full_name, public.users.full_name),
-    updated_at = NOW();
+    full_name = COALESCE(EXCLUDED.full_name, public.users.full_name);
 
   RETURN NEW;
 END;
@@ -161,16 +158,14 @@ INSERT INTO public.users (
   email,
   full_name,
   role,
-  created_at,
-  updated_at
+  created_at
 )
 SELECT 
   au.id,
   au.email,
   COALESCE(au.raw_user_meta_data->>'full_name', au.email) as full_name,
   COALESCE(au.raw_user_meta_data->>'role', 'student') as role,
-  au.created_at,
-  NOW() as updated_at
+  au.created_at
 FROM auth.users au
 WHERE NOT EXISTS (
   SELECT 1 FROM public.users pu WHERE pu.id = au.id
