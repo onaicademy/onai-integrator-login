@@ -49,26 +49,23 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   }
 })
 
-// Listen for auth state changes and sync user to database
+// Listen for auth state changes and update login time
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
-    const { id, email, user_metadata } = session.user
+    console.log('✅ Пользователь вошёл в систему:', session.user.email)
     
-    // Create or update user in users table
-    const { error } = await supabase.from('users').upsert({
-      id,
-      email,
-      full_name: user_metadata.full_name || user_metadata.name || '',
-      avatar_url: user_metadata.avatar_url || user_metadata.picture || '',
-      created_at: new Date().toISOString(),
-    }, {
-      onConflict: 'id'
-    })
-    
-    if (error) {
-      console.error('❌ Ошибка при синхронизации user:', error)
-    } else {
-      console.log('✅ Пользователь синхронизирован с таблицей users')
+    // Обновляем last_login_at при каждом входе
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ last_login_at: new Date().toISOString() })
+        .eq('id', session.user.id)
+      
+      if (error) {
+        console.warn('⚠️ Не удалось обновить last_login_at:', error.message)
+      }
+    } catch (err) {
+      console.warn('⚠️ Ошибка обновления last_login_at:', err)
     }
   }
   

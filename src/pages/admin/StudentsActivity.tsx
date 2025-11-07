@@ -64,41 +64,40 @@ export default function StudentsActivity() {
   const loadStudents = async () => {
     setIsLoading(true);
     try {
-      // Загружаем пользователей из public.users + данные из auth.users
+      console.log('📊 Загрузка списка студентов из public.users...');
+      
+      // Загружаем пользователей из public.users (исключаем CEO)
       const { data: usersData, error } = await supabase
         .from('users')
         .select('*')
+        .neq('is_ceo', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Ошибка загрузки:', error);
+        throw error;
+      }
 
-      // Для каждого пользователя проверяем последний вход
-      const studentsWithActivity = await Promise.all(
-        (usersData || []).map(async (user) => {
-          try {
-            // Получаем данные из auth.users через admin API (если доступно)
-            // Пока используем базовые данные
-            return {
-              ...user,
-              is_active: user.role === 'student' || user.role === 'teacher',
-              last_login_at: user.created_at, // Можно добавить колонку last_login_at
-            };
-          } catch {
-            return {
-              ...user,
-              is_active: false,
-              last_login_at: null,
-            };
-          }
-        })
-      );
+      // Форматируем данные для отображения
+      const formattedStudents = (usersData || []).map(user => ({
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name || 'Не указано',
+        role: user.role,
+        is_active: !!user.last_login_at, // активен если хоть раз заходил
+        last_login_at: user.last_login_at,
+        created_at: user.created_at,
+        total_xp: user.total_xp || 0,
+        level: user.level || 1,
+      }));
 
-      setStudents(studentsWithActivity);
-    } catch (error) {
+      setStudents(formattedStudents);
+      console.log(`✅ Загружено студентов: ${formattedStudents.length}`);
+    } catch (error: any) {
       console.error('Error loading students:', error);
       toast({
         title: "❌ Ошибка",
-        description: "Не удалось загрузить список студентов",
+        description: error.message || "Не удалось загрузить список студентов",
         variant: "destructive",
       });
     } finally {
