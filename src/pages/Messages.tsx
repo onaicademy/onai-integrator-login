@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Send, Search, Mic, Smile, Paperclip, MoreVertical, 
-  X, StopCircle, Play 
+  X, StopCircle, Play, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import {
+  getMyChats,
+  getChatMessages,
+  sendTextMessage,
+  uploadVoiceMessage,
+  markMessagesAsRead,
+  subscribeToMessages,
+  getAllStudents,
+  getOrCreateChat,
+  type Chat as ChatType,
+  type Message as MessageType,
+} from "@/lib/messages-api";
 
 interface Student {
   id: string;
@@ -40,6 +52,7 @@ interface Message {
   type: "text" | "voice" | "file";
   fileName?: string;
   duration?: number;
+  attachmentUrl?: string;
 }
 
 // Mock emoji
@@ -47,57 +60,20 @@ const emojis = ["😊", "😂", "❤️", "👍", "🎉", "🔥", "👏", "🙏"
 
 export default function Messages() {
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   
   // Список всех студентов (для начала нового чата)
-  const [students, setStudents] = useState<Student[]>([
-    { id: "1", name: "Иван Иванов", online: true },
-    { id: "2", name: "Мария Петрова", online: false },
-    { id: "3", name: "Петр Сидоров", online: true },
-    { id: "4", name: "Анна Смирнова", online: false },
-    { id: "5", name: "Дмитрий Козлов", online: true },
-  ]);
+  const [students, setStudents] = useState<Student[]>([]);
 
-  // Активные чаты
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: "1",
-      studentId: "1",
-      name: "Иван Иванов",
-      lastMessage: "Привет! Как дела?",
-      time: "10:30",
-      unread: 2,
-      online: true,
-    },
-    {
-      id: "2",
-      studentId: "2",
-      name: "Мария Петрова",
-      lastMessage: "Спасибо за помощь!",
-      time: "09:15",
-      unread: 0,
-      online: false,
-    },
-  ]);
+  // Активные чаты (из Supabase)
+  const [chats, setChats] = useState<Chat[]>([]);
 
-  const [selectedChat, setSelectedChat] = useState<string | null>("1");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "Привет! Как дела?",
-      senderId: "1",
-      timestamp: "10:30",
-      isMine: false,
-      type: "text",
-    },
-    {
-      id: "2",
-      content: "Отлично, спасибо!",
-      senderId: "me",
-      timestamp: "10:31",
-      isMine: true,
-      type: "text",
-    },
-  ]);
+  // Выбранный чат
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  
+  // Сообщения выбранного чата (из Supabase)
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,26 +81,146 @@ export default function Messages() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [showStudentsList, setShowStudentsList] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recordingInterval = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadUser();
   }, []);
 
+  // Загружаем чаты когда есть пользователь
+  useEffect(() => {
+    if (currentUser) {
+      loadChats();
+      loadStudents();
+    }
+  }, [currentUser]);
+
+  // Загружаем сообщения когда выбран чат
+  useEffect(() => {
+    if (selectedChat) {
+      loadMessages(selectedChat);
+      // Подписываемся на новые сообщения
+      const unsubscribe = subscribeToMessages(selectedChat, (newMsg) => {
+        setMessages((prev) => [...prev, transformMessage(newMsg, currentUser?.id)]);
+        scrollToBottom();
+      });
+      return unsubscribe;
+    }
+  }, [selectedChat]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const loadUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUser(user);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    } catch (error) {
+      console.error('Error loading user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadChats = async () => {
+    if (!currentUser) return;
+    try {
+      const chatsData = await getMyChats(currentUser.id);
+      setChats(transformChats(chatsData, currentUser.id));
+    } catch (error) {
+      console.error('Error loading chats:', error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось загрузить чаты",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadStudents = async () => {
+    if (!currentUser) return;
+    try {
+      const studentsData = await getAllStudents(currentUser.id);
+      setStudents(studentsData.map((s: any) => ({
+        id: s.id,
+        name: s.full_name || s.email,
+        avatar: s.avatar_url,
+        online: false, // TODO: реализовать статус online
+      })));
+    } catch (error) {
+      console.error('Error loading students:', error);
+    }
+  };
+
+  const loadMessages = async (chatId: string) => {
+    if (!currentUser) return;
+    setLoadingMessages(true);
+    try {
+      const messagesData = await getChatMessages(chatId);
+      setMessages(messagesData.map(msg => transformMessage(msg, currentUser.id)));
+      // Отмечаем сообщения как прочитанные
+      await markMessagesAsRead(chatId, currentUser.id);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось загрузить сообщения",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMessages(false);
+    }
   };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Трансформация данных из Supabase в UI формат
+  const transformChats = (chatsData: ChatType[], userId: string): Chat[] => {
+    return chatsData.map((chat: any) => {
+      const otherUser = chat.other_user;
+      const isUser1 = chat.user1_id === userId;
+      const unreadCount = isUser1 ? chat.unread_count_user1 : chat.unread_count_user2;
+      
+      return {
+        id: chat.id,
+        studentId: otherUser?.id || '',
+        name: otherUser?.name || otherUser?.email || 'Неизвестный',
+        avatar: otherUser?.avatar,
+        lastMessage: chat.last_message_text || '',
+        time: chat.last_message_at 
+          ? new Date(chat.last_message_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+          : '',
+        unread: unreadCount,
+        online: false, // TODO: реализовать статус online
+      };
+    });
+  };
+
+  const transformMessage = (msg: MessageType, userId?: string): Message => {
+    const isMine = msg.sender_id === userId;
+    return {
+      id: msg.id,
+      content: msg.content,
+      senderId: msg.sender_id,
+      timestamp: new Date(msg.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      isMine,
+      type: msg.message_type as 'text' | 'voice' | 'file',
+      fileName: msg.attachment_name || undefined,
+      duration: msg.attachment_type === 'audio/webm' && msg.content.includes('сек') 
+        ? parseInt(msg.content.match(/\d+/)?.[0] || '0')
+        : undefined,
+      attachmentUrl: msg.attachment_url || undefined,
+    };
   };
 
   // Фильтрация
@@ -137,69 +233,184 @@ export default function Messages() {
   );
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !selectedChat || !currentUser) return;
 
-    const message: Message = {
-      id: Date.now().toString(),
-      content: newMessage,
-      senderId: "me",
-      timestamp: new Date().toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isMine: true,
-      type: "text",
-    };
-
-    setMessages([...messages, message]);
+    const messageText = newMessage.trim();
     setNewMessage("");
     setShowEmojiPicker(false);
+
+    try {
+      const msg = await sendTextMessage(selectedChat, currentUser.id, messageText);
+      if (msg) {
+        setMessages((prev) => [...prev, transformMessage(msg, currentUser.id)]);
+        // Обновляем чат в списке
+        await loadChats();
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось отправить сообщение",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEmojiClick = (emoji: string) => {
     setNewMessage(newMessage + emoji);
   };
 
-  const handleStartRecording = () => {
-    setIsRecording(true);
-    setRecordingTime(0);
-    recordingInterval.current = setInterval(() => {
-      setRecordingTime((prev) => prev + 1);
-    }, 1000);
+  const handleStartRecording = async () => {
+    if (!selectedChat || !currentUser) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Сначала выберите чат",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "🎤 Запись голосового",
-      description: "Нажмите стоп для завершения",
-    });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm',
+      });
+      
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await handleSendVoiceMessage(audioBlob);
+        
+        // Останавливаем микрофон
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      mediaRecorder.start();
+      mediaRecorderRef.current = mediaRecorder;
+      setIsRecording(true);
+      
+      // Таймер длительности
+      setRecordingTime(0);
+      recordingInterval.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+      
+      toast({
+        title: "🎤 Запись голосового",
+        description: "Нажмите стоп для завершения",
+        className: "top-4",
+      });
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось получить доступ к микрофону",
+        variant: "destructive",
+        className: "top-4",
+      });
+    }
   };
 
   const handleStopRecording = () => {
-    setIsRecording(false);
-    clearInterval(recordingInterval.current);
-
-    const message: Message = {
-      id: Date.now().toString(),
-      content: `Голосовое сообщение (${recordingTime} сек)`,
-      senderId: "me",
-      timestamp: new Date().toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isMine: true,
-      type: "voice",
-      duration: recordingTime,
-    };
-
-    setMessages([...messages, message]);
-    setRecordingTime(0);
-
-    toast({
-      title: "✅ Голосовое отправлено",
-      description: `Длительность: ${recordingTime} сек`,
-    });
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(recordingInterval.current);
+    }
   };
 
-  const handleStartNewChat = (student: Student) => {
+  const handleSendVoiceMessage = async (audioBlob: Blob) => {
+    if (!selectedChat || !currentUser) return;
+    
+    try {
+      const msg = await uploadVoiceMessage(
+        selectedChat,
+        currentUser.id,
+        audioBlob,
+        recordingTime
+      );
+      
+      if (msg) {
+        setMessages((prev) => [...prev, transformMessage(msg, currentUser.id)]);
+        setRecordingTime(0);
+        // Обновляем чат в списке
+        await loadChats();
+        
+        toast({
+          title: "✅ Голосовое отправлено",
+          description: `Длительность: ${recordingTime} сек`,
+          className: "top-4",
+        });
+      }
+    } catch (error) {
+      console.error('Error sending voice message:', error);
+      toast({
+        title: "❌ Ошибка отправки",
+        description: "Не удалось отправить голосовое сообщение",
+        variant: "destructive",
+        className: "top-4",
+      });
+    }
+  };
+
+  const handlePlayVoice = (messageId: string, audioUrl?: string) => {
+    if (!audioUrl) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Аудио файл не найден",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (playingMessageId === messageId) {
+      // Останавливаем текущее
+      audioRef.current?.pause();
+      setPlayingMessageId(null);
+    } else {
+      // Останавливаем предыдущее
+      audioRef.current?.pause();
+      
+      // Играем новое
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.play().catch((error) => {
+        console.error('Error playing audio:', error);
+        toast({
+          title: "❌ Ошибка",
+          description: "Не удалось воспроизвести аудио",
+          variant: "destructive",
+        });
+      });
+      
+      setPlayingMessageId(messageId);
+      
+      audio.onended = () => {
+        setPlayingMessageId(null);
+      };
+      
+      audio.onerror = () => {
+        setPlayingMessageId(null);
+        toast({
+          title: "❌ Ошибка",
+          description: "Не удалось загрузить аудио",
+          variant: "destructive",
+        });
+      };
+    }
+  };
+
+  const handleStartNewChat = async (student: Student) => {
+    if (!currentUser) return;
+
     // Проверяем есть ли уже чат
     const existingChat = chats.find((c) => c.studentId === student.id);
     if (existingChat) {
@@ -208,27 +419,30 @@ export default function Messages() {
       return;
     }
 
-    // Создаём новый чат
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      studentId: student.id,
-      name: student.name,
-      avatar: student.avatar,
-      lastMessage: "",
-      time: "Сейчас",
-      unread: 0,
-      online: student.online,
-    };
+    try {
+      // Создаём новый чат в Supabase
+      const newChat = await getOrCreateChat(currentUser.id, student.id);
+      
+      if (newChat) {
+        // Перезагружаем список чатов
+        await loadChats();
+        setSelectedChat(newChat.id);
+        setMessages([]);
+        setShowStudentsList(false);
 
-    setChats([newChat, ...chats]);
-    setSelectedChat(newChat.id);
-    setMessages([]);
-    setShowStudentsList(false);
-
-    toast({
-      title: "✅ Новый чат создан",
-      description: `Чат с ${student.name}`,
-    });
+        toast({
+          title: "✅ Новый чат создан",
+          description: `Чат с ${student.name}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось создать чат",
+        variant: "destructive",
+      });
+    }
   };
 
   const getInitials = (name: string) => {
@@ -412,8 +626,19 @@ export default function Messages() {
             {/* Сообщения */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
+                {loadingMessages ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-neon" />
+                    <span className="ml-2 text-muted-foreground">Загрузка сообщений...</span>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground">
+                    <p>Нет сообщений. Напишите первое сообщение! 👋</p>
+                  </div>
+                ) : null}
+                
                 <AnimatePresence>
-                  {messages.map((msg) => (
+                  {!loadingMessages && messages.map((msg) => (
                     <motion.div
                       key={msg.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -430,8 +655,16 @@ export default function Messages() {
                       >
                         {msg.type === "voice" ? (
                           <div className="flex items-center gap-2">
-                            <Button size="sm" variant="ghost">
-                              <Play className="w-4 h-4" />
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handlePlayVoice(msg.id, msg.attachmentUrl)}
+                            >
+                              {playingMessageId === msg.id ? (
+                                <StopCircle className="w-4 h-4" />
+                              ) : (
+                                <Play className="w-4 h-4" />
+                              )}
                             </Button>
                             <div className="flex-1">
                               <div className="h-1 bg-background rounded-full" />
