@@ -1,7 +1,5 @@
 import { Home, GraduationCap, Award, Bot, MessageSquare, Settings, LayoutDashboard, Users, Puzzle, UserCog, Gauge } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +29,7 @@ const studentMenuItems: MenuItem[] = [
   { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
+  { title: "Админ панель", url: "/admin", icon: LayoutDashboard },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
@@ -48,25 +47,10 @@ interface AppSidebarProps {
   role?: UserRole;
 }
 
-export function AppSidebar({ role: propRole }: AppSidebarProps) {
+export function AppSidebar({ role = "student" }: AppSidebarProps) {
   const { state } = useSidebar();
-  const [userRole, setUserRole] = useState<UserRole>(propRole || "student");
+  const menuItems = role === "admin" ? adminMenuItems : studentMenuItems;
   const isCollapsed = state === "collapsed";
-
-  // Определяем роль по email пользователя
-  useEffect(() => {
-    async function checkUserRole() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email === 'saint@onaiacademy.kz') {
-        setUserRole('admin');
-      } else {
-        setUserRole('student');
-      }
-    }
-    checkUserRole();
-  }, []);
-
-  const menuItems = userRole === "admin" ? adminMenuItems : studentMenuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -97,7 +81,7 @@ export function AppSidebar({ role: propRole }: AppSidebarProps) {
             "px-2 text-xs sm:text-sm text-muted-foreground transition-opacity",
             isCollapsed && "opacity-0"
           )}>
-            {userRole === "admin" ? "Управление" : "Навигация"}
+            {role === "admin" ? "Управление" : "Навигация"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -139,13 +123,12 @@ export function AppSidebar({ role: propRole }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2 sm:p-3">
+      <SidebarFooter className="px-3 sm:px-4 py-3 sm:py-4 border-t border-sidebar-border">
         <div className={cn(
-          "text-center text-[10px] sm:text-xs text-muted-foreground transition-opacity leading-tight",
+          "text-xs text-muted-foreground transition-opacity",
           isCollapsed && "opacity-0"
         )}>
-          <p className="font-medium whitespace-nowrap">onAI Academy kz</p>
-          <p className="text-[9px] sm:text-[10px] whitespace-nowrap">© 2025</p>
+          <p className="leading-relaxed">© 2024 onAI Academy</p>
         </div>
       </SidebarFooter>
     </Sidebar>
