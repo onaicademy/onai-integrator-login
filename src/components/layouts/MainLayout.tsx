@@ -14,8 +14,16 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
 
   useEffect(() => {
     let isMounted = true;
+    let roleChecked = false; // ЗАЩИТА от повторного вызова
 
     async function loadUserRole() {
+      if (roleChecked) {
+        console.log('⏭️ Роль уже проверена, пропускаем');
+        return;
+      }
+      
+      roleChecked = true;
+      
       try {
         console.log('🔍 MainLayout: Загрузка роли из auth.user...');
         
@@ -25,8 +33,10 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
         
         if (userError || !user) {
           console.log('⚠️ Нет пользователя, роль: student');
-          setUserRole("student");
-          setIsLoading(false);
+          if (isMounted) {
+            setUserRole("student");
+            setIsLoading(false);
+          }
           return;
         }
 
@@ -38,7 +48,7 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
                      user.raw_user_meta_data?.role || 
                      (user.email === 'saint@onaiacademy.kz' ? 'admin' : 'student');
         
-        console.log('✅ Роль из токена:', role);
+        console.log('✅ Роль определена:', role);
         
         if (isMounted) {
           setUserRole(role === 'admin' ? 'admin' : 'student');
@@ -54,12 +64,13 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
       }
     }
 
+    // Запускаем ТОЛЬКО ОДИН РАЗ
     loadUserRole();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, []); // Пустой массив = ТОЛЬКО при mount
 
   return (
     <SidebarProvider>
