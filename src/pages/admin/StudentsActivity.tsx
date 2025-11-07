@@ -58,46 +58,44 @@ export default function StudentsActivity() {
 
   // Загрузка студентов из базы
   useEffect(() => {
-    loadStudents();
+    fetchStudents();
   }, []);
 
-  const loadStudents = async () => {
-    setIsLoading(true);
+  const fetchStudents = async () => {
     try {
-      console.log('📊 Загрузка списка студентов из public.users...');
-      
-      // Загружаем пользователей из public.users (исключаем админа по email)
-      const { data: usersData, error } = await supabase
-        .from('users')
+      setIsLoading(true);
+      console.log('📋 Загрузка студентов...');
+
+      const { data: profiles, error } = await supabase
+        .from('profiles')
         .select('*')
-        .neq('email', 'saint@onaiacademy.kz')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('❌ Ошибка загрузки:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // Форматируем данные для отображения
-      const formattedStudents = (usersData || []).map(user => ({
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name || 'Не указано',
-        role: user.role,
-        is_active: !!user.last_login_at, // активен если хоть раз заходил
-        last_login_at: user.last_login_at,
-        created_at: user.created_at,
-        total_xp: user.total_xp || 0,
-        level: user.level || 1,
-      }));
+      console.log('✅ Загружено студентов:', profiles?.length);
 
-      setStudents(formattedStudents);
-      console.log(`✅ Загружено студентов: ${formattedStudents.length}`);
+      const studentsData = profiles?.map(profile => ({
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name || 'Без имени',
+        fullName: profile.full_name || 'Без имени',
+        role: profile.role || 'student',
+        status: profile.is_active !== false ? 'active' : 'inactive',
+        is_active: profile.is_active !== false,
+        lastLogin: profile.updated_at,
+        last_login_at: profile.updated_at,
+        progress: 0,
+        coursesCompleted: 0
+      })) || [];
+
+      setStudents(studentsData);
+
     } catch (error: any) {
-      console.error('Error loading students:', error);
+      console.error('❌ Ошибка загрузки студентов:', error);
       toast({
         title: "❌ Ошибка",
-        description: error.message || "Не удалось загрузить список студентов",
+        description: "Ошибка загрузки студентов",
         variant: "destructive",
       });
     } finally {
@@ -139,7 +137,7 @@ export default function StudentsActivity() {
         });
 
         // Обновляем список студентов
-        await loadStudents();
+        await fetchStudents();
 
         setShowAddModal(false);
         setShowInvitationResult(true);
@@ -173,6 +171,73 @@ export default function StudentsActivity() {
       title: "✅ Скопировано!",
       description: `${label} скопирован в буфер обмена`,
     });
+  };
+
+  // Смена роли
+  const handleChangeRole = async (studentId: string, newRole: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', studentId);
+
+      if (error) throw error;
+      toast({
+        title: "✅ Роль изменена",
+        description: "Роль успешно изменена",
+      });
+      await fetchStudents();
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Ошибка смены роли",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Удаление
+  const handleDeleteStudent = async (studentId: string) => {
+    if (!confirm('Удалить студента?')) return;
+    
+    try {
+      await supabase.from('profiles').delete().eq('id', studentId);
+      await supabase.auth.admin.deleteUser(studentId);
+      toast({
+        title: "✅ Студент удалён",
+        description: "Студент успешно удалён",
+      });
+      await fetchStudents();
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Ошибка удаления",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Деактивация
+  const handleToggleActive = async (studentId: string, isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: !isActive })
+        .eq('id', studentId);
+
+      if (error) throw error;
+      toast({
+        title: "✅ Успешно",
+        description: isActive ? 'Деактивирован' : 'Активирован',
+      });
+      await fetchStudents();
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Ошибка изменения статуса",
+        variant: "destructive",
+      });
+    }
   };
 
   // Фильтрация
@@ -301,14 +366,16 @@ export default function StudentsActivity() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => toast({ title: "Функция в разработке" })}
+                        onClick={() => handleChangeRole(student.id, student.role === 'student' ? 'admin' : 'student')}
+                        title="Сменить роль"
                       >
                         <Key className="w-4 h-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant={student.is_active ? "destructive" : "default"}
-                        onClick={() => toast({ title: "Функция в разработке" })}
+                        onClick={() => handleToggleActive(student.id, student.is_active)}
+                        title={student.is_active ? "Деактивировать" : "Активировать"}
                       >
                         {student.is_active ? (
                           <UserX className="w-4 h-4" />
