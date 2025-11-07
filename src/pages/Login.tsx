@@ -299,7 +299,24 @@ export default function Login() {
         {/* Футер */}
         <footer className="relative z-10 border-t border-gray-800 flex-shrink-0 mt-auto">
           <div className="container mx-auto px-4 sm:px-8 py-6 sm:py-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 text-center sm:text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center sm:text-left">
+              {/* О платформе */}
+              <div>
+                <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">О ПЛАТФОРМЕ</h3>
+                <ul className="space-y-2 text-xs sm:text-sm text-gray-400">
+                  <li>
+                    <a href="#" className="hover:text-[#00ff00] transition break-words">
+                      Публичная оферта
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-[#00ff00] transition break-words">
+                      Политика конфиденциальности
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
               {/* Контакты */}
               <div>
                 <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">КОНТАКТЫ</h3>
@@ -312,12 +329,33 @@ export default function Login() {
               {/* Соцсети */}
               <div>
                 <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">СОЦСЕТИ</h3>
-                <div className="flex justify-center sm:justify-start gap-4">
+                <div className="flex justify-center sm:justify-start gap-3">
                   <a
-                    href="#"
-                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] hover:text-black transition flex items-center justify-center"
+                    href="https://instagram.com/onaiacademy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] transition flex items-center justify-center text-lg"
+                    title="Instagram"
                   >
                     📷
+                  </a>
+                  <a
+                    href="https://threads.net/@onaiacademy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] transition flex items-center justify-center text-lg"
+                    title="Threads"
+                  >
+                    🧵
+                  </a>
+                  <a
+                    href="https://t.me/onaiacademy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] transition flex items-center justify-center text-lg"
+                    title="Telegram"
+                  >
+                    ✈️
                   </a>
                 </div>
               </div>
