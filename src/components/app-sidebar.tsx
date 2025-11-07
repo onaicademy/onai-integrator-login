@@ -1,5 +1,7 @@
 import { Home, GraduationCap, Award, Bot, MessageSquare, Settings, LayoutDashboard, Users, Puzzle, UserCog, Gauge } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +31,6 @@ const studentMenuItems: MenuItem[] = [
   { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
-  { title: "Админ панель", url: "/admin", icon: LayoutDashboard },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
@@ -47,10 +48,25 @@ interface AppSidebarProps {
   role?: UserRole;
 }
 
-export function AppSidebar({ role = "student" }: AppSidebarProps) {
+export function AppSidebar({ role: propRole }: AppSidebarProps) {
   const { state } = useSidebar();
-  const menuItems = role === "admin" ? adminMenuItems : studentMenuItems;
+  const [userRole, setUserRole] = useState<UserRole>(propRole || "student");
   const isCollapsed = state === "collapsed";
+
+  // Определяем роль по email пользователя
+  useEffect(() => {
+    async function checkUserRole() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email === 'saint@onaiacademy.kz') {
+        setUserRole('admin');
+      } else {
+        setUserRole('student');
+      }
+    }
+    checkUserRole();
+  }, []);
+
+  const menuItems = userRole === "admin" ? adminMenuItems : studentMenuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -81,7 +97,7 @@ export function AppSidebar({ role = "student" }: AppSidebarProps) {
             "px-2 text-xs sm:text-sm text-muted-foreground transition-opacity",
             isCollapsed && "opacity-0"
           )}>
-            {role === "admin" ? "Управление" : "Навигация"}
+            {userRole === "admin" ? "Управление" : "Навигация"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
