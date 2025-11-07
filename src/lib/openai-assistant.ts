@@ -587,23 +587,64 @@ export async function startNewConversation(): Promise<void> {
 export async function transcribeAudioToText(audioBlob: Blob, userId?: string, threadId?: string): Promise<string> {
   try {
     const client = initOpenAI();
-    console.log("🎙️ Транскрибируем аудио...");
+    console.log("🎙️ === НАЧАЛО ТРАНСКРИПЦИИ ===");
+    console.log("📊 Размер аудио:", audioBlob.size, "байт");
+    console.log("📊 Тип аудио:", audioBlob.type);
+    
+    // КРИТИЧЕСКАЯ ПРОВЕРКА: размер файла
+    if (audioBlob.size === 0) {
+      console.error("❌ Аудио файл пустой (0 байт)");
+      throw new Error("Аудио файл пустой. Попробуйте записать ещё раз.");
+    }
+    
+    if (audioBlob.size < 100) {
+      console.error("❌ Аудио файл слишком маленький:", audioBlob.size, "байт");
+      throw new Error("Аудио слишком короткое. Говорите минимум 1 секунду.");
+    }
+    
+    // ВАЖНО: Конвертируем в формат который точно поддерживает Whisper
+    // Whisper лучше всего работает с mp3, mp4, mpeg, mpga, m4a, wav, webm
+    const fileExtension = audioBlob.type.includes('webm') ? 'webm' : 
+                         audioBlob.type.includes('mp4') ? 'mp4' :
+                         audioBlob.type.includes('ogg') ? 'ogg' : 'webm';
+    
+    console.log("📝 Используем расширение файла:", fileExtension);
     
     // Вычисляем длительность аудио (примерная оценка)
     const audioDurationSeconds = await getAudioDuration(audioBlob);
+    console.log("⏱️ Длительность аудио:", audioDurationSeconds, "секунд");
     
-    // Конвертируем Blob в File
-    const file = new File([audioBlob], "recording.webm", { 
+    // Конвертируем Blob в File с правильным именем и типом
+    const file = new File([audioBlob], `recording.${fileExtension}`, { 
       type: audioBlob.type 
     });
+    
+    console.log("📤 Отправляем в Whisper API...");
+    console.log("📊 File name:", file.name);
+    console.log("📊 File size:", file.size, "байт");
+    console.log("📊 File type:", file.type);
 
     const response = await client.audio.transcriptions.create({
       file: file,
       model: "whisper-1",
       language: "ru", // Русский язык
       response_format: "text",
+      // Добавляем prompt для лучшего распознавания русского языка
+      prompt: "Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы.",
     });
 
+    console.log("📥 Ответ от Whisper API:", response);
+    console.log("📊 Тип ответа:", typeof response);
+    console.log("📊 Длина текста:", (response as string)?.length, "символов");
+    
+    // КРИТИЧЕСКАЯ ПРОВЕРКА: результат не пустой
+    const transcriptionText = response as string;
+    
+    if (!transcriptionText || transcriptionText.trim().length === 0) {
+      console.error("❌ Whisper вернул пустой текст");
+      throw new Error("Не удалось распознать речь. Попробуйте говорить громче и чётче.");
+    }
+    
     // Логируем использование Whisper
     try {
       await logWhisperUsage(audioDurationSeconds, { userId, threadId });
@@ -613,11 +654,36 @@ export async function transcribeAudioToText(audioBlob: Blob, userId?: string, th
       // Не прерываем работу
     }
 
-    console.log("✅ Транскрипция получена:", response);
-    return response as string;
-  } catch (error) {
-    console.error("❌ Ошибка транскрипции:", error);
-    throw error;
+    console.log("✅ === ТРАНСКРИПЦИЯ УСПЕШНА ===");
+    console.log("✅ Распознанный текст:", transcriptionText);
+    return transcriptionText;
+  } catch (error: any) {
+    console.error("❌ === ОШИБКА ТРАНСКРИПЦИИ ===");
+    console.error("❌ Ошибка:", error);
+    console.error("❌ Тип ошибки:", typeof error);
+    console.error("❌ Сообщение:", error?.message);
+    console.error("❌ Имя:", error?.name);
+    console.error("❌ Стек:", error?.stack);
+    console.error("❌ Response:", error?.response);
+    console.error("❌ Status:", error?.status);
+    
+    // Более понятные сообщения об ошибках
+    if (error?.message?.includes("Invalid file format")) {
+      throw new Error("Неподдерживаемый формат аудио. Попробуйте ещё раз.");
+    } else if (error?.message?.includes("API key")) {
+      throw new Error("Ошибка настройки AI. Обратитесь к администратору.");
+    } else if (error?.message?.includes("network") || error?.message?.includes("fetch")) {
+      throw new Error("Ошибка сети. Проверьте подключение к интернету.");
+    } else if (error?.status === 429) {
+      throw new Error("Слишком много запросов. Подождите немного и попробуйте снова.");
+    } else if (error?.status === 401) {
+      throw new Error("Ошибка авторизации AI. Обратитесь к администратору.");
+    } else if (error.message) {
+      // Пробрасываем наше понятное сообщение
+      throw error;
+    } else {
+      throw new Error("Не удалось распознать речь. Попробуйте говорить громче и чётче.");
+    }
   }
 }
 

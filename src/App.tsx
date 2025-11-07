@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { MainLayout } from "./components/layouts/MainLayout";
+import { AdminGuard } from "./components/AdminGuard";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
@@ -47,13 +48,13 @@ const AppRoutes = () => {
       <Route path="/course/:id/module/:moduleId" element={<MainLayout><Module /></MainLayout>} />
       <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<MainLayout><Lesson /></MainLayout>} />
       
-      {/* Админ-панель (требуют роль admin) */}
-      <Route path="/admin" element={<MainLayout><AdminDashboard /></MainLayout>} />
-      <Route path="/admin/activity" element={<MainLayout><Activity /></MainLayout>} />
-      <Route path="/admin/students-activity" element={<MainLayout><StudentsActivity /></MainLayout>} />
-      <Route path="/admin/ai-analytics" element={<MainLayout><AIAnalytics /></MainLayout>} />
-      <Route path="/admin/ai-curator-chats" element={<MainLayout><AICuratorChats /></MainLayout>} />
-      <Route path="/admin/token-usage" element={<MainLayout><TokenUsage /></MainLayout>} />
+      {/* Админ-панель (ЗАЩИЩЕНО: только saint@onaiacademy.kz) */}
+      <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
+      <Route path="/admin/activity" element={<AdminGuard><MainLayout><Activity /></MainLayout></AdminGuard>} />
+      <Route path="/admin/students-activity" element={<AdminGuard><MainLayout><StudentsActivity /></MainLayout></AdminGuard>} />
+      <Route path="/admin/ai-analytics" element={<AdminGuard><MainLayout><AIAnalytics /></MainLayout></AdminGuard>} />
+      <Route path="/admin/ai-curator-chats" element={<AdminGuard><MainLayout><AICuratorChats /></MainLayout></AdminGuard>} />
+      <Route path="/admin/token-usage" element={<AdminGuard><MainLayout><TokenUsage /></MainLayout></AdminGuard>} />
       
       {/* Настройки и чат (требуют авторизацию) */}
       <Route path="/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
