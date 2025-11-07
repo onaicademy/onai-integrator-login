@@ -54,10 +54,10 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    // Удаляем console.log в production через esbuild
+    // Оставляем console.log для отладки (можно включить drop позже)
     target: 'esnext',
     esbuild: {
-      drop: mode === "production" ? ['console', 'debugger'] : [],
+      drop: [], // Временно не удаляем console.log для отладки авторизации
     },
   },
 }));

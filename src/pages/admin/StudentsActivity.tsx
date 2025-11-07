@@ -91,7 +91,7 @@ export default function StudentsActivity() {
 
     // Mock создание приглашения
     const mockInvitation = {
-      invitation_url: `https://integratoronai.kz/invite/${Math.random().toString(36).substring(7)}`,
+      invitation_url: `https://onai.academy/invite/${Math.random().toString(36).substring(7)}`,
       temp_password: Math.random().toString(36).substring(2, 10),
     };
 

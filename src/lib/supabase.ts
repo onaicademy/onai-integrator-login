@@ -14,14 +14,22 @@ if (!supabaseUrl || !supabaseKey) {
 
 console.log('✅ Supabase initialized:', {
   url: supabaseUrl,
-  keyLength: supabaseKey?.length
+  keyLength: supabaseKey?.length,
+  keyPreview: supabaseKey?.substring(0, 20) + '...'
 })
 
+// Создаем клиент с явной передачей API key в headers
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
+    }
   }
 })
 
