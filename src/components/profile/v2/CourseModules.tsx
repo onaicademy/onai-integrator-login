@@ -66,7 +66,7 @@ export const CourseModules = () => {
           className="w-full border-neon/40 hover:bg-neon/10 hover:border-neon group transition-all duration-300"
         >
           <LayoutDashboard className="w-4 h-4 mr-2 text-neon" />
-          <span>Перейти в личный кабинет</span>
+          <span>Перейти в AI-наставник</span>
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </motion.div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
@@ -19,6 +19,7 @@ export default function ProfileSettings() {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
     loadUserData();
@@ -33,9 +34,67 @@ export default function ProfileSettings() {
         setUser(user);
         setEmail(user.email || "");
         setFullName(user.user_metadata?.full_name || "");
+        setAvatarUrl(user.user_metadata?.avatar_url || "");
       }
     } catch (error) {
       console.error("Ошибка загрузки данных:", error);
+    }
+  };
+
+  // Загрузить аватар
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Проверка размера (макс 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Файл слишком большой (макс 2MB)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Загружаем в Supabase Storage
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Получаем публичный URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      // Обновляем профиль
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl },
+      });
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+
+      toast({
+        title: "✅ Аватар обновлён",
+        description: "Новое фото профиля установлено",
+      });
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: error.message || "Не удалось загрузить аватар",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,18 +203,35 @@ export default function ProfileSettings() {
           <CardContent>
             <div className="flex items-center gap-6">
               <Avatar className="w-24 h-24 border-4 border-neon/30">
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt="Avatar" />
+                ) : null}
                 <AvatarFallback className="bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 text-2xl font-bold">
                   {fullName ? getInitials(fullName) : "?"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-sm text-muted-foreground mb-2">
-                  3D аватары будут доступны позже
+                  Загрузите свой аватар (макс 2MB)
                 </p>
-                <Button variant="outline" disabled>
-                  <Camera className="w-4 h-4 mr-2" />
-                  Загрузить фото (скоро)
-                </Button>
+                <div>
+                  <Input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                    disabled={loading}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById("avatar-upload")?.click()}
+                    disabled={loading}
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {loading ? "Загрузка..." : "Загрузить фото"}
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
