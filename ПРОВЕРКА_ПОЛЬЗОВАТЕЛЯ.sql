@@ -39,20 +39,25 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 -- Включаем Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
+-- Удаляем старые политики если они есть
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+DROP POLICY IF EXISTS "Admins can view all users" ON public.users;
+
 -- Политика: Пользователи могут читать только свои данные
-CREATE POLICY IF NOT EXISTS "Users can view own profile"
+CREATE POLICY "Users can view own profile"
   ON public.users
   FOR SELECT
   USING (auth.uid() = id);
 
 -- Политика: Пользователи могут обновлять только свои данные
-CREATE POLICY IF NOT EXISTS "Users can update own profile"
+CREATE POLICY "Users can update own profile"
   ON public.users
   FOR UPDATE
   USING (auth.uid() = id);
 
 -- Политика: Админы могут видеть всех
-CREATE POLICY IF NOT EXISTS "Admins can view all users"
+CREATE POLICY "Admins can view all users"
   ON public.users
   FOR SELECT
   USING (
