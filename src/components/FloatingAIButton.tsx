@@ -4,6 +4,8 @@ import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { AIChatDialog } from "./profile/v2/AIChatDialog";
 import { useLocation } from "react-router-dom";
 
+const POSITION_STORAGE_KEY = 'floating-ai-button-position';
+
 export const FloatingAIButton = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -20,10 +22,22 @@ export const FloatingAIButton = () => {
   const hiddenPaths = ["/login", "/welcome", "/"];
   const shouldHide = hiddenPaths.includes(location.pathname);
 
+  // Загружаем сохранённую позицию при монтировании
   useEffect(() => {
-    // Сброс позиции при смене страницы
-    x.set(0);
-    y.set(0);
+    try {
+      const savedPosition = localStorage.getItem(POSITION_STORAGE_KEY);
+      if (savedPosition) {
+        const { x: savedX, y: savedY } = JSON.parse(savedPosition);
+        x.set(savedX);
+        y.set(savedY);
+      }
+    } catch (error) {
+      console.warn('Failed to load button position:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    // НЕ сбрасываем позицию при смене страницы - сохраняем её!
     setIsDraggable(false);
   }, [location.pathname]);
 
@@ -55,6 +69,16 @@ export const FloatingAIButton = () => {
 
   const handleDragEnd = (event: any, info: PanInfo) => {
     setIsDragging(false);
+    
+    // Сохраняем новую позицию в localStorage
+    try {
+      const currentX = x.get();
+      const currentY = y.get();
+      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x: currentX, y: currentY }));
+    } catch (error) {
+      console.warn('Failed to save button position:', error);
+    }
+    
     // Сбрасываем режим перетаскивания, чтобы снова можно было кликать
     setTimeout(() => {
       setIsDraggable(false);
