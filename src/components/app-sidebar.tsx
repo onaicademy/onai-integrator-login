@@ -29,12 +29,12 @@ const studentMenuItems: MenuItem[] = [
   { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
-  { title: "Админ панель", url: "/admin/activity", icon: LayoutDashboard },
+  { title: "Админ панель", url: "/admin", icon: LayoutDashboard },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
 const adminMenuItems: MenuItem[] = [
-  { title: "Dashboard", url: "/admin/activity", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Диалоги с AI-куратором", url: "/admin/ai-curator-chats", icon: MessageSquare },
   { title: "Курсы и модули", url: "/admin/courses", icon: GraduationCap },
   { title: "Ученики", url: "/admin/students", icon: Users },
