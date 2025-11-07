@@ -691,7 +691,7 @@ export default function AIAnalytics() {
                     label="😊 Настроение"
                     score={selectedStudent.mood_score}
                     weight={20}
-                    details={`Средний mood: ${selectedStudent.avg_mood_7d}/10 • Динамика: ${selected Student.mood_trend > 0 ? '+' : ''}${selectedStudent.mood_trend} пункт(а)`}
+                    details={`Средний mood: ${selectedStudent.avg_mood_7d}/10 • Динамика: ${selectedStudent.mood_trend > 0 ? '+' : ''}${selectedStudent.mood_trend} пункт(а)`}
                   />
                   <CriteriaBar
                     label="📚 Прогресс обучения"
