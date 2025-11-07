@@ -4,12 +4,13 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
@@ -84,40 +85,50 @@ export default function Login() {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a0f]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5fccc9]" />
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00ff00]" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0a0a0f] overflow-hidden">
+    <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
       {/* Космический фон с плавающими светлыми пятнами */}
-      <div className="absolute inset-0">
-        {/* Звезды */}
-        {[...Array(50)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.2, 1, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: Math.random() * 3 + 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Летающие звезды */}
+        {[...Array(50)].map((_, i) => {
+          const startX = Math.random() * 100;
+          const startY = Math.random() * 100;
+          const moveX = (Math.random() - 0.5) * 30; // -15 to +15
+          const moveY = (Math.random() - 0.5) * 30;
+          
+          return (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-white rounded-full"
+              style={{
+                top: `${startY}%`,
+                left: `${startX}%`,
+              }}
+              animate={{
+                x: [0, moveX, 0],
+                y: [0, moveY, 0],
+                opacity: [0.2, 1, 0.2],
+                scale: [1, 1.5, 1],
+              }}
+              transition={{
+                duration: Math.random() * 5 + 3,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+                ease: 'easeInOut',
+              }}
+            />
+          );
+        })}
 
-        {/* Плавающие светлые пятна (blur blobs) */}
+        {/* Плавающие светлые пятна (blur blobs) - кислотно-зеленые */}
         <motion.div
-          className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-purple-500/30 to-transparent blur-3xl"
+          className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-[#00ff00]/20 to-transparent blur-3xl"
           style={{ top: '10%', left: '10%' }}
           animate={{
             x: [0, 50, 0],
@@ -131,7 +142,7 @@ export default function Login() {
           }}
         />
         <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-500/20 to-transparent blur-3xl"
+          className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#00ff00]/15 to-transparent blur-3xl"
           style={{ top: '50%', right: '10%' }}
           animate={{
             x: [0, -30, 0],
@@ -145,7 +156,7 @@ export default function Login() {
           }}
         />
         <motion.div
-          className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-blue-500/25 to-transparent blur-3xl"
+          className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-[#00ff00]/10 to-transparent blur-3xl"
           style={{ bottom: '20%', left: '20%' }}
           animate={{
             x: [0, 40, 0],
@@ -161,57 +172,52 @@ export default function Login() {
       </div>
 
       {/* Контент */}
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col min-h-screen">
         {/* Хедер */}
-        <header className="flex items-center justify-between px-8 py-6">
-          <div className="flex items-center gap-12">
-            <h1 className="text-2xl font-bold text-white tracking-wider">
+        <header className="flex items-center justify-between px-4 sm:px-8 py-6 flex-shrink-0">
+          <div className="flex items-center gap-4 sm:gap-12">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wider leading-tight">
               ONAI<br />ACADEMY
             </h1>
-            <nav className="hidden md:block">
-              <a href="/courses" className="text-gray-300 hover:text-white transition">
-                Все курсы
-              </a>
-            </nav>
           </div>
           
           <div className="flex items-center gap-4">
-            <button className="text-gray-300 hover:text-white transition">
+            <button className="text-gray-300 hover:text-[#00ff00] transition">
               🌐
             </button>
           </div>
         </header>
 
         {/* Форма входа */}
-        <div className="flex items-center justify-center px-4" style={{ minHeight: 'calc(100vh - 200px)' }}>
+        <div className="flex-grow flex items-center justify-center px-4 py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full max-w-md"
+            className="w-full max-w-md mx-auto"
           >
             {/* Заголовок */}
-            <div className="text-center mb-12">
+            <div className="text-center mb-8 sm:mb-12">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="flex items-center justify-center gap-4 mb-4"
+                className="flex items-center justify-center gap-3 sm:gap-4 mb-4"
               >
-                <div className="w-12 h-12 rounded-full border-2 border-[#5fccc9] flex items-center justify-center">
-                  <ArrowRight className="w-6 h-6 text-[#5fccc9]" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#00ff00] flex items-center justify-center flex-shrink-0">
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-[#00ff00]" />
                 </div>
-                <h2 className="text-5xl font-bold text-white">ВХОД</h2>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white">ВХОД</h2>
               </motion.div>
             </div>
 
             {/* Форма */}
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
               {/* Email */}
               <div>
                 <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-                  <Mail className="w-4 h-4" />
-                  Электронная почта
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">Электронная почта</span>
                 </label>
                 <Input
                   type="email"
@@ -219,7 +225,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#5fccc9] focus:ring-[#5fccc9]/20"
+                  className="h-12 sm:h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/20"
                   placeholder="student@onaiacademy.kz"
                 />
               </div>
@@ -227,25 +233,39 @@ export default function Login() {
               {/* Пароль */}
               <div>
                 <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-                  <Lock className="w-4 h-4" />
-                  Пароль
+                  <Lock className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">Пароль</span>
                 </label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#5fccc9] focus:ring-[#5fccc9]/20"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="h-12 sm:h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/20 pr-12"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00ff00] transition"
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Кнопка входа */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-14 bg-[#5fccc9] hover:bg-[#4ebbb8] text-[#0a0a0f] font-semibold text-lg transition-all duration-300 hover:scale-[1.02]"
+                className="w-full h-12 sm:h-14 bg-[#00ff00] hover:bg-[#00cc00] text-black font-semibold text-base sm:text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#00ff00]/20"
               >
                 {isLoading ? (
                   <>
@@ -262,14 +282,14 @@ export default function Login() {
             </form>
 
             {/* Подсказки */}
-            <div className="mt-8 text-center space-y-2">
-              <p className="text-sm text-gray-400">
+            <div className="mt-6 sm:mt-8 text-center space-y-2 px-4">
+              <p className="text-xs sm:text-sm text-gray-400">
                 Нет аккаунта?{' '}
-                <span className="text-[#5fccc9] cursor-pointer hover:underline">
+                <span className="text-[#00ff00] cursor-pointer hover:underline">
                   Обратитесь к администратору
                 </span>
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Забыли пароль? Свяжитесь с поддержкой
               </p>
             </div>
@@ -277,42 +297,25 @@ export default function Login() {
         </div>
 
         {/* Футер */}
-        <footer className="absolute bottom-0 left-0 right-0 border-t border-gray-800">
-          <div className="container mx-auto px-8 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-              {/* О платформе */}
-              <div>
-                <h3 className="text-white font-semibold mb-3">О ПЛАТФОРМЕ</h3>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li>
-                    <a href="#" className="hover:text-[#5fccc9] transition">
-                      Публичная оферта
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-[#5fccc9] transition">
-                      Политика конфиденциальности
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
+        <footer className="relative z-10 border-t border-gray-800 flex-shrink-0 mt-auto">
+          <div className="container mx-auto px-4 sm:px-8 py-6 sm:py-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 text-center sm:text-left">
               {/* Контакты */}
               <div>
-                <h3 className="text-white font-semibold mb-3">КОНТАКТЫ</h3>
-                <p className="text-sm text-gray-400">
-                  <Mail className="inline w-4 h-4 mr-2" />
+                <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">КОНТАКТЫ</h3>
+                <p className="text-xs sm:text-sm text-gray-400 break-all">
+                  <Mail className="inline w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   feedback@onaiacademy.kz
                 </p>
               </div>
 
               {/* Соцсети */}
               <div>
-                <h3 className="text-white font-semibold mb-3">СОЦСЕТИ</h3>
-                <div className="flex justify-center md:justify-start gap-4">
+                <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">СОЦСЕТИ</h3>
+                <div className="flex justify-center sm:justify-start gap-4">
                   <a
                     href="#"
-                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#5fccc9] transition flex items-center justify-center"
+                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] hover:text-black transition flex items-center justify-center"
                   >
                     📷
                   </a>
@@ -320,7 +323,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
+            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-800 text-center text-xs sm:text-sm text-gray-500">
               © 2025 onAI Academy. Все права защищены.
             </div>
           </div>
