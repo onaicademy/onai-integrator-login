@@ -52,26 +52,20 @@ export function AppSidebar({ role = "student" }: AppSidebarProps) {
 
   const { state } = useSidebar();
 
-  // Если админ - показываем adminMenuItems, если студент - фильтруем
-  let menuItems: MenuItem[];
-  
-  if (role === "admin") {
-    menuItems = adminMenuItems;
-  } else {
-    // Фильтруем пункты в зависимости от роли
-    menuItems = studentMenuItems.filter(item => {
-      // Если студент - скрываем админ-панель
-      if (item.url === "/admin") {
-        console.log('🚫 Скрываем админ-панель для студента');
-        return false;
-      }
-      return true;
-    });
-  }
+  // ВСЕГДА показываем studentMenuItems, просто фильтруем для студентов
+  const menuItems = studentMenuItems.filter(item => {
+    // Если студент - скрываем админ-панель
+    if (role === "student" && item.url === "/admin") {
+      console.log('🚫 Скрываем админ-панель для студента');
+      return false;
+    }
+    // Для админов показываем ВСЁ (включая админ-панель)
+    return true;
+  });
 
   const isCollapsed = state === "collapsed";
 
-  console.log('✅ Показываем пунктов:', menuItems.length);
+  console.log('✅ Показываем пунктов:', menuItems.length, 'для роли:', role);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -102,7 +96,7 @@ export function AppSidebar({ role = "student" }: AppSidebarProps) {
             "px-2 text-xs sm:text-sm text-muted-foreground transition-opacity",
             isCollapsed && "opacity-0"
           )}>
-            {role === "admin" ? "Управление" : "Навигация"}
+            Навигация
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
