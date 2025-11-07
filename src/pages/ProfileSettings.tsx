@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Key, Camera, Save } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { User, Mail, Key, Camera, Save, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ export default function ProfileSettings() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Форма
   const [fullName, setFullName] = useState("");
@@ -178,6 +180,31 @@ export default function ProfileSettings() {
       .slice(0, 2);
   };
 
+  // Выход из аккаунта
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      toast({
+        title: "👋 До свидания!",
+        description: "Вы успешно вышли из аккаунта",
+      });
+
+      // Редирект на страницу логина
+      navigate("/login", { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "❌ Ошибка",
+        description: error.message || "Не удалось выйти из аккаунта",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Заголовок */}
@@ -298,6 +325,26 @@ export default function ProfileSettings() {
             <Button onClick={handleChangePassword} disabled={loading}>
               <Key className="w-4 h-4 mr-2" />
               Изменить пароль
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Выход из аккаунта */}
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <CardTitle className="text-destructive">Выход из аккаунта</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Выйти из вашего аккаунта на этом устройстве
+            </p>
+            <Button 
+              variant="destructive" 
+              onClick={handleLogout} 
+              disabled={loading}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Выйти
             </Button>
           </CardContent>
         </Card>

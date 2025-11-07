@@ -214,8 +214,9 @@ export default function Login() {
         {/* Хедер */}
         <header className="flex items-center justify-between px-4 sm:px-8 py-6 flex-shrink-0">
           <div className="flex items-center gap-4 sm:gap-12">
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wider leading-tight">
-              ONAI<br />ACADEMY
+            <h1 className="text-xl sm:text-2xl font-bold tracking-wider leading-tight">
+              <span className="text-[#00ff00]">ONAI</span><br />
+              <span className="text-white">ACADEMY</span>
             </h1>
           </div>
           
