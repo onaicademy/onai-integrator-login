@@ -113,7 +113,21 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
   const loadChatHistory = async () => {
     setIsLoadingHistory(true);
     try {
-      const history = await getChatHistory();
+      // Получаем userId
+      let userId = 'user-1'; // Fallback
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          userId = user.id;
+          console.log('✅ Загружаем историю для userId:', userId);
+        } else {
+          console.warn('⚠️  Пользователь не авторизован, используем mock userId');
+        }
+      } catch (authError) {
+        console.warn('⚠️  Ошибка получения userId:', authError);
+      }
+
+      const history = await getChatHistory(userId);
       if (history.length > 0) {
         setMessages(history);
       } else {

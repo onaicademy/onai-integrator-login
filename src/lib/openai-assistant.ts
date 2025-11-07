@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 import { getUserAchievementsForAI, formatAchievementsForAI } from './achievements-api';
 import { logTokenUsage, logWhisperUsage } from './token-tracker';
+import {
+  getChatHistory as getSupabaseChatHistory,
+  saveMessagePair,
+  getOrCreateThread as getSupabaseThread,
+  type ChatMessage as SupabaseChatMessage,
+} from './supabase-chat';
 
 // Инициализация OpenAI клиента
 let openai: OpenAI | null = null;
@@ -249,6 +255,7 @@ export async function sendMessageToAI(
   userId?: string
 ): Promise<string> {
   try {
+    const startTime = Date.now(); // Для измерения времени ответа
     const client = initOpenAI();
 
     // Получаем или создаём Assistant и Thread
@@ -482,6 +489,19 @@ export async function sendMessageToAI(
       ) {
         const responseText = assistantMessage.content[0].text.value;
         console.log("✅ Получен ответ от Assistant (длина:", responseText.length, "символов)");
+        
+        // 💾 СОХРАНЯЕМ в Supabase (если userId передан)
+        if (userId) {
+          console.log("💾 Сохраняем диалог в Supabase...");
+          await saveMessagePair(userId, message, responseText, {
+            response_time_ms: Date.now() - startTime,
+            model_used: 'gpt-4o',
+            openai_message_id: assistantMessage.id,
+            openai_run_id: run.id,
+          });
+          console.log("✅ Диалог сохранён в Supabase");
+        }
+        
         return responseText;
       } else {
         throw new Error("Неожиданный формат ответа от Assistant");
@@ -496,45 +516,30 @@ export async function sendMessageToAI(
 }
 
 /**
- * Получить историю сообщений из Thread
+ * Получить историю сообщений из Supabase
  */
-export async function getChatHistory(): Promise<ChatMessage[]> {
+export async function getChatHistory(userId?: string): Promise<ChatMessage[]> {
   try {
-    const client = initOpenAI();
-    const threadId = await getOrCreateThread();
+    // Если userId не передан, возвращаем пустой массив
+    if (!userId) {
+      console.warn("⚠️ getChatHistory: userId не передан");
+      return [];
+    }
 
-    // Загружаем все сообщения (до 100 для полной истории)
-    const messages = await client.beta.threads.messages.list(threadId, {
-      limit: 100,
-      order: "asc", // Сначала старые сообщения
-    });
+    console.log("📜 Загружаем историю из Supabase для user:", userId);
+    
+    // Получаем сообщения из Supabase
+    const supabaseMessages = await getSupabaseChatHistory(userId, 100);
+    
+    console.log(`✅ Загружено ${supabaseMessages.length} сообщений из Supabase`);
 
-    console.log("📜 Загружено сообщений из Thread:", messages.data.length);
+    // Преобразуем в формат ChatMessage
+    const chatMessages: ChatMessage[] = supabaseMessages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      file_ids: [],
+    }));
 
-    const chatMessages: ChatMessage[] = messages.data
-      .map((msg) => {
-        // Обрабатываем все типы контента
-        const textContent = msg.content.find((c: any) => c.type === "text");
-        if (textContent && textContent.type === "text") {
-          return {
-            role: msg.role as "user" | "assistant",
-            content: textContent.text.value,
-            file_ids: msg.file_ids || [],
-          };
-        }
-        // Если нет текста, но есть файлы, создаём сообщение с placeholder
-        if (msg.file_ids && msg.file_ids.length > 0) {
-          return {
-            role: msg.role as "user" | "assistant",
-            content: msg.role === "user" ? "📎 Прикреплён файл" : "Обработал файл",
-            file_ids: msg.file_ids,
-          };
-        }
-        return null;
-      })
-      .filter((msg): msg is ChatMessage => msg !== null);
-
-    console.log("✅ Обработано сообщений:", chatMessages.length);
     return chatMessages;
   } catch (error) {
     console.error("❌ Ошибка при получении истории:", error);
