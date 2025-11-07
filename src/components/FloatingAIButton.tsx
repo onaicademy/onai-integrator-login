@@ -97,18 +97,21 @@ export const FloatingAIButton = () => {
         }}
         transition={{ duration: 0.3 }}
       >
-        {/* Индикатор "держите для перемещения" */}
+        {/* Tooltip: AI-куратор / Удерживайте для перемещения */}
         {!isDraggable && !isDragging && (
-          <motion.div
-            className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <div className="bg-secondary/95 backdrop-blur-sm border border-border/40 rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-              <p className="text-xs text-muted-foreground">Удерживайте для перемещения</p>
-            </div>
-          </motion.div>
+          <div className="absolute bottom-full mb-3 right-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[60]">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-secondary/95 backdrop-blur-sm border border-border/40 rounded-lg px-3 py-2 shadow-lg"
+            >
+              <p className="text-xs font-medium text-foreground whitespace-nowrap">AI-куратор</p>
+              <p className="text-[10px] text-muted-foreground whitespace-nowrap">Удерживайте для перемещения</p>
+            </motion.div>
+            {/* Стрелка снизу */}
+            <div className="absolute -bottom-1 right-4 w-2 h-2 bg-secondary/95 border-r border-b border-border/40 rotate-45" />
+          </div>
         )}
 
         {/* Пульсация слой 1 */}

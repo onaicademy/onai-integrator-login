@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, Brain, Sparkles, Zap } from "lucide-react";
+import { Users, Brain, Sparkles, Zap, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Карточки */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
           {/* Карточка 1: Управление студентами */}
           <AdminCard
             title="Управление студентами"
@@ -133,6 +133,20 @@ export default function AdminDashboard() {
               { label: "Проблем выявлено", value: "8" },
             ]}
           />
+
+          {/* Карточка 4: Токены AI-агентов */}
+          <AdminCard
+            title="Токены AI-агентов"
+            description="Затраты OpenAI, статистика, бюджет"
+            icon={<DollarSign className="w-16 h-16" />}
+            color="orange"
+            onClick={() => navigate("/admin/token-usage")}
+            stats={[
+              { label: "Затраты сегодня", value: "2,450₸" },
+              { label: "Всего токенов", value: "125K" },
+              { label: "Запросов", value: "342" },
+            ]}
+          />
         </div>
       </div>
     </div>
@@ -147,7 +161,7 @@ interface AdminCardProps {
   title: string;
   description: string;
   icon: React.ReactNode;
-  color: "neon" | "purple" | "cyber-blue";
+  color: "neon" | "purple" | "cyber-blue" | "orange";
   onClick: () => void;
   stats: { label: string; value: string }[];
 }
@@ -174,6 +188,13 @@ function AdminCard({ title, description, icon, color, onClick, stats }: AdminCar
       shadow: "shadow-[hsl(var(--cyber-blue))]/20 hover:shadow-[hsl(var(--cyber-blue))]/50",
       glow: "bg-[hsl(var(--cyber-blue))]",
       text: "text-[hsl(var(--cyber-blue))]",
+    },
+    orange: {
+      gradient: "from-orange-500/10 via-orange-500/5 to-transparent",
+      border: "border-orange-500/30 hover:border-orange-500",
+      shadow: "shadow-orange-500/20 hover:shadow-orange-500/50",
+      glow: "bg-orange-500",
+      text: "text-orange-500",
     },
   };
 

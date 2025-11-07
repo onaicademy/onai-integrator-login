@@ -49,7 +49,7 @@ const AppRoutes = () => {
       <Route path="/admin/token-usage" element={<MainLayout><TokenUsage /></MainLayout>} />
       
       {/* Настройки и чат */}
-      <Route path="/profile/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
+      <Route path="/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
       <Route path="/messages" element={<MainLayout><Messages /></MainLayout>} />
       
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
