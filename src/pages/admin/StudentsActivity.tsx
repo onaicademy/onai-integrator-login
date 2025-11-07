@@ -66,11 +66,11 @@ export default function StudentsActivity() {
     try {
       console.log('📊 Загрузка списка студентов из public.users...');
       
-      // Загружаем пользователей из public.users (исключаем CEO)
+      // Загружаем пользователей из public.users (исключаем админа по email)
       const { data: usersData, error } = await supabase
         .from('users')
         .select('*')
-        .neq('is_ceo', true)
+        .neq('email', 'saint@onaiacademy.kz')
         .order('created_at', { ascending: false });
 
       if (error) {
