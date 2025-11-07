@@ -4,10 +4,13 @@
 -- Password: Onai2134!
 -- ========================
 
--- 1. Создаём пользователя через auth.users
--- ⚠️  ВАЖНО: Этот SQL нужно выполнить в Supabase SQL Editor
+-- ⚠️  ВАЖНО: Этот SQL создаёт админа через Supabase auth
+-- Если админ уже существует - обновит пароль и роль
 
--- Создаём админа
+-- 1. Удаляем старый аккаунт если есть (безопасно)
+DELETE FROM auth.users WHERE email = 'saint@onaiacademy.kz';
+
+-- 2. Создаём нового админа
 INSERT INTO auth.users (
   instance_id,
   id,
@@ -27,70 +30,65 @@ INSERT INTO auth.users (
 )
 VALUES (
   '00000000-0000-0000-0000-000000000000',
-  gen_random_uuid(),
+  gen_random_uuid(), -- Генерируем уникальный ID
   'authenticated',
   'authenticated',
   'saint@onaiacademy.kz',
   crypt('Onai2134!', gen_salt('bf')), -- Хешируем пароль
-  NOW(),
-  '{"provider":"email","providers":["email"],"role":"admin","is_ceo":true}', -- Роль админа
-  '{"full_name":"Saint","role":"admin","is_ceo":true}', -- Данные профиля
+  NOW(), -- Email подтверждён сразу
+  '{"provider":"email","providers":["email"],"role":"admin","is_ceo":true}'::jsonb, -- Роль админа
+  '{"full_name":"Saint","role":"admin","is_ceo":true}'::jsonb, -- Данные профиля
   NOW(),
   NOW(),
   '',
   '',
   '',
   ''
-)
-ON CONFLICT (email) DO UPDATE
-SET 
-  encrypted_password = crypt('Onai2134!', gen_salt('bf')),
-  raw_app_meta_data = '{"provider":"email","providers":["email"],"role":"admin","is_ceo":true}',
-  raw_user_meta_data = '{"full_name":"Saint","role":"admin","is_ceo":true}',
-  email_confirmed_at = NOW(),
-  updated_at = NOW();
+);
 
--- 2. Создаём запись в profiles (если есть такая таблица)
--- Если у вас нет таблицы profiles, закомментируйте этот блок
+-- 3. Получаем ID созданного админа
+DO $$
+DECLARE
+  admin_user_id UUID;
+BEGIN
+  -- Находим ID админа
+  SELECT id INTO admin_user_id
+  FROM auth.users
+  WHERE email = 'saint@onaiacademy.kz';
 
-INSERT INTO profiles (
-  id,
-  full_name,
-  avatar_url,
-  role,
-  is_ceo,
-  created_at,
-  updated_at
-)
+  -- Создаём запись в profiles (если таблица существует)
+  BEGIN
+    EXECUTE format('
+      INSERT INTO profiles (id, full_name, avatar_url, role, is_ceo, created_at, updated_at)
+      VALUES ($1, $2, NULL, $3, true, NOW(), NOW())
+      ON CONFLICT (id) DO UPDATE
+      SET full_name = $2, role = $3, is_ceo = true, updated_at = NOW()
+    ', admin_user_id) USING admin_user_id, 'Saint', 'admin';
+  EXCEPTION
+    WHEN undefined_table THEN
+      RAISE NOTICE 'Таблица profiles не существует, пропускаем...';
+  END;
+
+  RAISE NOTICE 'Админ аккаунт создан успешно! ID: %', admin_user_id;
+END $$;
+
+-- 4. Проверка создания
 SELECT 
+  '✅ Админ аккаунт создан!' as status,
   id,
-  'Saint',
-  NULL,
-  'admin',
-  true,
-  NOW(),
-  NOW()
-FROM auth.users
-WHERE email = 'saint@onaiacademy.kz'
-ON CONFLICT (id) DO UPDATE
-SET 
-  full_name = 'Saint',
-  role = 'admin',
-  is_ceo = true,
-  updated_at = NOW();
+  email,
+  email_confirmed_at,
+  raw_user_meta_data->>'full_name' as name,
+  raw_app_meta_data->>'role' as role,
+  raw_app_meta_data->>'is_ceo' as is_ceo,
+  created_at
+FROM auth.users 
+WHERE email = 'saint@onaiacademy.kz';
 
 -- ========================
 -- ГОТОВО!
 -- ========================
 -- Теперь можно войти:
--- Email: saint@onaiacademy.kz
--- Password: Onai2134!
-
-SELECT 
-  'Админ аккаунт создан!' as status,
-  email,
-  raw_user_meta_data->>'full_name' as name,
-  raw_app_meta_data->>'role' as role
-FROM auth.users 
-WHERE email = 'saint@onaiacademy.kz';
-
+-- 🌐 https://integratoronai.kz
+-- 📧 Email: saint@onaiacademy.kz
+-- 🔑 Password: Onai2134!
