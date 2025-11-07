@@ -40,12 +40,23 @@ export default function Login() {
 
   async function checkAuth() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Таймаут 5 секунд - если Supabase не отвечает, показываем форму логина
+      const timeoutPromise = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+      
+      const sessionPromise = supabase.auth.getSession();
+      
+      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
+      
       if (session) {
+        console.log('✅ Пользователь уже залогинен, редирект');
         navigate(from, { replace: true });
+      } else {
+        console.log('ℹ️ Нет активной сессии, показываем форму логина');
       }
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.warn('⚠️ Ошибка проверки авторизации (таймаут или другая ошибка), показываем форму логина');
     } finally {
       setIsCheckingAuth(false);
     }
