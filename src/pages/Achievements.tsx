@@ -38,9 +38,11 @@ import {
   DAILY_ACHIEVEMENT_BONUS_MULTIPLIER
 } from '@/lib/daily-achievements';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
+import { isDevelopment } from '@/lib/env-utils';
 
-// Mock данные для демонстрации (позже заменим на данные из Supabase)
-const MOCK_USER_PROGRESS = {
+// Mock данные ТОЛЬКО для DEV (на проде будут реальные данные из БД)
+const MOCK_USER_PROGRESS_DEV = {
   lessons_completed: 23,
   modules_completed: 2,
   courses_completed: 0,
@@ -54,10 +56,27 @@ const MOCK_USER_PROGRESS = {
   videos_watched: 12
 };
 
+// Пустой прогресс для нового пользователя (PROD)
+const EMPTY_USER_PROGRESS = {
+  lessons_completed: 0,
+  modules_completed: 0,
+  courses_completed: 0,
+  streak_days: 0,
+  total_xp: 0,
+  level: 1,
+  perfect_lessons: 0,
+  messages_sent: 0,
+  ai_conversations: 0,
+  profile_completion: 0,
+  videos_watched: 0
+};
+
 export default function Achievements() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
   const [timeUntilReset, setTimeUntilReset] = useState(formatTimeUntilReset());
+  const [userProgress, setUserProgress] = useState(isDevelopment() ? MOCK_USER_PROGRESS_DEV : EMPTY_USER_PROGRESS);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const [selectedAchievement, setSelectedAchievement] = useState<{
     achievement: any;
     currentValue: number;
@@ -66,6 +85,55 @@ export default function Achievements() {
     isDaily?: boolean;
     bonusXP?: number;
   } | null>(null);
+  
+  // Загрузка реального прогресса пользователя из БД
+  useEffect(() => {
+    loadUserProgress();
+  }, []);
+  
+  async function loadUserProgress() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoadingProgress(false);
+        return;
+      }
+
+      // Загружаем статистику пользователя
+      const { data: statsData, error: statsError } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Загружаем профиль пользователя
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('total_xp, level')
+        .eq('id', user.id)
+        .single();
+
+      if (statsData && userData) {
+        setUserProgress({
+          lessons_completed: statsData.lessons_completed || 0,
+          modules_completed: 0, // TODO: добавить в БД
+          courses_completed: statsData.courses_completed || 0,
+          streak_days: statsData.current_streak || 0,
+          total_xp: userData.total_xp || 0,
+          level: userData.level || 1,
+          perfect_lessons: 0, // TODO: добавить логику
+          messages_sent: 0, // TODO: добавить в БД
+          ai_conversations: 0, // TODO: добавить в БД
+          profile_completion: 0, // TODO: добавить логику
+          videos_watched: 0, // TODO: добавить в БД
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user progress:', error);
+    } finally {
+      setIsLoadingProgress(false);
+    }
+  }
   
   // Обновляем таймер каждую минуту
   useEffect(() => {
@@ -82,7 +150,7 @@ export default function Achievements() {
   // Расчёт прогресса для каждого достижения
   const achievementsWithProgress = useMemo(() => {
     return ACHIEVEMENTS.map(achievement => {
-      const currentValue = MOCK_USER_PROGRESS[achievement.requirement.type as keyof typeof MOCK_USER_PROGRESS] || 0;
+      const currentValue = userProgress[achievement.requirement.type as keyof typeof userProgress] || 0;
       const isCompleted = currentValue >= achievement.requirement.value;
       
       return {
@@ -92,7 +160,7 @@ export default function Achievements() {
         progress: Math.min((currentValue / achievement.requirement.value) * 100, 100)
       };
     });
-  }, []);
+  }, [userProgress]);
 
   // Статистика
   const stats = useMemo(() => {
