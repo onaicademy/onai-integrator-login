@@ -30,9 +30,20 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
       setIsAuthenticated(true);
       
-      // Проверка роли админа
-      const userRole = user.user_metadata?.role || 'student';
-      setIsAdmin(userRole === 'admin');
+      // Проверка роли админа из таблицы public.users
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role, is_ceo')
+        .eq('id', user.id)
+        .single();
+      
+      if (userError) {
+        console.error('Error fetching user role:', userError);
+        // Если ошибка - считаем что не админ
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(userData?.role === 'admin' || userData?.is_ceo === true);
+      }
       
       setIsLoading(false);
     } catch (error) {

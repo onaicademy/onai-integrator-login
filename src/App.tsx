@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { MainLayout } from "./components/layouts/MainLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
@@ -31,29 +32,93 @@ const AppRoutes = () => {
 
   return (
     <Routes>
+      {/* Публичные страницы (без авторизации) */}
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/welcome" element={<Welcome />} />
-      <Route path="/profile" element={isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>} />
-      <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
-      <Route path="/achievements" element={<MainLayout><Achievements /></MainLayout>} />
-      <Route path="/courses" element={<Navigate to="/course/1" replace />} />
-      <Route path="/course/:id" element={<MainLayout><Course /></MainLayout>} />
-      <Route path="/course/:id/module/:moduleId" element={<MainLayout><Module /></MainLayout>} />
-      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<MainLayout><Lesson /></MainLayout>} />
-      {/* Админ-панель */}
-      <Route path="/admin" element={<MainLayout><AdminDashboard /></MainLayout>} />
-      <Route path="/admin/activity" element={<MainLayout><Activity /></MainLayout>} />
-      <Route path="/admin/students-activity" element={<MainLayout><StudentsActivity /></MainLayout>} />
-      <Route path="/admin/ai-analytics" element={<MainLayout><AIAnalytics /></MainLayout>} />
-      <Route path="/admin/ai-curator-chats" element={<MainLayout><AICuratorChats /></MainLayout>} />
-      <Route path="/admin/token-usage" element={<MainLayout><TokenUsage /></MainLayout>} />
       
-      {/* Настройки и чат */}
-      <Route path="/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
-      <Route path="/messages" element={<MainLayout><Messages /></MainLayout>} />
+      {/* Защищённые страницы (требуют авторизацию) */}
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          {isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>}
+        </ProtectedRoute>
+      } />
+      <Route path="/neurohub" element={
+        <ProtectedRoute>
+          <MainLayout><NeuroHub /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/achievements" element={
+        <ProtectedRoute>
+          <MainLayout><Achievements /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/courses" element={
+        <ProtectedRoute>
+          <Navigate to="/course/1" replace />
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id" element={
+        <ProtectedRoute>
+          <MainLayout><Course /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id/module/:moduleId" element={
+        <ProtectedRoute>
+          <MainLayout><Module /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={
+        <ProtectedRoute>
+          <MainLayout><Lesson /></MainLayout>
+        </ProtectedRoute>
+      } />
       
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      {/* Админ-панель (требуют роль admin) */}
+      <Route path="/admin" element={
+        <ProtectedRoute requireAdmin={true}>
+          <MainLayout><AdminDashboard /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/activity" element={
+        <ProtectedRoute requireAdmin={true}>
+          <MainLayout><Activity /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/students-activity" element={
+        <ProtectedRoute requireAdmin={true}>
+          <MainLayout><StudentsActivity /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/ai-analytics" element={
+        <ProtectedRoute requireAdmin={true}>
+          <MainLayout><AIAnalytics /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/ai-curator-chats" element={
+        <ProtectedRoute requireAdmin={true}>
+          <MainLayout><AICuratorChats /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/token-usage" element={
+        <ProtectedRoute requireAdmin={true}>
+          <MainLayout><TokenUsage /></MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      {/* Настройки и чат (требуют авторизацию) */}
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <MainLayout><ProfileSettings /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute>
+          <MainLayout><Messages /></MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
