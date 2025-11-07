@@ -48,25 +48,30 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ role = "student" }: AppSidebarProps) {
-  console.log('📋 Роль пользователя:', role);
-  
+  console.log('📋 AppSidebar роль:', role);
+
   const { state } = useSidebar();
+
+  // Если админ - показываем adminMenuItems, если студент - фильтруем
+  let menuItems: MenuItem[];
   
-  // ОСТАВЛЯЕМ studentMenuItems КАК ЕСТЬ!
-  // Просто фильтруем пункты с /admin
-  const filteredItems = studentMenuItems.filter(item => {
-    // Если студент - убираем всё что начинается с /admin
-    if (role === "student" && item.url.startsWith('/admin')) {
-      console.log('🚫 Скрываем для студента:', item.title);
-      return false;
-    }
-    return true;
-  });
-  
-  const menuItems = role === "admin" ? adminMenuItems : filteredItems;
+  if (role === "admin") {
+    menuItems = adminMenuItems;
+  } else {
+    // Фильтруем пункты в зависимости от роли
+    menuItems = studentMenuItems.filter(item => {
+      // Если студент - скрываем админ-панель
+      if (item.url === "/admin") {
+        console.log('🚫 Скрываем админ-панель для студента');
+        return false;
+      }
+      return true;
+    });
+  }
+
   const isCollapsed = state === "collapsed";
-  
-  console.log('✅ Показываем пунктов меню:', menuItems.length);
+
+  console.log('✅ Показываем пунктов:', menuItems.length);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
