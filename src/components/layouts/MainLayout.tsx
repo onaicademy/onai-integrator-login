@@ -10,59 +10,55 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, role: initialRole = "student" }: MainLayoutProps) {
   const [userRole, setUserRole] = useState<"admin" | "student">(initialRole);
-
-  async function loadUserRole() {
-    try {
-      console.log('🔍 MainLayout: Начало загрузки роли...');
-      
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        console.error('❌ Ошибка getUser:', userError);
-        setUserRole("student");
-        return;
-      }
-      
-      if (!user) {
-        console.log('⚠️ Нет пользователя');
-        setUserRole("student");
-        return;
-      }
-
-      console.log('👤 User ID:', user.id);
-      console.log('📧 Email:', user.email);
-
-      // Загружаем профиль из БД
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        console.error('❌ Ошибка загрузки профиля:', profileError);
-        console.log('⚠️ Попытка использовать роль из user_metadata...');
-        const fallbackRole = user.user_metadata?.role || user.raw_user_meta_data?.role || 'student';
-        setUserRole(fallbackRole === 'admin' ? 'admin' : 'student');
-        return;
-      }
-
-      if (profile) {
-        console.log('✅ Профиль найден, роль:', profile.role);
-        setUserRole(profile.role === 'admin' ? 'admin' : 'student');
-      } else {
-        console.log('⚠️ Профиль не найден, роль по умолчанию: student');
-        setUserRole("student");
-      }
-      
-    } catch (error) {
-      console.error('❌ Исключение в loadUserRole:', error);
-      setUserRole("student");
-    }
-  }
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
+    async function loadUserRole() {
+      try {
+        console.log('🔍 MainLayout: Загрузка роли из auth.user...');
+        
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (!isMounted) return;
+        
+        if (userError || !user) {
+          console.log('⚠️ Нет пользователя, роль: student');
+          setUserRole("student");
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('👤 User ID:', user.id);
+        console.log('📧 Email:', user.email);
+
+        // БЫСТРЫЙ СПОСОБ: Роль из JWT токена (БЕЗ запроса к БД!)
+        const role = user.user_metadata?.role || 
+                     user.raw_user_meta_data?.role || 
+                     (user.email === 'saint@onaiacademy.kz' ? 'admin' : 'student');
+        
+        console.log('✅ Роль из токена:', role);
+        
+        if (isMounted) {
+          setUserRole(role === 'admin' ? 'admin' : 'student');
+          setIsLoading(false);
+        }
+        
+      } catch (error) {
+        console.error('❌ Исключение в loadUserRole:', error);
+        if (isMounted) {
+          setUserRole("student");
+          setIsLoading(false);
+        }
+      }
+    }
+
     loadUserRole();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
