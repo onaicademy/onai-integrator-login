@@ -32,26 +32,11 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
       console.log('👤 User ID:', user.id);
       console.log('📧 Email:', user.email);
 
-      // Загружаем профиль из БД
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        console.error('❌ Ошибка загрузки профиля:', profileError);
-        setUserRole("student");
-        return;
-      }
-
-      if (profile) {
-        console.log('✅ Профиль найден, роль:', profile.role);
-        setUserRole(profile.role);
-      } else {
-        console.log('⚠️ Профиль не найден, роль по умолчанию: student');
-        setUserRole("student");
-      }
+      // Роль хранится в user.user_metadata или user.raw_user_meta_data
+      const role = user.user_metadata?.role || user.raw_user_meta_data?.role || 'student';
+      
+      console.log('✅ Роль из auth.users:', role);
+      setUserRole(role === 'admin' ? 'admin' : 'student');
       
     } catch (error) {
       console.error('❌ Исключение в loadUserRole:', error);

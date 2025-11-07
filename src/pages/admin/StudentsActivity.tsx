@@ -67,7 +67,7 @@ export default function StudentsActivity() {
       console.log('📋 Загрузка студентов...');
 
       const { data: profiles, error } = await supabase
-        .from('profiles')
+        .from('student_profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -80,11 +80,11 @@ export default function StudentsActivity() {
         email: profile.email,
         full_name: profile.full_name || 'Без имени',
         fullName: profile.full_name || 'Без имени',
-        role: profile.role || 'student',
+        role: 'student', // Роль всегда student для student_profiles
         status: profile.is_active !== false ? 'active' : 'inactive',
         is_active: profile.is_active !== false,
-        lastLogin: profile.updated_at,
-        last_login_at: profile.updated_at,
+        lastLogin: profile.last_login_at,
+        last_login_at: profile.last_login_at,
         progress: 0,
         coursesCompleted: 0
       })) || [];
@@ -173,20 +173,15 @@ export default function StudentsActivity() {
     });
   };
 
-  // Смена роли
+  // Смена роли (роль хранится в auth.users.user_metadata, требуется Edge Function)
   const handleChangeRole = async (studentId: string, newRole: string) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', studentId);
-
-      if (error) throw error;
+      // TODO: Реализовать через Edge Function, так как роль в auth.users
+      // Пока просто показываем уведомление
       toast({
-        title: "✅ Роль изменена",
-        description: "Роль успешно изменена",
+        title: "⚠️ В разработке",
+        description: "Смена роли будет доступна через Edge Function",
       });
-      await fetchStudents();
     } catch (error: any) {
       toast({
         title: "❌ Ошибка",
@@ -201,8 +196,14 @@ export default function StudentsActivity() {
     if (!confirm('Удалить студента?')) return;
     
     try {
-      await supabase.from('profiles').delete().eq('id', studentId);
-      await supabase.auth.admin.deleteUser(studentId);
+      // Удаляем из student_profiles (cascade удалит связанные записи)
+      const { error } = await supabase
+        .from('student_profiles')
+        .delete()
+        .eq('id', studentId);
+
+      if (error) throw error;
+
       toast({
         title: "✅ Студент удалён",
         description: "Студент успешно удалён",
@@ -221,7 +222,7 @@ export default function StudentsActivity() {
   const handleToggleActive = async (studentId: string, isActive: boolean) => {
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('student_profiles')
         .update({ is_active: !isActive })
         .eq('id', studentId);
 
