@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Send, Search, Mic, Smile, Paperclip, MoreVertical, 
-  Phone, Video, X, StopCircle, Play 
+  X, StopCircle, Play 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -403,12 +403,6 @@ export default function Messages() {
               </div>
               
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost">
-                  <Phone className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <Video className="w-4 h-4" />
-                </Button>
                 <Button size="sm" variant="ghost">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
