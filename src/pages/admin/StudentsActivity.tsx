@@ -7,6 +7,7 @@ import {
   UserX,
   CheckCircle,
   Copy,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -29,6 +37,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 export default function StudentsActivity() {
   const [students, setStudents] = useState<any[]>([]);
@@ -45,40 +54,59 @@ export default function StudentsActivity() {
   // Форма
   const [newStudentEmail, setNewStudentEmail] = useState("");
   const [newStudentName, setNewStudentName] = useState("");
+  const [newStudentRole, setNewStudentRole] = useState("student");
 
-  // Mock данные (позже подключить к Supabase)
+  // Загрузка студентов из базы
   useEffect(() => {
-    loadMockStudents();
+    loadStudents();
   }, []);
 
-  const loadMockStudents = () => {
-    const mockData = [
-      {
-        id: "1",
-        full_name: "Андрей Иванов",
-        email: "andrey@example.com",
-        is_active: true,
-        last_login_at: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        full_name: "Мария Петрова",
-        email: "maria@example.com",
-        is_active: true,
-        last_login_at: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: "3",
-        full_name: "Сергей Сидоров",
-        email: "sergey@example.com",
-        is_active: false,
-        last_login_at: null,
-      },
-    ];
-    setStudents(mockData);
+  const loadStudents = async () => {
+    setIsLoading(true);
+    try {
+      // Загружаем пользователей из public.users + данные из auth.users
+      const { data: usersData, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Для каждого пользователя проверяем последний вход
+      const studentsWithActivity = await Promise.all(
+        (usersData || []).map(async (user) => {
+          try {
+            // Получаем данные из auth.users через admin API (если доступно)
+            // Пока используем базовые данные
+            return {
+              ...user,
+              is_active: user.role === 'student' || user.role === 'teacher',
+              last_login_at: user.created_at, // Можно добавить колонку last_login_at
+            };
+          } catch {
+            return {
+              ...user,
+              is_active: false,
+              last_login_at: null,
+            };
+          }
+        })
+      );
+
+      setStudents(studentsWithActivity);
+    } catch (error) {
+      console.error('Error loading students:', error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось загрузить список студентов",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Добавление ученика
+  // Добавление студента через Edge Function
   const handleAddStudent = async () => {
     if (!newStudentEmail || !newStudentName) {
       toast({
@@ -89,22 +117,54 @@ export default function StudentsActivity() {
       return;
     }
 
-    // Mock создание приглашения
-    const mockInvitation = {
-      invitation_url: `https://onai.academy/invite/${Math.random().toString(36).substring(7)}`,
-      temp_password: Math.random().toString(36).substring(2, 10),
-    };
+    setIsLoading(true);
 
-    setInvitationData(mockInvitation);
-    setShowAddModal(false);
-    setShowInvitationResult(true);
-    setNewStudentEmail("");
-    setNewStudentName("");
+    try {
+      // Вызываем Edge Function для создания студента
+      const { data, error } = await supabase.functions.invoke('create-student', {
+        body: {
+          email: newStudentEmail.trim(),
+          full_name: newStudentName.trim(),
+          role: newStudentRole,
+        },
+      });
 
-    toast({
-      title: "✅ Приглашение создано!",
-      description: `Ссылка и пароль готовы для ${newStudentName}`,
-    });
+      if (error) throw error;
+
+      if (data.success) {
+        // Сохраняем данные для показа
+        setInvitationData({
+          invitation_url: `https://onai.academy`, // Просто ссылка на платформу
+          email: data.credentials.email,
+          temp_password: data.credentials.temp_password,
+        });
+
+        // Обновляем список студентов
+        await loadStudents();
+
+        setShowAddModal(false);
+        setShowInvitationResult(true);
+        setNewStudentEmail("");
+        setNewStudentName("");
+        setNewStudentRole("student");
+
+        toast({
+          title: "✅ Студент создан!",
+          description: `${newStudentName} успешно добавлен на платформу`,
+        });
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (error: any) {
+      console.error('Error creating student:', error);
+      toast({
+        title: "❌ Ошибка создания",
+        description: error.message || "Не удалось создать студента",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Копирование
@@ -292,12 +352,33 @@ export default function StudentsActivity() {
                 onChange={(e) => setNewStudentName(e.target.value)}
               />
             </div>
+            <div>
+              <Label htmlFor="role">Роль</Label>
+              <Select value={newStudentRole} onValueChange={setNewStudentRole}>
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Выберите роль" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">👨‍🎓 Студент</SelectItem>
+                  <SelectItem value="teacher">👨‍🏫 Технический специалист</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddModal(false)}>
               Отмена
             </Button>
-            <Button onClick={handleAddStudent}>Создать приглашение</Button>
+            <Button onClick={handleAddStudent} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Создание...
+                </>
+              ) : (
+                'Создать студента'
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -310,13 +391,13 @@ export default function StudentsActivity() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="bg-secondary/50 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Ссылка для активации:</p>
+              <p className="text-sm text-muted-foreground mb-2">Email для входа:</p>
               <div className="flex gap-2">
-                <Input value={invitationData?.invitation_url || ""} readOnly />
+                <Input value={invitationData?.email || ""} readOnly />
                 <Button
                   size="icon"
                   onClick={() =>
-                    copyToClipboard(invitationData?.invitation_url, "Ссылка")
+                    copyToClipboard(invitationData?.email, "Email")
                   }
                 >
                   <Copy className="w-4 h-4" />
@@ -331,6 +412,20 @@ export default function StudentsActivity() {
                   size="icon"
                   onClick={() =>
                     copyToClipboard(invitationData?.temp_password, "Пароль")
+                  }
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="bg-secondary/50 p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">Ссылка на платформу:</p>
+              <div className="flex gap-2">
+                <Input value={invitationData?.invitation_url || ""} readOnly />
+                <Button
+                  size="icon"
+                  onClick={() =>
+                    copyToClipboard(invitationData?.invitation_url, "Ссылка")
                   }
                 >
                   <Copy className="w-4 h-4" />
