@@ -37,7 +37,7 @@ const adminMenuItems: MenuItem[] = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Диалоги с AI-куратором", url: "/admin/ai-curator-chats", icon: MessageSquare },
   { title: "Курсы и модули", url: "/admin/courses", icon: GraduationCap },
-  { title: "Ученики", url: "/admin/students", icon: Users },
+  { title: "Ученики", url: "/admin/students-activity", icon: Users },
   { title: "Достижения и XP", url: "/admin/achievements", icon: Puzzle },
   { title: "Настройки платформы", url: "/admin/settings", icon: Settings },
   { title: "Администраторы", url: "/admin/admins", icon: UserCog },
