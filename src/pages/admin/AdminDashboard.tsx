@@ -91,11 +91,11 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Карточки */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Карточка 1: Активность учеников */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {/* Карточка 1: Управление студентами */}
           <AdminCard
-            title="Активность учеников"
-            description="Управление студентами, прогресс, метрики"
+            title="Управление студентами"
+            description="Добавление, удаление, роли, приглашения"
             icon={<Users className="w-16 h-16" />}
             color="neon"
             onClick={() => navigate("/admin/students-activity")}
@@ -106,7 +106,21 @@ export default function AdminDashboard() {
             ]}
           />
 
-          {/* Карточка 2: AI-аналитика */}
+          {/* Карточка 2: Activity (старая панель) */}
+          <AdminCard
+            title="Activity"
+            description="Общая статистика и метрики платформы"
+            icon={<Sparkles className="w-16 h-16" />}
+            color="purple"
+            onClick={() => navigate("/admin/activity")}
+            stats={[
+              { label: "Активность", value: "85%" },
+              { label: "Онлайн", value: "47" },
+              { label: "Завершений", value: "234" },
+            ]}
+          />
+
+          {/* Карточка 3: AI-аналитика */}
           <AdminCard
             title="AI-аналитика"
             description="Дашборд AI-куратора, наставника и аналитика"
@@ -133,7 +147,7 @@ interface AdminCardProps {
   title: string;
   description: string;
   icon: React.ReactNode;
-  color: "neon" | "cyber-blue";
+  color: "neon" | "purple" | "cyber-blue";
   onClick: () => void;
   stats: { label: string; value: string }[];
 }
@@ -146,6 +160,13 @@ function AdminCard({ title, description, icon, color, onClick, stats }: AdminCar
       shadow: "shadow-neon/20 hover:shadow-neon/50",
       glow: "bg-neon",
       text: "text-neon",
+    },
+    purple: {
+      gradient: "from-purple-500/10 via-purple-500/5 to-transparent",
+      border: "border-purple-500/30 hover:border-purple-500",
+      shadow: "shadow-purple-500/20 hover:shadow-purple-500/50",
+      glow: "bg-purple-500",
+      text: "text-purple-500",
     },
     "cyber-blue": {
       gradient: "from-[hsl(var(--cyber-blue))]/10 via-[hsl(var(--cyber-blue))]/5 to-transparent",

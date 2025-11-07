@@ -46,12 +46,19 @@ export const FloatingAIButton = () => {
     
     setTimeout(() => {
       setIsDragging(false);
+      // Сбрасываем режим перетаскивания после завершения
+      if (isDraggable) {
+        setIsDraggable(false);
+      }
     }, 100);
   };
 
   const handleDragEnd = (event: any, info: PanInfo) => {
     setIsDragging(false);
-    // Оставляем isDraggable = true, чтобы можно было снова перетащить
+    // Сбрасываем режим перетаскивания, чтобы снова можно было кликать
+    setTimeout(() => {
+      setIsDraggable(false);
+    }, 200);
   };
 
   if (shouldHide) {
