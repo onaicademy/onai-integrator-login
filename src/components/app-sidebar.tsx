@@ -24,7 +24,7 @@ interface MenuItem {
 }
 
 const studentMenuItems: MenuItem[] = [
-  { title: "Главная", url: "/", icon: Home },
+  { title: "Главная", url: "/courses", icon: Home },
   { title: "NeuroHUB", url: "/neurohub", icon: Gauge },
   { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },

@@ -37,6 +37,7 @@ const AppRoutes = () => {
       <Route path="/profile" element={isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>} />
       <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
       <Route path="/achievements" element={<MainLayout><Achievements /></MainLayout>} />
+      <Route path="/courses" element={<Navigate to="/course/1" replace />} />
       <Route path="/course/:id" element={<Course />} />
       <Route path="/course/:id/module/:moduleId" element={<Module />} />
       <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<Lesson />} />
