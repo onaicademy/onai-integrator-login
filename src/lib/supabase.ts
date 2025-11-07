@@ -3,20 +3,35 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
+// 🔍 ДИАГНОСТИКА: Проверяем ВСЕ переменные окружения
+console.group('🔍 SUPABASE ДИАГНОСТИКА')
+console.log('Все VITE переменные:', {
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.substring(0, 30) + '...',
+  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 30) + '...',
+  MODE: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD,
+})
+
 // Проверка что переменные загружены
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Supabase credentials not found!', {
     url: supabaseUrl,
-    keyExists: !!supabaseKey
+    keyExists: !!supabaseKey,
+    keyLength: supabaseKey?.length
   })
+  console.groupEnd()
   throw new Error('Missing Supabase environment variables')
 }
 
-console.log('✅ Supabase initialized:', {
+console.log('✅ Supabase config:', {
   url: supabaseUrl,
   keyLength: supabaseKey?.length,
-  keyPreview: supabaseKey?.substring(0, 20) + '...'
+  keyPreview: supabaseKey?.substring(0, 30) + '...',
+  keyFull: supabaseKey
 })
+console.groupEnd()
 
 // Создаем клиент с явной передачей API key в headers
 export const supabase = createClient(supabaseUrl, supabaseKey, {

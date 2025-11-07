@@ -55,19 +55,43 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
+    // 🔍 ДИАГНОСТИКА: Логируем попытку входа
+    console.group('🔐 ПОПЫТКА ВХОДА')
+    console.log('📧 Email:', email.trim())
+    console.log('🔑 Password length:', password.length)
+    console.log('📊 Request payload:', {
+      email: email.trim(),
+      password: '***' + password.slice(-3)
+    })
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
+      // 🔍 ДИАГНОСТИКА: Логируем ответ
+      console.log('📥 Response data:', data)
+      console.log('❌ Response error:', error)
+      console.groupEnd()
+
       if (error) {
         let errorMessage = 'Произошла ошибка при входе';
+        
+        // 🔍 ДИАГНОСТИКА: Детальная ошибка
+        console.error('🚨 ОШИБКА SUPABASE:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          fullError: error
+        })
         
         if (error.message.includes('Invalid login credentials')) {
           errorMessage = 'Неверный email или пароль';
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = 'Email не подтверждён. Проверьте вашу почту.';
+        } else if (error.message.includes('No API key')) {
+          errorMessage = 'Ошибка конфигурации: API ключ не найден';
         }
 
         toast({
@@ -79,6 +103,11 @@ export default function Login() {
       }
 
       if (data.user) {
+        console.log('✅ ВХОД УСПЕШЕН:', {
+          userId: data.user.id,
+          email: data.user.email
+        })
+        
         toast({
           title: '✅ Добро пожаловать!',
           description: 'Вы успешно вошли в систему',
@@ -86,7 +115,9 @@ export default function Login() {
         navigate(from, { replace: true });
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('🚨 КРИТИЧЕСКАЯ ОШИБКА:', error);
+      console.groupEnd()
+      
       toast({
         title: '❌ Ошибка',
         description: 'Не удалось войти в систему',
