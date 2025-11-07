@@ -48,6 +48,63 @@ ssh -o StrictHostKeyChecking=no "$SERVER" << 'ENDSSH'
     echo "🏗️  Сборка production билда..."
     npm run build
     
+    echo "🔧 Обновление Nginx конфигурации (с сохранением SSL)..."
+    # Проверяем существует ли SSL сертификат
+    if [ -f "/etc/letsencrypt/live/integratoronai.kz/fullchain.pem" ]; then
+        echo "✅ SSL сертификат найден, создаём HTTPS конфигурацию..."
+        cat > /etc/nginx/sites-available/onai-integrator-login.conf <<'NGINX_EOF'
+# HTTP -> HTTPS redirect
+server {
+    listen 80;
+    listen [::]:80;
+    server_name integratoronai.kz www.integratoronai.kz;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name integratoronai.kz www.integratoronai.kz;
+
+    ssl_certificate /etc/letsencrypt/live/integratoronai.kz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/integratoronai.kz/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    root /var/www/onai-integrator-login/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.(?:js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf)$ {
+        try_files $uri =404;
+        access_log off;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+}
+NGINX_EOF
+    else
+        echo "⚠️  SSL сертификат не найден, создаём HTTP конфигурацию..."
+        cat > /etc/nginx/sites-available/onai-integrator-login.conf <<'NGINX_EOF'
+server {
+    listen 80;
+    server_name integratoronai.kz www.integratoronai.kz;
+    root /var/www/onai-integrator-login/dist;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+NGINX_EOF
+    fi
+    
+    ln -sf /etc/nginx/sites-available/onai-integrator-login.conf /etc/nginx/sites-enabled/
+    
     echo "🔧 Проверка Nginx конфигурации..."
     nginx -t
     
