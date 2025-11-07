@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { MainLayout } from "./components/layouts/MainLayout";
-import Index from "./pages/Index";
+import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
 import Achievements from "./pages/Achievements";
@@ -31,16 +31,16 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={<Index />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/profile" element={isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>} />
       <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
       <Route path="/achievements" element={<MainLayout><Achievements /></MainLayout>} />
       <Route path="/courses" element={<Navigate to="/course/1" replace />} />
-      <Route path="/course/:id" element={<Course />} />
-      <Route path="/course/:id/module/:moduleId" element={<Module />} />
-      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<Lesson />} />
+      <Route path="/course/:id" element={<MainLayout><Course /></MainLayout>} />
+      <Route path="/course/:id/module/:moduleId" element={<MainLayout><Module /></MainLayout>} />
+      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<MainLayout><Lesson /></MainLayout>} />
       {/* Админ-панель */}
       <Route path="/admin" element={<MainLayout><AdminDashboard /></MainLayout>} />
       <Route path="/admin/activity" element={<MainLayout><Activity /></MainLayout>} />

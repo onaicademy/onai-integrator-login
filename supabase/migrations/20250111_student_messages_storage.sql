@@ -1,32 +1,30 @@
 -- ========================
 -- STORAGE BUCKET ДЛЯ ГОЛОСОВЫХ СООБЩЕНИЙ И ФАЙЛОВ
 -- Создано: 7 ноября 2025
+-- ИСПРАВЛЕНО: Используем Supabase Dashboard UI вместо SQL
 -- ========================
 
--- Создаём bucket для сообщений студентов
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-  'student-messages',
-  'student-messages',
-  false, -- приватный bucket
-  10485760, -- 10 MB максимум
-  ARRAY[
-    'audio/webm',
-    'audio/mp3',
-    'audio/wav',
-    'audio/ogg',
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'application/pdf',
-    'text/plain'
-  ]
-)
-ON CONFLICT (id) DO NOTHING;
+-- ⚠️  ВАЖНО: Создайте bucket через Supabase Dashboard UI!
+-- 
+-- Инструкция:
+-- 1. Откройте Storage в Supabase Dashboard
+-- 2. Нажмите "Create a new bucket"
+-- 3. Name: student-messages
+-- 4. Public: OFF (приватный)
+-- 5. File size limit: 10 MB
+-- 6. Allowed MIME types: оставьте пустым (разрешить все)
+-- 7. Нажмите "Create bucket"
+--
+-- После создания bucket'а примените политики ниже:
 
 -- ========================
 -- ПОЛИТИКИ ДОСТУПА К STORAGE
 -- ========================
+
+-- Удаляем старые политики если есть
+DROP POLICY IF EXISTS "Students can upload their messages" ON storage.objects;
+DROP POLICY IF EXISTS "Students can read message files" ON storage.objects;
+DROP POLICY IF EXISTS "Students can delete their own files" ON storage.objects;
 
 -- Студенты могут ЗАГРУЖАТЬ файлы в свою папку
 CREATE POLICY "Students can upload their messages"
@@ -39,7 +37,7 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Студенты могут ЧИТАТЬ все файлы в bucket (если участвуют в чате)
+-- Студенты могут ЧИТАТЬ все файлы в bucket
 CREATE POLICY "Students can read message files"
 ON storage.objects
 FOR SELECT
@@ -68,16 +66,18 @@ SECURITY DEFINER
 AS $$
 BEGIN
   -- Удаляем файлы старше 1 года (опционально)
-  -- Это можно настроить по желанию
   DELETE FROM storage.objects
   WHERE bucket_id = 'student-messages'
     AND created_at < NOW() - INTERVAL '1 year';
 END;
 $$;
 
--- Можно настроить cron для периодической очистки
--- pg_cron.schedule('cleanup-message-files', '0 3 * * 0', 'SELECT cleanup_old_message_files()');
+COMMENT ON FUNCTION cleanup_old_message_files() IS 'Функция очистки старых файлов сообщений (старше 1 года)';
 
-COMMENT ON TABLE storage.buckets IS 'Storage bucket для голосовых сообщений и файлов студентов';
-COMMENT ON FUNCTION cleanup_old_message_files() IS 'Функция очистки старых файлов сообщений';
-
+-- ========================
+-- ГОТОВО!
+-- ========================
+-- После применения этого SQL:
+-- 1. Создайте bucket 'student-messages' через UI (инструкция вверху)
+-- 2. Политики доступа применятся автоматически
+-- 3. Голосовые сообщения заработают
