@@ -3,6 +3,20 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
+// Проверка что переменные загружены
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Supabase credentials not found!', {
+    url: supabaseUrl,
+    keyExists: !!supabaseKey
+  })
+  throw new Error('Missing Supabase environment variables')
+}
+
+console.log('✅ Supabase initialized:', {
+  url: supabaseUrl,
+  keyLength: supabaseKey?.length
+})
+
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     storage: localStorage,

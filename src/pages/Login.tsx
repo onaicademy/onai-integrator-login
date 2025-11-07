@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
@@ -18,6 +18,20 @@ export default function Login() {
   const { toast } = useToast();
 
   const from = (location.state as any)?.from?.pathname || '/courses';
+
+  // Генерируем звёзды ОДИН РАЗ при монтировании компонента
+  const stars = useMemo(() => {
+    return [...Array(50)].map((_, i) => {
+      const startX = Math.random() * 100;
+      const startY = Math.random() * 100;
+      const moveX = (Math.random() - 0.5) * 30;
+      const moveY = (Math.random() - 0.5) * 30;
+      const duration = Math.random() * 5 + 3;
+      const delay = Math.random() * 2;
+      
+      return { startX, startY, moveX, moveY, duration, delay };
+    });
+  }, []); // Пустой массив зависимостей = создаётся ОДИН РАЗ
 
   // Проверка авторизации при загрузке
   useEffect(() => {
@@ -96,35 +110,28 @@ export default function Login() {
       {/* Космический фон с плавающими светлыми пятнами */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Летающие звезды */}
-        {[...Array(50)].map((_, i) => {
-          const startX = Math.random() * 100;
-          const startY = Math.random() * 100;
-          const moveX = (Math.random() - 0.5) * 30; // -15 to +15
-          const moveY = (Math.random() - 0.5) * 30;
-          
-          return (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full"
-              style={{
-                top: `${startY}%`,
-                left: `${startX}%`,
-              }}
-              animate={{
-                x: [0, moveX, 0],
-                y: [0, moveY, 0],
-                opacity: [0.2, 1, 0.2],
-                scale: [1, 1.5, 1],
-              }}
-              transition={{
-                duration: Math.random() * 5 + 3,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: 'easeInOut',
-              }}
-            />
-          );
-        })}
+        {stars.map((star, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full"
+            style={{
+              top: `${star.startY}%`,
+              left: `${star.startX}%`,
+            }}
+            animate={{
+              x: [0, star.moveX, 0],
+              y: [0, star.moveY, 0],
+              opacity: [0.2, 1, 0.2],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: star.duration,
+              repeat: Infinity,
+              delay: star.delay,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
 
         {/* Плавающие светлые пятна (blur blobs) - кислотно-зеленые */}
         <motion.div
