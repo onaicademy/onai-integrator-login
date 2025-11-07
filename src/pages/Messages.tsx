@@ -249,7 +249,7 @@ export default function Messages() {
         {/* Заголовок */}
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] bg-clip-text text-transparent">
+            <h2 className="text-xl font-bold text-foreground">
               💬 Сообщения
             </h2>
             <Button
