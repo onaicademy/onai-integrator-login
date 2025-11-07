@@ -15,6 +15,9 @@ import {
   BookOpen,
   Activity,
   Clock,
+  Bug,
+  Shield,
+  Zap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,6 +72,19 @@ interface StudentDetail {
   
   // Рекомендации
   actions: string[];
+}
+
+interface BotConflict {
+  id: string;
+  student_name: string;
+  conflict_type: "INCORRECT_ANSWER" | "HALLUCINATION" | "MISUNDERSTOOD_QUESTION" | "REPETITIVE_ANSWER" | "INAPPROPRIATE_TONE" | "TECHNICAL_ERROR" | "INCOMPLETE_ANSWER";
+  severity: "critical" | "high" | "medium" | "low";
+  user_message: string;
+  ai_response: string;
+  detected_issue: string;
+  suggestion: string;
+  created_at: string;
+  status: "new" | "reviewing" | "resolved";
 }
 
 export default function AIAnalytics() {
@@ -232,6 +248,46 @@ export default function AIAnalytics() {
     },
   ];
 
+  // Mock конфликты бота
+  const mockConflicts: BotConflict[] = [
+    {
+      id: "1",
+      student_name: "Мария Сидорова",
+      conflict_type: "HALLUCINATION",
+      severity: "critical",
+      user_message: "Где находится урок 25 про квантовые нейросети?",
+      ai_response: "Урок 25 про квантовые нейросети находится в модуле 5...",
+      detected_issue: "Бот упомянул несуществующий урок 25",
+      suggestion: "→ СРОЧНО: Обновить context с актуальным списком уроков\n→ Добавить fact-checking\n→ Prompt: отвечать ТОЛЬКО на основе данных курса",
+      created_at: "2 часа назад",
+      status: "new",
+    },
+    {
+      id: "2",
+      student_name: "Алексей Петров",
+      conflict_type: "MISUNDERSTOOD_QUESTION",
+      severity: "medium",
+      user_message: "Я не понял, как работает backpropagation. Объясни простыми словами.",
+      ai_response: "Backpropagation это способ обучения нейросети...",
+      detected_issue: "Студент переспросил - бот не понял вопрос",
+      suggestion: "→ Улучшить prompt: если не уверен - спросить уточнение\n→ Добавить clarification question\n→ Обучить на примерах",
+      created_at: "5 часов назад",
+      status: "reviewing",
+    },
+    {
+      id: "3",
+      student_name: "Анна Иванова",
+      conflict_type: "INCOMPLETE_ANSWER",
+      severity: "low",
+      user_message: "Расскажи подробно про gradient descent и все его вариации.",
+      ai_response: "Gradient descent - это метод оптимизации.",
+      detected_issue: "Ответ слишком краткий для сложного вопроса",
+      suggestion: "→ Увеличить max_tokens\n→ Prompt: давать развёрнутые ответы на сложные вопросы\n→ Follow-up: \"Хочешь подробнее?\"",
+      created_at: "1 день назад",
+      status: "resolved",
+    },
+  ];
+
   // Получить цвет уровня внимания
   const getAttentionLevelColor = (level: StudentDetail["attention_level"]) => {
     switch (level) {
@@ -329,6 +385,7 @@ export default function AIAnalytics() {
           <TabsTrigger value="overview">Обзор</TabsTrigger>
           <TabsTrigger value="insights">Инсайты</TabsTrigger>
           <TabsTrigger value="students">Студенты</TabsTrigger>
+          <TabsTrigger value="conflicts">Конфликты бота</TabsTrigger>
         </TabsList>
 
         {/* Вкладка: Обзор */}
@@ -433,6 +490,148 @@ export default function AIAnalytics() {
                     </motion.div>
                   );
                 })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Вкладка: Конфликты бота */}
+        <TabsContent value="conflicts">
+          <Card>
+            <CardHeader>
+              <CardTitle>🤖 Конфликты и ошибки AI-куратора</CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Автоматически обнаруженные проблемы в ответах бота. Кратко, по факту, с решениями.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {mockConflicts.map((conflict) => {
+                  const severityConfig = {
+                    critical: { color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500", icon: <Bug className="w-5 h-5" />, label: "🔴 КРИТИЧНО" },
+                    high: { color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500", icon: <AlertTriangle className="w-5 h-5" />, label: "🟠 ВЫСОКИЙ" },
+                    medium: { color: "text-yellow-500", bg: "bg-yellow-500/10", border: "border-yellow-500", icon: <AlertCircle className="w-5 h-5" />, label: "🟡 СРЕДНИЙ" },
+                    low: { color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500", icon: <CheckCircle2 className="w-5 h-5" />, label: "🟢 НИЗКИЙ" },
+                  }[conflict.severity];
+
+                  const typeLabels: Record<BotConflict["conflict_type"], string> = {
+                    HALLUCINATION: "💭 Фантазии",
+                    INCORRECT_ANSWER: "❌ Неверный ответ",
+                    MISUNDERSTOOD_QUESTION: "❓ Не понял",
+                    REPETITIVE_ANSWER: "🔁 Повтор",
+                    INAPPROPRIATE_TONE: "😠 Неуместный тон",
+                    TECHNICAL_ERROR: "⚠️ Техническая ошибка",
+                    INCOMPLETE_ANSWER: "📚 Неполный ответ",
+                  };
+
+                  return (
+                    <motion.div
+                      key={conflict.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`
+                        p-4 rounded-lg border-2
+                        ${severityConfig.bg} ${severityConfig.border}
+                      `}
+                    >
+                      {/* Заголовок */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={severityConfig.color}>
+                            {severityConfig.icon}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className={`${severityConfig.color} ${severityConfig.border}`}>
+                                {typeLabels[conflict.conflict_type]}
+                              </Badge>
+                              <Badge variant="outline" className={`${severityConfig.color} ${severityConfig.border}`}>
+                                {severityConfig.label}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Студент: {conflict.student_name} • {conflict.created_at}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant={conflict.status === "resolved" ? "default" : "secondary"}>
+                          {conflict.status === "new" && "Новый"}
+                          {conflict.status === "reviewing" && "В работе"}
+                          {conflict.status === "resolved" && "Решено"}
+                        </Badge>
+                      </div>
+
+                      {/* Проблема */}
+                      <div className="mb-3">
+                        <p className={`font-semibold ${severityConfig.color} text-sm mb-1`}>
+                          ПРОБЛЕМА:
+                        </p>
+                        <p className="text-sm text-foreground bg-secondary/50 rounded p-2">
+                          {conflict.detected_issue}
+                        </p>
+                      </div>
+
+                      {/* Диалог */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">ВОПРОС СТУДЕНТА:</p>
+                          <p className="text-xs bg-secondary/30 rounded p-2 text-foreground">
+                            "{conflict.user_message}"
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">ОТВЕТ БОТА:</p>
+                          <p className="text-xs bg-secondary/30 rounded p-2 text-foreground">
+                            "{conflict.ai_response.substring(0, 100)}..."
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Решение */}
+                      <div className="bg-neon/10 border border-neon/30 rounded p-3">
+                        <p className="font-semibold text-neon text-sm mb-1">
+                          ✅ РЕШЕНИЕ:
+                        </p>
+                        <pre className="text-xs text-foreground whitespace-pre-wrap font-sans">
+                          {conflict.suggestion}
+                        </pre>
+                      </div>
+
+                      {/* Кнопки действий */}
+                      {conflict.status !== "resolved" && (
+                        <div className="flex gap-2 mt-3">
+                          <Button size="sm" variant="default">
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Пометить решённым
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            В работу
+                          </Button>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Статистика конфликтов */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Critical</p>
+                  <p className="text-2xl font-bold text-red-500">1</p>
+                </div>
+                <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">High</p>
+                  <p className="text-2xl font-bold text-orange-500">0</p>
+                </div>
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Medium</p>
+                  <p className="text-2xl font-bold text-yellow-500">1</p>
+                </div>
+                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Low</p>
+                  <p className="text-2xl font-bold text-blue-500">1</p>
+                </div>
               </div>
             </CardContent>
           </Card>

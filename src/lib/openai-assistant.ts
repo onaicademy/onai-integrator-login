@@ -7,6 +7,7 @@ import {
   getOrCreateThread as getSupabaseThread,
   type ChatMessage as SupabaseChatMessage,
 } from './supabase-chat';
+import { detectConflicts } from './conflict-detector';
 
 // Инициализация OpenAI клиента
 let openai: OpenAI | null = null;
@@ -488,18 +489,38 @@ export async function sendMessageToAI(
         assistantMessage.content[0].type === "text"
       ) {
         const responseText = assistantMessage.content[0].text.value;
+        const responseTime = Date.now() - startTime;
         console.log("✅ Получен ответ от Assistant (длина:", responseText.length, "символов)");
         
         // 💾 СОХРАНЯЕМ в Supabase (если userId передан)
         if (userId) {
           console.log("💾 Сохраняем диалог в Supabase...");
           await saveMessagePair(userId, message, responseText, {
-            response_time_ms: Date.now() - startTime,
+            response_time_ms: responseTime,
             model_used: 'gpt-4o',
             openai_message_id: assistantMessage.id,
             openai_run_id: run.id,
           });
           console.log("✅ Диалог сохранён в Supabase");
+          
+          // 🔍 ОБНАРУЖИВАЕМ КОНФЛИКТЫ И ОШИБКИ БОТА
+          console.log("🔍 Проверяем на конфликты...");
+          const conflicts = await detectConflicts({
+            userMessage: message,
+            aiResponse: responseText,
+            threadId,
+            userId,
+            responseTime,
+            tokenCount: runStatus.usage?.total_tokens,
+            model: 'gpt-4o',
+          });
+          
+          if (conflicts.length > 0) {
+            console.warn(`⚠️ Обнаружено конфликтов: ${conflicts.length}`);
+            conflicts.forEach(c => console.warn(`  - ${c.type} (${c.severity}): ${c.detected_issue}`));
+          } else {
+            console.log("✅ Конфликтов не обнаружено");
+          }
         }
         
         return responseText;
