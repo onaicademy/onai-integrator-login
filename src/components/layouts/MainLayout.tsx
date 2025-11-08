@@ -25,8 +25,22 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
       roleChecked = true;
       
       try {
-        console.log('🔍 MainLayout: Загрузка роли из auth.user...');
+        console.log('🔍 MainLayout: Загрузка роли...');
         
+        // ОПТИМИЗАЦИЯ: Проверяем sessionStorage сначала
+        const cachedRole = sessionStorage.getItem('user_role');
+        const cachedEmail = sessionStorage.getItem('user_email');
+        
+        if (cachedRole && cachedEmail) {
+          console.log('✅ MainLayout: Роль из кеша:', cachedRole);
+          if (isMounted) {
+            setUserRole(cachedRole as "admin" | "student");
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        // Если нет кеша - делаем запрос
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (!isMounted) return;
@@ -43,15 +57,21 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
         console.log('👤 User ID:', user.id);
         console.log('📧 Email:', user.email);
 
-        // БЫСТРЫЙ СПОСОБ: Роль из JWT токена (БЕЗ запроса к БД!)
+        // Определяем роль
         const role = user.user_metadata?.role || 
                      user.raw_user_meta_data?.role || 
                      (user.email === 'saint@onaiacademy.kz' ? 'admin' : 'student');
         
-        console.log('✅ Роль определена:', role);
+        const finalRole = role === 'admin' ? 'admin' : 'student';
+        
+        // Кешируем на время сессии
+        sessionStorage.setItem('user_role', finalRole);
+        sessionStorage.setItem('user_email', user.email || '');
+        
+        console.log('✅ Роль определена и закеширована:', finalRole);
         
         if (isMounted) {
-          setUserRole(role === 'admin' ? 'admin' : 'student');
+          setUserRole(finalRole);
           setIsLoading(false);
         }
         

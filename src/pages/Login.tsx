@@ -122,6 +122,9 @@ export default function Login() {
           email: data.user.email
         })
         
+        // ВАЖНО: Очищаем старый кеш при новом входе
+        sessionStorage.clear();
+        
         toast({
           title: '✅ Добро пожаловать!',
           description: 'Вы успешно вошли в систему',
