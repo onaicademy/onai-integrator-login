@@ -122,6 +122,86 @@ export default function Login() {
           email: data.user.email
         })
         
+        // ПРОВЕРКА СТАТУСА АККАУНТА
+        console.log('🔍 Проверка статуса аккаунта...');
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_active, account_expires_at, deactivation_reason')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (profileError) {
+          console.error('❌ Ошибка загрузки профиля:', profileError);
+        } else if (profile) {
+          console.log('📊 Профиль:', profile);
+          
+          // ПРОВЕРКА 1: Аккаунт деактивирован?
+          if (!profile.is_active) {
+            console.log('❌ Аккаунт деактивирован');
+            
+            // Выход из системы
+            await supabase.auth.signOut();
+            
+            let deactivationMessage = 'Ваш аккаунт был деактивирован.';
+            if (profile.deactivation_reason === 'expired') {
+              deactivationMessage = 'Срок действия вашего аккаунта истёк.';
+            } else if (profile.deactivation_reason === 'manual') {
+              deactivationMessage = 'Ваш аккаунт был деактивирован администратором.';
+            }
+            
+            toast({
+              title: '⛔ Доступ запрещён',
+              description: deactivationMessage + ' Обратитесь к администратору.',
+              variant: 'destructive',
+              duration: 10000,
+            });
+            return;
+          }
+          
+          // ПРОВЕРКА 2: Срок действия истёк?
+          if (profile.account_expires_at) {
+            const expiresAt = new Date(profile.account_expires_at);
+            const now = new Date();
+            
+            if (expiresAt < now) {
+              console.log('❌ Срок действия аккаунта истёк:', expiresAt);
+              
+              // Деактивируем аккаунт
+              await supabase
+                .from('profiles')
+                .update({ 
+                  is_active: false,
+                  deleted_at: now.toISOString(),
+                  deactivation_reason: 'expired'
+                })
+                .eq('id', data.user.id);
+              
+              // Выход из системы
+              await supabase.auth.signOut();
+              
+              toast({
+                title: '⏰ Срок действия истёк',
+                description: 'Срок действия вашего аккаунта истёк. Обратитесь к администратору для продления.',
+                variant: 'destructive',
+                duration: 10000,
+              });
+              return;
+            }
+            
+            // ПРЕДУПРЕЖДЕНИЕ: Скоро истечёт срок (менее 7 дней)
+            const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysLeft <= 7 && daysLeft > 0) {
+              console.log(`⚠️ Осталось ${daysLeft} дней до истечения`);
+              toast({
+                title: '⚠️ Внимание!',
+                description: `Срок действия вашего аккаунта истекает через ${daysLeft} дней. Обратитесь к администратору.`,
+                variant: 'default',
+                duration: 8000,
+              });
+            }
+          }
+        }
+        
         // ВАЖНО: Очищаем старый кеш при новом входе
         sessionStorage.clear();
         
