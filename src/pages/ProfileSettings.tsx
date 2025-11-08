@@ -187,6 +187,10 @@ export default function ProfileSettings() {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
+      // ВАЖНО: Очищаем кеш при выходе
+      console.log('👋 Пользователь вышел из системы');
+      sessionStorage.clear();
+
       toast({
         title: "👋 До свидания!",
         description: "Вы успешно вышли из аккаунта",
