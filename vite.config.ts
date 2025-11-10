@@ -10,6 +10,7 @@ const useHttps = fs.existsSync(path.resolve(__dirname, "ssl/cert.pem")) &&
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: '/', // Важно: указываем корневой путь для правильной работы роутинга
   server: {
     host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
     port: 8080,
