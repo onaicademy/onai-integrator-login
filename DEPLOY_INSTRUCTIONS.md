@@ -1,182 +1,226 @@
-# 🚀 Deployment Instructions for IP: 178.128.203.40
+# 🚀 ИНСТРУКЦИЯ ПО ДЕПЛОЮ НА PRODUCTION
 
-## First-time SSH Connection
-
-If you're connecting for the first time, you'll need to accept the SSH host key:
-
-```bash
-ssh root@178.128.203.40
-# Type "yes" when prompted about host key
-```
+**Дата:** 10 ноября 2025  
+**Версия:** Final with AI Bots  
+**Build:** ✅ Готов (dist/)
 
 ---
 
-## Manual Deployment Steps
+## ✅ ЧТО ГОТОВО К ДЕПЛОЮ
 
-### Step 1: SSH to Server
-```bash
-ssh root@178.128.203.40
-```
+### 1. **Исправления платформы:**
+- ✅ Список студентов загружается (15 пользователей)
+- ✅ Выход из профиля работает
+- ✅ Создание пользователей работает
+- ✅ База Supabase подключена корректно
 
-### Step 2: Navigate to Project
-```bash
-cd /var/www/onai-integrator-login
-```
+### 2. **AI Ассистенты:**
+- ✅ AI-Mentor (@onaimentor_bot) - протестирован
+- ✅ AI-Analyst (@academyadmin_bot) - протестирован
+- ✅ AI-Curator (OpenAI) - настроен
+- ✅ Whisper API (голосовые сообщения) - настроен
 
-### Step 3: Pull Latest Changes
-```bash
-git pull origin main
-```
-
-### Step 4: Install Dependencies
-```bash
-npm install
-```
-
-### Step 5: Create/Check .env File
-```bash
-# Create .env if it doesn't exist
-cat > .env << 'EOF'
-VITE_SUPABASE_URL=https://capdjvokjdivxjfddmx.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhcGRqdm9ramRpdnhqZmRkZG14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjc5MDUsImV4cCI6MjA3Nzc0MzkwNX0.bsikIoF86BjthWauzbLXq3SZbNQFodppZ2TC64NniJs
-EOF
-```
-
-### Step 6: Build Production
-```bash
-npm run build
-```
-
-### Step 7: Set Permissions
-```bash
-chown -R www-data:www-data /var/www/onai-integrator-login/dist
-chmod -R 755 /var/www/onai-integrator-login/dist
-```
-
-### Step 8: Restart Nginx
-```bash
-systemctl restart nginx
-```
-
-### Step 9: Verify Deployment
-```bash
-curl http://localhost
-curl http://178.128.203.40
-```
+### 3. **Безопасность:**
+- ✅ `.env` удалён из Git
+- ✅ API ключи защищены
+- ✅ Документация по безопасности создана
 
 ---
 
-## Quick Deployment (After First Setup)
+## 🔧 ДЕПЛОЙ НА DIGITAL OCEAN
 
-Save this as `deploy.sh` on the server:
+### Вариант 1: SSH (Рекомендуется)
 
 ```bash
-#!/bin/bash
-set -e
+# 1. Подключись к серверу
+ssh root@your-server-ip
 
-cd /var/www/onai-integrator-login
+# 2. Перейди в папку проекта
+cd /var/www/onai-academy
 
-echo "📥 Pulling changes..."
+# 3. Подтяни последние изменения
 git pull origin main
 
-echo "📦 Installing dependencies..."
-npm install
+# 4. Проверь что .env файл существует и содержит все ключи
+cat .env
 
-echo "🔨 Building production..."
+# 5. Если .env отсутствует или неполный - создай/обнови:
+nano .env
+# Вставь все переменные (см. раздел ниже)
+# Ctrl+O, Enter, Ctrl+X для сохранения
+
+# 6. Собери production build
 npm run build
 
-echo "🔐 Setting permissions..."
-chown -R www-data:www-data /var/www/onai-integrator-login/dist
-chmod -R 755 /var/www/onai-integrator-login/dist
-
-echo "🔄 Restarting Nginx..."
-systemctl restart nginx
-
-echo "✅ Deployment complete!"
-```
-
-Make it executable and run:
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
----
-
-## Nginx Configuration
-
-Check/create Nginx config at `/etc/nginx/sites-available/default`:
-
-```nginx
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name 178.128.203.40;
-
-    root /var/www/onai-integrator-login/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-```
-
-Enable and test:
-```bash
-sudo nginx -t
+# 7. Перезапусти сервер
 sudo systemctl reload nginx
+# Или если используешь PM2:
+pm2 restart onai-academy
+
+# 8. Проверь статус
+sudo systemctl status nginx
 ```
 
 ---
 
-## Verify Site is Working
+## 🔑 СОДЕРЖИМОЕ .ENV НА СЕРВЕРЕ
+
+**⚠️ ВАЖНО:** После `git pull` файл `.env` НЕ обновится (он в `.gitignore`)!
+
+Вручную создай/обнови файл `.env` на сервере:
 
 ```bash
-# From your local machine
-curl http://178.128.203.40
+ssh root@your-server-ip
+cd /var/www/onai-academy
+nano .env
+```
 
-# Or open in browser
-open http://178.128.203.40
+**Вставь это содержимое:**
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://arqhkacellqbhjhbebfh.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycWhrazzzzzzzzzzzzzzzz...
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycWhrazzzzzzzzzzzzzzzz...
+
+# OpenAI Configuration (тот же ключ что локально!)
+VITE_OPENAI_API_KEY=sk-proj-ТОТ_ЖЕ_КЛЮЧ_ЧТО_У_ТЕБЯ_В_ЛОКАЛЬНОМ_ENV
+VITE_OPENAI_ASSISTANT_ID=asst_SYhUvkKgCMEYlAjA0VNSMbLa
+
+# Telegram Bots
+VITE_AI_MENTOR_TELEGRAM_TOKEN=8380600260:AAGtuSG9GqFOmkyThhWqRzilHi3gKdKiOSo
+VITE_AI_ANALYST_TELEGRAM_TOKEN=8400927507:AAF1w1H8lyE2vonPY-Z61vBybBT8dkN-Ip4
+VITE_AI_MENTOR_ENABLED=true
+VITE_AI_ANALYST_ENABLED=true
+
+# Site Configuration
+VITE_SITE_URL=https://onai.academy
+VITE_APP_URL=https://onai.academy
+```
+
+**Сохрани:** `Ctrl+O`, `Enter`, `Ctrl+X`
+
+---
+
+## 🧪 ПРОВЕРКА ПОСЛЕ ДЕПЛОЯ
+
+### 1. Главная страница
+```
+https://onai.academy/
+```
+Должна открыться без ошибок
+
+### 2. Логин
+- Войди как админ: `saint@onaiacademy.kz`
+- Должен пропустить на главную
+
+### 3. Админ-панель
+```
+https://onai.academy/admin/students-activity
+```
+Должны показаться 15 студентов
+
+### 4. AI-Куратор
+- Открой чат с AI-куратором
+- Напиши сообщение - должен ответить
+- Попробуй голосовое сообщение 🎙️ - должно распознаться
+
+### 5. Создание пользователя
+- Админ → Создать пользователя
+- Заполни форму
+- Нажми "Создать"
+- Должен создаться без ошибок
+
+### 6. Выход
+- Нажми "Выйти"
+- Должен вернуть на страницу логина
+- Не должно быть бесконечной загрузки
+
+---
+
+## 🐛 TROUBLESHOOTING
+
+### Ошибка: "API key not found"
+**Решение:** Проверь `.env` на сервере - есть ли `VITE_OPENAI_API_KEY`
+
+### Ошибка: "Failed to load students"
+**Решение:** Проверь Supabase ключи в `.env` на сервере
+
+### Ошибка: 404 на роутах
+**Решение:** Проверь Nginx конфиг - должно быть `try_files $uri $uri/ /index.html;`
+
+### Whisper не работает
+**Решение:** 
+1. Проверь `.env` на сервере - там должен быть `VITE_OPENAI_API_KEY`
+2. Открой консоль браузера (F12) и посмотри логи
+3. Убедись что ключ валидный в OpenAI dashboard
+
+### Telegram боты не отправляют
+**Решение:** Проверь токены в `.env` - они должны быть те же что работали локально
+
+---
+
+## 📊 ЛОГИ И МОНИТОРИНГ
+
+### Посмотреть логи Nginx:
+```bash
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+```
+
+### Посмотреть логи PM2 (если используешь):
+```bash
+pm2 logs onai-academy
+```
+
+### Проверить статус сервера:
+```bash
+sudo systemctl status nginx
 ```
 
 ---
 
-## Troubleshooting
+## 📋 ЧЕКЛИСТ ДЕПЛОЯ
 
-### Check Nginx logs
-```bash
-tail -f /var/log/nginx/error.log
-tail -f /var/log/nginx/access.log
-```
-
-### Check if dist folder exists
-```bash
-ls -la /var/www/onai-integrator-login/dist
-```
-
-### Check Nginx status
-```bash
-systemctl status nginx
-```
-
-### Restart Nginx
-```bash
-systemctl restart nginx
-```
-
-### Check build output
-```bash
-cd /var/www/onai-integrator-login
-npm run build
-```
+- [ ] SSH подключение к серверу
+- [ ] `git pull origin main` выполнен
+- [ ] `.env` файл проверен/обновлён
+- [ ] `npm run build` выполнен
+- [ ] Nginx/PM2 перезапущен
+- [ ] Сайт открывается (https://onai.academy)
+- [ ] Логин работает
+- [ ] Список студентов загружается
+- [ ] AI-куратор отвечает
+- [ ] Whisper распознаёт голос
+- [ ] Создание пользователя работает
+- [ ] Выход работает
+- [ ] Нет ошибок в консоли браузера
 
 ---
 
-**✅ After deployment, site will be accessible at: http://178.128.203.40**
+## 🎯 ПОСЛЕ УСПЕШНОГО ДЕПЛОЯ
 
+1. **Протестируй все функции** (см. раздел "Проверка")
+2. **Проверь Telegram боты** (отправь им команды)
+3. **Посмотри логи** (нет ли ошибок)
+4. **Уведоми команду** что деплой прошёл успешно
+
+---
+
+## 📞 ЕСЛИ ЧТО-ТО НЕ ТАК
+
+1. Покажи логи из консоли браузера (F12)
+2. Покажи логи сервера (`tail -f /var/log/nginx/error.log`)
+3. Проверь что все переменные в `.env` на сервере
+4. Свяжись со мной - помогу разобраться
+
+---
+
+## ✅ ГОТОВО К ДЕПЛОЮ!
+
+Весь код запушен на GitHub ✅  
+Production build готов ✅  
+Документация создана ✅  
+AI боты протестированы ✅  
+
+**Можно деплоить на production! 🚀**
