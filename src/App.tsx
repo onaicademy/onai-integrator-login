@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { AdminGuard } from "./components/AdminGuard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
@@ -39,14 +40,40 @@ const AppRoutes = () => {
       
       {/* Защищённые страницы (требуют авторизацию) */}
       <Route path="/profile" element={
-        isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>
+        <ProtectedRoute>
+          {isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>}
+        </ProtectedRoute>
       } />
-      <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
-      <Route path="/achievements" element={<MainLayout><Achievements /></MainLayout>} />
-      <Route path="/courses" element={<Navigate to="/course/1" replace />} />
-      <Route path="/course/:id" element={<MainLayout><Course /></MainLayout>} />
-      <Route path="/course/:id/module/:moduleId" element={<MainLayout><Module /></MainLayout>} />
-      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<MainLayout><Lesson /></MainLayout>} />
+      <Route path="/neurohub" element={
+        <ProtectedRoute>
+          <MainLayout><NeuroHub /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/achievements" element={
+        <ProtectedRoute>
+          <MainLayout><Achievements /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/courses" element={
+        <ProtectedRoute>
+          <Navigate to="/course/1" replace />
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id" element={
+        <ProtectedRoute>
+          <MainLayout><Course /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id/module/:moduleId" element={
+        <ProtectedRoute>
+          <MainLayout><Module /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={
+        <ProtectedRoute>
+          <MainLayout><Lesson /></MainLayout>
+        </ProtectedRoute>
+      } />
       
       {/* Админ-панель (ЗАЩИЩЕНО: только saint@onaiacademy.kz) */}
       <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
@@ -57,8 +84,16 @@ const AppRoutes = () => {
       <Route path="/admin/token-usage" element={<AdminGuard><MainLayout><TokenUsage /></MainLayout></AdminGuard>} />
       
       {/* Настройки и чат (требуют авторизацию) */}
-      <Route path="/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
-      <Route path="/messages" element={<MainLayout><Messages /></MainLayout>} />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <MainLayout><ProfileSettings /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute>
+          <MainLayout><Messages /></MainLayout>
+        </ProtectedRoute>
+      } />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

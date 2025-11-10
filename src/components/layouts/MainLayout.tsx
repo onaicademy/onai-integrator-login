@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { supabase } from "@/lib/supabase";
+import { logger } from "@/lib/logger";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -18,21 +19,21 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
 
     async function loadUserRole() {
       if (roleChecked) {
-        console.log('⏭️ Роль уже проверена, пропускаем');
+        logger.log('⏭️ Роль уже проверена, пропускаем');
         return;
       }
-      
+
       roleChecked = true;
-      
+
       try {
-        console.log('🔍 MainLayout: Загрузка роли...');
-        
+        logger.log('🔍 MainLayout: Загрузка роли...');
+
         // ОПТИМИЗАЦИЯ: Проверяем sessionStorage сначала
         const cachedRole = sessionStorage.getItem('user_role');
         const cachedEmail = sessionStorage.getItem('user_email');
-        
+
         if (cachedRole && cachedEmail) {
-          console.log('✅ MainLayout: Роль из кеша:', cachedRole);
+          logger.log('✅ MainLayout: Роль из кеша:', cachedRole);
           if (isMounted) {
             setUserRole(cachedRole as "admin" | "student");
             setIsLoading(false);
@@ -42,11 +43,11 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
 
         // Если нет кеша - делаем запрос
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+
         if (!isMounted) return;
-        
+
         if (userError || !user) {
-          console.log('⚠️ Нет пользователя, роль: student');
+          logger.log('⚠️ Нет пользователя, роль: student');
           if (isMounted) {
             setUserRole("student");
             setIsLoading(false);
@@ -54,29 +55,29 @@ export function MainLayout({ children, role: initialRole = "student" }: MainLayo
           return;
         }
 
-        console.log('👤 User ID:', user.id);
-        console.log('📧 Email:', user.email);
+        logger.log('👤 User ID:', user.id);
+        logger.log('📧 Email:', user.email);
 
         // Определяем роль
-        const role = user.user_metadata?.role || 
-                     user.raw_user_meta_data?.role || 
+        const role = user.user_metadata?.role ||
+                     user.raw_user_meta_data?.role ||
                      (user.email === 'saint@onaiacademy.kz' ? 'admin' : 'student');
-        
+
         const finalRole = role === 'admin' ? 'admin' : 'student';
-        
+
         // Кешируем на время сессии
         sessionStorage.setItem('user_role', finalRole);
         sessionStorage.setItem('user_email', user.email || '');
-        
-        console.log('✅ Роль определена и закеширована:', finalRole);
-        
+
+        logger.log('✅ Роль определена и закеширована:', finalRole);
+
         if (isMounted) {
           setUserRole(finalRole);
           setIsLoading(false);
         }
-        
+
       } catch (error) {
-        console.error('❌ Исключение в loadUserRole:', error);
+        logger.error('❌ Исключение в loadUserRole:', error);
         if (isMounted) {
           setUserRole("student");
           setIsLoading(false);

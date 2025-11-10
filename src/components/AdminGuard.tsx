@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
 
 interface AdminGuardProps {
@@ -22,14 +23,14 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   async function checkAdmin() {
     try {
-      console.log('🔐 AdminGuard: Проверка прав...');
-      
+      logger.log('🔐 AdminGuard: Проверка прав...');
+
       // ОПТИМИЗАЦИЯ: проверяем sessionStorage сначала
       const cachedRole = sessionStorage.getItem('user_role');
       const cachedEmail = sessionStorage.getItem('user_email');
-      
+
       if (cachedRole === 'admin' && cachedEmail === 'saint@onaiacademy.kz') {
-        console.log('✅ AdminGuard: Роль из кеша - admin');
+        logger.log('✅ AdminGuard: Роль из кеша - admin');
         setIsAdmin(true);
         setHasSession(true);
         setIsLoading(false);
@@ -38,9 +39,9 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
       // Проверяем есть ли сессия вообще
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
-        console.log('❌ AdminGuard: Нет сессии → редирект на /login');
+        logger.log('❌ AdminGuard: Нет сессии → редирект на /login');
         setHasSession(false);
         setIsAdmin(false);
         setIsLoading(false);
@@ -49,22 +50,22 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
       // Если есть сессия - проверяем права
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       setHasSession(true);
       const userIsAdmin = user?.email === 'saint@onaiacademy.kz';
-      
+
       if (userIsAdmin) {
         // Кешируем на время сессии
         sessionStorage.setItem('user_role', 'admin');
         sessionStorage.setItem('user_email', user.email);
-        console.log('✅ AdminGuard: Доступ разрешён');
+        logger.log('✅ AdminGuard: Доступ разрешён');
         setIsAdmin(true);
       } else {
-        console.log('🚫 AdminGuard: Доступ запрещён (не админ)');
+        logger.log('🚫 AdminGuard: Доступ запрещён (не админ)');
         setIsAdmin(false);
       }
     } catch (error) {
-      console.error('❌ AdminGuard: Ошибка проверки:', error);
+      logger.error('❌ AdminGuard: Ошибка проверки:', error);
       setHasSession(false);
       setIsAdmin(false);
     } finally {
@@ -82,13 +83,13 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   // НЕТ СЕССИИ → редирект на /login
   if (!hasSession) {
-    console.log('🔄 AdminGuard: Редирект на /login');
+    logger.log('🔄 AdminGuard: Редирект на /login');
     return <Navigate to="/login" replace />;
   }
 
   // ЕСТЬ СЕССИЯ, НО НЕ АДМИН → редирект на /courses
   if (!isAdmin) {
-    console.log('🔄 AdminGuard: Редирект на /courses (не админ)');
+    logger.log('🔄 AdminGuard: Редирект на /courses (не админ)');
     return <Navigate to="/courses" replace />;
   }
 

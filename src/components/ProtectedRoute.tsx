@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -19,47 +20,47 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }, []);
 
   async function checkAuth() {
-    console.log('🔐 ProtectedRoute: Начало проверки авторизации');
-    
+    logger.log('🔐 ProtectedRoute: Начало проверки авторизации');
+
     try {
       // Устанавливаем таймаут на всю проверку (5 секунд)
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Auth check timeout')), 5000)
       );
 
       const authCheckPromise = (async () => {
-        console.log('📡 ProtectedRoute: Запрос getUser...');
+        logger.log('📡 ProtectedRoute: Запрос getUser...');
         const { data: { user }, error } = await supabase.auth.getUser();
-        
-        console.log('📥 ProtectedRoute: Ответ getUser:', { user: !!user, error });
-        
+
+        logger.log('📥 ProtectedRoute: Ответ getUser:', { user: !!user, error });
+
         if (error || !user) {
-          console.log('❌ ProtectedRoute: Пользователь не авторизован');
+          logger.log('❌ ProtectedRoute: Пользователь не авторизован');
           setIsAuthenticated(false);
           setIsLoading(false);
           return;
         }
 
-        console.log('✅ ProtectedRoute: Пользователь авторизован:', user.email);
+        logger.log('✅ ProtectedRoute: Пользователь авторизован:', user.email);
         setIsAuthenticated(true);
-        
+
         // Проверка роли админа - ТОЛЬКО для saint@onaiacademy.kz
         if (user.email === 'saint@onaiacademy.kz') {
-          console.log('👑 ProtectedRoute: Это CEO - admin доступ разрешён');
+          logger.log('👑 ProtectedRoute: Это CEO - admin доступ разрешён');
           setIsAdmin(true);
         } else {
-          console.log('👤 ProtectedRoute: Обычный пользователь');
+          logger.log('👤 ProtectedRoute: Обычный пользователь');
           setIsAdmin(false);
         }
-        
-        console.log('✅ ProtectedRoute: Проверка завершена');
+
+        logger.log('✅ ProtectedRoute: Проверка завершена');
         setIsLoading(false);
       })();
 
       await Promise.race([authCheckPromise, timeoutPromise]);
-      
+
     } catch (error: any) {
-      console.error('🚨 ProtectedRoute: Ошибка проверки авторизации:', error.message);
+      logger.error('🚨 ProtectedRoute: Ошибка проверки авторизации:', error.message);
       setIsAuthenticated(false);
       setIsLoading(false);
     }
