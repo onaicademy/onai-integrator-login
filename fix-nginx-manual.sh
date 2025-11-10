@@ -8,7 +8,7 @@ echo "🔧 Fixing Nginx configuration for SPA routing..."
 cat > /etc/nginx/sites-available/onai-integrator-login.conf << 'EOF'
 server {
     listen 80;
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
 
     root /var/www/onai-integrator-login/dist;
     index index.html;
@@ -58,5 +58,5 @@ fi
 
 echo ""
 echo "🎉 Done! Try accessing:"
-echo "   https://integratoronai.kz/welcome"
-echo "   https://integratoronai.kz/admin/activity"
+echo "   https://onai.academy/welcome"
+echo "   https://onai.academy/admin/activity"

@@ -45,7 +45,7 @@ if [ ! -f ".env" ]; then
     cat > .env << 'EOF'
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhcGRqdm9ramRpdnhqZmRkZG14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2Mzc3MDIsImV4cCI6MjA0NjIxMzcwMn0.1rHZY2Ng0HqA-A5JVh3IKYx4jqZqx9FJfI8iqMKLHVc
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 EOF
     echo "✅ .env файл создан"
 else
@@ -130,10 +130,10 @@ echo "✅ ДЕПЛОЙ ЗАВЕРШЁН!"
 echo "=================================="
 echo ""
 echo "📊 Проверь работу сайта:"
-echo "  https://integratoronai.kz/"
-echo "  https://integratoronai.kz/profile"
-echo "  https://integratoronai.kz/welcome"
-echo "  https://integratoronai.kz/admin/activity"
+echo "  https://onai.academy/"
+echo "  https://onai.academy/profile"
+echo "  https://onai.academy/welcome"
+echo "  https://onai.academy/admin/activity"
 echo ""
 echo "🔍 Проверка через curl:"
 curl -I http://localhost/profile | head -1

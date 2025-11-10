@@ -21,7 +21,7 @@ echo ""
 echo "📝 Создаем новую конфигурацию с поддержкой SPA..."
 cat > /etc/nginx/sites-available/onai-integrator-login.conf << 'EOF'
 server {
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
 
     root /var/www/onai-integrator-login/dist;
     index index.html;
@@ -38,15 +38,15 @@ server {
     }
 
     listen 443 ssl;
-    ssl_certificate /etc/letsencrypt/live/integratoronai.kz/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/integratoronai.kz/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/onai.academy/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/onai.academy/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 }
 
 server {
     listen 80;
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
     return 301 https://$host$request_uri;
 }
 EOF
@@ -69,9 +69,9 @@ if nginx -t; then
         echo "✅ Nginx успешно перезапущен!"
         echo ""
         echo "🎉 ГОТОВО! Теперь страницы должны работать:"
-        echo "   - https://integratoronai.kz/profile"
-        echo "   - https://integratoronai.kz/welcome"
-        echo "   - https://integratoronai.kz/admin/activity"
+        echo "   - https://onai.academy/profile"
+        echo "   - https://onai.academy/welcome"
+        echo "   - https://onai.academy/admin/activity"
         echo ""
     else
         echo "❌ Ошибка при перезапуске Nginx"

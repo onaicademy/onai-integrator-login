@@ -16,7 +16,7 @@ fi
 cat > "$CONF_FILE" <<'NGINX'
 server {
     listen 80;
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
 
     root /var/www/onai-integrator-login/dist;
     index index.html;
@@ -46,8 +46,8 @@ echo "✅ Nginx reloaded. Проверяю статусы роутов…"
 
 # 5) Быстрый smoke-test роутов как у SPA
 for p in / /profile /welcome /admin/activity /neurohub; do
-  printf "\n---- GET https://integratoronai.kz%s ----\n" "$p"
-  curl -I -sS https://integratoronai.kz"$p" | head -n1 || true
+  printf "\n---- GET https://onai.academy%s ----\n" "$p"
+  curl -I -sS https://onai.academy"$p" | head -n1 || true
 done
 
 echo -e "\n🎯 Готово. Если где-то 404 — жми Ctrl+F5 в браузере (кэш) и проверь, что в $APP_DIR/dist есть сборка."

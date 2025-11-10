@@ -67,7 +67,7 @@ else
     cat > .env <<'EOF'
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhcGRqdm9ramRpdnhqZmRkZG14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjc5MDUsImV4cCI6MjA3Nzc0MzkwNX0.bsikIoF86BjthWauzbLXq3SZbNQFodppZ2TC64NniJs
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 EOF
     echo "✅ .env создан"
 fi
@@ -147,15 +147,15 @@ echo "Код: $HTTP_ACTIVITY"
 echo ""
 
 # HTTPS production
-echo "HTTPS integratoronai.kz/:"
-HTTPS_ROOT=$(curl -s -o /dev/null -w "%{http_code}" https://integratoronai.kz/)
+echo "HTTPS onai.academy/:"
+HTTPS_ROOT=$(curl -s -o /dev/null -w "%{http_code}" https://onai.academy/)
 echo "Код: $HTTPS_ROOT"
 [ "$HTTPS_ROOT" = "200" ] && echo "✅ OK" || echo "❌ FAIL"
 echo ""
 
 # HTTPS /admin/activity
-echo "HTTPS integratoronai.kz/admin/activity:"
-HTTPS_ACTIVITY=$(curl -s -o /dev/null -w "%{http_code}" https://integratoronai.kz/admin/activity)
+echo "HTTPS onai.academy/admin/activity:"
+HTTPS_ACTIVITY=$(curl -s -o /dev/null -w "%{http_code}" https://onai.academy/admin/activity)
 echo "Код: $HTTPS_ACTIVITY"
 [ "$HTTPS_ACTIVITY" = "200" ] && echo "✅ OK" || echo "❌ FAIL"
 echo ""
@@ -174,8 +174,8 @@ if [ $SUCCESS_CHECKS -eq $TOTAL_CHECKS ]; then
     echo "🎉 ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ! ($SUCCESS_CHECKS/$TOTAL_CHECKS)"
     echo ""
     echo "Сайт работает:"
-    echo "→ https://integratoronai.kz/"
-    echo "→ https://integratoronai.kz/admin/activity"
+    echo "→ https://onai.academy/"
+    echo "→ https://onai.academy/admin/activity"
     echo ""
     echo "✅ ПРОБЛЕМА РЕШЕНА!"
 else

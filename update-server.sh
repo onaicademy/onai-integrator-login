@@ -1,7 +1,7 @@
 #!/bin/bash
 # Скрипт для обновления кода на сервере
 
-echo "🚀 Обновление кода на сервере integratoronai.kz..."
+echo "🚀 Обновление кода на сервере onai.academy..."
 echo ""
 
 ssh root@178.128.203.40 << 'ENDSSH'
@@ -28,7 +28,7 @@ systemctl restart nginx
 
 echo ""
 echo "✅ Обновление завершено!"
-echo "📍 Проверьте сайт: https://integratoronai.kz"
+echo "📍 Проверьте сайт: https://onai.academy"
 echo ""
 
 ENDSSH
