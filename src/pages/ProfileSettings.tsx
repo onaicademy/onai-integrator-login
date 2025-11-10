@@ -7,14 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProfileSettings() {
   const [user, setUser] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Форма
   const [fullName, setFullName] = useState("");
@@ -28,18 +31,77 @@ export default function ProfileSettings() {
   }, []);
 
   const loadUserData = async () => {
+    setProfileLoading(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setUser(user);
-        setEmail(user.email || "");
-        setFullName(user.user_metadata?.full_name || "");
-        setAvatarUrl(user.user_metadata?.avatar_url || "");
+      const [{ data: sessionData }, { data: userData }] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.auth.getUser(),
+      ]);
+
+      const currentUser = sessionData?.session?.user || userData?.user;
+
+      if (!currentUser) {
+        setUser(null);
+        toast({
+          title: "⚠️ Требуется авторизация",
+          description: "Пожалуйста, войдите в аккаунт ещё раз.",
+          variant: "destructive",
+        });
+        navigate("/login", { replace: true });
+        return;
       }
+
+      setUser(currentUser);
+
+      const [{ data: profile, error: profileError }, { data: studentProfile, error: studentProfileError }] =
+        await Promise.all([
+          supabase
+            .from("profiles")
+            .select("full_name, email")
+            .eq("id", currentUser.id)
+            .maybeSingle(),
+          supabase
+            .from("student_profiles")
+            .select("full_name, email, avatar_url")
+            .eq("id", currentUser.id)
+            .maybeSingle(),
+        ]);
+
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("Ошибка загрузки профиля:", profileError);
+      }
+
+      if (studentProfileError && studentProfileError.code !== "PGRST116") {
+        console.error("Ошибка загрузки student_profile:", studentProfileError);
+      }
+
+      const derivedFullName =
+        studentProfile?.full_name ||
+        profile?.full_name ||
+        currentUser.user_metadata?.full_name ||
+        "";
+
+      const derivedEmail =
+        profile?.email || studentProfile?.email || currentUser.email || "";
+
+      const derivedAvatar =
+        studentProfile?.avatar_url ||
+        profile?.avatar_url ||
+        currentUser.user_metadata?.avatar_url ||
+        "";
+
+      setEmail(derivedEmail);
+      setFullName(derivedFullName);
+      setAvatarUrl(derivedAvatar);
     } catch (error) {
       console.error("Ошибка загрузки данных:", error);
+      toast({
+        title: "❌ Ошибка",
+        description: "Не удалось загрузить данные профиля",
+        variant: "destructive",
+      });
+    } finally {
+      setProfileLoading(false);
     }
   };
 
@@ -47,6 +109,15 @@ export default function ProfileSettings() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!user) {
+      toast({
+        title: "⚠️ Ошибка",
+        description: "Пользователь не найден. Войдите в аккаунт и попробуйте снова.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Проверка размера (макс 2MB)
     if (file.size > 2 * 1024 * 1024) {
@@ -77,11 +148,21 @@ export default function ProfileSettings() {
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
       // Обновляем профиль
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl },
-      });
+      const [{ error: authError }, { error: studentError }] = await Promise.all([
+        supabase.auth.updateUser({
+          data: { avatar_url: publicUrl },
+        }),
+        supabase
+          .from("student_profiles")
+          .update({
+            avatar_url: publicUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user?.id),
+      ]);
 
-      if (updateError) throw updateError;
+      if (authError) throw authError;
+      if (studentError && studentError.code !== "PGRST116") throw studentError;
 
       setAvatarUrl(publicUrl);
 
@@ -104,11 +185,42 @@ export default function ProfileSettings() {
   const handleUpdateProfile = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        email: email,
-        data: { full_name: fullName },
-      });
-      if (error) throw error;
+      if (!user) {
+        throw new Error("Пользователь не авторизован");
+      }
+
+      const trimmedEmail = email.trim();
+      const trimmedName = fullName.trim();
+
+      const [{ error: authError }, { error: profileError }, { error: studentError }] =
+        await Promise.all([
+          supabase.auth.updateUser({
+            email: trimmedEmail,
+            data: { full_name: trimmedName },
+          }),
+          supabase
+            .from("profiles")
+            .update({
+              email: trimmedEmail,
+              full_name: trimmedName,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", user.id),
+          supabase
+            .from("student_profiles")
+            .update({
+              email: trimmedEmail,
+              full_name: trimmedName,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", user.id),
+        ]);
+
+      if (authError) throw authError;
+      if (profileError) throw profileError;
+      if (studentError && studentError.code !== "PGRST116") throw studentError;
+
+      await loadUserData();
 
       toast({
         title: "✅ Профиль обновлён",
@@ -190,6 +302,10 @@ export default function ProfileSettings() {
       // ВАЖНО: Очищаем кеш при выходе
       console.log('👋 Пользователь вышел из системы');
       sessionStorage.clear();
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("sb-") || key === "supabase.auth.token")
+        .forEach((key) => localStorage.removeItem(key));
+      queryClient.clear();
 
       toast({
         title: "👋 До свидания!",
@@ -281,6 +397,7 @@ export default function ProfileSettings() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Иван Иванов"
+                disabled={profileLoading}
               />
             </div>
             <div>
@@ -291,9 +408,10 @@ export default function ProfileSettings() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@example.com"
+                disabled={profileLoading}
               />
             </div>
-            <Button onClick={handleUpdateProfile} disabled={loading}>
+            <Button onClick={handleUpdateProfile} disabled={loading || profileLoading}>
               <Save className="w-4 h-4 mr-2" />
               Сохранить изменения
             </Button>

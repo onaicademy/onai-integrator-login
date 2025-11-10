@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Supabase Connection Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #00ff00;
+    }
+    .test {
+      margin: 10px 0;
+      padding: 10px;
+      background: #2a2a2a;
+      border-left: 4px solid #00ff00;
+    }
+    .error {
+      border-left-color: #ff0000;
+      color: #ff6666;
+    }
+    .success {
+      border-left-color: #00ff00;
+    }
+    button {
+      background: #00ff00;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-family: monospace;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #00cc00;
+    }
+    pre {
+      background: #000;
+      padding: 10px;
+      overflow-x: auto;
+      border: 1px solid #00ff00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Supabase Connection Diagnostics</h1>
+  <div id="results"></div>
+  
+  <h2>🧪 Tests:</h2>
+  <button onclick="testConnection()">1. Test Connection</button>
+  <button onclick="testAuth()">2. Test Auth Session</button>
+  <button onclick="testProfiles()">3. Test Profiles Table</button>
+  <button onclick="testStudentProfiles()">4. Test Student Profiles</button>
+  <button onclick="testRLS()">5. Test RLS Policies</button>
+  <button onclick="clearAll()">Clear Results</button>
+
+  <script>
+    // ⚠️ ВАЖНО: Вставь сюда ANON KEY из твоего .env файла
+    // Найди в проекте файл .env и скопируй значение VITE_SUPABASE_ANON_KEY
+    const SUPABASE_URL = 'https://arqhkacellqbhjhbebfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'ВСТАВЬ_СЮДА_ANON_KEY_ИЗ_ENV_ФАЙЛА';
+
+    // Показываем инструкцию если ключ не вставлен
+    if (SUPABASE_ANON_KEY === 'ВСТАВЬ_СЮДА_ANON_KEY_ИЗ_ENV_ФАЙЛА') {
+      document.body.innerHTML = `
+        <div style="padding: 40px; font-family: monospace; background: #1a1a1a; color: #00ff00; min-height: 100vh;">
+          <h1 style="color: #ff0000;">⚠️ НУЖНО ВСТАВИТЬ API КЛЮЧ</h1>
+          
+          <h2>📋 Инструкция:</h2>
+          <ol style="font-size: 16px; line-height: 2;">
+            <li>Открой файл <code style="background: #000; padding: 5px;">.env</code> в папке проекта</li>
+            <li>Найди строку <code style="background: #000; padding: 5px;">VITE_SUPABASE_ANON_KEY=...</code></li>
+            <li>Скопируй всё что после знака <code>=</code></li>
+            <li>Открой этот файл <code style="background: #000; padding: 5px;">test-supabase-connection.html</code> в редакторе</li>
+            <li>Найди строку 62: <code style="background: #000; padding: 5px;">const SUPABASE_ANON_KEY = 'ВСТАВЬ_СЮДА...';</code></li>
+            <li>Вставь скопированный ключ вместо <code style="background: #000; padding: 5px;">ВСТАВЬ_СЮДА_ANON_KEY_ИЗ_ENV_ФАЙЛА</code></li>
+            <li>Сохрани файл (Ctrl+S)</li>
+            <li>Обнови эту страницу (Ctrl+R)</li>
+          </ol>
+
+          <h2 style="margin-top: 40px;">🔍 Или проверь напрямую:</h2>
+          <p>Открой консоль (F12) и посмотри логи на странице:</p>
+          <a href="/admin/students-activity" style="color: #00ff00; font-size: 20px; text-decoration: underline;">
+            👉 https://localhost:8080/admin/students-activity
+          </a>
+          <p style="margin-top: 20px;">Там будут логи с точной ошибкой!</p>
+        </div>
+      `;
+    }
+  </script>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const SUPABASE_URL = 'https://arqhkacellqbhjhbebfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'ВСТАВЬ_СЮДА_ANON_KEY_ИЗ_ENV_ФАЙЛА';
+    
+    if (SUPABASE_ANON_KEY === 'ВСТАВЬ_СЮДА_ANON_KEY_ИЗ_ENV_ФАЙЛА') {
+      // Страница уже заменена инструкцией выше
+      throw new Error('API key not configured');
+    }
+
+    console.log('🔑 Using Supabase config:', { url: SUPABASE_URL, keyLength: SUPABASE_ANON_KEY?.length });
+    
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `test ${type}`;
+      div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+      document.getElementById('results').appendChild(div);
+      console.log(message);
+    }
+
+    window.testConnection = async () => {
+      log('🔌 Testing basic Supabase connection...', 'info');
+      try {
+        const { data, error } = await window.supabase.from('profiles').select('count');
+        if (error) throw error;
+        log(`✅ Connection OK! Can access database.`, 'success');
+      } catch (error) {
+        log(`❌ Connection failed: ${error.message}`, 'error');
+        log(`<pre>${JSON.stringify(error, null, 2)}</pre>`, 'error');
+      }
+    };
+
+    window.testAuth = async () => {
+      log('🔐 Testing auth session...', 'info');
+      try {
+        const { data: { session }, error } = await window.supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (session) {
+          log(`✅ Session found! User: ${session.user.email}`, 'success');
+          log(`<pre>${JSON.stringify(session.user, null, 2)}</pre>`, 'success');
+        } else {
+          log(`⚠️ No active session. Please login first.`, 'error');
+        }
+      } catch (error) {
+        log(`❌ Auth test failed: ${error.message}`, 'error');
+      }
+    };
+
+    window.testProfiles = async () => {
+      log('👤 Testing profiles table...', 'info');
+      try {
+        const { data, error } = await window.supabase
+          .from('profiles')
+          .select('id, email, full_name, role, is_active')
+          .limit(5);
+        
+        if (error) throw error;
+        log(`✅ Profiles table OK! Found ${data.length} rows`, 'success');
+        log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+      } catch (error) {
+        log(`❌ Profiles test failed: ${error.message}`, 'error');
+        log(`<pre>${JSON.stringify(error, null, 2)}</pre>`, 'error');
+      }
+    };
+
+    window.testStudentProfiles = async () => {
+      log('🎓 Testing student_profiles table...', 'info');
+      try {
+        const { data, error } = await window.supabase
+          .from('student_profiles')
+          .select('id, email, full_name, is_active, total_xp, level')
+          .limit(5);
+        
+        if (error) throw error;
+        log(`✅ Student profiles table OK! Found ${data.length} rows`, 'success');
+        log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+      } catch (error) {
+        log(`❌ Student profiles test failed: ${error.message}`, 'error');
+        log(`<pre>${JSON.stringify(error, null, 2)}</pre>`, 'error');
+      }
+    };
+
+    window.testRLS = async () => {
+      log('🔒 Testing RLS policies...', 'info');
+      try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        
+        if (!session) {
+          log(`⚠️ Cannot test RLS without active session. Login first.`, 'error');
+          return;
+        }
+
+        // Test own profile access
+        const { data: ownProfile, error: ownError } = await window.supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (ownError) throw ownError;
+        log(`✅ Can read own profile`, 'success');
+
+        // Test all profiles access (admin only)
+        const { data: allProfiles, error: allError } = await window.supabase
+          .from('profiles')
+          .select('id, email, role')
+          .limit(10);
+
+        if (allError && allError.code === 'PGRST301') {
+          log(`⚠️ RLS blocking: Cannot read other profiles (expected for non-admin)`, 'info');
+        } else if (allError) {
+          throw allError;
+        } else {
+          log(`✅ Can read all profiles (admin access confirmed)`, 'success');
+          log(`<pre>Found ${allProfiles.length} profiles</pre>`, 'success');
+        }
+      } catch (error) {
+        log(`❌ RLS test failed: ${error.message}`, 'error');
+        log(`<pre>${JSON.stringify(error, null, 2)}</pre>`, 'error');
+      }
+    };
+
+    window.clearAll = () => {
+      document.getElementById('results').innerHTML = '';
+    };
+
+    // Auto-run basic tests on load
+    setTimeout(async () => {
+      log('🚀 Auto-running basic diagnostics...', 'info');
+      await testConnection();
+      await testAuth();
+    }, 500);
+  </script>
+</body>
+</html>
+

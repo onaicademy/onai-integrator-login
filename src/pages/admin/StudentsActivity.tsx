@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -9,6 +9,7 @@ import {
   Copy,
   Loader2,
   Info,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,12 +42,36 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
+type StudentRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  last_login_at?: string | null;
+  last_active_date?: string | null;
+  account_expires_at?: string | null;
+  deleted_at?: string | null;
+  deactivation_reason?: string | null;
+  total_xp?: number | null;
+  level?: number | null;
+};
+
 export default function StudentsActivity() {
-  const [students, setStudents] = useState<any[]>([]);
+  const [allStudents, setAllStudents] = useState<StudentRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const isRecentlyActive = (student: StudentRow, threshold: Date) => {
+    if (!student.is_active) return false;
+    if (!student.last_active_date) return true;
+
+    const lastActive = new Date(student.last_active_date);
+    return lastActive >= threshold;
+  };
 
   // Модалы
   const [showAddModal, setShowAddModal] = useState(false);
@@ -66,135 +91,103 @@ export default function StudentsActivity() {
 
   // Загрузка студентов при монтировании компонента
   useEffect(() => {
-    console.log('📋 StudentsActivity: Компонент загружен, загружаем студентов...');
-    fetchStudents('all');
+    const load = async () => {
+      await fetchStudents();
+    };
+
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchStudents = async (filterType: 'all' | 'active' | 'inactive' = 'all') => {
+  const fetchStudents = async (searchTerm = "") => {
+    console.log('📋 StudentsActivity: fetchStudents вызван, searchTerm:', searchTerm);
+    setIsLoading(true);
+    setSessionError(null);
+
     try {
-      console.log('📋 Начало загрузки студентов...');
-      setIsLoading(true);
-      console.log('🔍 Фильтр:', filterType);
+      console.log('🔐 Проверка сессии...');
+      const {
+        data: { session },
+        error: sessionFetchError,
+      } = await supabase.auth.getSession();
 
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      if (sessionFetchError) {
+        console.error('❌ Ошибка получения сессии:', sessionFetchError);
+        throw sessionFetchError;
+      }
 
-      if (error) {
-        console.error('❌ Ошибка загрузки студентов:', error);
-        toast({
-          title: "❌ Ошибка",
-          description: "Ошибка загрузки студентов",
-          variant: "destructive",
-        });
+      if (!session) {
+        console.warn('⚠️ Сессия не найдена');
+        setAllStudents([]);
+        setSessionError("Сессия истекла. Войдите заново, чтобы продолжить работу.");
         return;
       }
 
-      console.log('✅ Загружено студентов:', profiles?.length);
-      console.log('📊 Данные:', profiles);
+      console.log('✅ Сессия активна, user:', session.user.email);
 
-      // Маппинг данных
-      let studentsData = profiles?.map(profile => ({
-        id: profile.id,
-        email: profile.email,
-        full_name: profile.full_name || 'Без имени',
-        fullName: profile.full_name || 'Без имени',
-        role: profile.role || 'student',
-        is_active: profile.is_active !== false,
-        last_login_at: profile.last_login_at || profile.updated_at,
-        last_active_date: profile.last_active_date,
-        progress: 0,
-        coursesCompleted: 0
-      })) || [];
+      console.log('📤 Запрос profiles...');
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      console.log('📊 После маппинга:', studentsData.length);
-
-      // Применить фильтр активности
-      if (filterType === 'active') {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        console.log('🔍 Фильтр "Активные", дата отсечки:', sevenDaysAgo.toISOString());
-        
-        studentsData = studentsData.filter(s => {
-          if (!s.is_active) return false;
-          if (!s.last_active_date) return true; // Если нет даты - считаем активным
-          const lastActive = new Date(s.last_active_date);
-          return lastActive >= sevenDaysAgo;
-        });
-      } else if (filterType === 'inactive') {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        console.log('🔍 Фильтр "Неактивные", дата отсечки:', sevenDaysAgo.toISOString());
-        
-        studentsData = studentsData.filter(s => {
-          if (!s.is_active) return true;
-          if (!s.last_active_date) return false;
-          const lastActive = new Date(s.last_active_date);
-          return lastActive < sevenDaysAgo;
-        });
+      if (profilesError) {
+        console.error('❌ Ошибка profiles:', profilesError);
+        throw profilesError;
       }
 
-      console.log('✅ После фильтрации:', studentsData.length);
-      setStudents(studentsData);
+      console.log(`✅ Получено ${profiles?.length || 0} записей из profiles`);
 
+      const mapped: StudentRow[] =
+        profiles?.map((profile) => {
+          return {
+            id: profile.id,
+            email: profile.email || "",
+            full_name: profile.full_name || profile.email || "Без имени",
+            role: profile.role || "student",
+            is_active: profile.is_active ?? true,
+            last_login_at: profile.last_login_at ?? profile.updated_at ?? null,
+            last_active_date: profile.last_active_date ?? null,
+            account_expires_at: profile.account_expires_at ?? null,
+            deleted_at: profile.deleted_at ?? null,
+            deactivation_reason: profile.deactivation_reason ?? null,
+            total_xp: null,
+            level: null,
+          };
+        }) ?? [];
+
+      console.log(`✅ Смаппировано ${mapped.length} студентов`);
+      console.log('📊 Первые 3 студента:', mapped.slice(0, 3));
+      setAllStudents(mapped);
     } catch (error: any) {
-      console.error('❌ Исключение при загрузке:', error);
+      console.error("❌ Исключение при загрузке:", error);
+
+      if (error?.message?.toLowerCase().includes("jwt") || error?.code === "403") {
+        setSessionError("Сессия истекла. Войдите заново, чтобы продолжить работу.");
+      }
+
       toast({
         title: "❌ Ошибка",
-        description: "Критическая ошибка загрузки",
+        description: error?.message || "Критическая ошибка загрузки",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
-      console.log('🏁 Загрузка завершена');
+    }
+  };
+
+  const refreshStudents = async () => {
+    const activeSearch = searchQuery.trim();
+    if (activeSearch) {
+      await fetchStudents(activeSearch);
+    } else {
+      await fetchStudents();
     }
   };
 
   // Поиск студентов
   const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      await fetchStudents(filter); // Загрузить всех с текущим фильтром
-      return;
-    }
-
-    console.log('🔍 Поиск:', searchQuery);
-    try {
-      setIsLoading(true);
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .or(`email.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%`)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      console.log('✅ Найдено:', profiles?.length);
-      
-      const studentsData = profiles?.map(profile => ({
-        id: profile.id,
-        email: profile.email,
-        full_name: profile.full_name || 'Без имени',
-        fullName: profile.full_name || 'Без имени',
-        role: profile.role || 'student',
-        is_active: profile.is_active !== false,
-        last_login_at: profile.last_login_at || profile.updated_at,
-        last_active_date: profile.last_active_date,
-        progress: 0,
-        coursesCompleted: 0
-      })) || [];
-
-      setStudents(studentsData);
-    } catch (error: any) {
-      console.error('❌ Ошибка поиска:', error);
-      toast({
-        title: "❌ Ошибка",
-        description: "Ошибка поиска",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await refreshStudents();
   };
 
   // Добавление пользователя
@@ -283,7 +276,7 @@ export default function StudentsActivity() {
         });
 
         // Обновляем список студентов
-        await fetchStudents(filter);
+        await refreshStudents();
 
         setShowAddModal(false);
         setShowInvitationResult(true);
@@ -340,7 +333,7 @@ export default function StudentsActivity() {
         title: "✅ Роль изменена",
         description: "Роль успешно изменена",
       });
-      await fetchStudents(filter);
+      await refreshStudents();
     } catch (error: any) {
       toast({
         title: "❌ Ошибка",
@@ -385,7 +378,7 @@ export default function StudentsActivity() {
       
       // КРИТИЧНО: Перезагрузить список
       console.log('🔄 Обновление списка студентов...');
-      await fetchStudents(filter);
+      await refreshStudents();
       console.log('✅ Список обновлён');
       
     } catch (error: any) {
@@ -411,7 +404,7 @@ export default function StudentsActivity() {
         title: "✅ Успешно",
         description: isActive ? 'Деактивирован' : 'Активирован',
       });
-      await fetchStudents(filter);
+      await refreshStudents();
     } catch (error: any) {
       toast({
         title: "❌ Ошибка",
@@ -422,14 +415,33 @@ export default function StudentsActivity() {
   };
 
   // Статистика (для отображения)
-  const stats = {
-    total: students.length,
-    active: students.filter((s) => s.is_active).length,
-    inactive: students.filter((s) => !s.is_active).length,
-  };
+  const stats = useMemo(() => {
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() - 7);
 
-  // Локальная фильтрация для отображения
-  const filteredStudents = students;
+    const total = allStudents.length;
+    const active = allStudents.filter((student) =>
+      isRecentlyActive(student, threshold)
+    ).length;
+    const inactive = total - active;
+
+    return { total, active, inactive };
+  }, [allStudents]);
+
+  const filteredStudents = useMemo(() => {
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() - 7);
+
+    if (filter === "active") {
+      return allStudents.filter((student) => isRecentlyActive(student, threshold));
+    }
+
+    if (filter === "inactive") {
+      return allStudents.filter((student) => !isRecentlyActive(student, threshold));
+    }
+
+    return allStudents;
+  }, [allStudents, filter]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -488,34 +500,42 @@ export default function StudentsActivity() {
           <div className="flex gap-2">
             <Button
               variant={filter === "all" ? "default" : "outline"}
-              onClick={() => {
-                setFilter("all");
-                fetchStudents("all");
-              }}
+              onClick={() => setFilter("all")}
             >
               Все
             </Button>
             <Button
               variant={filter === "active" ? "default" : "outline"}
-              onClick={() => {
-                setFilter("active");
-                fetchStudents("active");
-              }}
+              onClick={() => setFilter("active")}
             >
               Активные
             </Button>
             <Button
               variant={filter === "inactive" ? "default" : "outline"}
-              onClick={() => {
-                setFilter("inactive");
-                fetchStudents("inactive");
-              }}
+              onClick={() => setFilter("inactive")}
             >
               Неактивные
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {sessionError && (
+        <Card className="mb-6 border-destructive/40 bg-destructive/5">
+          <CardContent className="flex items-start justify-between gap-4 pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-destructive">Требуется повторный вход</h3>
+                <p className="text-sm text-destructive/80">{sessionError}</p>
+              </div>
+            </div>
+            <Button variant="outline" onClick={refreshStudents}>
+              Обновить
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Таблица */}
       <Card>
