@@ -26,6 +26,7 @@ import {
   transcribeAudioToText,
   type ChatMessage,
 } from "@/lib/openai-assistant";
+import { getLoadingPhraseSequence } from "@/lib/ai-loading-states";
 
 interface FileAttachment {
   name: string;
@@ -56,6 +57,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingStatus, setTypingStatus] = useState("Печатает...");
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const maxDurationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -64,6 +66,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
   const [showMicrophoneInstructions, setShowMicrophoneInstructions] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
   const {
@@ -270,8 +273,19 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         messageToSend = "Проанализируй файл";
       }
       
-      // Показываем индикатор "печатает..."
+      // Показываем индикатор "печатает..." с креативными статусами
       setIsTyping(true);
+      
+      // Получаем последовательность креативных фраз
+      const statusPhrases = getLoadingPhraseSequence(4);
+      let phraseIndex = 0;
+      setTypingStatus(statusPhrases[0]);
+      
+      // Меняем статусы каждые 3 секунды
+      typingIntervalRef.current = setInterval(() => {
+        phraseIndex = (phraseIndex + 1) % statusPhrases.length;
+        setTypingStatus(statusPhrases[phraseIndex]);
+      }, 3000);
 
       // Отправляем сообщение в AI (с файлами если есть)
       // Получаем реальный userId из Supabase auth
@@ -288,14 +302,37 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         console.warn('⚠️  Ошибка получения userId:', authError);
       }
       
-      const response = await sendMessageToAI(
-        messageToSend,
-        currentAttachments,
-        userId
-      );
+      // Добавляем таймаут на 45 секунд (если AI не ответит - покажем ошибку)
+      const timeoutId = setTimeout(() => {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        setIsTyping(false);
+        setIsLoading(false);
+        toast({
+          title: "⏱️ Превышено время ожидания",
+          description: "AI не смог ответить за 45 секунд. Попробуй еще раз.",
+          variant: "destructive",
+        });
+      }, 45000);
+      
+      try {
+        const response = await sendMessageToAI(
+          messageToSend,
+          currentAttachments,
+          userId
+        );
+        
+        // Отменяем таймаут
+        clearTimeout(timeoutId);
 
-      // Скрываем индикатор "печатает..."
-      setIsTyping(false);
+        // Скрываем индикатор "печатает..." и останавливаем смену статусов
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        setIsTyping(false);
 
       // Добавляем ответ AI (проверяем, что ответ не пустой и не дублируется)
       if (response && response.trim()) {
@@ -320,10 +357,24 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         title: "✅ Ответ получен",
         description: "AI-куратор ответил на твой вопрос",
       });
+      } catch (sendError: any) {
+        console.error("❌ Ошибка отправки:", sendError);
+        clearTimeout(timeoutId);
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        setIsTyping(false);
+        throw sendError;
+      }
     } catch (error: any) {
       console.error("❌ Ошибка:", error);
       
-      // Скрываем индикатор "печатает..." при ошибке
+      // Скрываем индикатор "печатает..." и останавливаем интервал при ошибке
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+        typingIntervalRef.current = null;
+      }
       setIsTyping(false);
 
       const errorMessage: ChatMessage = {
@@ -1115,11 +1166,11 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                       </AvatarFallback>
                     </Avatar>
                   </motion.div>
-                  <div className="bg-secondary rounded-lg px-4 py-3 border border-border">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm text-muted-foreground">Печатает</span>
-                      <div className="flex gap-1">
-                        <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                <div className="bg-secondary rounded-lg px-4 py-3 border border-border">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">{typingStatus}</span>
+                    <div className="flex gap-1">
+                      <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
                         <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
                         <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
                       </div>
