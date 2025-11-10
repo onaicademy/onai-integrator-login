@@ -26,7 +26,7 @@ import {
   transcribeAudioToText,
   type ChatMessage,
 } from "@/lib/openai-assistant";
-import { getLoadingPhraseSequence } from "@/lib/ai-loading-states";
+import { getStatusSequence } from "@/lib/ai-loading-states";
 
 interface FileAttachment {
   name: string;
@@ -276,15 +276,20 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       // Показываем индикатор "печатает..." с креативными статусами
       setIsTyping(true);
       
-      // Получаем последовательность креативных фраз
-      const statusPhrases = getLoadingPhraseSequence(4);
-      let phraseIndex = 0;
-      setTypingStatus(statusPhrases[0]);
+      // Получаем логическую последовательность статусов
+      const statusSequence = getStatusSequence();
+      let currentStatusIndex = 0;
+      setTypingStatus(statusSequence[0]);
       
-      // Меняем статусы каждые 3 секунды
+      // Меняем статусы последовательно каждые 3 секунды
       typingIntervalRef.current = setInterval(() => {
-        phraseIndex = (phraseIndex + 1) % statusPhrases.length;
-        setTypingStatus(statusPhrases[phraseIndex]);
+        currentStatusIndex++;
+        if (currentStatusIndex < statusSequence.length) {
+          setTypingStatus(statusSequence[currentStatusIndex]);
+        } else {
+          // Когда последовательность закончилась - показываем "Печатает..."
+          setTypingStatus("Печатает ✍️");
+        }
       }, 3000);
 
       // Отправляем сообщение в AI (с файлами если есть)
