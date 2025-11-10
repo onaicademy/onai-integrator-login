@@ -1,0 +1,41 @@
+name: Setup SSL Certificate
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  setup-ssl:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup SSL on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: 178.128.203.40
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            echo "=================================="
+            echo "Setting up SSL for onai.academy"
+            echo "=================================="
+            
+            cd /var/www/onai-integrator-login
+            
+            # Pull latest code (includes SSL script)
+            git pull origin main
+            
+            # Make script executable
+            chmod +x setup-ssl-on-server.sh
+            
+            # Run SSL setup
+            ./setup-ssl-on-server.sh
+            
+            echo ""
+            echo "=================================="
+            echo "SSL setup completed!"
+            echo "=================================="
+            echo "Site is now available at: https://onai.academy"
+
