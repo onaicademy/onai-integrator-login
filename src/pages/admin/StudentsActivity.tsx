@@ -115,6 +115,11 @@ export default function StudentsActivity() {
     try {
       console.log('📤 Запрос student_profiles...');
       
+      // Даём время на инициализацию auth перед запросом
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.log('⏳ После 500ms delay, начинаем запрос');
+      
       // Создаём контроллер для timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек timeout
