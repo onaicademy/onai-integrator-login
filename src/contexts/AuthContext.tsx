@@ -21,12 +21,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Извлечь роль из JWT токена
   const extractRoleFromToken = (session: Session | null): string => {
-    if (!session?.access_token) return 'guest';
+    if (!session?.access_token) {
+      console.log('❌ Нет access_token');
+      return 'guest';
+    }
     
     try {
       const payload = JSON.parse(atob(session.access_token.split('.')[1]));
-      return payload.user_role || 'guest';
-    } catch {
+      console.log('📦 JWT payload:', payload);
+      
+      // Проверяем разные места где может быть роль
+      const role = payload.user_role || 
+                   payload.role || 
+                   payload.user_metadata?.role ||
+                   payload.app_metadata?.role ||
+                   'guest';
+      
+      console.log('✅ Извлеченная роль:', role);
+      return role;
+    } catch (error) {
+      console.error('❌ Ошибка парсинга JWT:', error);
       return 'guest';
     }
   };
@@ -39,9 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session) {
         setSession(session);
         setUser(session.user);
-        const role = extractRoleFromToken(session);
+        
+        // ИСПОЛЬЗУЕМ СТАРЫЙ СПОСОБ - через user_metadata
+        const role = (session.user as any).user_metadata?.role ||
+                     (session.user as any).app_metadata?.role ||
+                     extractRoleFromToken(session); // fallback на JWT
+        
         setUserRole(role);
-        console.log('✅ Роль из JWT:', role);
+        console.log('✅ Роль получена:', role);
       } else {
         console.log('❌ Нет сохраненной сессии');
       }
@@ -58,9 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session) {
           setSession(session);
           setUser(session.user);
-          const role = extractRoleFromToken(session);
+          
+          // ИСПОЛЬЗУЕМ СТАРЫЙ СПОСОБ - через user_metadata
+          const role = (session.user as any).user_metadata?.role ||
+                       (session.user as any).app_metadata?.role ||
+                       extractRoleFromToken(session); // fallback на JWT
+          
           setUserRole(role);
-          console.log('✅ Роль из JWT:', role);
+          console.log('✅ Роль получена:', role);
         } else {
           setSession(null);
           setUser(null);
