@@ -113,12 +113,11 @@ export default function StudentsActivity() {
     setSessionError(null);
 
     try {
-      console.log('📤 Запрос profiles...');
+      console.log('📤 Запрос student_profiles...');
       
       const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
+        .from("student_profiles")
         .select("*")
-        // .eq("role", "student")  // ВРЕМЕННО ОТКЛЮЧЕН для теста
         .order("created_at", { ascending: false });
 
       console.log('✅ Запрос завершён');
@@ -128,7 +127,7 @@ export default function StudentsActivity() {
         throw profilesError;
       }
 
-      console.log(`✅ Получено ${profiles?.length || 0} записей из profiles`);
+      console.log(`✅ Получено ${profiles?.length || 0} записей из student_profiles`);
 
       const mapped: StudentRow[] =
         profiles?.map((profile) => {
