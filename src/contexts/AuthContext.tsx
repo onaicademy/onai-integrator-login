@@ -63,6 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             'student';
           
           console.log('✅ AuthContext: Роль из JWT:', role);
+          
+          // Редирект для гостей
+          if (role === 'guest' || !role) {
+            console.log('🚫 AuthContext: Роль guest или нет роли - редирект на /login');
+            window.location.href = '/login';
+            return;
+          }
+          
           setUserRole(role as UserRole);
         } else {
           setSession(null);
@@ -111,6 +119,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               (session.user as any).app_metadata?.role ||
               'student';
             console.log('✅ Роль из JWT:', role);
+            
+            // Редирект для гостей
+            if (role === 'guest' || !role) {
+              console.log('🚫 AuthContext: Роль guest или нет роли - редирект на /login');
+              window.location.href = '/login';
+              return;
+            }
+            
             setUserRole(role as UserRole);
             setIsLoading(false);
           }
