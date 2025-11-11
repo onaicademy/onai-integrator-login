@@ -117,10 +117,13 @@ export default function Login() {
       }
 
       if (data.user) {
-        console.log('✅ ВХОД УСПЕШЕН:', {
-          userId: data.user.id,
-          email: data.user.email
-        })
+        console.log('✅ Login success:', data);
+        console.log('💾 Session saved:', data.session);
+        
+        // ДИАГНОСТИКА: Проверка что сессия сохранилась
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('🔍 Session после логина:', session);
+        console.log('💾 localStorage после логина:', localStorage.getItem('supabase.auth.token'));
         
         // ПРОВЕРКА СТАТУСА АККАУНТА
         console.log('🔍 Проверка статуса аккаунта...');

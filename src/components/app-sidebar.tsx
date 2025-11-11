@@ -44,11 +44,17 @@ const adminMenuItems: MenuItem[] = [
 ];
 
 interface AppSidebarProps {
-  role?: UserRole;
+  role: UserRole | null;
 }
 
-export function AppSidebar({ role = "student" }: AppSidebarProps) {
+export function AppSidebar({ role }: AppSidebarProps) {
   console.log('📋 AppSidebar роль:', role);
+  
+  // Не рендерим пока роль не определена
+  if (!role) {
+    console.log("⏳ AppSidebar: Роль не определена, ждём...");
+    return null;
+  }
 
   const { state } = useSidebar();
 

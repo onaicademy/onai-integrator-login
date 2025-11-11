@@ -91,11 +91,19 @@ export default function StudentsActivity() {
 
   // Загрузка студентов при монтировании компонента
   useEffect(() => {
+    let isMounted = true;
+
     const load = async () => {
-      await fetchStudents();
+      if (isMounted) {
+        await fetchStudents();
+      }
     };
 
     void load();
+
+    return () => {
+      isMounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,31 +113,15 @@ export default function StudentsActivity() {
     setSessionError(null);
 
     try {
-      console.log('🔐 Проверка сессии...');
-      const {
-        data: { session },
-        error: sessionFetchError,
-      } = await supabase.auth.getSession();
-
-      if (sessionFetchError) {
-        console.error('❌ Ошибка получения сессии:', sessionFetchError);
-        throw sessionFetchError;
-      }
-
-      if (!session) {
-        console.warn('⚠️ Сессия не найдена');
-        setAllStudents([]);
-        setSessionError("Сессия истекла. Войдите заново, чтобы продолжить работу.");
-        return;
-      }
-
-      console.log('✅ Сессия активна, user:', session.user.email);
-
       console.log('📤 Запрос profiles...');
+      
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*")
+        // .eq("role", "student")  // ВРЕМЕННО ОТКЛЮЧЕН для теста
         .order("created_at", { ascending: false });
+
+      console.log('✅ Запрос завершён');
 
       if (profilesError) {
         console.error('❌ Ошибка profiles:', profilesError);
@@ -419,8 +411,11 @@ export default function StudentsActivity() {
     const threshold = new Date();
     threshold.setDate(threshold.getDate() - 7);
 
-    const total = allStudents.length;
-    const active = allStudents.filter((student) =>
+    // Считаем только активных студентов (is_active !== false)
+    const activeStudents = allStudents.filter((student) => student.is_active !== false);
+    
+    const total = activeStudents.length;
+    const active = activeStudents.filter((student) =>
       isRecentlyActive(student, threshold)
     ).length;
     const inactive = total - active;
@@ -432,15 +427,18 @@ export default function StudentsActivity() {
     const threshold = new Date();
     threshold.setDate(threshold.getDate() - 7);
 
+    // КРИТИЧНО: Скрываем деактивированных студентов (is_active = false)
+    const activeOnly = allStudents.filter((student) => student.is_active !== false);
+
     if (filter === "active") {
-      return allStudents.filter((student) => isRecentlyActive(student, threshold));
+      return activeOnly.filter((student) => isRecentlyActive(student, threshold));
     }
 
     if (filter === "inactive") {
-      return allStudents.filter((student) => !isRecentlyActive(student, threshold));
+      return activeOnly.filter((student) => !isRecentlyActive(student, threshold));
     }
 
-    return allStudents;
+    return activeOnly; // Показываем только активных
   }, [allStudents, filter]);
 
   return (

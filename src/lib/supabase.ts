@@ -22,15 +22,11 @@ devLog('✅ Supabase config ready', {
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    storage: localStorage,
+    autoRefreshToken: true,
     persistSession: true,
-    autoRefreshToken: true
-  },
-  global: {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`
-    }
+    detectSessionInUrl: true,
+    storage: window.localStorage
+    // НЕ УКАЗЫВАЕМ storageKey - пусть Supabase использует дефолтный!
   }
 })
 
