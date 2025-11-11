@@ -33,11 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('🔐 AuthContext: Инициализация...');
 
     let isMounted = true;
-    let isFirstLoad = true;
 
     const initAuth = async () => {
       try {
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        const { data: { session: initialSession }, error } = 
+          await supabase.auth.getSession();
 
         if (!isMounted) return;
 
@@ -54,27 +54,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : '❌ AuthContext: Нет сохраненной сессии'
         );
 
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
         if (initialSession) {
+          setSession(initialSession);
+          setUser(initialSession.user);
+
           const role = (initialSession.user as any).user_metadata?.role ||
             (initialSession.user as any).app_metadata?.role ||
             'student';
+          
           console.log('✅ AuthContext: Роль из JWT:', role);
           setUserRole(role as UserRole);
+        } else {
+          setSession(null);
+          setUser(null);
+          setUserRole(null);
         }
 
         setIsLoading(false);
         setIsInitialized(true);
-        isFirstLoad = false;
 
       } catch (error) {
         console.error('❌ AuthContext: Исключение при инициализации', error);
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
-          isFirstLoad = false;
         }
       }
     };
@@ -82,22 +85,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!isMounted) return;
 
         console.log('🔐 Auth event:', event);
 
-        // Игнорируем события при первой загрузке - они обрабатываются в initAuth()
-        if (isFirstLoad && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
-          console.log('⏭️ Пропускаем событие при первой загрузке:', event);
-          return;
+        if (!isInitialized) {
+          console.log('✅ AuthContext: Инициализация завершена (из onAuthStateChange)');
+          setIsInitialized(true);
         }
 
         if (event === 'SIGNED_OUT') {
+          console.log('👋 Пользователь вышел');
           setSession(null);
           setUser(null);
           setUserRole(null);
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setIsLoading(false);
+        } 
+        else if (event === 'SIGNED_IN') {
+          console.log('👤 Пользователь вошел');
+          if (session) {
+            setSession(session);
+            setUser(session.user);
+            const role = (session.user as any).user_metadata?.role ||
+              (session.user as any).app_metadata?.role ||
+              'student';
+            console.log('✅ Роль из JWT:', role);
+            setUserRole(role as UserRole);
+            setIsLoading(false);
+          }
+        } 
+        else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Токен обновлен');
           if (session) {
             setSession(session);
             setUser(session.user);
@@ -106,6 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               'student';
             setUserRole(role as UserRole);
           }
+          setIsLoading(false);
+        }
+        else if (event === 'INITIAL_SESSION') {
+          console.log('🔄 INITIAL_SESSION event');
+          setIsLoading(false);
         }
       }
     );
@@ -130,4 +154,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
