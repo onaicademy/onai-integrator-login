@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('🔐 AuthContext: Инициализация...');
 
     let isMounted = true;
+    let isFirstLoad = true;
 
     const initAuth = async () => {
       try {
@@ -66,12 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setIsLoading(false);
         setIsInitialized(true);
+        isFirstLoad = false;
 
       } catch (error) {
         console.error('❌ AuthContext: Исключение при инициализации', error);
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
+          isFirstLoad = false;
         }
       }
     };
@@ -83,6 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isMounted) return;
 
         console.log('🔐 Auth event:', event);
+
+        // Игнорируем события при первой загрузке - они обрабатываются в initAuth()
+        if (isFirstLoad && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+          console.log('⏭️ Пропускаем событие при первой загрузке:', event);
+          return;
+        }
 
         if (event === 'SIGNED_OUT') {
           setSession(null);
