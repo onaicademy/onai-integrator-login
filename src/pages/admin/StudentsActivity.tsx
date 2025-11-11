@@ -115,19 +115,33 @@ export default function StudentsActivity() {
     try {
       console.log('📤 Запрос student_profiles...');
       
-      const { data: profiles, error: profilesError } = await supabase
-        .from("student_profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      // Создаём контроллер для timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек timeout
+      
+      try {
+        const { data: profiles, error: profilesError } = await supabase
+          .from("student_profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
+        
+        clearTimeout(timeoutId);
+        
+        console.log('✅ Запрос завершён');
 
-      console.log('✅ Запрос завершён');
+        if (profilesError) {
+          console.error('❌ Ошибка загрузки студентов:', profilesError);
+          console.error('📊 Детали ошибки:', profilesError.message, profilesError.details);
+          throw profilesError;
+        }
+        
+        if (!profiles) {
+          console.warn('⚠️ Нет данных от сервера');
+          setAllStudents([]);
+          return;
+        }
 
-      if (profilesError) {
-        console.error('❌ Ошибка profiles:', profilesError);
-        throw profilesError;
-      }
-
-      console.log(`✅ Получено ${profiles?.length || 0} записей из student_profiles`);
+        console.log(`✅ Получено ${profiles?.length || 0} записей из student_profiles`);
 
       const mapped: StudentRow[] =
         profiles?.map((profile) => {
@@ -150,6 +164,12 @@ export default function StudentsActivity() {
       console.log(`✅ Смаппировано ${mapped.length} студентов`);
       console.log('📊 Первые 3 студента:', mapped.slice(0, 3));
       setAllStudents(mapped);
+      
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        console.error('❌ ИСКЛЮЧЕНИЕ при загрузке:', err.message);
+        throw err;
+      }
     } catch (error: any) {
       console.error("❌ Исключение при загрузке:", error);
 
