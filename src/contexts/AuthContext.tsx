@@ -1,172 +1,99 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import type { User, Session } from '@supabase/supabase-js';
 
-type UserRole = 'admin' | 'student' | 'curator' | 'tech_support' | null;
-
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
   session: Session | null;
-  userRole: UserRole;
-  isLoading: boolean;
+  userRole: 'admin' | 'student' | 'guest' | null;
   isInitialized: boolean;
-};
+  isLoading: boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [userRole, setUserRole] = useState<UserRole>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Извлечь роль из JWT токена
+  const extractRoleFromToken = (session: Session | null): string => {
+    if (!session?.access_token) return 'guest';
+    
+    try {
+      const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+      return payload.user_role || 'guest';
+    } catch {
+      return 'guest';
+    }
+  };
 
   useEffect(() => {
     console.log('🔐 AuthContext: Инициализация...');
+    
+    // Получить текущую сессию
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+        const role = extractRoleFromToken(session);
+        setUserRole(role);
+        console.log('✅ Роль из JWT:', role);
+      } else {
+        console.log('❌ Нет сохраненной сессии');
+      }
+      
+      setIsInitialized(true);
+      setIsLoading(false);
+    });
 
-    let isMounted = true;
-
-    const initAuth = async () => {
-      try {
-        const { data: { session: initialSession }, error } = 
-          await supabase.auth.getSession();
-
-        if (!isMounted) return;
-
-        if (error) {
-          console.error('❌ AuthContext: Ошибка getSession', error);
-          setIsLoading(false);
-          setIsInitialized(true);
-          return;
-        }
-
-        console.log(
-          initialSession
-            ? `✅ AuthContext: Сессия восстановлена для ${initialSession.user.email}`
-            : '❌ AuthContext: Нет сохраненной сессии'
-        );
-
-        if (initialSession) {
-          setSession(initialSession);
-          setUser(initialSession.user);
-
-          const role = (initialSession.user as any).user_metadata?.role ||
-            (initialSession.user as any).app_metadata?.role ||
-            'student';
-          
-          console.log('✅ AuthContext: Роль из JWT:', role);
-          
-          // Редирект для гостей
-          if (role === 'guest' || !role) {
-            console.log('🚫 AuthContext: Роль guest или нет роли - редирект на /login');
-            window.location.href = '/login';
-            return;
-          }
-          
-          setUserRole(role as UserRole);
+    // Слушать изменения auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('🔐 Auth event:', event);
+        
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+          const role = extractRoleFromToken(session);
+          setUserRole(role);
+          console.log('✅ Роль из JWT:', role);
         } else {
           setSession(null);
           setUser(null);
           setUserRole(null);
         }
-
-        setIsLoading(false);
+        
         setIsInitialized(true);
-
-      } catch (error) {
-        console.error('❌ AuthContext: Исключение при инициализации', error);
-        if (isMounted) {
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
-      }
-    };
-
-    initAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!isMounted) return;
-
-        console.log('🔐 Auth event:', event);
-
-        if (!isInitialized) {
-          console.log('✅ AuthContext: Инициализация завершена (из onAuthStateChange)');
-          setIsInitialized(true);
-        }
-
-        if (event === 'SIGNED_OUT') {
-          console.log('👋 Пользователь вышел');
-          setSession(null);
-          setUser(null);
-          setUserRole(null);
-          setIsLoading(false);
-        } 
-        else if (event === 'SIGNED_IN') {
-          console.log('👤 Пользователь вошел');
-          if (session) {
-            setSession(session);
-            setUser(session.user);
-            const role = (session.user as any).user_metadata?.role ||
-              (session.user as any).app_metadata?.role ||
-              'student';
-            console.log('✅ Роль из JWT:', role);
-            
-            // Редирект для гостей
-            if (role === 'guest' || !role) {
-              console.log('🚫 AuthContext: Роль guest или нет роли - редирект на /login');
-              window.location.href = '/login';
-              return;
-            }
-            
-            setUserRole(role as UserRole);
-            setIsLoading(false);
-          }
-        } 
-        else if (event === 'TOKEN_REFRESHED') {
-          console.log('🔄 Токен обновлен');
-          if (session) {
-            setSession(session);
-            setUser(session.user);
-            const role = (session.user as any).user_metadata?.role ||
-              (session.user as any).app_metadata?.role ||
-              'student';
-            setUserRole(role as UserRole);
-          }
-          setIsLoading(false);
-        }
-        else if (event === 'INITIAL_SESSION') {
-          console.log('🔄 INITIAL_SESSION event');
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     );
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription?.unsubscribe();
   }, []);
 
+  const value: AuthContextType = {
+    user,
+    session,
+    userRole: userRole as any,
+    isInitialized,
+    isLoading,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        userRole,
-        isLoading,
-        isInitialized,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth должен быть использован внутри AuthProvider');
+  }
+  return context;
 }

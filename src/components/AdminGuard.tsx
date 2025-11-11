@@ -2,7 +2,11 @@ import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function AdminGuard({ children }: { children: ReactNode }) {
+interface AdminGuardProps {
+  children: ReactNode;
+}
+
+export function AdminGuard({ children }: AdminGuardProps) {
   const { isInitialized, userRole, isLoading } = useAuth();
 
   console.log('🔐 AdminGuard: Проверка авторизации...');
@@ -10,20 +14,26 @@ export function AdminGuard({ children }: { children: ReactNode }) {
   console.log('  userRole:', userRole);
   console.log('  isLoading:', isLoading);
 
-  // 1️⃣ Пока инициализируется - ждём
+  // ШАГ 1: Пока инициализируется - показываем загрузку
   if (isLoading || !isInitialized) {
     console.log('⏳ AdminGuard: Ожидание инициализации...');
-    return <div className="flex items-center justify-center h-screen">Загрузка...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    );
   }
 
-  // 2️⃣ Если не админ - РЕДИРЕКТ на /login
-  if (userRole !== 'admin') {
+  // ШАГ 2: Если инициализирована И не админ - редирект
+  if (isInitialized && userRole !== 'admin') {
     console.log('❌ AdminGuard: Доступ запрещён. userRole:', userRole);
-    console.log('🔄 AdminGuard: Редирект на /login...');
     return <Navigate to="/login" replace />;
   }
 
-  // 3️⃣ Админ авторизован - показываем контент
+  // ШАГ 3: Админ авторизован - показываем контент
   console.log('✅ AdminGuard: Админ авторизован');
   return <>{children}</>;
 }
