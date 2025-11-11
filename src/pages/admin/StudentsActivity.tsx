@@ -341,13 +341,11 @@ export default function StudentsActivity() {
     try {
       console.log('⛔ Деактивация студента:', studentId);
       
-      // Деактивируем пользователя в profiles
+      // Деактивируем ТОЛЬКО в student_profiles (откуда мы загружаем студентов)
       const { error } = await supabase
-        .from('profiles')
+        .from('student_profiles')  // ← ВАЖНО: меняем с 'profiles' на 'student_profiles'
         .update({ 
           is_active: false,
-          deleted_at: new Date().toISOString(),
-          deactivation_reason: 'manual'
         })
         .eq('id', studentId);
       
