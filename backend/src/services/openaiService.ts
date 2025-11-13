@@ -1,0 +1,235 @@
+import { openai } from '../config/openai';
+
+/**
+ * Создание нового Thread
+ */
+export async function createThread() {
+  try {
+    console.log('[OpenAI] Creating new thread...');
+    console.log('[OpenAI] Sending with header: OpenAI-Beta: assistants=v2');
+    
+    const thread = await openai.beta.threads.create({}, {
+      headers: {
+        'OpenAI-Beta': 'assistants=v2',
+      },
+    });
+    
+    console.log(`✅ Thread created: ${thread.id}`);
+    return thread;
+  } catch (error: any) {
+    console.error('[OpenAI] Failed to create thread:', error.message);
+    console.error('[OpenAI] Full error:', error);
+    throw new Error(`Failed to create thread: ${error.message}`);
+  }
+}
+
+/**
+ * Создание сообщения в Thread
+ */
+export async function createThreadMessage(
+  threadId: string,
+  content: string,
+  role: 'user' | 'assistant' = 'user'
+) {
+  try {
+    if (!threadId || !content) {
+      throw new Error('threadId and content are required');
+    }
+    
+    // ✅ ПРОВЕРКА ФОРМАТА: thread_ префикс ОБЯЗАТЕЛЕН!
+    if (!threadId.startsWith('thread_')) {
+      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+    }
+    
+    console.log(`[OpenAI] Creating message in thread: ${threadId}`);
+    console.log(`[OpenAI] Role: ${role}, Content length: ${content.length}`);
+    
+    const message = await openai.beta.threads.messages.create(
+      threadId,
+      {
+        role: role as any,
+        content,
+      },
+      {
+        headers: {
+          'OpenAI-Beta': 'assistants=v2',
+        },
+      }
+    );
+    
+    console.log(`✅ Message created: ${message.id}`);
+    return message;
+  } catch (error: any) {
+    console.error('[OpenAI] Failed to create message:', {
+      message: error.message,
+      threadId,
+      stack: error.stack,
+    });
+    throw new Error(`Failed to create message: ${error.message}`);
+  }
+}
+
+/**
+ * Получение сообщений из Thread
+ */
+export async function getThreadMessages(
+  threadId: string,
+  limit?: number,
+  order?: 'asc' | 'desc'
+) {
+  try {
+    if (!threadId) {
+      throw new Error('threadId is required');
+    }
+    
+    // ✅ ПРОВЕРКА ФОРМАТА: thread_ префикс ОБЯЗАТЕЛЕН!
+    if (!threadId.startsWith('thread_')) {
+      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+    }
+    
+    console.log(`[OpenAI] Getting messages from thread: ${threadId}`);
+    
+    const messages = await openai.beta.threads.messages.list(
+      threadId,
+      {
+        limit: limit || 1,
+        order: order || 'desc',
+      },
+      {
+        headers: {
+          'OpenAI-Beta': 'assistants=v2',
+        },
+      }
+    );
+    
+    console.log(`✅ Retrieved ${messages.data.length} messages`);
+    return messages;
+  } catch (error: any) {
+    console.error('[OpenAI] Failed to get messages:', error.message);
+    throw new Error(`Failed to retrieve thread messages: ${error.message}`);
+  }
+}
+
+/**
+ * Создание Run для Thread
+ */
+export async function createThreadRun(
+  threadId: string,
+  assistantId: string,
+  temperature?: number,
+  topP?: number
+) {
+  try {
+    if (!threadId || !assistantId) {
+      throw new Error('threadId and assistantId are required');
+    }
+    
+    // ✅ ПРОВЕРКА ФОРМАТА: префиксы ОБЯЗАТЕЛЬНЫ!
+    if (!threadId.startsWith('thread_')) {
+      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+    }
+    if (!assistantId.startsWith('asst_')) {
+      throw new Error(`Invalid assistantId format. Expected asst_*, got: ${assistantId}`);
+    }
+    
+    console.log(`[OpenAI] Creating run: threadId=${threadId}, assistantId=${assistantId}`);
+    
+    const run = await openai.beta.threads.runs.create(
+      threadId,
+      {
+        assistant_id: assistantId,
+        // temperature и top_p не поддерживаются в v4
+      } as any,
+      {
+        headers: {
+          'OpenAI-Beta': 'assistants=v2',
+        },
+      }
+    );
+    
+    console.log(`✅ Run created: ${run.id}, status=${run.status}`);
+    return run;
+  } catch (error: any) {
+    console.error('[OpenAI] Failed to create run:', {
+      message: error.message,
+      threadId,
+      assistantId,
+      stack: error.stack,
+    });
+    throw new Error(`Failed to create thread run: ${error.message}`);
+  }
+}
+
+/**
+ * Получение статуса Run
+ */
+export async function getThreadRun(threadId: string, runId: string) {
+  try {
+    console.log(`🔍 [getThreadRun] START: threadId=${threadId}, runId=${runId}`);
+    
+    if (!threadId || !runId) {
+      throw new Error('threadId and runId are required');
+    }
+    
+    // ✅ ПРОВЕРКА ФОРМАТА: префиксы ОБЯЗАТЕЛЬНЫ!
+    if (!threadId.startsWith('thread_')) {
+      console.error(`❌ Invalid threadId format: ${threadId}`);
+      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+    }
+    if (!runId.startsWith('run_')) {
+      console.error(`❌ Invalid runId format: ${runId}`);
+      throw new Error(`Invalid runId format. Expected run_*, got: ${runId}`);
+    }
+    
+    console.log(`✅ ID formats validated`);
+    console.log(`🔄 Calling OpenAI API...`);
+    console.log(`   threadId: "${threadId}"`);
+    console.log(`   runId: "${runId}"`);
+    
+    // OpenAI SDK v4 правильный синтаксис: retrieve(threadId, runId, options)
+    const run = await openai.beta.threads.runs.retrieve(threadId, runId, {
+      headers: {
+        'OpenAI-Beta': 'assistants=v2',
+      },
+    });
+    
+    console.log(`✅ Run retrieved successfully: ${run.id}, status=${run.status}`);
+    return run;
+  } catch (error: any) {
+    console.error('❌❌❌ [OpenAI] CRITICAL ERROR in getThreadRun:');
+    console.error('   Error message:', error.message);
+    console.error('   Error type:', error.constructor.name);
+    console.error('   threadId:', threadId);
+    console.error('   runId:', runId);
+    console.error('   Full error:', error);
+    console.error('   Stack trace:', error.stack);
+    throw new Error(`Failed to retrieve thread run: ${error.message}`);
+  }
+}
+
+/**
+ * Транскрипция аудио через Whisper
+ */
+export async function transcribeAudio(
+  audioFile: File,
+  language: string = 'ru',
+  prompt?: string
+) {
+  try {
+    console.log(`[OpenAI] Transcribing audio: size=${audioFile.size} bytes`);
+    
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: 'whisper-1',
+      language: language,
+      response_format: 'text',
+      prompt: prompt || 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы.',
+    });
+    
+    console.log(`✅ Audio transcribed: ${(transcription as unknown as string).length} characters`);
+    return transcription as unknown as string;
+  } catch (error: any) {
+    console.error('[OpenAI] Failed to transcribe audio:', error.message);
+    throw new Error(`Failed to transcribe audio: ${error.message}`);
+  }
+}

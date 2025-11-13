@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { AdminGuard } from "./components/AdminGuard";
 import Login from "./pages/Login";
@@ -23,7 +23,10 @@ import StudentsActivity from "./pages/admin/StudentsActivity";
 import AIAnalytics from "./pages/admin/AIAnalytics";
 import ProfileSettings from "./pages/ProfileSettings";
 import Messages from "./pages/Messages";
+// 🔥 БЕЗОПАСНОСТЬ: TestQuery удалён - не должен быть доступен в production
+// import TestQuery from "./pages/TestQuery";
 import { FloatingAIButton } from "./components/FloatingAIButton";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -61,9 +64,39 @@ const AppRoutes = () => {
       <Route path="/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
       <Route path="/messages" element={<MainLayout><Messages /></MainLayout>} />
       
+      {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}
+      {/* <Route path="/test-query" element={<TestQuery />} /> */}
+      
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+  );
+};
+
+// 🔥 ИСПРАВЛЕНИЕ: AppContent с тремя состояниями (Loading → Login → Dashboard)
+const AppContent = () => {
+  const { isInitialized, isLoading } = useAuth();
+
+  // СОСТОЯНИЕ 1: LOADING - НЕ РЕНДЕРИМ НИЧЕГО пока AuthContext не инициализирован!
+  if (!isInitialized || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black">
+        <div className="text-center">
+          <Loader2 className="w-16 h-16 animate-spin text-green-400 mx-auto mb-4" />
+          <p className="text-xl text-white">Загрузка приложения...</p>
+          <p className="text-sm text-gray-400 mt-2">Проверка авторизации...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // СОСТОЯНИЕ 2 и 3: Рендерим роуты (роутер сам решает показывать Login или Dashboard)
+  // Роутер использует защиту через редиректы в защищённых страницах
+  return (
+    <>
+      <AppRoutes />
+      <FloatingAIButton />
+    </>
   );
 };
 
@@ -74,8 +107,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
-          <FloatingAIButton />
+          <AppContent />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

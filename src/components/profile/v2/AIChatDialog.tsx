@@ -810,61 +810,64 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl h-[70vh] w-[95vw] sm:w-auto flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-neon/20 rounded-full blur-lg" />
-                <motion.div 
-                  className="relative p-2 bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 border border-neon/40 rounded-full overflow-hidden"
+      <DialogContent
+        className="max-w-xl h-[70vh] w-[95vw] sm:w-auto flex flex-col p-0 gap-0 bg-zinc-950 border-[#00ff00]/30 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-300"
+      >
+        <DialogHeader className="px-4 sm:px-6 pt-4 pb-3 border-b border-[#00ff00]/10 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {/* Аватар AI куратора - компактный */}
+              <div className="relative flex-shrink-0">
+                <motion.div
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00ff00] via-[#00cc00] to-[#009900] flex items-center justify-center shadow-[0_0_15px_rgba(0,255,0,0.4)]"
                   animate={{
-                    rotateY: [0, 360],
+                    boxShadow: [
+                      "0 0 15px rgba(0,255,0,0.4)",
+                      "0 0 25px rgba(0,255,0,0.6)",
+                      "0 0 15px rgba(0,255,0,0.4)",
+                    ],
                   }}
                   transition={{
-                    duration: 6,
+                    duration: 2,
                     repeat: Infinity,
-                    ease: "linear",
                   }}
-                  style={{ transformStyle: "preserve-3d" }}
                 >
-                  {/* Сфера для вращения */}
+                  <Bot className="w-5 h-5 text-black" />
+                </motion.div>
+                {/* Online индикатор - меньше */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-white rounded-full border-2 border-zinc-950 flex items-center justify-center">
                   <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                      background: "radial-gradient(circle at 30% 30%, rgba(177,255,50,0.2), transparent 50%)",
-                    }}
+                    className="w-1.5 h-1.5 rounded-full bg-[#00ff00]"
                     animate={{
-                      rotateX: [0, 360],
-                      rotateZ: [0, 360],
+                      scale: [1, 1.3, 1],
                     }}
                     transition={{
-                      duration: 8,
+                      duration: 1.5,
                       repeat: Infinity,
-                      ease: "linear",
                     }}
                   />
-                  <Bot className="w-5 h-5 text-neon relative z-10" />
-                </motion.div>
+                </div>
               </div>
-              <div>
-                <DialogTitle className="text-xl font-bold">
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-bold text-white leading-tight">
                   AI-куратор
                 </DialogTitle>
-                <DialogDescription>
-                  Персональный помощник по обучению
+                <DialogDescription className="text-gray-400 text-xs leading-tight">
+                  Онлайн • Готов помочь
                 </DialogDescription>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            {/* Компактная кнопка "Новый чат" */}
+            <motion.button
               onClick={handleNewConversation}
-              className="text-xs"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30 hover:bg-[#00ff00]/20 hover:border-[#00ff00]/50 transition-all text-[#00ff00] text-xs font-semibold flex items-center gap-1.5 group"
             >
-              <Sparkles className="w-4 h-4 mr-1" />
-              Новый
-            </Button>
+              <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+              <span className="hidden sm:inline">Новый чат</span>
+              <span className="sm:hidden">Новый</span>
+            </motion.button>
           </div>
         </DialogHeader>
 

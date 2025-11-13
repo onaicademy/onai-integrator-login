@@ -5,7 +5,7 @@ import type { User, Session } from '@supabase/supabase-js';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  userRole: 'admin' | 'student' | 'guest' | null;
+  userRole: 'admin' | 'student' | 'curator' | 'tech_support' | null;
   isInitialized: boolean;
   isLoading: boolean;
 }
@@ -19,84 +19,176 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Извлечь роль из JWT токена
-  const extractRoleFromToken = (session: Session | null): string => {
-    if (!session?.access_token) {
-      console.log('❌ Нет access_token');
-      return 'guest';
+  // 🔑 Извлечь роль из session
+  const extractRole = (session: Session | null): string | null => {
+    if (!session?.user) return null;
+    
+    // Приоритет 1: user_metadata (Supabase)
+    if ((session.user as any).user_metadata?.role) {
+      return (session.user as any).user_metadata.role;
     }
     
+    // Приоритет 2: app_metadata
+    if ((session.user as any).app_metadata?.role) {
+      return (session.user as any).app_metadata.role;
+    }
+    
+    // Приоритет 3: Парсим JWT токен
     try {
       const payload = JSON.parse(atob(session.access_token.split('.')[1]));
-      console.log('📦 JWT payload:', payload);
-      
-      // Проверяем разные места где может быть роль
-      const role = payload.user_role || 
-                   payload.role || 
-                   payload.user_metadata?.role ||
-                   payload.app_metadata?.role ||
-                   'guest';
-      
-      console.log('✅ Извлеченная роль:', role);
-      return role;
-    } catch (error) {
-      console.error('❌ Ошибка парсинга JWT:', error);
-      return 'guest';
+      if (payload.user_role) {
+        return payload.user_role;
+      }
+    } catch (e) {
+      console.warn('⚠️ Не удалось распарсить JWT:', e);
     }
+    
+    return null;
+  };
+
+  // 🔄 Обновить состояние из сессии
+  const updateAuthState = (session: Session | null) => {
+    if (session) {
+      console.log('✅ Сессия активна:', session.user.email);
+      
+      setSession(session);
+      setUser(session.user);
+      
+      const role = extractRole(session);
+      console.log('👤 Роль пользователя:', role || 'НЕ ОПРЕДЕЛЕНА');
+      setUserRole(role);
+      
+      // 🔑 Сохраняем JWT токен для API запросов
+      if (session.access_token) {
+        localStorage.setItem('supabase_token', session.access_token);
+        console.log('🔑 JWT токен сохранён для API запросов');
+      }
+    } else {
+      console.log('❌ Сессия отсутствует');
+      setSession(null);
+      setUser(null);
+      setUserRole(null);
+      
+      // 🔑 Удаляем JWT токен при выходе
+      localStorage.removeItem('supabase_token');
+    }
+    
+    // 🔥 ИСПРАВЛЕНИЕ: ВСЕГДА устанавливаем флаги в updateAuthState
+    // Т.к. эта функция вызывается и из initializeAuth и из onAuthStateChange
+    setIsInitialized(true);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     console.log('🔐 AuthContext: Инициализация...');
+    console.log('📦 localStorage keys:', Object.keys(localStorage).filter(k => k.startsWith('sb-')));
     
-    // Получить текущую сессию
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSession(session);
-        setUser(session.user);
+    let isMounted = true;
+    
+    // КРИТИЧНО: БЛОКИРУЕМ РЕНДЕР до завершения getSession() С ТАЙМАУТОМ!
+    const initializeAuth = async () => {
+      try {
+        console.log('🔄 Вызываем getSession() с таймаутом 5 секунд...');
         
-        // ИСПОЛЬЗУЕМ СТАРЫЙ СПОСОБ - через user_metadata
-        const role = (session.user as any).user_metadata?.role ||
-                     (session.user as any).app_metadata?.role ||
-                     extractRoleFromToken(session); // fallback на JWT
+        // 🔥 ИСПРАВЛЕНИЕ: Promise.race с 5-секундным таймаутом
+        const timeoutPromise = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('getSession timeout')), 5000)
+        );
         
-        setUserRole(role);
-        console.log('✅ Роль получена:', role);
-      } else {
-        console.log('❌ Нет сохраненной сессии');
-      }
-      
-      setIsInitialized(true);
-      setIsLoading(false);
-    });
-
-    // Слушать изменения auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('🔐 Auth event:', event);
+        const sessionPromise = supabase.auth.getSession();
         
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-          
-          // ИСПОЛЬЗУЕМ СТАРЫЙ СПОСОБ - через user_metadata
-          const role = (session.user as any).user_metadata?.role ||
-                       (session.user as any).app_metadata?.role ||
-                       extractRoleFromToken(session); // fallback на JWT
-          
-          setUserRole(role);
-          console.log('✅ Роль получена:', role);
-        } else {
-          setSession(null);
-          setUser(null);
-          setUserRole(null);
+        const { data: { session: initialSession }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as Awaited<typeof sessionPromise>;
+        
+        if (!isMounted) {
+          console.log('⚠️ Компонент размонтирован, прерываем');
+          return;
         }
         
-        setIsInitialized(true);
-        setIsLoading(false);
+        if (error) {
+          console.error('❌ Ошибка getSession():', error);
+        }
+        
+        console.log('📦 getSession() завершён, результат:', initialSession ? '✅ Сессия найдена' : '❌ Сессии нет');
+        
+        if (initialSession) {
+          console.log('👤 Email:', initialSession.user.email);
+          console.log('🔑 Token (первые 20 символов):', initialSession.access_token.substring(0, 20) + '...');
+          console.log('⏰ Token expires:', new Date(initialSession.expires_at! * 1000).toLocaleString());
+        } else {
+          console.log('ℹ️ Это нормально для первого визита (не залогинены)');
+        }
+        
+        updateAuthState(initialSession);
+        
+      } catch (error: any) {
+        if (!isMounted) return;
+        
+        console.error('❌ Исключение в getSession():', error);
+        
+        // 🔥 КРИТИЧНО: ВСЕГДА вызываем updateAuthState(null) при ошибке!
+        // Иначе session/user останутся undefined → бесконечная загрузка!
+        console.log('🔧 Устанавливаем session = null из-за ошибки');
+        updateAuthState(null);
+        
+        // 🔥 ИСПРАВЛЕНИЕ: Если таймаут - пробуем использовать fallback из localStorage
+        if (error.message === 'getSession timeout') {
+          console.warn('⏱️ ТАЙМАУТ getSession()! Используем fallback...');
+          
+          // Пробуем прочитать сессию из localStorage напрямую
+          const storedSession = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
+          if (storedSession) {
+            console.log('📦 Найдена сессия в localStorage, парсим...');
+            try {
+              const parsedSession = JSON.parse(storedSession);
+              if (parsedSession && parsedSession.access_token) {
+                console.log('✅ Сессия восстановлена из localStorage');
+                // НЕ используем её напрямую, просто показываем форму логина
+              }
+            } catch (e) {
+              console.warn('⚠️ Не удалось распарсить сессию из localStorage');
+            }
+          }
+        }
+        
+        // 🔥 ИСПРАВЛЕНИЕ: finally НЕ НУЖЕН! updateAuthState всегда вызывается (в try и в catch)
+        // и сам устанавливает isInitialized/isLoading
+      }
+    };
+    
+    initializeAuth();
+    
+    // Подписываемся на изменения (БЕЗ async внутри callback!)
+    console.log('📡 Подписываемся на onAuthStateChange()...');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        if (!isMounted) return;
+        
+        console.log('🔐 Auth event:', event);
+        
+        if (event === 'SIGNED_IN') {
+          console.log('✅ SIGNED_IN:', newSession?.user.email);
+          updateAuthState(newSession);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('🚪 SIGNED_OUT');
+          updateAuthState(null);
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 TOKEN_REFRESHED');
+          updateAuthState(newSession);
+        } else if (event === 'INITIAL_SESSION') {
+          console.log('🎬 INITIAL_SESSION');
+          updateAuthState(newSession);
+        }
       }
     );
 
-    return () => subscription?.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+      console.log('🧹 AuthContext: Cleanup');
+    };
   }, []);
 
   const value: AuthContextType = {
@@ -106,6 +198,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isInitialized,
     isLoading,
   };
+
+  console.log('📊 AuthContext render:', {
+    isInitialized,
+    isLoading,
+    hasSession: !!session,
+    hasUser: !!user,
+    userRole,
+  });
 
   return (
     <AuthContext.Provider value={value}>

@@ -3,13 +3,25 @@ import { motion } from "framer-motion";
 import {
   Search,
   UserPlus,
-  Key,
+  Users,
+  Zap,
+  Clock,
+  Eye,
   UserX,
-  CheckCircle,
+  Mail,
+  Phone,
+  Key,
+  Calendar,
+  Shield,
+  TrendingUp,
+  Info,
   Copy,
   Loader2,
-  Info,
   AlertCircle,
+  Award,
+  Flame,
+  Target,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +29,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -39,6 +52,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
@@ -55,10 +70,25 @@ type StudentRow = {
   deactivation_reason?: string | null;
   total_xp?: number | null;
   level?: number | null;
+  streak_days?: number | null;
+  total_study_time?: number | null;
 };
+
+// Mock данные для демонстрации
+const mockCourseProgress = [
+  { title: "Интегратор 2.0", progress: 75, completedModules: 6, totalModules: 8, completedLessons: 45, totalLessons: 60 },
+  { title: "Креатор", progress: 40, completedModules: 2, totalModules: 4, completedLessons: 15, totalLessons: 35 },
+];
+
+const mockRecentActivity = [
+  { type: "lesson_completed", description: "Завершен урок 'Введение в Webhooks'", date: "2 часа назад" },
+  { type: "xp_earned", description: "Заработано 50 XP за прохождение теста", date: "4 часа назад" },
+  { type: "module_completed", description: "Завершен модуль 'Основы автоматизации'", date: "Вчера" },
+];
 
 export default function StudentsActivity() {
   const [allStudents, setAllStudents] = useState<StudentRow[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<StudentRow | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
   const [isLoading, setIsLoading] = useState(false);
@@ -78,14 +108,14 @@ export default function StudentsActivity() {
   const [showInvitationResult, setShowInvitationResult] = useState(false);
   const [invitationData, setInvitationData] = useState<any>(null);
 
-  // Форма (НОВАЯ СТРУКТУРА)
+  // Форма
   const [formData, setFormData] = useState({
     email: '',
     fullName: '',
-    phone: '', // ← НОВОЕ
-    password: '', // ← НОВОЕ
+    phone: '',
+    password: '',
     role: 'student',
-    accountDuration: '12', // ← НОВОЕ: срок в месяцах (3, 6, 12)
+    accountDuration: '12',
     selectedCourses: [] as string[]
   });
 
@@ -161,8 +191,10 @@ export default function StudentsActivity() {
             account_expires_at: profile.account_expires_at ?? null,
             deleted_at: profile.deleted_at ?? null,
             deactivation_reason: profile.deactivation_reason ?? null,
-            total_xp: null,
-            level: null,
+            total_xp: Math.floor(Math.random() * 3000), // Mock
+            level: Math.floor(Math.random() * 15) + 1, // Mock
+            streak_days: Math.floor(Math.random() * 30), // Mock
+            total_study_time: Math.floor(Math.random() * 5000), // Mock в минутах
           };
         }) ?? [];
 
@@ -277,7 +309,7 @@ export default function StudentsActivity() {
           password: formData.password,
           role: formData.role,
           account_expires_at: expiresAt,
-          course_ids: formData.selectedCourses,  // ← НОВОЕ: назначение курсов
+          course_ids: formData.selectedCourses,
         },
       });
 
@@ -288,7 +320,7 @@ export default function StudentsActivity() {
         setInvitationData({
           invitation_url: `https://onai.academy`,
           email: data.credentials.email,
-          temp_password: formData.password, // Показываем введённый пароль
+          temp_password: formData.password,
         });
 
         // Обновляем список студентов
@@ -336,39 +368,15 @@ export default function StudentsActivity() {
     });
   };
 
-  // Смена роли
-  const handleChangeRole = async (studentId: string, newRole: string) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', studentId);
-
-      if (error) throw error;
-      toast({
-        title: "✅ Роль изменена",
-        description: "Роль успешно изменена",
-      });
-      await refreshStudents();
-    } catch (error: any) {
-      toast({
-        title: "❌ Ошибка",
-        description: "Ошибка смены роли",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Деактивация (вместо удаления)
+  // Деактивация
   const handleDeleteStudent = async (studentId: string) => {
     if (!confirm('⛔ Деактивировать студента навсегда?\n\nПользователь НЕ СМОЖЕТ войти на платформу.\nВсе его данные сохранятся в базе.')) return;
     
     try {
       console.log('⛔ Деактивация студента:', studentId);
       
-      // Деактивируем ТОЛЬКО в student_profiles (откуда мы загружаем студентов)
       const { error } = await supabase
-        .from('student_profiles')  // ← ВАЖНО: меняем с 'profiles' на 'student_profiles'
+        .from('student_profiles')
         .update({ 
           is_active: false,
         })
@@ -390,10 +398,7 @@ export default function StudentsActivity() {
         description: "Пользователь больше не сможет войти на платформу. Данные сохранены.",
       });
       
-      // КРИТИЧНО: Перезагрузить список
-      console.log('🔄 Обновление списка студентов...');
       await refreshStudents();
-      console.log('✅ Список обновлён');
       
     } catch (error: any) {
       console.error('❌ Исключение при деактивации:', error);
@@ -405,35 +410,11 @@ export default function StudentsActivity() {
     }
   };
 
-  // Деактивация
-  const handleToggleActive = async (studentId: string, isActive: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: !isActive })
-        .eq('id', studentId);
-
-      if (error) throw error;
-      toast({
-        title: "✅ Успешно",
-        description: isActive ? 'Деактивирован' : 'Активирован',
-      });
-      await refreshStudents();
-    } catch (error: any) {
-      toast({
-        title: "❌ Ошибка",
-        description: "Ошибка изменения статуса",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Статистика (для отображения)
+  // Статистика
   const stats = useMemo(() => {
     const threshold = new Date();
     threshold.setDate(threshold.getDate() - 7);
 
-    // Считаем только активных студентов (is_active !== false)
     const activeStudents = allStudents.filter((student) => student.is_active !== false);
     
     const total = activeStudents.length;
@@ -449,7 +430,6 @@ export default function StudentsActivity() {
     const threshold = new Date();
     threshold.setDate(threshold.getDate() - 7);
 
-    // КРИТИЧНО: Скрываем деактивированных студентов (is_active = false)
     const activeOnly = allStudents.filter((student) => student.is_active !== false);
 
     if (filter === "active") {
@@ -460,413 +440,605 @@ export default function StudentsActivity() {
       return activeOnly.filter((student) => !isRecentlyActive(student, threshold));
     }
 
-    return activeOnly; // Показываем только активных
+    return activeOnly;
   }, [allStudents, filter]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Заголовок */}
-      <motion.div
-        className="flex items-center justify-between mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] bg-clip-text text-transparent">
-            👥 Активность учеников
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Управление студентами платформы
-          </p>
-        </div>
-        <Button
-          size="lg"
-          onClick={() => setShowAddModal(true)}
-          className="bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] hover:opacity-90"
-        >
-          <UserPlus className="w-5 h-5 mr-2" />
-          Добавить пользователя
-        </Button>
-      </motion.div>
-
-      {/* Статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <StatCard title="Всего учеников" value={stats.total} icon="👥" color="blue" />
-        <StatCard title="Активных" value={stats.active} icon="✅" color="green" />
-        <StatCard title="Неактивных" value={stats.inactive} icon="⏸️" color="gray" />
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Animated grid */}
+        <div
+          className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-5"
+        />
+        {/* Green blur blobs */}
+        <motion.div
+          className="absolute w-[600px] h-[600px] rounded-full bg-[#00ff00]/10 blur-3xl"
+          style={{ top: '10%', left: '10%' }}
+          animate={{
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute w-[500px] h-[500px] rounded-full bg-[#00ff00]/8 blur-3xl"
+          style={{ bottom: '15%', right: '10%' }}
+          animate={{
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
       </div>
 
-      {/* Поиск и Фильтры */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          {/* Поиск */}
-          <div className="flex gap-2 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Поиск по имени или email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10"
-              />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <motion.div
+          className="flex items-center justify-between mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#00ff00]/10 border border-[#00ff00]/30 flex items-center justify-center">
+              <Users className="w-6 h-6 text-[#00ff00]" />
             </div>
-            <Button onClick={handleSearch} disabled={isLoading}>
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Найти'}
-            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Участники</h1>
+              <p className="text-gray-400 text-sm">Управление студентами платформы</p>
+            </div>
           </div>
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-[#00ff00] text-black hover:bg-[#00cc00] shadow-[0_0_20px_rgba(0,255,0,0.3)] hover:shadow-[0_0_30px_rgba(0,255,0,0.5)] transition-all"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Добавить участника
+          </Button>
+        </motion.div>
 
-          {/* Фильтр статуса */}
-          <div className="flex gap-2">
-            <Button
-              variant={filter === "all" ? "default" : "outline"}
-              onClick={() => setFilter("all")}
+        {/* Статистика */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[
+            { label: "Всего участников", value: stats.total, icon: Users, color: "#00ff00" },
+            { label: "Активных", value: stats.active, icon: Zap, color: "#00ff00" },
+            { label: "Неактивных", value: stats.inactive, icon: Clock, color: "#666666" },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              className="relative bg-zinc-900 border border-[#00ff00]/20 rounded-lg p-5 shadow-lg"
             >
-              Все
-            </Button>
-            <Button
-              variant={filter === "active" ? "default" : "outline"}
-              onClick={() => setFilter("active")}
-            >
-              Активные
-            </Button>
-            <Button
-              variant={filter === "inactive" ? "default" : "outline"}
-              onClick={() => setFilter("inactive")}
-            >
-              Неактивные
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {sessionError && (
-        <Card className="mb-6 border-destructive/40 bg-destructive/5">
-          <CardContent className="flex items-start justify-between gap-4 pt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-destructive">Требуется повторный вход</h3>
-                <p className="text-sm text-destructive/80">{sessionError}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">{stat.label}</p>
+                  <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-[#00ff00]/10 flex items-center justify-center">
+                  <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+                </div>
               </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Поиск и Фильтры */}
+        <Card className="mb-8 bg-zinc-900 border-[#00ff00]/20">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
+                <Input
+                  placeholder="Поиск по имени или email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                />
+              </div>
+              <Button onClick={handleSearch} disabled={isLoading} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Найти'}
+              </Button>
             </div>
-            <Button variant="outline" onClick={refreshStudents}>
-              Обновить
-            </Button>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filter === "all" ? "default" : "outline"}
+                onClick={() => setFilter("all")}
+                className={filter === "all" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"}
+              >
+                Все
+              </Button>
+              <Button
+                variant={filter === "active" ? "default" : "outline"}
+                onClick={() => setFilter("active")}
+                className={filter === "active" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"}
+              >
+                Активные
+              </Button>
+              <Button
+                variant={filter === "inactive" ? "default" : "outline"}
+                onClick={() => setFilter("inactive")}
+                className={filter === "inactive" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"}
+              >
+                Неактивные
+              </Button>
+            </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Таблица */}
-      <Card>
-        <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Имя</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Последний вход</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.full_name}</TableCell>
-                  <TableCell>{student.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={student.is_active ? "default" : "secondary"}>
-                      {student.is_active ? "Активен" : "Неактивен"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {student.last_login_at
-                      ? new Date(student.last_login_at).toLocaleDateString()
-                      : "Не входил"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleChangeRole(student.id, student.role === 'student' ? 'admin' : 'student')}
-                        title="Сменить роль"
-                      >
-                        <Key className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteStudent(student.id)}
-                        title="Деактивировать студента навсегда"
-                      >
-                        ⛔ Деактивировать
-                      </Button>
-                    </div>
-                  </TableCell>
+        {sessionError && (
+          <Card className="mb-6 border-red-500/40 bg-red-500/10">
+            <CardContent className="flex items-start justify-between gap-4 pt-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-red-500">Требуется повторный вход</h3>
+                  <p className="text-sm text-red-400">{sessionError}</p>
+                </div>
+              </div>
+              <Button variant="outline" onClick={refreshStudents} className="border-red-500/30 text-red-400 hover:bg-red-500/10">
+                Обновить
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Таблица */}
+        <Card className="bg-zinc-900 border-[#00ff00]/20">
+          <CardContent className="pt-6">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-zinc-800 hover:bg-zinc-800">
+                  <TableHead className="text-gray-300">Имя</TableHead>
+                  <TableHead className="text-gray-300">Email</TableHead>
+                  <TableHead className="text-gray-300">Роль</TableHead>
+                  <TableHead className="text-gray-300">Статус</TableHead>
+                  <TableHead className="text-gray-300">Последняя активность</TableHead>
+                  <TableHead className="text-right text-gray-300">Действия</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={student.id} className="border-zinc-800 hover:bg-zinc-800/50 transition-colors">
+                    <TableCell className="font-medium text-white flex items-center gap-2">
+                      <Avatar className="h-7 w-7 border border-[#00ff00]/30">
+                        <AvatarFallback className="bg-[#00ff00]/10 text-[#00ff00] text-xs">
+                          {student.full_name ? student.full_name.charAt(0).toUpperCase() : '?'}</AvatarFallback>
+                      </Avatar>
+                      {student.full_name}
+                    </TableCell>
+                    <TableCell className="text-gray-300">{student.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-zinc-700 text-gray-300 border-zinc-600">
+                        {student.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`text-black ${student.is_active ? 'bg-[#00ff00] shadow-[0_0_10px_rgba(0,255,0,0.3)]' : 'bg-gray-500'}`}>
+                        {student.is_active ? "Активен" : "Неактивен"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-300">
+                      {student.last_active_date
+                        ? new Date(student.last_active_date).toLocaleDateString()
+                        : "Нет данных"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => setSelectedStudent(student)}
+                          title="Просмотр деталей"
+                          className="border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => handleDeleteStudent(student.id)}
+                          title="Деактивировать участника"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          <UserX className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-      {/* Модал добавления */}
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Добавить нового пользователя</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {/* Email */}
-            <div>
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="student@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                required
-              />
-            </div>
-            
-            {/* Полное имя */}
-            <div>
-              <Label htmlFor="fullName">Полное имя *</Label>
-              <Input
-                id="fullName"
-                placeholder="Иван Иванов"
-                value={formData.fullName}
-                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                required
-              />
-            </div>
-            
-            {/* Телефон - НОВОЕ */}
-            <div>
-              <Label htmlFor="phone">Телефон *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+7 777 123 4567"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                required
-              />
-            </div>
-            
-            {/* Пароль - НОВОЕ */}
-            <div>
-              <Label htmlFor="password">Пароль *</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Минимум 8 символов"
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                minLength={8}
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Минимум 8 символов
-              </p>
-            </div>
-            
-            {/* Роль */}
-            <div>
-              <Label htmlFor="role">Роль *</Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
-                <SelectTrigger id="role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">🎓 Студент</SelectItem>
-                  <SelectItem value="curator">👨‍🏫 Куратор</SelectItem>
-                  <SelectItem value="tech_support">🛠️ Тех специалист</SelectItem>
-                  <SelectItem value="admin">👑 Админ</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Курсы (можно выбрать несколько) */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Label>Курсы</Label>
-                <div className="relative group">
-                  <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
-                    Вы можете выбрать несколько курсов
+        {/* Модал добавления */}
+        <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+          <DialogContent className="max-w-2xl bg-zinc-950 border-[#00ff00]/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-[#00ff00]">Добавить участника</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Создайте новый аккаунт для студента, куратора или администратора.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
+              {/* Email */}
+              <div>
+                <Label htmlFor="email" className="text-gray-300 flex items-center gap-2 mb-1">
+                  <Mail className="w-4 h-4 text-[#00ff00]" /> Email <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="student@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  required
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                />
+              </div>
+              {/* Полное имя */}
+              <div>
+                <Label htmlFor="fullName" className="text-gray-300 flex items-center gap-2 mb-1">
+                  <Users className="w-4 h-4 text-[#00ff00]" /> Полное имя <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="fullName"
+                  placeholder="Иван Иванов"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                  required
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                />
+              </div>
+              {/* Телефон */}
+              <div>
+                <Label htmlFor="phone" className="text-gray-300 flex items-center gap-2 mb-1">
+                  <Phone className="w-4 h-4 text-[#00ff00]" /> Телефон <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+7 777 123 4567"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  required
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                />
+              </div>
+              {/* Пароль */}
+              <div>
+                <Label htmlFor="password" className="text-gray-300 flex items-center gap-2 mb-1">
+                  <Key className="w-4 h-4 text-[#00ff00]" /> Пароль <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Минимум 8 символов"
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  minLength={8}
+                  required
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Минимум 8 символов (только латиница и символы)
+                </p>
+              </div>
+              {/* Роль */}
+              <div>
+                <Label htmlFor="role" className="text-gray-300 flex items-center gap-2 mb-1">
+                  <Shield className="w-4 h-4 text-[#00ff00]" /> Роль <span className="text-red-500">*</span>
+                </Label>
+                <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+                  <SelectTrigger id="role" className="bg-zinc-800 border-zinc-700 text-white focus:border-[#00ff00]/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                    <SelectItem value="student">🎓 Студент</SelectItem>
+                    <SelectItem value="curator">👨‍🏫 Куратор</SelectItem>
+                    <SelectItem value="tech_support">🛠️ Тех специалист</SelectItem>
+                    <SelectItem value="admin">👑 Админ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Срок действия аккаунта - ТОЛЬКО для студентов */}
+              {formData.role === 'student' && (
+                <div>
+                  <Label htmlFor="accountDuration" className="text-gray-300 flex items-center gap-2 mb-1">
+                    <Calendar className="w-4 h-4 text-[#00ff00]" /> Срок доступа <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={formData.accountDuration} onValueChange={(value) => setFormData({...formData, accountDuration: value})}>
+                    <SelectTrigger id="accountDuration" className="bg-zinc-800 border-zinc-700 text-white focus:border-[#00ff00]/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                      <SelectItem value="3">⏱️ 3 месяца</SelectItem>
+                      <SelectItem value="6">📅 6 месяцев (полгода)</SelectItem>
+                      <SelectItem value="12">📆 12 месяцев (год)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    После истечения срока аккаунт будет автоматически деактивирован
+                  </p>
+                </div>
+              )}
+              {/* Курсы */}
+              <div className="md:col-span-2">
+                <Label className="text-gray-300 flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-4 h-4 text-[#00ff00]" /> Назначенные курсы
+                  <div className="relative group">
+                    <Info className="w-3 h-3 text-gray-500 cursor-help" />
+                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 bg-zinc-800 text-white text-xs rounded-md shadow-lg z-10 border border-zinc-700">
+                      Выберите курсы, к которым у пользователя будет доступ.
+                    </div>
+                  </div>
+                </Label>
+                <div className="space-y-2 mt-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="course-integrator"
+                      checked={formData.selectedCourses.includes('6518f042-54b9-4b69-8e93-b18df98cd7eb')}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            selectedCourses: [...prev.selectedCourses, '6518f042-54b9-4b69-8e93-b18df98cd7eb']
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            selectedCourses: prev.selectedCourses.filter(id => id !== '6518f042-54b9-4b69-8e93-b18df98cd7eb')
+                          }));
+                        }
+                      }}
+                      className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
+                    />
+                    <label htmlFor="course-integrator" className="text-sm text-gray-300 cursor-pointer">
+                      📚 Интегратор 2.0
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="course-creator"
+                      checked={formData.selectedCourses.includes('febcb120-b8b4-4a8a-bd2e-62275f6d0115')}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            selectedCourses: [...prev.selectedCourses, 'febcb120-b8b4-4a8a-bd2e-62275f6d0115']
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            selectedCourses: prev.selectedCourses.filter(id => id !== 'febcb120-b8b4-4a8a-bd2e-62275f6d0115')
+                          }));
+                        }
+                      }}
+                      className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
+                    />
+                    <label htmlFor="course-creator" className="text-sm text-gray-300 cursor-pointer">
+                      🎨 Креатор
+                    </label>
                   </div>
                 </div>
               </div>
+            </div>
+            <DialogFooter className="mt-6">
+              <Button variant="outline" onClick={() => setShowAddModal(false)} className="border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-gray-500">
+                Отмена
+              </Button>
+              <Button onClick={handleAddStudent} disabled={isLoading} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Создание...
+                  </>
+                ) : (
+                  'Создать аккаунт'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Модал результата */}
+        <Dialog open={showInvitationResult} onOpenChange={setShowInvitationResult}>
+          <DialogContent className="max-w-2xl bg-zinc-950 border-[#00ff00]/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-[#00ff00]">Аккаунт успешно создан!</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Поделитесь этими данными с новым участником.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="course-integrator"
-                    checked={formData.selectedCourses.includes('6518f042-54b9-4b69-8e93-b18df98cd7eb')}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFormData(prev => ({
-                          ...prev,
-                          selectedCourses: [...prev.selectedCourses, '6518f042-54b9-4b69-8e93-b18df98cd7eb']
-                        }));
-                      } else {
-                        setFormData(prev => ({
-                          ...prev,
-                          selectedCourses: prev.selectedCourses.filter(id => id !== '6518f042-54b9-4b69-8e93-b18df98cd7eb')
-                        }));
-                      }
-                    }}
-                  />
-                  <label htmlFor="course-integrator" className="text-sm cursor-pointer">
-                    📚 Интегратор 2.0
-                  </label>
+                <Label className="flex items-center gap-2 text-sm text-gray-400">
+                  <Mail className="w-4 h-4" />
+                  Email
+                </Label>
+                <div className="flex gap-2">
+                  <Input value={invitationData?.email || ""} readOnly className="bg-zinc-800 border-zinc-700 text-white focus:ring-0" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(invitationData?.email, 'Email')}
+                    className="border-zinc-800 hover:bg-zinc-900"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="course-creator"
-                    checked={formData.selectedCourses.includes('febcb120-b8b4-4a8a-bd2e-62275f6d0115')}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFormData(prev => ({
-                          ...prev,
-                          selectedCourses: [...prev.selectedCourses, 'febcb120-b8b4-4a8a-bd2e-62275f6d0115']
-                        }));
-                      } else {
-                        setFormData(prev => ({
-                          ...prev,
-                          selectedCourses: prev.selectedCourses.filter(id => id !== 'febcb120-b8b4-4a8a-bd2e-62275f6d0115')
-                        }));
-                      }
-                    }}
-                  />
-                  <label htmlFor="course-creator" className="text-sm cursor-pointer">
-                    🎨 Креатор
-                  </label>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm text-gray-400">
+                  <Key className="w-4 h-4" />
+                  Временный пароль
+                </Label>
+                <div className="flex gap-2">
+                  <Input value={invitationData?.temp_password || ""} readOnly className="bg-zinc-800 border-zinc-700 text-white focus:ring-0" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(invitationData?.temp_password, 'Пароль')}
+                    className="border-zinc-800 hover:bg-zinc-900"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm text-gray-400">
+                  <Info className="w-4 h-4" />
+                  Ссылка для входа
+                </Label>
+                <div className="flex gap-2">
+                  <Input value={invitationData?.invitation_url || ""} readOnly className="bg-zinc-800 border-zinc-700 text-white focus:ring-0" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(invitationData?.invitation_url, 'Ссылка')}
+                    className="border-zinc-800 hover:bg-zinc-900"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </div>
-            
-            {/* Срок действия аккаунта - ТОЛЬКО для студентов */}
-            {formData.role === 'student' && (
-              <div>
-                <Label htmlFor="accountDuration">Срок действия аккаунта *</Label>
-                <Select value={formData.accountDuration} onValueChange={(value) => setFormData({...formData, accountDuration: value})}>
-                  <SelectTrigger id="accountDuration">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3">⏱️ 3 месяца</SelectItem>
-                    <SelectItem value="6">📅 6 месяцев (полгода)</SelectItem>
-                    <SelectItem value="12">📆 12 месяцев (год)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  После истечения срока аккаунт будет автоматически деактивирован
-                </p>
+            <DialogFooter>
+              <Button onClick={() => setShowInvitationResult(false)} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">Готово</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Модал деталей студента */}
+        <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
+          <DialogContent className="max-w-3xl bg-zinc-950 border-[#00ff00]/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-[#00ff00]">
+                Детали участника: {selectedStudent?.full_name}
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Подробная информация и статистика по обучению.
+              </DialogDescription>
+            </DialogHeader>
+            {selectedStudent && (
+              <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
+                {/* Общая информация */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <InfoCard icon={Mail} label="Email" value={selectedStudent.email} />
+                  <InfoCard icon={Shield} label="Роль" value={selectedStudent.role} />
+                  <InfoCard
+                    icon={CheckCircle}
+                    label="Статус"
+                    value={selectedStudent.is_active ? "Активен" : "Неактивен"}
+                    valueColor={selectedStudent.is_active ? "text-[#00ff00]" : "text-red-500"}
+                  />
+                  <InfoCard
+                    icon={Calendar}
+                    label="Срок доступа"
+                    value={selectedStudent.account_expires_at ? new Date(selectedStudent.account_expires_at).toLocaleDateString() : "Бессрочно"}
+                  />
+                </div>
+
+                {/* Статистика обучения */}
+                <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
+                  Статистика обучения
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatDisplayCard icon={Award} label="XP Очков" value={selectedStudent.total_xp || 0} color="#00ff00" />
+                  <StatDisplayCard icon={Target} label="Уровень" value={selectedStudent.level || 1} color="#00ff00" />
+                  <StatDisplayCard icon={Flame} label="Стрик" value={`${selectedStudent.streak_days || 0} дней`} color="#ff8c00" />
+                  <StatDisplayCard icon={Clock} label="Часов на платформе" value={`${((selectedStudent.total_study_time || 0) / 60).toFixed(1)} ч`} color="#00bfff" />
+                </div>
+
+                {/* Прогресс по курсам */}
+                <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
+                  Прогресс по курсам
+                </h3>
+                <div className="space-y-4">
+                  {mockCourseProgress.map((course, index) => (
+                    <CourseProgressCard key={index} course={course} />
+                  ))}
+                </div>
+
+                {/* Последняя активность */}
+                <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
+                  Последняя активность
+                </h3>
+                <div className="space-y-3">
+                  {mockRecentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-center gap-3 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
+                      <div className="w-8 h-8 rounded-full bg-[#00ff00]/10 flex items-center justify-center flex-shrink-0">
+                        {activity.type === 'lesson_completed' && <CheckCircle className="w-4 h-4 text-[#00ff00]" />}
+                        {activity.type === 'module_completed' && <Award className="w-4 h-4 text-[#00ff00]" />}
+                        {activity.type === 'xp_earned' && <Zap className="w-4 h-4 text-[#00ff00]" />}
+                      </div>
+                      <p className="text-sm text-gray-300">
+                        {activity.description} <span className="text-gray-500 text-xs">({activity.date})</span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddModal(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleAddStudent} disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Создание...
-                </>
-              ) : (
-                'Создать пользователя'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Модал результата */}
-      <Dialog open={showInvitationResult} onOpenChange={setShowInvitationResult}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>✅ Приглашение создано!</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-secondary/50 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Email для входа:</p>
-              <div className="flex gap-2">
-                <Input value={invitationData?.email || ""} readOnly />
-                <Button
-                  size="icon"
-                  onClick={() =>
-                    copyToClipboard(invitationData?.email, "Email")
-                  }
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="bg-secondary/50 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Временный пароль:</p>
-              <div className="flex gap-2">
-                <Input value={invitationData?.temp_password || ""} readOnly />
-                <Button
-                  size="icon"
-                  onClick={() =>
-                    copyToClipboard(invitationData?.temp_password, "Пароль")
-                  }
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="bg-secondary/50 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Ссылка на платформу:</p>
-              <div className="flex gap-2">
-                <Input value={invitationData?.invitation_url || ""} readOnly />
-                <Button
-                  size="icon"
-                  onClick={() =>
-                    copyToClipboard(invitationData?.invitation_url, "Ссылка")
-                  }
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowInvitationResult(false)}>Готово</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter className="mt-6">
+              <Button onClick={() => setSelectedStudent(null)} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">Закрыть</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
 
-// Компонент статистики
-function StatCard({ title, value, icon, color }: any) {
-  const colors = {
-    blue: "from-blue-500/10 to-blue-500/5 border-blue-500/30",
-    green: "from-green-500/10 to-green-500/5 border-green-500/30",
-    gray: "from-gray-500/10 to-gray-500/5 border-gray-500/30",
-  };
-
+// Вспомогательные компоненты
+function InfoCard({ icon: Icon, label, value, valueColor = "text-white" }: any) {
   return (
-    <Card className={`bg-gradient-to-br ${colors[color]} border-2`}>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold mt-1">{value}</p>
-          </div>
-          <span className="text-4xl">{icon}</span>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full bg-[#00ff00]/10 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-[#00ff00]" />
+      </div>
+      <div>
+        <p className="text-xs text-gray-400">{label}</p>
+        <p className={`text-sm font-medium ${valueColor}`}>{value}</p>
+      </div>
+    </div>
   );
 }
 
+function StatDisplayCard({ icon: Icon, label, value, color }: any) {
+  return (
+    <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 text-center shadow-md">
+      <div className="w-12 h-12 rounded-full bg-[#00ff00]/10 flex items-center justify-center mx-auto mb-2">
+        <Icon className="w-6 h-6" style={{ color: color }} />
+      </div>
+      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-xl font-bold text-white mt-1">{value}</p>
+    </div>
+  );
+}
+
+function CourseProgressCard({ course }: any) {
+  return (
+    <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800">
+      <div className="flex items-center justify-between mb-2">
+        <p className="font-medium text-white">{course.title}</p>
+        <p className="text-sm text-gray-400">{course.progress}%</p>
+      </div>
+      <Progress value={course.progress} className="h-2 bg-zinc-800 [&>*]:bg-[#00ff00]" />
+      <p className="text-xs text-gray-500 mt-1">{course.completedModules}/{course.totalModules} модулей, {course.completedLessons}/{course.totalLessons} уроков</p>
+    </div>
+  );
+}

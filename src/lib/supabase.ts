@@ -34,23 +34,22 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     devLog('✅ Пользователь вошёл в систему', session.user.email)
     
-    // Обновляем last_login_at только если эта колонка существует
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', session.user.id)
-
-      if (error && !error.message.includes('last_login_at')) {
-        devLog('⚠️ Не удалось обновить профиль', error.message)
-      }
-    } catch (err) {
-      // Игнорируем ошибки обновления - это не критично
+    // Сохраняем JWT токен для использования в API запросах
+    if (session.access_token) {
+      localStorage.setItem('supabase_token', session.access_token)
+      devLog('🔑 JWT токен сохранён в localStorage')
     }
+    
+    // TODO: Обновление профиля теперь будет через Backend API
+    // Backend сам обновит updated_at при получении запроса с JWT токеном
+    // Endpoint: POST /api/profiles/update-last-login
   }
 
   if (event === 'SIGNED_OUT') {
     devLog('👋 Пользователь вышел из системы')
+    
+    // Удаляем токен при выходе
+    localStorage.removeItem('supabase_token')
   }
 })
 

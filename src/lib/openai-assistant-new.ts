@@ -8,6 +8,9 @@ import {
 } from './supabase-chat';
 import { detectConflicts } from './conflict-detector';
 
+// API базовый URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
 // Локальное хранилище для ID Assistant и Thread
 const ASSISTANT_ID_KEY = "openai_assistant_id";
 const THREAD_ID_KEY = "openai_thread_id";
@@ -27,19 +30,30 @@ export interface AIAssistant {
 }
 
 /**
- * Тип AI-ассистента
- */
-export type AssistantType = 'curator' | 'mentor' | 'analyst';
-
-/**
  * Получить или создать OpenAI Assistant
- * ⚠️ DEPRECATED - теперь Backend управляет Assistant IDs
- * Используйте параметр assistantType в sendMessageToAI()
+ * ⚠️ ЗАГЛУШКА - пока возвращаем hardcoded ID
+ * TODO: Создать Backend endpoint для создания Assistant
  */
 export async function getAIAssistant(): Promise<string> {
-  console.warn("⚠️ getAIAssistant() deprecated. Use assistantType parameter instead.");
-  // Для обратной совместимости возвращаем 'curator' как дефолтный тип
-  return "curator";
+  try {
+    // Проверяем сохранённый ID ассистента
+    const savedAssistantId = localStorage.getItem(ASSISTANT_ID_KEY);
+
+    if (savedAssistantId) {
+      console.log("✅ Используем существующий Assistant:", savedAssistantId);
+      return savedAssistantId;
+    }
+
+    // Если нет сохранённого, используем hardcoded (из вашего кода)
+    const assistantId = "asst_yXgYOFAyVKkuc3XETz2IKxh8";
+    localStorage.setItem(ASSISTANT_ID_KEY, assistantId);
+    console.log("✅ Используем Assistant:", assistantId);
+
+    return assistantId;
+  } catch (error) {
+    console.error("❌ Ошибка при получении Assistant:", error);
+    throw error;
+  }
 }
 
 /**
@@ -59,7 +73,7 @@ export async function getOrCreateThread(): Promise<string> {
 
     // Создаём новый thread через Backend API
     console.log("🔄 Создаём новый Thread через Backend...");
-    const response = await api.post<{ id: string }>('/api/openai/threads', {});
+    const response = await api.post<{ id: string }>(`${API_BASE_URL}/api/openai/threads`, {});
     
     const threadId = response.id;
     localStorage.setItem(THREAD_ID_KEY, threadId);
@@ -88,16 +102,14 @@ export async function uploadFile(file: File): Promise<string> {
 export async function sendMessageToAI(
   message: string,
   attachments?: Array<{ file?: File; name: string; type: string }>,
-  userId?: string,
-  assistantType: AssistantType = 'curator' // ✅ Новый параметр!
+  userId?: string
 ): Promise<string> {
   try {
     const startTime = Date.now();
 
-    // Получаем или создаём Thread
+    // Получаем или создаём Assistant и Thread
+    const assistantId = await getAIAssistant();
     const threadId = await getOrCreateThread();
-
-    console.log(`🤖 Используем ${assistantType} assistant`);
 
     // TODO: Обработка файлов (пока не поддерживается)
     if (attachments && attachments.length > 0) {
@@ -106,19 +118,17 @@ export async function sendMessageToAI(
 
     // Добавляем сообщение в thread через Backend
     console.log("💬 Добавляем сообщение в Thread через Backend...");
-    await api.post(`/api/openai/threads/${threadId}/messages`, {
+    await api.post(`${API_BASE_URL}/api/openai/threads/${threadId}/messages`, {
       content: message,
       role: 'user',
     });
 
     // Запускаем Run через Backend
     console.log("🔄 Запускаем Run через Backend...");
-    console.log(`📍 Thread ID: ${threadId}`);
-    
     const runResponse = await api.post<{ id: string; status: string }>(
-      `/api/openai/threads/${threadId}/runs`,
+      `${API_BASE_URL}/api/openai/threads/${threadId}/runs`,
       {
-        assistant_type: assistantType, // ✅ Передаём ТИП, а не ID!
+        assistant_id: assistantId,
         temperature: 0.4,
         top_p: 0.8,
       }
@@ -126,7 +136,6 @@ export async function sendMessageToAI(
     
     const runId = runResponse.id;
     console.log("✅ Run запущен:", runId);
-    console.log(`📍 Run ID: ${runId}`);
 
     // Polling: ожидаем завершения Run
     let runStatus = runResponse.status;
@@ -140,11 +149,8 @@ export async function sendMessageToAI(
 
       await new Promise((resolve) => setTimeout(resolve, 500));
       
-      // Логируем параметры перед запросом
-      console.log(`🔍 Проверка Run статуса: thread=${threadId}, run=${runId}`);
-      
       const statusResponse = await api.get<{ status: string; usage?: any }>(
-        `/api/openai/threads/${threadId}/runs/${runId}`
+        `${API_BASE_URL}/api/openai/threads/${threadId}/runs/${runId}`
       );
       
       runStatus = statusResponse.status;
@@ -164,7 +170,7 @@ export async function sendMessageToAI(
     if (runStatus === "completed") {
       // Получаем последнее сообщение через Backend
       const messagesResponse = await api.get<{ data: any[] }>(
-        `/api/openai/threads/${threadId}/messages?limit=1&order=desc`
+        `${API_BASE_URL}/api/openai/threads/${threadId}/messages?limit=1&order=desc`
       );
 
       const assistantMessage = messagesResponse.data[0];
@@ -265,142 +271,11 @@ export async function startNewConversation(): Promise<void> {
 
 /**
  * Транскрипция аудио через Whisper
+ * ⚠️ НЕ РЕАЛИЗОВАНО - требует Backend endpoint
+ * TODO: Создать POST /api/openai/audio/transcriptions для Whisper
  */
 export async function transcribeAudioToText(audioBlob: Blob, userId?: string, threadId?: string): Promise<string> {
-  try {
-    console.log("🎙️ === НАЧАЛО ТРАНСКРИПЦИИ ===");
-    console.log("📊 Размер аудио:", audioBlob.size, "байт");
-    console.log("📊 Тип аудио:", audioBlob.type);
-
-    // КРИТИЧЕСКАЯ ПРОВЕРКА: размер файла
-    if (audioBlob.size === 0) {
-      console.error("❌ Аудио файл пустой (0 байт)");
-      throw new Error("Аудио файл пустой. Попробуйте записать ещё раз.");
-    }
-
-    if (audioBlob.size < 100) {
-      console.error("❌ Аудио файл слишком маленький:", audioBlob.size, "байт");
-      throw new Error("Аудио слишком короткое. Говорите минимум 1 секунду.");
-    }
-
-    // Определяем расширение файла
-    const fileExtension = audioBlob.type.includes('webm') ? 'webm' : 
-                         audioBlob.type.includes('mp4') ? 'mp4' :
-                         audioBlob.type.includes('ogg') ? 'ogg' : 'webm';
-
-    console.log("📝 Используем расширение файла:", fileExtension);
-
-    // Вычисляем длительность аудио (примерная оценка)
-    const audioDurationSeconds = await getAudioDuration(audioBlob);
-    console.log("⏱️ Длительность аудио:", audioDurationSeconds, "секунд");
-
-    // Создаём FormData для отправки на Backend
-    const formData = new FormData();
-    const audioFile = new File([audioBlob], `recording.${fileExtension}`, {
-      type: audioBlob.type,
-    });
-    formData.append('audio', audioFile);
-    formData.append('language', 'ru');
-    formData.append('duration', audioDurationSeconds.toString());
-    formData.append('prompt', 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы.');
-
-    console.log("📤 Отправляем в Backend Whisper API...");
-
-    // Получаем токен и базовый URL
-    const token = localStorage.getItem('supabase_token');
-    if (!token) {
-      throw new Error("Отсутствует JWT токен. Авторизуйтесь заново.");
-    }
-
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-
-    // Отправляем на Backend
-    const response = await fetch(`${baseUrl}/api/openai/audio/transcriptions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(errorData.message || `API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    const transcriptionText = result.text;
-
-    // КРИТИЧЕСКАЯ ПРОВЕРКА: результат не пустой
-    if (!transcriptionText || transcriptionText.trim().length === 0) {
-      console.error("❌ Backend вернул пустой текст");
-      throw new Error("Не удалось распознать речь. Попробуйте говорить громче и чётче.");
-    }
-
-    // Логируем использование Whisper
-    try {
-      await logWhisperUsage(audioDurationSeconds, { userId, threadId });
-      console.log(`💰 Whisper логирован: ${audioDurationSeconds}s`);
-    } catch (logError) {
-      console.error('⚠️ Ошибка логирования Whisper:', logError);
-      // Не прерываем работу
-    }
-
-    console.log("✅ === ТРАНСКРИПЦИЯ УСПЕШНА ===");
-    console.log("✅ Распознанный текст:", transcriptionText);
-    return transcriptionText;
-  } catch (error: any) {
-    console.error("❌ === ОШИБКА ТРАНСКРИПЦИИ ===");
-    console.error("❌ Ошибка:", error);
-
-    // Более понятные сообщения об ошибках
-    if (error?.message?.includes("Invalid file format")) {
-      throw new Error("Неподдерживаемый формат аудио. Попробуйте ещё раз.");
-    } else if (error?.message?.includes("API key")) {
-      throw new Error("Ошибка настройки AI. Обратитесь к администратору.");
-    } else if (error?.message?.includes("network") || error?.message?.includes("fetch")) {
-      throw new Error("Ошибка сети. Проверьте подключение к интернету.");
-    } else if (error?.status === 429) {
-      throw new Error("Слишком много запросов. Подождите немного и попробуйте снова.");
-    } else if (error?.status === 401) {
-      throw new Error("Ошибка авторизации AI. Обратитесь к администратору.");
-    } else if (error.message) {
-      // Пробрасываем наше понятное сообщение
-      throw error;
-    } else {
-      throw new Error("Не удалось распознать речь. Попробуйте говорить громче и чётче.");
-    }
-  }
-}
-
-/**
- * Получить длительность аудио из Blob
- */
-async function getAudioDuration(audioBlob: Blob): Promise<number> {
-  return new Promise((resolve) => {
-    try {
-      const audio = new Audio();
-      const url = URL.createObjectURL(audioBlob);
-
-      audio.addEventListener('loadedmetadata', () => {
-        URL.revokeObjectURL(url);
-        resolve(Math.ceil(audio.duration)); // Округляем вверх до секунд
-      });
-
-      audio.addEventListener('error', () => {
-        URL.revokeObjectURL(url);
-        // Если не удалось получить длительность, оцениваем по размеру файла
-        // Примерно 1 МБ = 90 секунд для WebM
-        const estimatedDuration = Math.ceil(audioBlob.size / 1024 / 1024 * 90);
-        resolve(estimatedDuration);
-      });
-
-      audio.src = url;
-    } catch (error) {
-      // Фоллбэк: оцениваем по размеру
-      const estimatedDuration = Math.ceil(audioBlob.size / 1024 / 1024 * 90);
-      resolve(estimatedDuration);
-    }
-  });
+  console.warn("⚠️ Whisper транскрипция через Backend пока не реализована");
+  throw new Error("Голосовые сообщения временно недоступны");
 }
 

@@ -9,6 +9,7 @@ import { CourseModules } from "@/components/profile/v2/CourseModules";
 import { AchievementsGrid } from "@/components/profile/v2/AchievementsGrid";
 import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
 import { supabase } from "@/lib/supabase";
+import { api } from "@/utils/apiClient";
 
 const Profile = () => {
   // TEMPORARY: Auth check disabled for testing UI
@@ -31,24 +32,25 @@ const Profile = () => {
     if (session?.user) {
       const { id, email, user_metadata } = session.user;
       
-      const { error } = await supabase.from('users').upsert({
-        id,
-        email,
-        full_name: user_metadata.full_name || user_metadata.name || '',
-        avatar_url: user_metadata.avatar_url || user_metadata.picture || '',
-        created_at: new Date().toISOString(),
-      }, {
-        onConflict: 'id'
-      });
-      
-      if (error) {
-        console.error('❌ Ошибка при повторной синхронизации:', error);
-        alert('Ошибка: не удалось синхронизировать профиль');
-      } else {
-        console.log('✅ Профиль успешно синхронизирован');
+      try {
+        // TODO: Backend API обработает upsert пользователя
+        // Endpoint: POST /api/users/sync
+        await api.post('/api/users/sync', {
+          id,
+          email,
+          full_name: user_metadata.full_name || user_metadata.name || '',
+          avatar_url: user_metadata.avatar_url || user_metadata.picture || '',
+          created_at: new Date().toISOString(),
+        });
+        
+        console.log('✅ Профиль успешно синхронизирован через Backend API');
         setUserExists(true);
         // Reload page to show profile
         window.location.reload();
+        
+      } catch (error: any) {
+        console.error('❌ Ошибка при повторной синхронизации:', error.message);
+        alert('Ошибка: не удалось синхронизировать профиль. Backend API недоступен.');
       }
     }
     

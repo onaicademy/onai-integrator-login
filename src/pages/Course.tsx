@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { CourseStats } from "@/components/course/CourseStats";
+import { AIChatDialog } from "@/components/profile/v2/AIChatDialog";
+import { useMemo, useState } from "react";
 import {
   DoorOpen,
   MessagesSquare,
@@ -37,16 +39,211 @@ const Course = () => {
   const courseProgress = 45;
   const studyTime = "6ч 30м";
   const modulesCount = "8 + бонусы";
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const handleModuleClick = (moduleId: number) => {
     navigate(`/course/${id}/module/${moduleId}`);
   };
 
+  // Генерация узлов для нейронной сети (один раз)
+  const neuralNodes = useMemo(() => 
+    Array.from({ length: 12 }, (_, i) => {
+      const angle = (i / 12) * Math.PI * 2;
+      const radius = 80 + Math.random() * 40;
+      return {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        delay: i * 0.1,
+      };
+    }), []
+  );
+
+  // Генерация орбитальных атомов (один раз)
+  const orbitingAtoms = useMemo(() => 
+    Array.from({ length: 8 }, (_, i) => {
+      const orbitRadius = 140 + i * 15;
+      const speed = 15 + i * 2;
+      const startAngle = (i / 8) * 360;
+      return {
+        orbitRadius,
+        speed,
+        startAngle,
+        size: 3 + Math.random() * 2,
+      };
+    }), []
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute inset-0 bg-black" />
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* v2.0.FINAL - ДИНАМИЧНЫЙ СЕРЫЙ БЛИК */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* ГЛАВНЫЙ БЛИК - ЗАМЕТНЕЕ (на 30% ярче) */}
+        <motion.div
+          className="absolute w-[1000px] h-[1000px] rounded-full blur-3xl"
+          style={{
+            background: 'radial-gradient(circle, rgba(155,155,155,0.35) 0%, rgba(122,122,122,0.25) 20%, rgba(88,88,88,0.16) 40%, rgba(66,66,66,0.08) 60%, transparent 80%)',
+          }}
+          animate={{
+            x: [
+              '-50%',    // Старт: левый верхний
+              '110%',    // Правый нижний
+              '110%',    // Правый верхний
+              '-50%',    // Левый нижний
+              '50%',     // Центр
+              '-50%',    // Возврат к началу
+            ],
+            y: [
+              '-50%',    // Старт: левый верхний
+              '110%',    // Правый нижний
+              '-50%',    // Правый верхний
+              '110%',    // Левый нижний
+              '50%',     // Центр
+              '-50%',    // Возврат к началу
+            ],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times: [0, 0.2, 0.4, 0.6, 0.8, 1],
+          }}
+        />
+      </div>
+
+      {/* ЗЕЛЕНАЯ НЕЙРОННАЯ СФЕРА - СТАТИЧНАЯ */}
+      <div className="fixed top-1/2 right-[10%] -translate-y-1/2 pointer-events-none z-0">
+        <svg
+          width="400"
+          height="400"
+          viewBox="-200 -200 400 400"
+          className="overflow-visible"
+        >
+          <defs>
+            {/* Зеленый градиент для сферы */}
+            <radialGradient id="sphereGradient">
+              <stop offset="0%" stopColor="#00ff00" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#00cc00" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#008800" stopOpacity="0.1" />
+            </radialGradient>
+            
+            {/* Фильтр свечения */}
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Связи между узлами */}
+          <g opacity="0.3">
+            {neuralNodes.map((node, i) => 
+              neuralNodes.slice(i + 1).map((otherNode, j) => {
+                const distance = Math.sqrt(
+                  Math.pow(node.x - otherNode.x, 2) + Math.pow(node.y - otherNode.y, 2)
+                );
+                if (distance < 120) {
+                  return (
+                    <motion.line
+                      key={`${i}-${j}`}
+                      x1={node.x}
+                      y1={node.y}
+                      x2={otherNode.x}
+                      y2={otherNode.y}
+                      stroke="#00ff00"
+                      strokeWidth="1"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 0.6 }}
+                      transition={{
+                        duration: 2,
+                        delay: node.delay + otherNode.delay,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                      }}
+                    />
+                  );
+                }
+                return null;
+              })
+            )}
+          </g>
+
+          {/* Центральная сфера */}
+          <motion.circle
+            cx="0"
+            cy="0"
+            r="60"
+            fill="url(#sphereGradient)"
+            filter="url(#glow)"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ 
+              scale: [0.95, 1.05, 0.95],
+              opacity: 1,
+            }}
+            transition={{
+              scale: {
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+              opacity: {
+                duration: 1,
+              },
+            }}
+          />
+
+          {/* Узлы нейронной сети */}
+          {neuralNodes.map((node, i) => (
+            <motion.circle
+              key={i}
+              cx={node.x}
+              cy={node.y}
+              r="4"
+              fill="#00ff00"
+              filter="url(#glow)"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: [1, 1.3, 1],
+                opacity: [0.6, 1, 0.6],
+              }}
+              transition={{
+                duration: 2,
+                delay: node.delay,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+
+          {/* Орбитальные атомы (3D эффект) */}
+          {orbitingAtoms.map((atom, i) => (
+            <motion.g key={`atom-${i}`}>
+              <motion.circle
+                r={atom.size}
+                fill="#00ff00"
+                filter="url(#glow)"
+                animate={{
+                  cx: [
+                    `${Math.cos((atom.startAngle * Math.PI) / 180) * atom.orbitRadius}`,
+                    `${Math.cos(((atom.startAngle + 360) * Math.PI) / 180) * atom.orbitRadius}`,
+                  ],
+                  cy: [
+                    `${Math.sin((atom.startAngle * Math.PI) / 180) * atom.orbitRadius * 0.3}`,
+                    `${Math.sin(((atom.startAngle + 360) * Math.PI) / 180) * atom.orbitRadius * 0.3}`,
+                  ],
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.8, 1.2, 0.8],
+                }}
+                transition={{
+                  duration: atom.speed,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+            </motion.g>
+          ))}
+        </svg>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
@@ -63,11 +260,12 @@ const Course = () => {
                 самый полный курс по автоматизации<br className="hidden sm:inline" />
                 <span className="sm:hidden"> </span>при помощи нейросетей
               </p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 text-white font-gilroy leading-tight">
-                Интегратор<span className="block sm:inline sm:ml-2 text-primary drop-shadow-[0_0_15px_rgba(177,255,50,0.8)]">2.0</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 text-white font-gilroy leading-tight whitespace-nowrap">
+                Интегратор <span className="text-primary drop-shadow-[0_0_15px_rgba(177,255,50,0.8)]">2.0</span>
               </h1>
               <Button 
                 size="lg" 
+                onClick={() => setIsAIChatOpen(true)}
                 className="bg-neon text-black hover:bg-neon/20 font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 rounded-full shadow-[0_0_30px_rgba(177,255,50,0.5)] hover:shadow-[0_0_40px_rgba(177,255,50,0.7)] transition-all w-full sm:w-auto"
                 aria-label="onAI Куратор"
               >
@@ -224,6 +422,9 @@ const Course = () => {
           </p>
         </motion.footer>
       </div>
+
+      {/* AI Chat Dialog */}
+      <AIChatDialog open={isAIChatOpen} onOpenChange={setIsAIChatOpen} />
     </div>
   );
 };

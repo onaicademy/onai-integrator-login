@@ -98,7 +98,7 @@ export const FloatingAIButton = () => {
       />
 
       {/* Floating Button */}
-      <motion.button
+      <motion.div
         drag={isDraggable}
         dragConstraints={constraintsRef}
         dragElastic={0.1}
@@ -107,117 +107,93 @@ export const FloatingAIButton = () => {
         onPointerUp={handlePointerUp}
         onDragEnd={handleDragEnd}
         style={{ x, y }}
+        whileHover={{ scale: isDraggable ? 1 : 1.05 }}
+        whileTap={{ scale: isDraggable ? 1 : 0.95 }}
         className={`
-          fixed bottom-6 right-6 z-50 group
+          fixed bottom-6 right-6 z-50 cursor-pointer
           ${isDragging ? "cursor-grabbing" : isDraggable ? "cursor-grab" : "cursor-pointer"}
         `}
-        whileHover={!isDragging ? { scale: 1.05 } : {}}
-        whileTap={!isDragging ? { scale: 0.95 } : {}}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ 
-          opacity: 1, 
-          y: 0,
-          scale: isDragging ? 1.1 : 1,
-        }}
-        transition={{ duration: 0.3 }}
       >
-        {/* Tooltip: AI-куратор / Удерживайте для перемещения */}
-        {!isDraggable && !isDragging && (
-          <div className="absolute bottom-full mb-3 right-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[60]">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-secondary/95 backdrop-blur-sm border border-border/40 rounded-lg px-3 py-2 shadow-lg"
-            >
-              <p className="text-xs font-medium text-foreground whitespace-nowrap">AI-куратор</p>
-              <p className="text-[10px] text-muted-foreground whitespace-nowrap">Удерживайте для перемещения</p>
-            </motion.div>
-            {/* Стрелка снизу */}
-            <div className="absolute -bottom-1 right-4 w-2 h-2 bg-secondary/95 border-r border-b border-border/40 rotate-45" />
-          </div>
-        )}
-
-        {/* Пульсация слой 1 */}
-        {!isDragging && (
-          <>
-            <motion.div
-              className="absolute inset-0 rounded-full bg-neon/30"
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.5, 0.2, 0.5],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-
-            {/* Пульсация слой 2 */}
-            <motion.div
-              className="absolute inset-0 rounded-full bg-neon/20"
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.4, 0, 0.4],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.5,
-              }}
-            />
-          </>
-        )}
-
-        {/* Основная кнопка */}
+        {/* v2.0.FINAL - FINGERPRINT DESIGN */}
         <div className={`
-          relative w-14 h-14 sm:w-16 sm:h-16 
-          bg-gradient-to-br from-neon via-neon to-[hsl(var(--cyber-blue))] 
-          rounded-full flex items-center justify-center 
-          shadow-lg shadow-neon/50 hover:shadow-xl hover:shadow-neon/60 
-          transition-shadow overflow-hidden
-          ${isDraggable ? "ring-2 ring-neon ring-offset-2 ring-offset-background" : ""}
+          relative w-16 h-16
+          bg-gradient-to-br from-zinc-900 via-zinc-800 to-black
+          rounded-2xl flex flex-col items-center justify-center
+          shadow-[0_0_30px_rgba(0,255,0,0.3),0_4px_20px_rgba(0,0,0,0.5)]
+          hover:shadow-[0_0_50px_rgba(0,255,0,0.5),0_8px_30px_rgba(0,0,0,0.7)]
+          transition-all duration-300 overflow-hidden
+          border border-[#00ff00]/30
+          ${isDraggable ? "ring-2 ring-[#00ff00]/60 ring-offset-2 ring-offset-background scale-105" : ""}
         `}>
-          {/* Сфера для вращения */}
+          {/* Scan line animation */}
           <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 50%)",
-            }}
+            className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00ff00] to-transparent"
             animate={{
-              rotateY: [0, 360],
-              rotateX: [0, 360],
+              y: ["0%", "100%"],
+              opacity: [0, 1, 0],
             }}
             transition={{
-              duration: 8,
+              duration: 2,
               repeat: Infinity,
               ease: "linear",
             }}
           />
-          {/* Иконка бота с вращением */}
-          <motion.div
+
+          {/* Fingerprint SVG */}
+          <svg
+            className="w-8 h-8 relative z-10 mb-0.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#00ff00"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" opacity="0.8"/>
+            <path d="M14 13.12c0 2.38 0 6.38-1 8.88" opacity="0.9"/>
+            <path d="M17.29 21c.83-2.35 1.48-8.79.48-11.88" opacity="0.7"/>
+            <path d="M2 12a10 10 0 0 1 18-6" opacity="0.6"/>
+            <path d="M2 16h.01" opacity="0.5"/>
+            <path d="M21.8 16c.2-2 .131-5.354 0-6" opacity="0.6"/>
+            <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" opacity="0.7"/>
+            <path d="M8.65 22c.21-.66.45-1.32.57-2" opacity="0.8"/>
+            <path d="M9 6.8a6 6 0 0 1 9 5.2v2" opacity="0.6"/>
+          </svg>
+
+          {/* AI text */}
+          <motion.span
+            className="text-sm font-black text-[#00ff00] relative z-10 tracking-wider"
+            style={{
+              fontFamily: "'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              textShadow: "0 0 10px rgba(0,255,0,0.5), 0 0 20px rgba(0,255,0,0.3)",
+            }}
             animate={{
-              rotateY: [0, 360],
+              textShadow: [
+                "0 0 10px rgba(0,255,0,0.5), 0 0 20px rgba(0,255,0,0.3)",
+                "0 0 15px rgba(0,255,0,0.8), 0 0 30px rgba(0,255,0,0.5)",
+                "0 0 10px rgba(0,255,0,0.5), 0 0 20px rgba(0,255,0,0.3)",
+              ],
             }}
             transition={{
-              duration: 6,
+              duration: 2,
               repeat: Infinity,
-              ease: "linear",
+              ease: "easeInOut",
             }}
-            style={{ transformStyle: "preserve-3d" }}
           >
-            <Bot className="w-7 h-7 sm:w-8 sm:h-8 text-background relative z-10" strokeWidth={2} />
-          </motion.div>
-          
-          {/* Индикатор online */}
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background">
+            AI
+          </motion.span>
+
+          {/* Online indicator */}
+          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-black rounded-full border border-[#00ff00]/50 flex items-center justify-center">
             <motion.div
-              className="absolute inset-0 rounded-full bg-green-400"
+              className="w-2 h-2 rounded-full bg-[#00ff00]"
               animate={{
-                scale: [1, 1.2, 1],
-                opacity: [1, 0.5, 1],
+                scale: [1, 1.4, 1],
+                boxShadow: [
+                  "0 0 5px rgba(0,255,0,0.6)",
+                  "0 0 12px rgba(0,255,0,1)",
+                  "0 0 5px rgba(0,255,0,0.6)",
+                ],
               }}
               transition={{
                 duration: 1.5,
@@ -226,21 +202,14 @@ export const FloatingAIButton = () => {
               }}
             />
           </div>
-        </div>
 
-        {/* Tooltip */}
-        {!isDragging && (
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            <div className="bg-secondary/95 backdrop-blur-sm border border-border/40 rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-              <p className="text-xs font-medium text-foreground">AI-куратор</p>
-              <p className="text-xs text-muted-foreground">
-                {isDraggable ? "Перетащите меня 🖐️" : "Задай вопрос 💬"}
-              </p>
-            </div>
-            <div className="absolute top-1/2 -translate-y-1/2 -right-1 w-2 h-2 bg-secondary/95 border-r border-b border-border/40 rotate-45" />
-          </div>
-        )}
-      </motion.button>
+          {/* Corner accents */}
+          <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-[#00ff00]/40" />
+          <div className="absolute top-1 right-1 w-2 h-2 border-t border-r border-[#00ff00]/40" />
+          <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[#00ff00]/40" />
+          <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-[#00ff00]/40" />
+        </div>
+      </motion.div>
 
       {/* Chat Dialog */}
       <AIChatDialog open={isChatOpen} onOpenChange={setIsChatOpen} />

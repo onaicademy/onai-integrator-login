@@ -12,7 +12,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -33,50 +32,12 @@ export default function Login() {
     });
   }, []); // Пустой массив зависимостей = создаётся ОДИН РАЗ
 
-  // Проверка авторизации при загрузке
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    try {
-      console.log('🔍 Проверка авторизации...');
-      setIsCheckingAuth(true);
-      
-      // БЕЗ таймаута - просто ждём ответа!
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('❌ Ошибка getSession:', error);
-        return;
-      }
-      
-      if (session) {
-        console.log('✅ Сессия найдена:', session.user.email);
-        console.log('🔄 Редирект на:', from);
-        navigate(from, { replace: true });
-      } else {
-        console.log('ℹ️ Нет сессии, показываем форму');
-      }
-    } catch (error) {
-      console.error('❌ Исключение в checkAuth:', error);
-    } finally {
-      setIsCheckingAuth(false);
-    }
-  }
+  // 🔥 ИСПРАВЛЕНИЕ: УБРАЛИ дублирование checkAuth
+  // AuthContext уже проверяет сессию, не нужно делать это снова здесь!
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
-
-    // 🔍 ДИАГНОСТИКА: Логируем попытку входа
-    console.group('🔐 ПОПЫТКА ВХОДА')
-    console.log('📧 Email:', email.trim())
-    console.log('🔑 Password length:', password.length)
-    console.log('📊 Request payload:', {
-      email: email.trim(),
-      password: '***' + password.slice(-3)
-    })
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -84,29 +45,17 @@ export default function Login() {
         password,
       });
 
-      // 🔍 ДИАГНОСТИКА: Логируем ответ
-      console.log('📥 Response data:', data)
-      console.log('❌ Response error:', error)
-      console.groupEnd()
-
       if (error) {
         let errorMessage = 'Произошла ошибка при входе';
-        
-        // 🔍 ДИАГНОСТИКА: Детальная ошибка
-        console.error('🚨 ОШИБКА SUPABASE:', {
-          message: error.message,
-          status: error.status,
-          name: error.name,
-          fullError: error
-        })
         
         if (error.message.includes('Invalid login credentials')) {
           errorMessage = 'Неверный email или пароль';
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = 'Email не подтверждён. Проверьте вашу почту.';
-        } else if (error.message.includes('No API key')) {
-          errorMessage = 'Ошибка конфигурации: API ключ не найден';
         }
+
+        // 🔥 ИСПРАВЛЕНИЕ: Очищаем пароль после ошибки (безопасность)
+        setPassword('');
 
         toast({
           title: '❌ Ошибка входа',
@@ -117,39 +66,21 @@ export default function Login() {
       }
 
       if (data.user) {
-        console.log('✅ Login success:', data);
-        console.log('💾 Session saved:', data.session);
-        
-        // ДИАГНОСТИКА: Проверка что сессия сохранилась
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('🔍 Session после логина:', session);
-        console.log('💾 localStorage после логина:', localStorage.getItem('supabase.auth.token'));
-        
         // ПРОВЕРКА СТАТУСА АККАУНТА
-        console.log('🔍 Проверка статуса аккаунта...');
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('is_active, account_expires_at, deactivation_reason')
           .eq('id', data.user.id)
           .single();
         
-        if (profileError) {
-          console.error('❌ Ошибка загрузки профиля:', profileError);
-        } else if (profile) {
-          console.log('📊 Профиль:', profile);
-          
+        if (profile) {
           // ПРОВЕРКА 1: Аккаунт деактивирован?
           if (!profile.is_active) {
-            console.log('❌ Аккаунт деактивирован');
-            
-            // Выход из системы
             await supabase.auth.signOut();
             
             let deactivationMessage = 'Ваш аккаунт был деактивирован.';
             if (profile.deactivation_reason === 'expired') {
               deactivationMessage = 'Срок действия вашего аккаунта истёк.';
-            } else if (profile.deactivation_reason === 'manual') {
-              deactivationMessage = 'Ваш аккаунт был деактивирован администратором.';
             }
             
             toast({
@@ -167,9 +98,6 @@ export default function Login() {
             const now = new Date();
             
             if (expiresAt < now) {
-              console.log('❌ Срок действия аккаунта истёк:', expiresAt);
-              
-              // Деактивируем аккаунт
               await supabase
                 .from('profiles')
                 .update({ 
@@ -179,33 +107,19 @@ export default function Login() {
                 })
                 .eq('id', data.user.id);
               
-              // Выход из системы
               await supabase.auth.signOut();
               
               toast({
                 title: '⏰ Срок действия истёк',
-                description: 'Срок действия вашего аккаунта истёк. Обратитесь к администратору для продления.',
+                description: 'Срок действия вашего аккаунта истёк. Обратитесь к администратору.',
                 variant: 'destructive',
                 duration: 10000,
               });
               return;
             }
-            
-            // ПРЕДУПРЕЖДЕНИЕ: Скоро истечёт срок (менее 7 дней)
-            const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-            if (daysLeft <= 7 && daysLeft > 0) {
-              console.log(`⚠️ Осталось ${daysLeft} дней до истечения`);
-              toast({
-                title: '⚠️ Внимание!',
-                description: `Срок действия вашего аккаунта истекает через ${daysLeft} дней. Обратитесь к администратору.`,
-                variant: 'default',
-                duration: 8000,
-              });
-            }
           }
         }
         
-        // ВАЖНО: Очищаем старый кеш при новом входе
         sessionStorage.clear();
         
         toast({
@@ -215,9 +129,6 @@ export default function Login() {
         navigate(from, { replace: true });
       }
     } catch (error: any) {
-      console.error('🚨 КРИТИЧЕСКАЯ ОШИБКА:', error);
-      console.groupEnd()
-      
       toast({
         title: '❌ Ошибка',
         description: 'Не удалось войти в систему',
@@ -228,19 +139,35 @@ export default function Login() {
     }
   }
 
-  if (isCheckingAuth) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <Loader2 className="w-8 h-8 animate-spin text-[#00ff00]" />
-      </div>
-    );
-  }
-
+  // 🔥 ИСПРАВЛЕНИЕ: Убрали isCheckingAuth - AuthContext уже проверил сессию
+  // Если мы здесь - значит сессии нет, показываем форму логина
+  
   return (
     <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
-      {/* Космический фон с плавающими светлыми пятнами */}
+      {/* v2.0.FINAL - СЕРЫЙ БЛИК КАЖДЫЕ 5 СЕК */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div
+          className="absolute w-[1000px] h-[1000px] rounded-full blur-3xl"
+          style={{
+            background: 'radial-gradient(circle, rgba(155,155,155,0.35) 0%, rgba(122,122,122,0.25) 20%, rgba(88,88,88,0.16) 40%, rgba(66,66,66,0.08) 60%, transparent 80%)',
+          }}
+          animate={{
+            x: ['-50%', '110%'],
+            y: ['-50%', '110%'],
+            opacity: [0, 1, 1, 0],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            repeatDelay: 5,
+            ease: "easeInOut",
+            times: [0, 0.2, 0.8, 1],
+          }}
+        />
+      </div>
+
+      {/* Летающие звезды */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Летающие звезды */}
         {stars.map((star, i) => (
           <motion.div
             key={i}
@@ -263,50 +190,6 @@ export default function Login() {
             }}
           />
         ))}
-
-        {/* Плавающие светлые пятна (blur blobs) - кислотно-зеленые */}
-        <motion.div
-          className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-[#00ff00]/20 to-transparent blur-3xl"
-          style={{ top: '10%', left: '10%' }}
-          animate={{
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#00ff00]/15 to-transparent blur-3xl"
-          style={{ top: '50%', right: '10%' }}
-          animate={{
-            x: [0, -30, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-[#00ff00]/10 to-transparent blur-3xl"
-          style={{ bottom: '20%', left: '20%' }}
-          animate={{
-            x: [0, 40, 0],
-            y: [0, -20, 0],
-            scale: [1, 1.15, 1],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
       </div>
 
       {/* Контент */}
@@ -314,10 +197,23 @@ export default function Login() {
         {/* Хедер */}
         <header className="flex items-center justify-between px-4 sm:px-8 py-6 flex-shrink-0">
           <div className="flex items-center gap-4 sm:gap-12">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-wider leading-tight">
-              <span className="text-[#00ff00]">ONAI</span><br />
-              <span className="text-white">ACADEMY</span>
-            </h1>
+            {/* SVG ЛОГОТИП ONAI ACADEMY */}
+            <svg width="120" height="60" viewBox="0 0 120 60" className="w-24 sm:w-32 h-auto">
+              <defs>
+                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#00ff00', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#00cc00', stopOpacity: 1 }} />
+                </linearGradient>
+              </defs>
+              {/* ONAI - зеленый */}
+              <text x="0" y="25" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="bold" fill="url(#logoGradient)">
+                ONAI
+              </text>
+              {/* ACADEMY - белый */}
+              <text x="0" y="50" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="600" fill="#ffffff">
+                ACADEMY
+              </text>
+            </svg>
           </div>
           
           <div className="flex items-center gap-4">
