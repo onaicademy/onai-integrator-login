@@ -123,23 +123,28 @@ export default function Login() {
         
         sessionStorage.clear();
         
-        // Проверяем статус онбординга
-        try {
-          const onboardingStatus = await api.get(`/api/onboarding/status?userId=${data.user.id}`);
-          
-          if (!onboardingStatus.completed) {
-            console.log('🎯 Онбординг не завершён, редирект на /welcome');
-            toast({
-              title: '👋 Добро пожаловать!',
-              description: 'Давайте познакомимся поближе',
-            });
-            navigate('/welcome', { replace: true });
-            return;
-          }
-        } catch (error) {
-          console.warn('⚠️ Не удалось проверить статус онбординга, продолжаем');
+        // ✅ Проверяем роль пользователя из users таблицы
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role, onboarding_completed')
+          .eq('id', data.user.id)
+          .single();
+
+        console.log('👤 Роль пользователя:', userData?.role);
+        console.log('📋 Онбординг завершён:', userData?.onboarding_completed);
+
+        // ✅ ОНБОРДИНГ ТОЛЬКО ДЛЯ СТУДЕНТОВ
+        if (userData?.role === 'student' && !userData?.onboarding_completed) {
+          console.log('🎯 Студент не прошёл онбординг, редирект на /welcome');
+          toast({
+            title: '👋 Добро пожаловать!',
+            description: 'Давайте познакомимся поближе',
+          });
+          navigate('/welcome', { replace: true });
+          return;
         }
         
+        // Для админов, кураторов, тех специалистов - сразу на главную
         toast({
           title: '✅ Добро пожаловать!',
           description: 'Вы успешно вошли в систему',
