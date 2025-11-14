@@ -92,11 +92,9 @@ export async function processFile(
       formData.append('userQuestion', userQuestion);
     }
 
-    const response = await api.post('/api/files/process', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // ✅ НЕ устанавливаем Content-Type вручную!
+    // Браузер автоматически добавит "multipart/form-data; boundary=..."
+    const response = await api.post('/api/files/process', formData);
 
     console.log('✅ Файл обработан:', response);
 
@@ -279,12 +277,14 @@ export async function sendMessageToAI(
             console.log("✅ Диалог сохранён в Supabase через Backend");
 
             // Логируем использование токенов (если есть данные)
-            if (tokenUsage) {
+            if (tokenUsage && userId) {
               console.log("📊 Логируем токены:", tokenUsage);
+              console.log("📍 User ID:", userId);
+              console.log("📍 Assistant Type:", assistantType);
               try {
                 await api.post('/api/tokens/log', {
                   userId,
-                  assistantType: 'curator',
+                  assistantType: assistantType, // ✅ Используем переданный тип!
                   promptTokens: tokenUsage.prompt_tokens || 0,
                   completionTokens: tokenUsage.completion_tokens || 0,
                   totalTokens: tokenUsage.total_tokens || 0,
@@ -294,10 +294,16 @@ export async function sendMessageToAI(
                   openaiRunId: runId,
                 });
                 console.log("✅ Токены залогированы успешно");
-              } catch (tokenError) {
+              } catch (tokenError: any) {
                 console.error("⚠️ Не удалось залогировать токены:", tokenError);
+                console.error("⚠️ Детали ошибки:", tokenError.message);
                 // Не блокируем выполнение
               }
+            } else {
+              console.warn("⚠️ Пропускаем логирование токенов:", {
+                hasTokenUsage: !!tokenUsage,
+                hasUserId: !!userId,
+              });
             }
 
             // Обнаруживаем конфликты

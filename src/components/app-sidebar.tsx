@@ -108,11 +108,10 @@ export function AppSidebar({ role }: AppSidebarProps) {
                       end={item.url === "/"}
                       className={({ isActive }) =>
                         cn(
-                          "group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-300 overflow-hidden",
+                          "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 overflow-hidden",
                           "hover:scale-[1.02] active:scale-[0.98]",
-                          isActive
-                            ? "bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10 text-[#00ff00] shadow-lg shadow-[#00ff00]/20"
-                            : "text-white hover:text-[#00ff00]"
+                          "text-white hover:text-[#00ff00]",
+                          isActive && "bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10 shadow-lg shadow-[#00ff00]/20"
                         )
                       }
                     >
@@ -140,18 +139,12 @@ export function AppSidebar({ role }: AppSidebarProps) {
                             transition={{ duration: 0.3 }}
                             className="relative z-10"
                           >
-                            <item.icon className={cn(
-                              "w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all duration-300",
-                              isActive && "text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.5)]"
-                            )} />
+                            <item.icon className="w-5 h-5 flex-shrink-0 transition-colors duration-300" />
                           </motion.div>
                           
                           {/* Текст */}
                           {!isCollapsed && (
-                            <span className={cn(
-                              "relative z-10 font-medium transition-all duration-300 text-xs sm:text-sm md:text-base truncate leading-tight",
-                              isActive && "font-semibold"
-                            )}>
+                            <span className="relative z-10 font-medium transition-colors duration-300 truncate">
                               {item.title}
                             </span>
                           )}

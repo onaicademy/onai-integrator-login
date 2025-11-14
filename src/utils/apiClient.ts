@@ -24,9 +24,13 @@ export async function apiRequest<T = any>(
   const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
   const url = `${baseUrl}${endpoint}`;
   
+  // ✅ Проверяем тип body (FormData или JSON)
+  const isFormData = options.body instanceof FormData;
+  
   // Подготавливаем headers
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    // ✅ НЕ устанавливаем Content-Type для FormData (браузер сам добавит boundary)
+    ...(!isFormData && { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
   
@@ -36,11 +40,17 @@ export async function apiRequest<T = any>(
   }
   
   // Подготавливаем body (если есть)
-  const body = options.body
-    ? typeof options.body === 'string'
-      ? options.body
-      : JSON.stringify(options.body)
-    : undefined;
+  let body: any = undefined;
+  if (options.body) {
+    if (isFormData) {
+      // ✅ FormData отправляем как есть (НЕ делаем JSON.stringify!)
+      body = options.body;
+    } else if (typeof options.body === 'string') {
+      body = options.body;
+    } else {
+      body = JSON.stringify(options.body);
+    }
+  }
   
   try {
     console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
