@@ -201,24 +201,72 @@ npm list pdf-parse mammoth multer
 
 ---
 
+## ⚠️ ОБНОВЛЕНИЕ: НАЙДЕНА ПРОБЛЕМА!
+
+**ДАТА:** 2025-11-14, 18:35
+
+### Проблема:
+В fetch запросе из браузера **файл ПУСТОЙ!**
+
+```
+Content-Disposition: form-data; name="file"; filename="Квитанция.pdf"
+Content-Type: application/pdf
+
+(ПУСТАЯ СТРОКА - НЕТ ДАННЫХ ФАЙЛА!)
+```
+
+**Должно было быть:**
+```
+Content-Disposition: form-data; name="file"; filename="Квитанция.pdf"
+Content-Type: application/pdf
+
+%PDF-1.4
+%Çäóó÷... (бинарные данные PDF)
+```
+
+### Что это значит:
+- ❌ File объект в FormData был **ПУСТЫМ**
+- ❌ Файл либо не читается правильно, либо File API ломает его
+
+### Что я сделал:
+1. ✅ Добавил подробные логи в `src/lib/openai-assistant.ts`
+2. ✅ Добавил проверку `file.size === 0` перед отправкой
+3. ✅ Добавил логи в `src/components/profile/v2/AIChatDialog.tsx`
+
+### Новые логи (Frontend Console):
+Теперь ты увидишь:
+```
+📎 [AIChatDialog] Передаём attachments в sendMessageToAI: [{name: "file.pdf", hasFile: true, fileSize: 85904}]
+📎 [sendMessageToAI] Получено 1 файл(ов)
+📎 [sendMessageToAI] Обрабатываем файл: file.pdf
+📎 [processFile] Получен файл: {name: "file.pdf", size: 85904, type: "application/pdf"}
+📎 [processFile] FormData создан, файл добавлен
+📎 [processFile] Отправляем на Backend: /api/files/process
+```
+
 ## 🎯 СЛЕДУЮЩИЕ ШАГИ
 
 **ТЕБЕ НУЖНО:**
-1. Открыть Backend консоль (где запущен `npm run dev` в папке `backend`)
-2. Попробовать загрузить файл
-3. Скопировать **ВСЕ ЛОГИ** из Backend консоли
-4. Прислать мне эти логи
+1. Открыть `http://localhost:8080/profile`
+2. Открыть **F12 → Console**
+3. Открыть AI-Куратор
+4. Прикрепить файл (PDF или изображение)
+5. Отправить сообщение
+6. Скопировать **ВСЕ ЛОГИ** из Console (начиная с `📎 [AIChatDialog]`)
+7. Прислать мне эти логи
 
-**МНЕ НУЖНО УВИДЕТЬ:**
+**Я ХОЧУ УВИДЕТЬ:**
 ```
-[FileController] 🔍 Начало обработки файла...
-[FileController] req.file: ???
-[FileController] req.body: ???
-[FileController] ❌ КРИТИЧЕСКАЯ ОШИБКА обработки файла:
-[FileController] Тип ошибки: ???
-[FileController] Сообщение: ???
-[FileController] Стек: ???
+📎 [AIChatDialog] Передаём attachments в sendMessageToAI: [...]
+📎 [sendMessageToAI] Получено N файл(ов)
+📎 [sendMessageToAI] Детали attachments: [...]
+📎 [processFile] Получен файл: {...}
 ```
+
+**Это покажет:**
+- Есть ли File объект в attachments
+- Какой размер файла (0 = проблема!)
+- На каком этапе файл "теряется"
 
 ---
 
