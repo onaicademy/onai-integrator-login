@@ -45,6 +45,7 @@ export async function createStudent(data: {
         email: data.email,
         full_name: data.full_name,
         role: data.role,
+        onboarding_completed: false, // ✅ Новый пользователь должен пройти онбординг
         // telegram_chat_id будет установлен когда студент нажмёт /start в боте
       }, {
         onConflict: 'id',
