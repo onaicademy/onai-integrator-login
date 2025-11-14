@@ -179,7 +179,7 @@ export default function Login() {
 
       {/* Основная страница логина */}
       {!showLoadingScreen && (
-        <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
+    <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
       {/* v2.0.FINAL - СЕРЫЙ БЛИК КАЖДЫЕ 5 СЕК */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
@@ -423,7 +423,7 @@ export default function Login() {
           </div>
         </footer>
       </div>
-        </div>
+    </div>
       )}
     </>
   );

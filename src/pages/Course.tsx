@@ -78,23 +78,23 @@ const Course = () => {
       {/* Flying Stars Background (as in Login page) */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 50 }).map((_, i) => (
-          <motion.div
+        <motion.div
             key={i}
             className="absolute w-1 h-1 bg-white rounded-full"
-            style={{
+          style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-            }}
-            animate={{
+          }}
+          animate={{
               opacity: [0.2, 0.8, 0.2],
               scale: [1, 1.5, 1],
-            }}
-            transition={{
+          }}
+          transition={{
               duration: 3 + Math.random() * 2,
-              repeat: Infinity,
+            repeat: Infinity,
               delay: Math.random() * 2,
-            }}
-          />
+          }}
+        />
         ))}
       </div>
 

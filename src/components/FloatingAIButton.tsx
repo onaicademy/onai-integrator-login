@@ -139,40 +139,11 @@ export const FloatingAIButton = () => {
             }}
           />
 
-          {/* Fingerprint SVG */}
-          <svg
-            className="w-8 h-8 relative z-10 mb-0.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#00ff00"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" opacity="0.8"/>
-            <path d="M14 13.12c0 2.38 0 6.38-1 8.88" opacity="0.9"/>
-            <path d="M17.29 21c.83-2.35 1.48-8.79.48-11.88" opacity="0.7"/>
-            <path d="M2 12a10 10 0 0 1 18-6" opacity="0.6"/>
-            <path d="M2 16h.01" opacity="0.5"/>
-            <path d="M21.8 16c.2-2 .131-5.354 0-6" opacity="0.6"/>
-            <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" opacity="0.7"/>
-            <path d="M8.65 22c.21-.66.45-1.32.57-2" opacity="0.8"/>
-            <path d="M9 6.8a6 6 0 0 1 9 5.2v2" opacity="0.6"/>
-          </svg>
-
-          {/* AI text */}
-          <motion.span
-            className="text-sm font-black text-[#00ff00] relative z-10 tracking-wider"
-            style={{
-              fontFamily: "'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-              textShadow: "0 0 10px rgba(0,255,0,0.5), 0 0 20px rgba(0,255,0,0.3)",
-            }}
+          {/* Bot Icon с пульсацией */}
+          <motion.div
+            className="relative z-10"
             animate={{
-              textShadow: [
-                "0 0 10px rgba(0,255,0,0.5), 0 0 20px rgba(0,255,0,0.3)",
-                "0 0 15px rgba(0,255,0,0.8), 0 0 30px rgba(0,255,0,0.5)",
-                "0 0 10px rgba(0,255,0,0.5), 0 0 20px rgba(0,255,0,0.3)",
-              ],
+              scale: [1, 1.1, 1],
             }}
             transition={{
               duration: 2,
@@ -180,8 +151,14 @@ export const FloatingAIButton = () => {
               ease: "easeInOut",
             }}
           >
-            AI
-          </motion.span>
+            <Bot 
+              className="w-9 h-9 text-[#00ff00]" 
+              strokeWidth={2}
+              style={{
+                filter: "drop-shadow(0 0 8px rgba(0,255,0,0.6)) drop-shadow(0 0 15px rgba(0,255,0,0.4))",
+              }}
+            />
+          </motion.div>
 
           {/* Online indicator */}
           <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-black rounded-full border border-[#00ff00]/50 flex items-center justify-center">

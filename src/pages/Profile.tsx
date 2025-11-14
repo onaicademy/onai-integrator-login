@@ -1,185 +1,213 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { ProfileHeader } from "@/components/profile/v2/ProfileHeader";
-import { UserDashboard } from "@/components/profile/v2/UserDashboard";
-import { LearningStats } from "@/components/profile/v2/LearningStats";
 import { CourseModules } from "@/components/profile/v2/CourseModules";
 import { AchievementsGrid } from "@/components/profile/v2/AchievementsGrid";
 import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
-import { supabase } from "@/lib/supabase";
-import { api } from "@/utils/apiClient";
 
 const Profile = () => {
-  // TEMPORARY: Auth check disabled for testing UI
-  const [loading, setLoading] = useState(false);
-  const [userExists, setUserExists] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const navigate = useNavigate();
-
-  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации
-  useEffect(() => {
-    // Убираем редирект, просто загружаем страницу
-    setLoading(false);
-    setUserExists(true);
-  }, [navigate]);
-
-  const handleSyncUser = async () => {
-    setSyncing(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session?.user) {
-      const { id, email, user_metadata } = session.user;
-      
-      try {
-        // TODO: Backend API обработает upsert пользователя
-        // Endpoint: POST /api/users/sync
-        await api.post('/api/users/sync', {
-          id,
-          email,
-          full_name: user_metadata.full_name || user_metadata.name || '',
-          avatar_url: user_metadata.avatar_url || user_metadata.picture || '',
-          created_at: new Date().toISOString(),
-        });
-        
-        console.log('✅ Профиль успешно синхронизирован через Backend API');
-        setUserExists(true);
-        // Reload page to show profile
-        window.location.reload();
-        
-      } catch (error: any) {
-        console.error('❌ Ошибка при повторной синхронизации:', error.message);
-        alert('Ошибка: не удалось синхронизировать профиль. Backend API недоступен.');
-      }
-    }
-    
-    setSyncing(false);
-  };
-
-  // TEMPORARY: Disabled loading and userExists checks
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon mx-auto"></div>
-  //         <p className="mt-4 text-muted-foreground">Загрузка...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!userExists) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center px-4">
-  //       <div className="max-w-md w-full space-y-6 text-center">
-  //         <div className="space-y-2">
-  //           <div className="text-6xl mb-4">⚠️</div>
-  //           <h2 className="text-2xl font-bold text-foreground">
-  //             Ошибка: профиль не найден
-  //           </h2>
-  //           <p className="text-muted-foreground">
-  //             Ваш профиль не был найден в базе данных. 
-  //             Попробуйте синхронизировать данные снова.
-  //           </p>
-  //         </div>
-  //         
-  //         <Button
-  //           onClick={handleSyncUser}
-  //           disabled={syncing}
-  //           variant="neon"
-  //           size="lg"
-  //           className="w-full"
-  //         >
-  //           {syncing ? 'Синхронизация...' : 'Повторить синхронизацию'}
-  //         </Button>
-  //         
-  //         <Button
-  //           onClick={() => navigate('/')}
-  //           variant="outline"
-  //           size="lg"
-  //           className="w-full"
-  //         >
-  //           Вернуться на главную
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Header */}
+      <div className="relative z-10 w-full">
+        {/* HERO PROFILE SECTION */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="relative bg-gradient-to-b from-[#00ff00]/5 via-black to-black border-b border-gray-800"
         >
-          <ProfileHeader />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            {/* Profile Header */}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
+              {/* Avatar Section */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="relative"
+              >
+                <div className="relative group">
+                  {/* Animated Ring */}
+                  <svg className="absolute -inset-2 w-[calc(100%+16px)] h-[calc(100%+16px)]" viewBox="0 0 200 200">
+                    <defs>
+                      <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#00ff00" />
+                        <stop offset="50%" stopColor="#00cc00" />
+                        <stop offset="100%" stopColor="#00ff00" />
+                      </linearGradient>
+                    </defs>
+                    <motion.circle
+                      cx="100"
+                      cy="100"
+                      r="95"
+                      fill="none"
+                      stroke="url(#ring-gradient)"
+                      strokeWidth="3"
+                      strokeDasharray="596.9"
+                      strokeDashoffset="149.2"
+                      initial={{ strokeDashoffset: 596.9 }}
+                      animate={{ strokeDashoffset: 149.2 }}
+                      transition={{ duration: 2, ease: "easeOut" }}
+                    />
+                  </svg>
+                  
+                  {/* Avatar */}
+                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-black shadow-2xl shadow-[#00ff00]/20">
+                    <div className="w-full h-full bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center">
+                      <span className="text-5xl sm:text-6xl font-bold text-[#00ff00]">А</span>
+                    </div>
+                  </div>
+                  
+                  {/* Level Badge */}
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5, type: "spring" }}
+                    className="absolute -bottom-2 -right-2 bg-gradient-to-br from-[#00ff00] to-[#00cc00] text-black font-bold rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center border-4 border-black shadow-lg"
+                  >
+                    <span className="text-lg sm:text-xl">3</span>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* User Info */}
+              <div className="flex-1 text-center md:text-left">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-3"
+                >
+                  <div>
+                    <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Александр</h1>
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                      <span className="px-3 py-1 bg-[#00ff00]/20 border border-[#00ff00]/30 rounded-full text-sm font-medium text-[#00ff00]">
+                        Интегратор I
+                      </span>
+                      <span className="text-gray-400 text-sm">•</span>
+                      <span className="text-gray-400 text-sm">Уровень 3</span>
+                      <span className="text-gray-400 text-sm">•</span>
+                      <span className="text-[#00ff00] text-sm font-medium">1,240 XP</span>
+                    </div>
+                  </div>
+
+                  {/* XP Progress Bar */}
+                  <div className="max-w-md mx-auto md:mx-0">
+                    <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                      <span>Прогресс до уровня 4</span>
+                      <span>1,240 / 2,000 XP</span>
+                    </div>
+                    <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "62%" }}
+                        transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+                        className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] rounded-full relative"
+                        style={{ boxShadow: "0 0 10px rgba(0, 255, 0, 0.5)" }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                      </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Quick Stats */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex gap-4 sm:gap-6"
+              >
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-1">12</div>
+                  <div className="text-xs text-gray-400">Уроков</div>
+                </div>
+                <div className="w-px bg-gray-800" />
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#00ff00] mb-1">45%</div>
+                  <div className="text-xs text-gray-400">Прогресс</div>
+                </div>
+                <div className="w-px bg-gray-800" />
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-1">7</div>
+                  <div className="text-xs text-gray-400">Дней</div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Main Content Grid */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column - User Dashboard */}
+        {/* MAIN CONTENT */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {/* Quick Actions & Stats */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="lg:col-span-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8"
           >
-            <UserDashboard />
+            {[
+              { label: "Всего XP", value: "1,240", icon: "📊", color: "green" },
+              { label: "Энергия", value: "78%", icon: "⚡", color: "yellow" },
+              { label: "Стрик", value: "7 дней", icon: "🔥", color: "orange" },
+              { label: "Статус", value: "Онлайн", icon: "🟢", color: "green" }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-[#1a1a24] border border-gray-800 rounded-xl p-4 hover:border-[#00ff00]/50 transition-all duration-300 cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-2xl">{stat.icon}</span>
+                  <div className="w-2 h-2 rounded-full bg-[#00ff00] animate-pulse" />
+                </div>
+                <div className="text-xl sm:text-2xl font-bold text-white mb-1">{stat.value}</div>
+                <div className="text-xs text-gray-400">{stat.label}</div>
+              </motion.div>
+            ))}
           </motion.div>
 
-          {/* Right Column - Stats & Content */}
-          <div className="lg:col-span-8 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <LearningStats />
-            </motion.div>
+          {/* Courses Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mb-8"
+          >
+            <CourseModules />
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <CourseModules />
-            </motion.div>
-          </div>
+          {/* Achievements */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mb-8"
+          >
+            <AchievementsGrid />
+          </motion.div>
+
+          {/* AI Assistant */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            <AIAssistantPanel />
+          </motion.div>
         </div>
-
-        {/* Achievements Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-6"
-        >
-          <AchievementsGrid />
-        </motion.div>
-
-        {/* AI Assistant */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-6"
-        >
-          <AIAssistantPanel />
-        </motion.div>
 
         {/* Footer */}
         <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-12 pt-8 border-t border-gray-800 text-center"
+          transition={{ delay: 0.9 }}
+          className="border-t border-gray-800 py-8 text-center"
         >
-          <div className="space-y-2">
-            <h3 className="text-lg font-bold">
+          <div className="max-w-7xl mx-auto px-4">
+            <h3 className="text-lg font-bold mb-2">
               <span className="text-[#00ff00]">onAI</span>
               <span className="text-white"> Academy</span>
             </h3>
@@ -189,6 +217,17 @@ const Profile = () => {
           </div>
         </motion.footer>
       </div>
+      
+      {/* Добавляем стили для shimmer анимации */}
+      <style>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
     </div>
   );
 };

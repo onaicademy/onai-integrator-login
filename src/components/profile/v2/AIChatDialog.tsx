@@ -830,60 +830,64 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-xl h-[70vh] w-[95vw] sm:w-auto flex flex-col p-0 gap-0 bg-zinc-950 border-[#00ff00]/30 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="max-w-4xl h-[80vh] w-[95vw] sm:w-auto flex flex-col p-0 gap-0 bg-black border-[#00ff00]/50 shadow-2xl shadow-[#00ff00]/20 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-300"
       >
-        <DialogHeader className="px-4 sm:px-6 pt-4 pb-3 border-b border-[#00ff00]/10 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              {/* Аватар AI куратора - компактный */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-800 bg-gradient-to-r from-[#00ff00]/5 to-transparent">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              {/* Аватар AI куратора */}
               <div className="relative flex-shrink-0">
                 <motion.div
-                  className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00ff00] via-[#00cc00] to-[#009900] flex items-center justify-center shadow-[0_0_15px_rgba(0,255,0,0.4)]"
+                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00ff00] via-[#00cc00] to-[#00aa00] flex items-center justify-center border-2 border-[#00ff00]/30"
                   animate={{
                     boxShadow: [
-                      "0 0 15px rgba(0,255,0,0.4)",
-                      "0 0 25px rgba(0,255,0,0.6)",
-                      "0 0 15px rgba(0,255,0,0.4)",
+                      "0 0 20px rgba(0,255,0,0.3)",
+                      "0 0 35px rgba(0,255,0,0.6)",
+                      "0 0 20px rgba(0,255,0,0.3)",
                     ],
                   }}
                   transition={{
                     duration: 2,
                     repeat: Infinity,
+                    ease: "easeInOut",
                   }}
                 >
-                  <Bot className="w-5 h-5 text-black" />
+                  <Bot className="w-7 h-7 text-black" strokeWidth={2.5} />
                 </motion.div>
-                {/* Online индикатор - меньше */}
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-white rounded-full border-2 border-zinc-950 flex items-center justify-center">
+                {/* Online индикатор */}
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-black rounded-full border-2 border-[#00ff00]/50 flex items-center justify-center">
                   <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-[#00ff00]"
+                    className="w-2.5 h-2.5 rounded-full bg-[#00ff00]"
                     animate={{
-                      scale: [1, 1.3, 1],
+                      scale: [1, 1.4, 1],
+                      opacity: [1, 0.6, 1],
                     }}
                     transition={{
                       duration: 1.5,
                       repeat: Infinity,
+                      ease: "easeInOut",
                     }}
                   />
                 </div>
               </div>
               <div className="min-w-0">
-                <DialogTitle className="text-lg font-bold text-white leading-tight">
+                <DialogTitle className="text-2xl font-bold text-white leading-tight mb-1">
                   AI-куратор
                 </DialogTitle>
-                <DialogDescription className="text-gray-400 text-xs leading-tight">
-                  Онлайн • Готов помочь
+                <DialogDescription className="text-gray-400 text-sm leading-tight flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#00ff00] animate-pulse" />
+                  Онлайн • Готов помочь 24/7
                 </DialogDescription>
               </div>
             </div>
-            {/* Компактная кнопка "Новый чат" */}
+            {/* Кнопка "Новый чат" */}
             <motion.button
               onClick={handleNewConversation}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30 hover:bg-[#00ff00]/20 hover:border-[#00ff00]/50 transition-all text-[#00ff00] text-xs font-semibold flex items-center gap-1.5 group"
+              className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold flex items-center gap-2 shadow-lg shadow-[#00ff00]/30 transition-all group"
             >
-              <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
               <span className="hidden sm:inline">Новый чат</span>
               <span className="sm:hidden">Новый</span>
             </motion.button>
@@ -893,14 +897,20 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
         <ScrollArea className="flex-1 px-6 [&>[data-radix-scroll-area-scrollbar]]:bg-transparent" ref={scrollAreaRef}>
           <div className="py-4 space-y-4">
             {isLoadingHistory ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-neon" />
+              <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#00ff00]" />
+                  <p className="text-sm text-gray-400">Загрузка истории...</p>
+                </div>
               </div>
             ) : (
               <>
                 {messages.map((message, index) => (
-                <div
+                <motion.div
                   key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                   className={`flex gap-3 ${
                     message.role === "user" ? "justify-end" : "justify-start"
                   }`}
@@ -908,52 +918,51 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                   {message.role === "assistant" && (
                     <motion.div
                       animate={isTyping && index === messages.length - 1 ? {
-                        scale: [1, 1.1, 1],
+                        scale: [1, 1.08, 1],
                       } : {}}
                       transition={{
                         duration: 1,
                         repeat: isTyping && index === messages.length - 1 ? Infinity : 0,
                         ease: "easeInOut",
                       }}
+                      className="flex-shrink-0"
                     >
-                      <Avatar className="h-8 w-8 border border-neon/30">
-                        <AvatarFallback className="bg-neon/10 relative overflow-hidden">
-                          {/* Анимация "печатает" - пульсирующие точки на последнем сообщении бота */}
-                          {isTyping && index === messages.length - 1 && message.role === "assistant" && (
-                            <motion.div
-                              className="absolute inset-0 flex items-center justify-center gap-0.5"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                            >
-                              {[0, 1, 2].map((i) => (
-                                <motion.div
-                                  key={i}
-                                  className="w-1 h-1 bg-neon rounded-full"
-                                  animate={{
-                                    y: [0, -4, 0],
-                                    opacity: [0.3, 1, 0.3],
-                                  }}
-                                  transition={{
-                                    duration: 0.6,
-                                    repeat: Infinity,
-                                    delay: i * 0.2,
-                                    ease: "easeInOut",
-                                  }}
-                                />
-                              ))}
-                            </motion.div>
-                          )}
-                          <Bot className={`w-4 h-4 text-neon relative z-10 ${isTyping && index === messages.length - 1 && message.role === "assistant" ? 'opacity-50' : ''}`} />
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border border-[#00ff00]/30 flex items-center justify-center relative overflow-hidden">
+                        {/* Анимация "печатает" */}
+                        {isTyping && index === messages.length - 1 && message.role === "assistant" && (
+                          <motion.div
+                            className="absolute inset-0 flex items-center justify-center gap-0.5"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                          >
+                            {[0, 1, 2].map((i) => (
+                              <motion.div
+                                key={i}
+                                className="w-1.5 h-1.5 bg-[#00ff00] rounded-full"
+                                animate={{
+                                  y: [0, -4, 0],
+                                  opacity: [0.3, 1, 0.3],
+                                }}
+                                transition={{
+                                  duration: 0.6,
+                                  repeat: Infinity,
+                                  delay: i * 0.2,
+                                  ease: "easeInOut",
+                                }}
+                              />
+                            ))}
+                          </motion.div>
+                        )}
+                        <Bot className={`w-5 h-5 text-[#00ff00] relative z-10 ${isTyping && index === messages.length - 1 && message.role === "assistant" ? 'opacity-30' : ''}`} />
+                      </div>
                     </motion.div>
                   )}
 
                   <div
-                    className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                    className={`max-w-[75%] rounded-2xl px-4 py-3 ${
                       message.role === "user"
-                        ? "bg-neon/20 text-foreground border border-neon/30"
-                        : "bg-secondary text-foreground border border-border"
+                        ? "bg-[#00ff00] text-black font-medium shadow-lg shadow-[#00ff00]/20"
+                        : "bg-[#1a1a24] text-white border border-gray-800"
                     }`}
                   >
                     {/* Message content with Markdown support */}
@@ -969,12 +978,12 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                             
                             // Жирный текст (**текст**)
                             strong: ({ children }) => (
-                              <strong className="font-bold text-neon">{children}</strong>
+                              <strong className="font-bold text-[#00ff00]">{children}</strong>
                             ),
                             
                             // Курсив (*текст*)
                             em: ({ children }) => (
-                              <em className="italic text-foreground/90">{children}</em>
+                              <em className="italic text-gray-300">{children}</em>
                             ),
                             
                             // Заголовки

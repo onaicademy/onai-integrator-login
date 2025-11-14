@@ -22,11 +22,22 @@ const upload = multer({
 export async function processFile(req: Request, res: Response) {
   try {
     console.log('[FileController] 🔍 Начало обработки файла...');
+    console.log('[FileController] ========== REQUEST DEBUG ==========');
     console.log('[FileController] req.file:', !!req.file);
     console.log('[FileController] req.body:', req.body);
+    console.log('[FileController] req.headers:', req.headers);
+    console.log('[FileController] Object.keys(req):', Object.keys(req).filter(k => !k.startsWith('_')));
+    console.log('[FileController] req.files:', (req as any).files);
+    console.log('[FileController] Content-Type:', req.get('Content-Type'));
+    console.log('[FileController] ========================================');
     
     if (!req.file) {
       console.error('[FileController] ❌ Файл не найден в запросе');
+      console.error('[FileController] ❌ Возможные причины:');
+      console.error('[FileController]    1. Multer не смог распарсить multipart/form-data');
+      console.error('[FileController]    2. Поле формы называется не "file"');
+      console.error('[FileController]    3. Content-Type заголовок неверный');
+      console.error('[FileController]    4. Файл больше лимита (10MB)');
       return res.status(400).json({ error: 'No file provided' });
     }
 
