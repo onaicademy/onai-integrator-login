@@ -74,17 +74,17 @@ export const AchievementsGrid = () => {
         };
       case "rare":
         return {
-          border: "border-[hsl(var(--cyber-blue))]/50",
-          bg: "from-[hsl(var(--cyber-blue))]/20 to-[hsl(var(--cyber-blue))]/5",
-          glow: "bg-[hsl(var(--cyber-blue))]/20",
-          text: "text-[hsl(var(--cyber-blue))]",
+          border: "border-blue-500/50",
+          bg: "from-blue-500/20 to-blue-500/5",
+          glow: "bg-blue-500/20",
+          text: "text-blue-400",
         };
       default:
         return {
-          border: "border-neon/50",
-          bg: "from-neon/20 to-neon/5",
-          glow: "bg-neon/20",
-          text: "text-neon",
+          border: "border-[#00ff00]/50",
+          bg: "from-[#00ff00]/20 to-[#00cc00]/5",
+          glow: "bg-[#00ff00]/20",
+          text: "text-[#00ff00]",
         };
     }
   };
@@ -92,8 +92,8 @@ export const AchievementsGrid = () => {
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Достижения</h3>
-        <span className="text-[10px] sm:text-xs text-muted-foreground">
+        <h3 className="text-base sm:text-lg md:text-xl font-bold text-white">Достижения</h3>
+        <span className="text-[10px] sm:text-xs text-gray-400">
           {achievements.filter(a => a.completed).length} из {achievements.length}
         </span>
       </div>
@@ -113,10 +113,10 @@ export const AchievementsGrid = () => {
               className="group relative"
             >
               <div
-                className={`relative bg-[#1B1B1B]/80 backdrop-blur-md border rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-300 ${
+                className={`relative bg-[#1a1a24] backdrop-blur-md border rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-300 ${
                   achievement.completed
                     ? `${colors.border} hover:${colors.border.replace("/50", "/80")}`
-                    : "border-border/30 opacity-50 hover:opacity-70"
+                    : "border-gray-800 opacity-50 hover:opacity-70"
                 }`}
               >
                 {/* Glow effect on hover */}
@@ -132,12 +132,12 @@ export const AchievementsGrid = () => {
                     className={`p-2 sm:p-3 rounded-xl border transition-all duration-300 ${
                       achievement.completed
                         ? `bg-gradient-to-br ${colors.bg} ${colors.border}`
-                        : "bg-secondary/50 border-border/30"
+                        : "bg-black/40 border-gray-800"
                     }`}
                   >
                     <Icon
                       className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                        achievement.completed ? colors.text : "text-muted-foreground"
+                        achievement.completed ? colors.text : "text-gray-600"
                       }`}
                     />
                   </div>
@@ -146,7 +146,7 @@ export const AchievementsGrid = () => {
                   <div className="text-center space-y-0.5">
                     <p
                       className={`text-[10px] sm:text-xs font-bold leading-tight ${
-                        achievement.completed ? "text-foreground" : "text-muted-foreground"
+                        achievement.completed ? "text-white" : "text-gray-600"
                       }`}
                     >
                       {achievement.title}
@@ -160,9 +160,9 @@ export const AchievementsGrid = () => {
                 </div>
 
                 {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-card border border-border/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-20 backdrop-blur-md max-w-[200px]">
-                  <p className="text-[10px] sm:text-xs text-foreground font-medium truncate">{achievement.title}</p>
-                  <p className="text-[8px] sm:text-[10px] text-muted-foreground truncate">{achievement.description}</p>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-20 backdrop-blur-md max-w-[200px]">
+                  <p className="text-[10px] sm:text-xs text-white font-medium truncate">{achievement.title}</p>
+                  <p className="text-[8px] sm:text-[10px] text-gray-400 truncate">{achievement.description}</p>
                 </div>
               </div>
             </motion.div>

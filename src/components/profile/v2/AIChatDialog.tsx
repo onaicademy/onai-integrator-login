@@ -335,6 +335,13 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
       }, 45000);
       
       try {
+        console.log('📎 [AIChatDialog] Передаём attachments в sendMessageToAI:', currentAttachments.map(att => ({
+          name: att.name,
+          hasFile: !!att.file,
+          fileSize: att.file?.size || 0,
+          fileType: att.file?.type || att.type,
+        })));
+        
         const response = await sendMessageToAI(
           messageToSend,
           currentAttachments,

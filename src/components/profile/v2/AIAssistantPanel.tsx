@@ -24,7 +24,7 @@ export const AIAssistantPanel = () => {
     <div className="relative">
       <motion.div
         whileHover={{ scale: 1.01 }}
-        className="relative bg-gradient-to-br from-[#1B1B1B]/80 via-[#1B1B1B]/80 to-[#1B1B1B]/80 backdrop-blur-md border border-neon/30 rounded-2xl p-6 sm:p-8 overflow-hidden"
+        className="relative bg-[#1a1a24] backdrop-blur-md border border-[#00ff00]/30 rounded-2xl p-6 sm:p-8 overflow-hidden hover:border-[#00ff00]/50 transition-all duration-300"
       >
         {/* Animated background gradients */}
         <motion.div
@@ -37,7 +37,7 @@ export const AIAssistantPanel = () => {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute top-0 right-0 w-64 h-64 bg-neon/20 rounded-full blur-3xl"
+          className="absolute top-0 right-0 w-64 h-64 bg-[#00ff00]/20 rounded-full blur-3xl"
         />
         <motion.div
           animate={{
@@ -50,7 +50,7 @@ export const AIAssistantPanel = () => {
             ease: "easeInOut",
             delay: 1.5,
           }}
-          className="absolute bottom-0 left-0 w-64 h-64 bg-[hsl(var(--cyber-blue))]/20 rounded-full blur-3xl"
+          className="absolute bottom-0 left-0 w-64 h-64 bg-[#00ff00]/20 rounded-full blur-3xl"
         />
 
         <div className="relative z-10 space-y-6">
@@ -69,9 +69,9 @@ export const AIAssistantPanel = () => {
               }}
               className="relative"
             >
-              <div className="absolute inset-0 bg-neon/30 rounded-2xl blur-xl" />
-              <div className="relative p-4 bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 border-2 border-neon/40 rounded-2xl">
-                <Bot className="w-10 h-10 sm:w-12 sm:h-12 text-neon" strokeWidth={1.5} />
+              <div className="absolute inset-0 bg-[#00ff00]/30 rounded-2xl blur-xl" />
+              <div className="relative p-4 bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border-2 border-[#00ff00]/40 rounded-2xl">
+                <Bot className="w-10 h-10 sm:w-12 sm:h-12 text-[#00ff00]" strokeWidth={1.5} />
                 
                 {/* Sparkle effects */}
                 <motion.div
@@ -86,7 +86,7 @@ export const AIAssistantPanel = () => {
                   }}
                   className="absolute -top-1 -right-1"
                 >
-                  <Sparkles className="w-4 h-4 text-[hsl(var(--cyber-blue))]" />
+                  <Sparkles className="w-4 h-4 text-[#00ff00]" />
                 </motion.div>
               </div>
             </motion.div>
@@ -94,18 +94,18 @@ export const AIAssistantPanel = () => {
             {/* Content */}
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-2xl sm:text-3xl font-bold text-foreground">AI-помощник</h3>
-                <span className="px-2 py-0.5 bg-neon/20 border border-neon/30 rounded-full text-xs font-medium text-neon">
+                <h3 className="text-2xl sm:text-3xl font-bold text-white">AI-помощник</h3>
+                <span className="px-2 py-0.5 bg-[#00ff00]/20 border border-[#00ff00]/30 rounded-full text-xs font-medium text-[#00ff00]">
                   Beta
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">Персональный наставник</p>
+              <p className="text-sm text-gray-400">Персональный наставник</p>
             </div>
           </div>
 
           {/* Description */}
           <div className="space-y-3">
-            <p className="text-foreground leading-relaxed">
+            <p className="text-white leading-relaxed">
               Твой персональный AI-наставник помогает быстрее прокачивать навыки.
               Активируй интеллектуальные подсказки и начни обучение с поддержкой ИИ.
             </p>
@@ -121,10 +121,10 @@ export const AIAssistantPanel = () => {
                 return (
                   <div
                     key={index}
-                    className="flex items-center gap-2 px-3 py-2 bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-lg"
+                    className="flex items-center gap-2 px-3 py-2 bg-black/40 backdrop-blur-sm border border-gray-800 rounded-lg hover:border-[#00ff00]/50 transition-colors"
                   >
-                    <Icon className="w-4 h-4 text-neon flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground">{feature.text}</span>
+                    <Icon className="w-4 h-4 text-[#00ff00] flex-shrink-0" />
+                    <span className="text-xs text-gray-400">{feature.text}</span>
                   </div>
                 );
               })}
@@ -139,9 +139,9 @@ export const AIAssistantPanel = () => {
             <Button
               onClick={handleActivate}
               disabled={isActivating}
-              className="w-full bg-gradient-to-r from-neon via-neon to-[hsl(var(--cyber-blue))] text-background hover:from-neon/90 hover:to-[hsl(var(--cyber-blue))]/90 font-bold py-6 text-base sm:text-lg relative overflow-hidden group disabled:opacity-70"
+              className="w-full bg-gradient-to-r from-[#00ff00] via-[#00ff00] to-[#00cc00] text-black hover:from-[#00cc00] hover:to-[#00aa00] font-bold py-6 text-base sm:text-lg relative overflow-hidden group disabled:opacity-70"
               style={{
-                boxShadow: "0 0 30px hsl(var(--neon) / 0.4), 0 0 15px hsl(var(--cyber-blue) / 0.3)",
+                boxShadow: "0 0 30px rgba(0, 255, 0, 0.4), 0 0 15px rgba(0, 255, 0, 0.3)",
               }}
             >
               {isActivating ? (

@@ -84,13 +84,26 @@ export async function processFile(
   analysis?: string;
 }> {
   try {
-    console.log(`📎 Обрабатываем файл: ${file.name}, размер: ${file.size} байт`);
+    console.log(`📎 [processFile] Получен файл:`, {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified,
+    });
+
+    // ✅ КРИТИЧЕСКИ ВАЖНО: проверяем что файл НЕ ПУСТОЙ
+    if (!file || file.size === 0) {
+      throw new Error(`Файл ${file?.name || 'Unknown'} пустой или поврежден!`);
+    }
 
     const formData = new FormData();
     formData.append('file', file);
     if (userQuestion) {
       formData.append('userQuestion', userQuestion);
     }
+
+    console.log(`📎 [processFile] FormData создан, файл добавлен`);
+    console.log(`📎 [processFile] Отправляем на Backend: /api/files/process`);
 
     // ✅ НЕ устанавливаем Content-Type вручную!
     // Браузер автоматически добавит "multipart/form-data; boundary=..."
@@ -136,11 +149,20 @@ export async function sendMessageToAI(
     // Обработка файлов (если есть)
     let finalMessage = message;
     if (attachments && attachments.length > 0) {
-      console.log(`📎 Обрабатываем ${attachments.length} файл(ов)...`);
+      console.log(`📎 [sendMessageToAI] Получено ${attachments.length} файл(ов)`);
+      console.log(`📎 [sendMessageToAI] Детали attachments:`, attachments.map(att => ({
+        name: att.name,
+        type: att.type,
+        hasFile: !!att.file,
+        fileSize: att.file?.size || 0,
+      })));
       
       for (const attachment of attachments) {
+        console.log(`📎 [sendMessageToAI] Обрабатываем файл: ${attachment.name}`);
+        
         if (attachment.file) {
           try {
+            console.log(`📎 [sendMessageToAI] Вызываем processFile для ${attachment.name}`);
             const processed = await processFile(attachment.file, message);
             
             if (processed.type === 'image') {
