@@ -623,15 +623,15 @@ export default function Activity() {
             description="Источники трафика и конверсии"
             icon={MousePointer}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Источники трафика - Pie Chart */}
-              <Card className="bg-card border-border">
+              <Card className="bg-[#1a1a24] border-gray-800">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
+                    <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00]" />
                     Источники трафика
                   </CardTitle>
-                  <CardDescription>Распределение по каналам привлечения</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm text-gray-400">Распределение по каналам привлечения</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
@@ -652,10 +652,12 @@ export default function Activity() {
                       </Pie>
                       <RechartsTooltip 
                         contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
+                          backgroundColor: '#1a1a24', 
+                          border: '1px solid #333',
+                          borderRadius: '8px',
+                          color: '#fff'
                         }}
+                        labelStyle={{ color: '#fff' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -663,7 +665,7 @@ export default function Activity() {
               </Card>
 
               {/* Метрики конверсии */}
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <StatCard
                   title="Bounce Rate"
                   value={`${marketingData.bounce_rate}%`}
@@ -691,38 +693,38 @@ export default function Activity() {
                   tooltip="Процент посетителей, ставших активными пользователями"
                   gradientFrom="from-green-500/10"
                   gradientTo="to-green-500/5"
-                  iconColor="text-green-500"
+                  iconColor="text-[#00ff00]"
                 />
               </div>
             </div>
           </ActivitySection>
 
           {/* Users Table */}
-          <Card className="bg-card border-border">
+          <Card className="bg-[#1a1a24] border-gray-800">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00]" />
                     Пользователи платформы
                   </CardTitle>
-                  <CardDescription className="mt-1">
+                  <CardDescription className="mt-1 text-xs sm:text-sm text-gray-400">
                     Список всех зарегистрированных пользователей с базовой статистикой
                   </CardDescription>
                 </div>
-                <Badge variant="secondary" className="text-sm px-3 py-1">
+                <Badge variant="secondary" className="text-xs sm:text-sm px-3 py-1 bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30">
                   Всего: {users.length}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               {users.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-4">
-                  <div className="p-4 bg-primary/10 rounded-full mb-4">
-                    <Users className="h-16 w-16 text-primary" />
+                <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+                  <div className="p-4 bg-[#00ff00]/10 rounded-full mb-4 border border-[#00ff00]/30">
+                    <Users className="h-12 w-12 sm:h-16 sm:w-16 text-[#00ff00]" />
                   </div>
-                  <p className="text-foreground text-lg font-medium">Пользователи не найдены</p>
-                  <p className="text-muted-foreground text-sm mt-2 text-center max-w-sm">
+                  <p className="text-white text-base sm:text-lg font-medium">Пользователи не найдены</p>
+                  <p className="text-gray-400 text-xs sm:text-sm mt-2 text-center max-w-sm">
                     Зарегистрированные пользователи будут отображаться здесь
                   </p>
                 </div>
@@ -730,29 +732,35 @@ export default function Activity() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-border hover:bg-transparent">
-                        <TableHead className="text-muted-foreground">Email</TableHead>
-                        <TableHead className="text-muted-foreground">Имя</TableHead>
-                        <TableHead className="text-muted-foreground">Роль</TableHead>
-                        <TableHead className="text-muted-foreground">Регистрация</TableHead>
-                        <TableHead className="text-muted-foreground">Действия</TableHead>
+                      <TableRow className="border-gray-800 hover:bg-transparent">
+                        <TableHead className="text-gray-400 text-xs sm:text-sm">Email</TableHead>
+                        <TableHead className="text-gray-400 text-xs sm:text-sm">Имя</TableHead>
+                        <TableHead className="text-gray-400 text-xs sm:text-sm">Роль</TableHead>
+                        <TableHead className="text-gray-400 text-xs sm:text-sm">Регистрация</TableHead>
+                        <TableHead className="text-gray-400 text-xs sm:text-sm">Действия</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {users.map((user) => (
-                        <TableRow key={user.id} className="border-border hover:bg-muted/50 transition-colors">
-                          <TableCell className="font-medium text-foreground">
+                        <TableRow key={user.id} className="border-gray-800 hover:bg-[#00ff00]/5 transition-colors">
+                          <TableCell className="font-medium text-white text-xs sm:text-sm">
                             {user.email || 'Не указан'}
                           </TableCell>
-                          <TableCell className="text-foreground">
+                          <TableCell className="text-white text-xs sm:text-sm">
                             {user.full_name || 'Не указано'}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                            <Badge 
+                              variant={user.role === 'admin' ? 'default' : 'secondary'}
+                              className={cn(
+                                "text-xs",
+                                user.role === 'admin' ? 'bg-[#00ff00] text-black' : 'bg-gray-700 text-white'
+                              )}
+                            >
                               {user.role || 'student'}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-gray-400 text-xs sm:text-sm">
                             {format(new Date(user.created_at), 'd MMM yyyy')}
                           </TableCell>
                           <TableCell>
@@ -761,13 +769,13 @@ export default function Activity() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="hover:bg-primary/10 hover:text-primary"
+                                  className="hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white"
                                   onClick={() => handleViewUser(user)}
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Детали пользователя</TooltipContent>
+                              <TooltipContent className="bg-[#1a1a24] border-gray-700 text-white">Детали пользователя</TooltipContent>
                             </Tooltip>
                           </TableCell>
                         </TableRow>
@@ -782,21 +790,21 @@ export default function Activity() {
 
         {/* User Details Modal */}
         <Dialog open={showUserModal} onOpenChange={setShowUserModal}>
-          <DialogContent className="bg-card border-border max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-[#1a1a24] border-gray-800 max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-2xl">{selectedUser?.full_name || selectedUser?.email || 'Пользователь'}</DialogTitle>
-              <DialogDescription>Детальная информация о пользователе и его прогрессе</DialogDescription>
+              <DialogTitle className="text-xl sm:text-2xl text-white">{selectedUser?.full_name || selectedUser?.email || 'Пользователь'}</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm text-gray-400">Детальная информация о пользователе и его прогрессе</DialogDescription>
             </DialogHeader>
             {selectedUser && (
               <Tabs defaultValue="overview" className="mt-4">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="overview">Обзор</TabsTrigger>
-                  <TabsTrigger value="achievements">Достижения</TabsTrigger>
-                  <TabsTrigger value="diagnostics">Диагностика</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 bg-black border border-gray-800">
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
+                  <TabsTrigger value="achievements" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Достижения</TabsTrigger>
+                  <TabsTrigger value="diagnostics" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Диагностика</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                     <StatCard
                       title="Всего XP"
                       value={selectedUser.stats?.total_xp || 0}
@@ -844,27 +852,33 @@ export default function Activity() {
                   <div className="space-y-3">
                     {userAchievements.length > 0 ? (
                       userAchievements.map((achievement) => (
-                        <div key={achievement.id} className="flex items-center gap-3 p-3 bg-card/50 rounded-lg border border-border">
+                        <div key={achievement.id} className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-800 hover:border-[#00ff00]/30 transition-colors">
                           <Award className={cn(
-                            "h-8 w-8",
-                            achievement.completed ? "text-yellow-500" : "text-muted-foreground"
+                            "h-6 w-6 sm:h-8 sm:w-8",
+                            achievement.completed ? "text-yellow-500" : "text-gray-600"
                           )} />
                           <div className="flex-1">
-                            <h4 className="font-medium">{achievement.title}</h4>
-                            <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                            <h4 className="font-medium text-white text-sm sm:text-base">{achievement.title}</h4>
+                            <p className="text-xs sm:text-sm text-gray-400">{achievement.description}</p>
                             {achievement.unlocked_at && (
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="text-xs text-gray-500 mt-1">
                                 Получено: {format(new Date(achievement.unlocked_at), 'd MMM yyyy')}
                               </p>
                             )}
                           </div>
-                          <Badge variant={achievement.completed ? "default" : "secondary"}>
+                          <Badge 
+                            variant={achievement.completed ? "default" : "secondary"}
+                            className={cn(
+                              "text-xs",
+                              achievement.completed ? "bg-[#00ff00] text-black" : "bg-gray-700 text-white"
+                            )}
+                          >
                             {achievement.completed ? "✓ Получено" : "Не получено"}
                           </Badge>
                         </div>
                       ))
                     ) : (
-                      <p className="text-center text-muted-foreground py-8">Нет данных о достижениях</p>
+                      <p className="text-center text-gray-400 py-8 text-sm">Нет данных о достижениях</p>
                     )}
                   </div>
                 </TabsContent>
@@ -872,39 +886,45 @@ export default function Activity() {
                 <TabsContent value="diagnostics" className="mt-4">
                   {userDiagnostics ? (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-card/50 rounded-lg border border-border">
-                          <p className="text-sm text-muted-foreground">Уроков завершено</p>
-                          <p className="text-2xl font-bold mt-1">{userDiagnostics.lessons_completed}</p>
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div className="p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800">
+                          <p className="text-xs sm:text-sm text-gray-400">Уроков завершено</p>
+                          <p className="text-xl sm:text-2xl font-bold mt-1 text-white">{userDiagnostics.lessons_completed}</p>
                         </div>
-                        <div className="p-4 bg-card/50 rounded-lg border border-border">
-                          <p className="text-sm text-muted-foreground">Минут в день</p>
-                          <p className="text-2xl font-bold mt-1">{userDiagnostics.avg_minutes_per_day}</p>
+                        <div className="p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800">
+                          <p className="text-xs sm:text-sm text-gray-400">Минут в день</p>
+                          <p className="text-xl sm:text-2xl font-bold mt-1 text-white">{userDiagnostics.avg_minutes_per_day}</p>
                         </div>
-                        <div className="p-4 bg-card/50 rounded-lg border border-border">
-                          <p className="text-sm text-muted-foreground">Текущий стрик</p>
-                          <p className="text-2xl font-bold mt-1">{userDiagnostics.current_streak} дней</p>
+                        <div className="p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800">
+                          <p className="text-xs sm:text-sm text-gray-400">Текущий стрик</p>
+                          <p className="text-xl sm:text-2xl font-bold mt-1 text-white">{userDiagnostics.current_streak} дней</p>
                         </div>
-                        <div className="p-4 bg-card/50 rounded-lg border border-border">
-                          <p className="text-sm text-muted-foreground">Низкая вовлечённость</p>
-                          <Badge variant={userDiagnostics.flag_low_engagement ? "destructive" : "default"}>
+                        <div className="p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800">
+                          <p className="text-xs sm:text-sm text-gray-400">Низкая вовлечённость</p>
+                          <Badge 
+                            variant={userDiagnostics.flag_low_engagement ? "destructive" : "default"}
+                            className={cn(
+                              "mt-1 text-xs",
+                              userDiagnostics.flag_low_engagement ? "bg-red-600 text-white" : "bg-[#00ff00] text-black"
+                            )}
+                          >
                             {userDiagnostics.flag_low_engagement ? "Да" : "Нет"}
                           </Badge>
                         </div>
                       </div>
                       {userDiagnostics.stuck_lessons.length > 0 && (
-                        <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                          <h4 className="font-medium text-yellow-500 mb-2">Застрявшие уроки:</h4>
-                          <p className="text-sm">{userDiagnostics.stuck_lessons.join(', ')}</p>
+                        <div className="p-3 sm:p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                          <h4 className="font-medium text-yellow-500 mb-2 text-sm sm:text-base">Застрявшие уроки:</h4>
+                          <p className="text-xs sm:text-sm text-white">{userDiagnostics.stuck_lessons.join(', ')}</p>
                         </div>
                       )}
-                      <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                        <h4 className="font-medium text-primary mb-2">Рекомендация AI:</h4>
-                        <p className="text-sm">{userDiagnostics.recommendation}</p>
+                      <div className="p-3 sm:p-4 bg-[#00ff00]/10 rounded-lg border border-[#00ff00]/20">
+                        <h4 className="font-medium text-[#00ff00] mb-2 text-sm sm:text-base">Рекомендация AI:</h4>
+                        <p className="text-xs sm:text-sm text-white">{userDiagnostics.recommendation}</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-muted-foreground py-8">Нет данных диагностики</p>
+                    <p className="text-center text-gray-400 py-8 text-sm">Нет данных диагностики</p>
                   )}
                 </TabsContent>
               </Tabs>
@@ -914,68 +934,68 @@ export default function Activity() {
 
         {/* Top Students Modal */}
         <Dialog open={showTopStudentsModal} onOpenChange={setShowTopStudentsModal}>
-          <DialogContent className="bg-card border-border max-w-6xl max-h-[90vh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-300">
+          <DialogContent className="bg-[#1a1a24] border-gray-800 max-w-6xl max-h-[90vh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-300">
             <DialogHeader>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                <Award className="h-6 w-6 text-yellow-500" />
+              <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2 text-white">
+                <Award className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
                 Топ 15 Учеников Платформы
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm text-gray-400">
                 Лучшие ученики по совокупности показателей: XP, завершённые уроки, вовлечённость и отсутствие пропусков
               </DialogDescription>
             </DialogHeader>
             
-            <div className="mt-6 rounded-lg border border-border/50 overflow-hidden">
+            <div className="mt-4 sm:mt-6 rounded-lg border border-gray-800 overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-border/50 bg-muted/30">
-                    <TableHead className="w-12 font-semibold">#</TableHead>
-                    <TableHead className="font-semibold">Ученик</TableHead>
-                    <TableHead className="text-right font-semibold">
+                  <TableRow className="border-gray-800 bg-black/50">
+                    <TableHead className="w-12 font-semibold text-gray-400 text-xs sm:text-sm">#</TableHead>
+                    <TableHead className="font-semibold text-gray-400 text-xs sm:text-sm">Ученик</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-end gap-1">
-                        <Zap className="h-3 w-3" />
+                        <Zap className="h-3 w-3 text-[#00ff00]" />
                         XP
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <Flame className="h-3 w-3" />
+                        <Flame className="h-3 w-3 text-orange-500" />
                         Стрик
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <BookOpen className="h-3 w-3" />
+                        <BookOpen className="h-3 w-3 text-blue-500" />
                         Уроков
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
+                        <MessageSquare className="h-3 w-3 text-purple-500" />
                         Вопросов
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <Target className="h-3 w-3" />
+                        <Target className="h-3 w-3 text-cyan-500" />
                         Продуктивность
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <Trophy className="h-3 w-3" />
+                        <Trophy className="h-3 w-3 text-yellow-500" />
                         Оценка
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <Heart className="h-3 w-3" />
+                        <Heart className="h-3 w-3 text-pink-500" />
                         Поведение
                       </div>
                     </TableHead>
-                    <TableHead className="text-center font-semibold">
+                    <TableHead className="text-center font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        <Clock className="h-3 w-3" />
+                        <Clock className="h-3 w-3 text-gray-500" />
                         Активность
                       </div>
                     </TableHead>
@@ -995,60 +1015,62 @@ export default function Activity() {
                     return (
                       <TableRow 
                         key={student.id} 
-                        className="border-border/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
+                        className="border-gray-800 hover:bg-[#00ff00]/5 transition-all duration-200 cursor-pointer group"
                         onClick={() => handleViewUser(student)}
                       >
                         <TableCell className="font-medium">
                           <Badge 
                             variant={index < 3 ? "default" : "secondary"}
                             className={cn(
-                              "transition-transform group-hover:scale-110",
+                              "transition-transform group-hover:scale-110 text-xs",
                               index === 0 && "bg-yellow-500/20 text-yellow-500 border-yellow-500/50",
                               index === 1 && "bg-gray-400/20 text-gray-400 border-gray-400/50",
-                              index === 2 && "bg-orange-600/20 text-orange-600 border-orange-600/50"
+                              index === 2 && "bg-orange-600/20 text-orange-600 border-orange-600/50",
+                              index >= 3 && "bg-gray-700 text-white"
                             )}
                           >
                             {index + 1}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl">👤</span>
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <span className="text-xl sm:text-2xl">👤</span>
                             <div>
-                              <p className="font-medium">{student.full_name || student.email}</p>
+                              <p className="font-medium text-white text-xs sm:text-sm">{student.full_name || student.email}</p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Zap className="h-4 w-4 text-yellow-500" />
-                            <span className="font-bold text-yellow-500">{xp.toLocaleString()}</span>
+                            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
+                            <span className="font-bold text-yellow-500 text-xs sm:text-sm">{xp.toLocaleString()}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <Flame className="h-4 w-4 text-orange-500" />
-                            <span className="font-medium">{streak}</span>
+                            <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />
+                            <span className="font-medium text-white text-xs sm:text-sm">{streak}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                          <Badge variant="outline" className="bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30 text-xs">
                             {modulesCompleted}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <MessageSquare className="h-4 w-4 text-blue-500" />
-                            <span className="font-medium">{questionsAsked}</span>
+                            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                            <span className="font-medium text-white text-xs sm:text-sm">{questionsAsked}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <Target className="h-4 w-4 text-purple-500" />
+                            <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
                             <Badge 
                               variant="outline"
                               className={cn(
-                                productivity >= 90 && "bg-green-500/10 text-green-500 border-green-500/30",
+                                "text-xs",
+                                productivity >= 90 && "bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30",
                                 productivity >= 80 && productivity < 90 && "bg-blue-500/10 text-blue-500 border-blue-500/30",
                                 productivity < 80 && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
                               )}
@@ -1059,15 +1081,16 @@ export default function Activity() {
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <Trophy className="h-4 w-4 text-yellow-500" />
-                            <span className="font-bold">{rating > 0 ? rating.toFixed(1) : '-'}</span>
+                            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
+                            <span className="font-bold text-white text-xs sm:text-sm">{rating > 0 ? rating.toFixed(1) : '-'}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge 
                             variant="outline"
                             className={cn(
-                              behavior === 'Отличное' && "bg-green-500/10 text-green-500 border-green-500/30",
+                              "text-xs",
+                              behavior === 'Отличное' && "bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30",
                               behavior === 'Хорошее' && "bg-blue-500/10 text-blue-500 border-blue-500/30",
                               behavior === 'Среднее' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
                             )}
@@ -1075,7 +1098,7 @@ export default function Activity() {
                             {behavior}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-center text-sm text-muted-foreground">
+                        <TableCell className="text-center text-xs sm:text-sm text-gray-400">
                           {lastActive}
                         </TableCell>
                       </TableRow>
@@ -1085,36 +1108,36 @@ export default function Activity() {
               </Table>
             </div>
 
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
+            <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#00ff00]/5 rounded-lg border border-[#00ff00]/20">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <p className="text-sm font-medium">
-                    Средняя продуктивность топ-15: <span className="text-primary font-bold">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.completion_rate || 0), 0) / topStudents.length).toFixed(0) : 0}%</span>
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00]" />
+                  <p className="text-xs sm:text-sm font-medium text-white">
+                    Средняя продуктивность топ-15: <span className="text-[#00ff00] font-bold">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.completion_rate || 0), 0) / topStudents.length).toFixed(0) : 0}%</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-yellow-500" />
-                  <p className="text-sm font-medium">
+                  <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                  <p className="text-xs sm:text-sm font-medium text-white">
                     Суммарный XP: <span className="text-yellow-500 font-bold">{topStudents.reduce((acc, s) => acc + (s.stats?.total_xp || 0), 0).toLocaleString()}</span>
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20 text-center">
-                  <BookOpen className="h-5 w-5 text-green-500 mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Всего уроков</p>
-                  <p className="text-lg font-bold text-green-500">{topStudents.reduce((acc, s) => acc + (s.stats?.lessons_completed || 0), 0)}</p>
+              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-[#00ff00]/10 rounded-lg border border-[#00ff00]/20 text-center">
+                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Всего уроков</p>
+                  <p className="text-base sm:text-lg font-bold text-[#00ff00]">{topStudents.reduce((acc, s) => acc + (s.stats?.lessons_completed || 0), 0)}</p>
                 </div>
-                <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 text-center">
-                  <Flame className="h-5 w-5 text-orange-500 mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Средний стрик</p>
-                  <p className="text-lg font-bold text-orange-500">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.current_streak || 0), 0) / topStudents.length).toFixed(0) : 0} дней</p>
+                <div className="p-2 sm:p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 text-center">
+                  <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Средний стрик</p>
+                  <p className="text-base sm:text-lg font-bold text-orange-500">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.current_streak || 0), 0) / topStudents.length).toFixed(0) : 0} дней</p>
                 </div>
-                <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20 text-center">
-                  <MessageSquare className="h-5 w-5 text-blue-500 mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Всего вопросов</p>
-                  <p className="text-lg font-bold text-blue-500">{topStudents.reduce((acc, s) => acc + (s.stats?.questions_asked || 0), 0)}</p>
+                <div className="p-2 sm:p-3 bg-blue-500/10 rounded-lg border border-blue-500/20 text-center">
+                  <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Всего вопросов</p>
+                  <p className="text-base sm:text-lg font-bold text-blue-500">{topStudents.reduce((acc, s) => acc + (s.stats?.questions_asked || 0), 0)}</p>
                 </div>
               </div>
             </div>

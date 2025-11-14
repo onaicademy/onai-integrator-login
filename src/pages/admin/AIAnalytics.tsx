@@ -307,18 +307,19 @@ export default function AIAnalytics() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto">
       {/* Заголовок */}
       <motion.div
-        className="flex items-center justify-between mb-8"
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[hsl(var(--cyber-blue))] to-neon bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white">
             🤖 AI-аналитика
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">
             Мониторинг AI-систем и студентов
           </p>
         </div>
@@ -327,18 +328,24 @@ export default function AIAnalytics() {
           <Button
             variant={period === "day" ? "default" : "outline"}
             onClick={() => setPeriod("day")}
+            className={period === "day" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-gray-700 text-white hover:bg-gray-800"}
+            size="sm"
           >
             День
           </Button>
           <Button
             variant={period === "week" ? "default" : "outline"}
             onClick={() => setPeriod("week")}
+            className={period === "week" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-gray-700 text-white hover:bg-gray-800"}
+            size="sm"
           >
             Неделя
           </Button>
           <Button
             variant={period === "month" ? "default" : "outline"}
             onClick={() => setPeriod("month")}
+            className={period === "month" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-gray-700 text-white hover:bg-gray-800"}
+            size="sm"
           >
             Месяц
           </Button>
@@ -381,32 +388,32 @@ export default function AIAnalytics() {
 
       {/* Вкладки */}
       <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Обзор</TabsTrigger>
-          <TabsTrigger value="insights">Инсайты</TabsTrigger>
-          <TabsTrigger value="students">Студенты</TabsTrigger>
-          <TabsTrigger value="conflicts">Конфликты бота</TabsTrigger>
+        <TabsList className="bg-[#1a1a24] border border-gray-800">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
+          <TabsTrigger value="insights" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Инсайты</TabsTrigger>
+          <TabsTrigger value="students" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Студенты</TabsTrigger>
+          <TabsTrigger value="conflicts" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Конфликты бота</TabsTrigger>
         </TabsList>
 
         {/* Вкладка: Обзор */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* График настроения */}
-            <Card>
+            <Card className="bg-[#1a1a24] border-gray-800">
               <CardHeader>
-                <CardTitle>Тренд настроения (7 дней)</CardTitle>
+                <CardTitle className="text-white text-base sm:text-lg">Тренд настроения (7 дней)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center text-muted-foreground">
+                <div className="h-48 sm:h-64 flex items-center justify-center text-gray-400 text-sm sm:text-base">
                   График будет здесь (Recharts)
                 </div>
               </CardContent>
             </Card>
 
             {/* Популярные темы */}
-            <Card>
+            <Card className="bg-[#1a1a24] border-gray-800">
               <CardHeader>
-                <CardTitle>Популярные темы вопросов</CardTitle>
+                <CardTitle className="text-white text-base sm:text-lg">Популярные темы вопросов</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -422,12 +429,12 @@ export default function AIAnalytics() {
 
         {/* Вкладка: Инсайты */}
         <TabsContent value="insights">
-          <Card>
+          <Card className="bg-[#1a1a24] border-gray-800">
             <CardHeader>
-              <CardTitle>Инсайты и рекомендации</CardTitle>
+              <CardTitle className="text-white text-base sm:text-lg">Инсайты и рекомендации</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {mockInsights.map((insight, i) => (
                   <InsightCard key={i} insight={insight} />
                 ))}
@@ -438,9 +445,9 @@ export default function AIAnalytics() {
 
         {/* Вкладка: Студенты */}
         <TabsContent value="students">
-          <Card>
+          <Card className="bg-[#1a1a24] border-gray-800">
             <CardHeader>
-              <CardTitle>Студенты, требующие внимания</CardTitle>
+              <CardTitle className="text-white text-base sm:text-lg">Студенты, требующие внимания</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -451,29 +458,29 @@ export default function AIAnalytics() {
                     <motion.div
                       key={student.id}
                       className={`
-                        p-4 rounded-lg border-2 cursor-pointer
-                        hover:shadow-lg transition-all
+                        p-3 sm:p-4 rounded-lg border-2 cursor-pointer
+                        hover:shadow-lg hover:shadow-[#00ff00]/10 transition-all
                         ${levelColors.bg} ${levelColors.border}
                       `}
                       whileHover={{ scale: 1.02 }}
                       onClick={() => setSelectedStudent(student)}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 flex items-center justify-center font-bold text-foreground">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center font-bold text-white text-sm sm:text-base">
                             {student.name.split(" ").map(n => n[0]).join("")}
                           </div>
                           <div>
-                            <p className="font-semibold text-foreground">{student.name}</p>
-                            <p className="text-sm text-muted-foreground">{student.email}</p>
+                            <p className="font-semibold text-white text-sm sm:text-base">{student.name}</p>
+                            <p className="text-xs sm:text-sm text-gray-400">{student.email}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
                           <div className="text-right">
-                            <p className={`text-2xl font-bold ${levelColors.text}`}>{student.total_score}</p>
-                            <p className="text-xs text-muted-foreground">баллов</p>
+                            <p className={`text-xl sm:text-2xl font-bold ${levelColors.text}`}>{student.total_score}</p>
+                            <p className="text-xs text-gray-500">баллов</p>
                           </div>
-                          <Badge variant="outline" className={`${levelColors.text} ${levelColors.border}`}>
+                          <Badge variant="outline" className={`${levelColors.text} ${levelColors.border} text-xs`}>
                             {levelColors.label}
                           </Badge>
                         </div>
@@ -481,8 +488,8 @@ export default function AIAnalytics() {
                       
                       {/* Красные флаги (preview) */}
                       {student.red_flags.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-border/50">
-                          <p className="text-sm text-red-500 font-medium">
+                        <div className="mt-3 pt-3 border-t border-gray-800">
+                          <p className="text-xs sm:text-sm text-red-500 font-medium">
                             🚨 {student.red_flags[0]}
                           </p>
                         </div>
@@ -497,15 +504,15 @@ export default function AIAnalytics() {
 
         {/* Вкладка: Конфликты бота */}
         <TabsContent value="conflicts">
-          <Card>
+          <Card className="bg-[#1a1a24] border-gray-800">
             <CardHeader>
-              <CardTitle>🤖 Конфликты и ошибки AI-куратора</CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
+              <CardTitle className="text-white text-base sm:text-lg">🤖 Конфликты и ошибки AI-куратора</CardTitle>
+              <p className="text-xs sm:text-sm text-gray-400 mt-2">
                 Автоматически обнаруженные проблемы в ответах бота. Кратко, по факту, с решениями.
               </p>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {mockConflicts.map((conflict) => {
                   const severityConfig = {
                     critical: { color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500", icon: <Bug className="w-5 h-5" />, label: "🔴 КРИТИЧНО" },
@@ -599,13 +606,13 @@ export default function AIAnalytics() {
 
                       {/* Кнопки действий */}
                       {conflict.status !== "resolved" && (
-                        <div className="flex gap-2 mt-3">
-                          <Button size="sm" variant="default">
-                            <CheckCircle2 className="w-4 h-4 mr-2" />
-                            Пометить решённым
+                        <div className="flex gap-2 mt-3 flex-wrap">
+                          <Button size="sm" variant="default" className="bg-[#00ff00] text-black hover:bg-[#00cc00]">
+                            <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            <span className="text-xs sm:text-sm">Пометить решённым</span>
                           </Button>
-                          <Button size="sm" variant="outline">
-                            В работу
+                          <Button size="sm" variant="outline" className="border-gray-700 text-white hover:bg-gray-800">
+                            <span className="text-xs sm:text-sm">В работу</span>
                           </Button>
                         </div>
                       )}
@@ -615,71 +622,72 @@ export default function AIAnalytics() {
               </div>
 
               {/* Статистика конфликтов */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Critical</p>
-                  <p className="text-2xl font-bold text-red-500">1</p>
+              <div className="mt-4 sm:mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <div className="p-3 sm:p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-400">Critical</p>
+                  <p className="text-xl sm:text-2xl font-bold text-red-500">1</p>
                 </div>
-                <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">High</p>
-                  <p className="text-2xl font-bold text-orange-500">0</p>
+                <div className="p-3 sm:p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-400">High</p>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-500">0</p>
                 </div>
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Medium</p>
-                  <p className="text-2xl font-bold text-yellow-500">1</p>
+                <div className="p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-400">Medium</p>
+                  <p className="text-xl sm:text-2xl font-bold text-yellow-500">1</p>
                 </div>
-                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Low</p>
-                  <p className="text-2xl font-bold text-blue-500">1</p>
+                <div className="p-3 sm:p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-400">Low</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-500">1</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
 
       {/* МОДАЛЬНОЕ ОКНО: Детали студента */}
       {selectedStudent && (
         <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1a1a24] border-gray-800">
             <DialogHeader>
-              <DialogTitle className="text-2xl flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 flex items-center justify-center font-bold text-lg">
+              <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center font-bold text-base sm:text-lg text-white">
                   {selectedStudent.name.split(" ").map(n => n[0]).join("")}
                 </div>
                 <div>
-                  <p>{selectedStudent.name}</p>
-                  <p className="text-sm text-muted-foreground font-normal">{selectedStudent.email}</p>
+                  <p className="text-white">{selectedStudent.name}</p>
+                  <p className="text-xs sm:text-sm text-gray-400 font-normal">{selectedStudent.email}</p>
                 </div>
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm text-gray-400">
                 Детальная аналитика студента на основе алгоритма оценки внимания
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 mt-4">
+            <div className="space-y-4 sm:space-y-6 mt-4">
               {/* Итоговый балл */}
               <div className="text-center">
                 <div className={`
-                  inline-flex items-center justify-center w-32 h-32 rounded-full
+                  inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full
                   ${getAttentionLevelColor(selectedStudent.attention_level).bg}
                   border-4 ${getAttentionLevelColor(selectedStudent.attention_level).border}
                 `}>
                   <div>
-                    <p className={`text-4xl font-bold ${getAttentionLevelColor(selectedStudent.attention_level).text}`}>
+                    <p className={`text-3xl sm:text-4xl font-bold ${getAttentionLevelColor(selectedStudent.attention_level).text}`}>
                       {selectedStudent.total_score}
                     </p>
-                    <p className="text-xs text-muted-foreground">из 100</p>
+                    <p className="text-xs text-gray-500">из 100</p>
                   </div>
                 </div>
-                <p className={`mt-3 text-xl font-bold ${getAttentionLevelColor(selectedStudent.attention_level).text}`}>
+                <p className={`mt-3 text-lg sm:text-xl font-bold ${getAttentionLevelColor(selectedStudent.attention_level).text}`}>
                   {getAttentionLevelColor(selectedStudent.attention_level).label}
                 </p>
               </div>
 
               {/* Breakdown по критериям */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">📊 Разбивка по критериям</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white">📊 Разбивка по критериям</h3>
                 <div className="space-y-4">
                   <CriteriaBar
                     label="🏃 Активность"
@@ -717,12 +725,12 @@ export default function AIAnalytics() {
               {/* Красные флаги */}
               {selectedStudent.red_flags.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-red-500">🚩 Красные флаги (критично!)</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 text-red-500">🚩 Красные флаги (критично!)</h3>
                   <div className="space-y-2">
                     {selectedStudent.red_flags.map((flag, i) => (
-                      <div key={i} className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                        <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-foreground">{flag}</p>
+                      <div key={i} className="flex items-start gap-2 p-2 sm:p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs sm:text-sm text-white">{flag}</p>
                       </div>
                     ))}
                   </div>
@@ -732,12 +740,12 @@ export default function AIAnalytics() {
               {/* Жёлтые флаги */}
               {selectedStudent.yellow_flags.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-yellow-500">⚠️ Жёлтые флаги (наблюдение)</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 text-yellow-500">⚠️ Жёлтые флаги (наблюдение)</h3>
                   <div className="space-y-2">
                     {selectedStudent.yellow_flags.map((flag, i) => (
-                      <div key={i} className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-foreground">{flag}</p>
+                      <div key={i} className="flex items-start gap-2 p-2 sm:p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs sm:text-sm text-white">{flag}</p>
                       </div>
                     ))}
                   </div>
@@ -746,12 +754,12 @@ export default function AIAnalytics() {
 
               {/* Рекомендуемые действия */}
               <div>
-                <h3 className="text-lg font-semibold mb-3 text-neon">✅ Рекомендуемые действия</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3 text-[#00ff00]">✅ Рекомендуемые действия</h3>
                 <div className="space-y-2">
                   {selectedStudent.actions.map((action, i) => (
-                    <div key={i} className="flex items-start gap-2 p-3 bg-neon/10 border border-neon/30 rounded-lg">
-                      <CheckCircle2 className="w-5 h-5 text-neon flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-foreground">{action}</p>
+                    <div key={i} className="flex items-start gap-2 p-2 sm:p-3 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg">
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ff00] flex-shrink-0 mt-0.5" />
+                      <p className="text-xs sm:text-sm text-white">{action}</p>
                     </div>
                   ))}
                 </div>
@@ -781,22 +789,22 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, icon, trend, trendUp, badge, badgeColor, onClick }: MetricCardProps) {
   return (
-    <Card className={onClick ? "cursor-pointer hover:shadow-lg transition-shadow" : ""} onClick={onClick}>
-      <CardContent className="p-6">
+    <Card className={`bg-[#1a1a24] border-gray-800 ${onClick ? "cursor-pointer hover:shadow-lg hover:shadow-[#00ff00]/10 transition-shadow hover:border-[#00ff00]/50" : ""}`} onClick={onClick}>
+      <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <div className="p-2 rounded-lg bg-primary/10">{icon}</div>
+          <p className="text-xs sm:text-sm text-gray-400">{title}</p>
+          <div className="p-1.5 sm:p-2 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30">{icon}</div>
         </div>
         <div className="flex items-end justify-between">
-          <p className="text-3xl font-bold">{value}</p>
+          <p className="text-2xl sm:text-3xl font-bold text-white">{value}</p>
           {trend && (
-            <div className={`flex items-center gap-1 text-sm ${trendUp ? "text-green-500" : "text-red-500"}`}>
-              {trendUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+            <div className={`flex items-center gap-1 text-xs sm:text-sm ${trendUp ? "text-[#00ff00]" : "text-red-500"}`}>
+              {trendUp ? <TrendingUp className="w-3 w-3 sm:w-4 sm:h-4" /> : <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />}
               {trend}
             </div>
           )}
           {badge && (
-            <Badge variant={badgeColor === "green" ? "default" : "destructive"}>
+            <Badge variant={badgeColor === "green" ? "default" : "destructive"} className={`text-xs ${badgeColor === "green" ? "bg-[#00ff00] text-black" : "bg-red-600 text-white"}`}>
               {badge}
             </Badge>
           )}
@@ -817,13 +825,13 @@ function TopicBar({ topic, count, total }: TopicBarProps) {
 
   return (
     <div>
-      <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium">{topic}</span>
-        <span className="text-muted-foreground">{count} вопросов</span>
+      <div className="flex justify-between text-xs sm:text-sm mb-1">
+        <span className="font-medium text-white">{topic}</span>
+        <span className="text-gray-400">{count} вопросов</span>
       </div>
-      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))]"
+          className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -845,24 +853,24 @@ function InsightCard({ insight }: InsightCardProps) {
   const getIcon = () => {
     switch (insight.type) {
       case "problem":
-        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+        return <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />;
       case "trend":
-        return <TrendingUp className="w-5 h-5 text-blue-500" />;
+        return <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />;
       case "achievement":
-        return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+        return <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ff00]" />;
       default:
-        return <Brain className="w-5 h-5" />;
+        return <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-white" />;
     }
   };
 
   return (
-    <div className="flex gap-4 p-4 bg-secondary/30 rounded-lg border border-border">
+    <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800 hover:border-[#00ff00]/30 transition-colors">
       <div className="flex-shrink-0">{getIcon()}</div>
       <div className="flex-1">
-        <h4 className="font-semibold mb-1">{insight.title}</h4>
-        <p className="text-sm text-muted-foreground mb-2">{insight.description}</p>
+        <h4 className="font-semibold mb-1 text-white text-sm sm:text-base">{insight.title}</h4>
+        <p className="text-xs sm:text-sm text-gray-400 mb-2">{insight.description}</p>
         {insight.action && (
-          <p className="text-sm text-neon">→ {insight.action}</p>
+          <p className="text-xs sm:text-sm text-[#00ff00]">→ {insight.action}</p>
         )}
       </div>
     </div>
@@ -881,7 +889,7 @@ function CriteriaBar({ label, score, weight, details }: CriteriaBarProps) {
     if (score < 30) return "bg-red-500";
     if (score < 50) return "bg-orange-500";
     if (score < 70) return "bg-yellow-500";
-    if (score < 85) return "bg-green-500";
+    if (score < 85) return "bg-[#00ff00]";
     return "bg-blue-500";
   };
 
@@ -889,13 +897,13 @@ function CriteriaBar({ label, score, weight, details }: CriteriaBarProps) {
     <div>
       <div className="flex justify-between items-center mb-2">
         <div>
-          <span className="font-semibold">{label}</span>
-          <span className="text-sm text-muted-foreground ml-2">(вес: {weight}%)</span>
+          <span className="font-semibold text-white text-sm sm:text-base">{label}</span>
+          <span className="text-xs sm:text-sm text-gray-400 ml-2">(вес: {weight}%)</span>
         </div>
-        <span className="text-xl font-bold">{score}/100</span>
+        <span className="text-lg sm:text-xl font-bold text-white">{score}/100</span>
       </div>
-      <Progress value={score} className="h-3 mb-1" />
-      <p className="text-xs text-muted-foreground">{details}</p>
+      <Progress value={score} className="h-2 sm:h-3 mb-1" />
+      <p className="text-xs text-gray-400">{details}</p>
     </div>
   );
 }

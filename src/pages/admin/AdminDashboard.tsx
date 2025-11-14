@@ -4,16 +4,19 @@ import { Users, Brain, Sparkles, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { api } from "@/utils/apiClient";
+import { supabase } from "@/lib/supabase";
 
 const KZT_RATE = 460; // 1 USD = 460 KZT
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [tokenStats, setTokenStats] = useState<any>(null);
+  const [studentStats, setStudentStats] = useState<any>(null);
 
-  // Загружаем статистику токенов при монтировании
+  // Загружаем все статистики при монтировании
   useEffect(() => {
     loadTokenStats();
+    loadStudentStats();
   }, []);
 
   const loadTokenStats = async () => {
@@ -26,6 +29,61 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('[AdminDashboard] ❌ Ошибка загрузки токенов:', error);
     }
+  };
+
+  const loadStudentStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику студентов...');
+      
+      // Получаем всех пользователей (кроме админов)
+      const { data: allUsers, error } = await supabase
+        .from('users')
+        .select('id, role, created_at')
+        .neq('role', 'admin');
+
+      if (error) {
+        console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
+        return;
+      }
+
+      const totalStudents = allUsers?.length || 0;
+      
+      // Активные = все, у кого role !== 'inactive'
+      const activeStudents = allUsers?.filter(u => u.role !== 'inactive').length || 0;
+      
+      // Новые за неделю = created_at > 7 дней назад
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const newThisWeek = allUsers?.filter(u => new Date(u.created_at) > weekAgo).length || 0;
+
+      const stats = {
+        total: totalStudents,
+        active: activeStudents,
+        newThisWeek: newThisWeek,
+      };
+
+      console.log('[AdminDashboard] ✅ Статистика студентов загружена:', stats);
+      setStudentStats(stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
+    }
+  };
+
+  // Форматирование данных для карточки студентов
+  const formatStudentStats = () => {
+    if (!studentStats) {
+      return [
+        { label: "Всего студентов", value: "..." },
+        { label: "Активных", value: "..." },
+        { label: "Новых за неделю", value: "..." },
+      ];
+    }
+
+    return [
+      { label: "Всего студентов", value: studentStats.total.toString() },
+      { label: "Активных", value: studentStats.active.toString() },
+      { label: "Новых за неделю", value: `+${studentStats.newThisWeek}` },
+    ];
   };
 
   // Форматирование данных для карточки токенов
@@ -77,17 +135,13 @@ export default function AdminDashboard() {
 
         {/* Карточки */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Карточка 1: Управление студентами */}
+          {/* Карточка 1: Управление студентами (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
           <AdminCard
             title="Управление студентами"
             description="Добавление, удаление, роли, приглашения"
             icon={<Users className="w-8 h-8" />}
             onClick={() => navigate("/admin/students-activity")}
-            stats={[
-              { label: "Всего студентов", value: "150" },
-              { label: "Активных", value: "120" },
-              { label: "Новых за неделю", value: "+12" },
-            ]}
+            stats={formatStudentStats()}
           />
 
           {/* Карточка 2: Activity (старая панель) */}

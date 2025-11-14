@@ -33,55 +33,67 @@ export function StatCard({
   iconColor = "text-primary",
   onClick,
 }: StatCardProps) {
+  // Определяем цвет border на основе iconColor
+  const getBorderColor = () => {
+    if (iconColor.includes("green") || iconColor.includes("#00ff00")) return "hover:border-[#00ff00]/50";
+    if (iconColor.includes("yellow")) return "hover:border-yellow-500/50";
+    if (iconColor.includes("blue")) return "hover:border-blue-500/50";
+    if (iconColor.includes("purple")) return "hover:border-purple-500/50";
+    if (iconColor.includes("red")) return "hover:border-red-500/50";
+    if (iconColor.includes("orange")) return "hover:border-orange-500/50";
+    if (iconColor.includes("cyan")) return "hover:border-cyan-500/50";
+    if (iconColor.includes("pink")) return "hover:border-pink-500/50";
+    return "hover:border-[#00ff00]/50";
+  };
+
   return (
     <Card 
       className={cn(
-        "bg-gradient-to-br border-opacity-40 hover:border-opacity-60 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]",
-        onClick && "cursor-pointer",
-        gradientFrom,
-        gradientTo
+        "bg-[#1a1a24] border-gray-800 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]",
+        getBorderColor(),
+        onClick && "cursor-pointer"
       )}
       onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <div className="flex items-center gap-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardTitle className="text-xs sm:text-sm font-medium text-gray-400">
             {title}
           </CardTitle>
           {tooltip && (
             <Tooltip>
               <TooltipTrigger>
-                <Info className="h-3 w-3 text-muted-foreground hover:text-foreground transition-colors" />
+                <Info className="h-3 w-3 text-gray-400 hover:text-white transition-colors" />
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="text-sm">{tooltip}</p>
+              <TooltipContent className="max-w-xs bg-[#1a1a24] border-gray-700">
+                <p className="text-sm text-white">{tooltip}</p>
               </TooltipContent>
             </Tooltip>
           )}
         </div>
-        <div className={cn("p-2 rounded-lg bg-opacity-10", iconColor.replace("text-", "bg-") + "/10")}>
-          <Icon className={cn("h-5 w-5", iconColor)} />
+        <div className={cn("p-1.5 sm:p-2 rounded-lg bg-opacity-10", iconColor.replace("text-", "bg-") + "/10")}>
+          <Icon className={cn("h-4 w-4 sm:h-5 sm:w-5", iconColor)} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold text-foreground">{value}</div>
+        <div className="text-2xl sm:text-3xl font-bold text-white">{value}</div>
         {trend && (
           <div className="flex items-center gap-1 mt-2">
             {trend.isPositive ? (
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-[#00ff00]" />
             ) : (
               <TrendingDown className="h-3 w-3 text-red-500" />
             )}
             <p className={cn(
               "text-xs font-medium",
-              trend.isPositive ? "text-green-500" : "text-red-500"
+              trend.isPositive ? "text-[#00ff00]" : "text-red-500"
             )}>
               {trend.isPositive ? "+" : ""}{trend.value}% {trend.label}
             </p>
           </div>
         )}
         {description && !trend && (
-          <p className="text-xs text-muted-foreground mt-2">{description}</p>
+          <p className="text-xs text-gray-500 mt-2">{description}</p>
         )}
       </CardContent>
     </Card>
