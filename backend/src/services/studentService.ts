@@ -10,7 +10,7 @@ export async function createStudent(data: {
   password: string;
   role: 'student' | 'curator' | 'admin';
   account_expires_at?: string | null;
-  course_ids?: string[];
+  course_ids?: number[]; // ✅ Массив чисел (ID курсов)
 }) {
   try {
     console.log('[StudentService] Creating student:', data.email);
@@ -84,7 +84,7 @@ export async function createStudent(data: {
     if (data.course_ids && data.course_ids.length > 0) {
       const courseAssignments = data.course_ids.map(courseId => ({
         user_id: authData.user!.id,
-        course_id: parseInt(courseId),
+        course_id: courseId, // ✅ courseId уже number, не нужен parseInt
         is_active: true,
       }));
 

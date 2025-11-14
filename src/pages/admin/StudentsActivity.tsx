@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { api } from "@/utils/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -351,28 +352,16 @@ export default function StudentsActivity() {
         console.log('📅 Срок действия: вечный (role !== student)');
       }
       
-      // ✅ Вызываем Backend API для создания студента
-      const response = await fetch('http://localhost:3000/api/students/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email.trim(),
-          full_name: formData.fullName.trim(),
-          phone: formData.phone.trim(),
-          password: formData.password,
-          role: formData.role,
-          account_expires_at: expiresAt,
-          course_ids: formData.selectedCourses.map(String), // Конвертируем в строки для совместимости
-        }),
+      // ✅ Вызываем Backend API для создания студента (с JWT токеном через apiClient)
+      const data = await api.post('/api/students/create', {
+        email: formData.email.trim(),
+        full_name: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        password: formData.password,
+        role: formData.role,
+        account_expires_at: expiresAt,
+        course_ids: formData.selectedCourses, // ✅ Массив чисел (уже правильный тип)
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Unknown error');
-      }
 
       if (data.success) {
         // Сохраняем данные для показа
@@ -403,8 +392,6 @@ export default function StudentsActivity() {
           title: "✅ Пользователь создан!",
           description: `${formData.fullName} успешно добавлен на платформу`,
         });
-      } else {
-        throw new Error(data.error || 'Unknown error');
       }
     } catch (error: any) {
       console.error('❌ Ошибка создания пользователя:', error);
