@@ -20,6 +20,7 @@ export default function Courses() {
       rating: '4.9',
       modules: 12,
       lessons: 48,
+      inDevelopment: false, // ✅ Доступен
       features: [
         'Работа с API OpenAI',
         'Автоматизация бизнес-процессов',
@@ -38,6 +39,7 @@ export default function Courses() {
       rating: '4.8',
       modules: 10,
       lessons: 40,
+      inDevelopment: true, // 🚧 В разработке
       features: [
         'ChatGPT для копирайтинга',
         'Midjourney & DALL-E',
@@ -56,6 +58,7 @@ export default function Courses() {
       rating: '5.0',
       modules: 15,
       lessons: 60,
+      inDevelopment: true, // 🚧 В разработке
       features: [
         'Cursor IDE с AI',
         'React, TypeScript, Node.js',
@@ -91,10 +94,17 @@ export default function Courses() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all hover:scale-105 cursor-pointer group">
+              <Card className={`h-full bg-gray-800/50 border-gray-700 transition-all group ${course.inDevelopment ? 'opacity-75' : 'hover:border-gray-600 hover:scale-105 cursor-pointer'}`}>
                 <CardHeader>
-                  <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${course.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    {course.icon}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${course.color} flex items-center justify-center ${!course.inDevelopment && 'group-hover:scale-110'} transition-transform`}>
+                      {course.icon}
+                    </div>
+                    {course.inDevelopment && (
+                      <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30">
+                        🚧 В разработке
+                      </Badge>
+                    )}
                   </div>
                   <CardTitle className="text-2xl text-white">{course.title}</CardTitle>
                   <CardDescription className="text-gray-400">
@@ -136,11 +146,21 @@ export default function Courses() {
 
                   {/* Кнопка */}
                   <Button
-                    onClick={() => navigate(`/course/${course.id}`)}
-                    className="w-full mt-4 group-hover:bg-primary group-hover:text-primary-foreground"
+                    onClick={() => !course.inDevelopment && navigate(`/course/${course.id}`)}
+                    disabled={course.inDevelopment}
+                    className={`w-full mt-4 ${!course.inDevelopment && 'group-hover:bg-primary group-hover:text-primary-foreground'}`}
                   >
-                    Начать обучение
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    {course.inDevelopment ? (
+                      <>
+                        Скоро откроется
+                        <Clock className="w-4 h-4 ml-2" />
+                      </>
+                    ) : (
+                      <>
+                        Начать обучение
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
