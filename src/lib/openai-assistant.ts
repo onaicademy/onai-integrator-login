@@ -74,14 +74,24 @@ export async function getOrCreateThread(): Promise<string> {
 /**
  * Обработать файл через Backend API
  * Возвращает проанализированное содержимое (для изображений) или извлечённый текст (для PDF/DOCX)
+ * 
+ * НОВАЯ АРХИТЕКТУРА:
+ * - Передаёт userId и threadId в FormData
+ * - Backend загружает файл в Supabase Storage
+ * - Backend сохраняет metadata в БД
+ * - Возвращает fileUrl + extractedText
  */
 export async function processFile(
   file: File,
-  userQuestion?: string
+  userQuestion?: string,
+  userId?: string,
+  threadId?: string
 ): Promise<{
   type: 'image' | 'text';
   content: string;
   analysis?: string;
+  fileUrl?: string;
+  fileId?: number;
 }> {
   try {
     console.log(`📎 [processFile] Получен файл:`, {
@@ -89,6 +99,8 @@ export async function processFile(
       size: file.size,
       type: file.type,
       lastModified: file.lastModified,
+      userId: userId || 'N/A',
+      threadId: threadId || 'N/A',
     });
 
     // ✅ КРИТИЧЕСКИ ВАЖНО: проверяем что файл НЕ ПУСТОЙ
@@ -96,8 +108,25 @@ export async function processFile(
       throw new Error(`Файл ${file?.name || 'Unknown'} пустой или поврежден!`);
     }
 
+    // ✅ Получаем userId если не передан
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        userId = user.id;
+        console.log('📎 [processFile] Получен userId из Supabase Auth:', userId);
+      } else {
+        throw new Error('Не удалось получить userId. Авторизуйтесь заново.');
+      }
+    }
+
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('userId', userId); // ✅ НОВОЕ: передаём userId!
+    
+    if (threadId) {
+      formData.append('threadId', threadId); // ✅ НОВОЕ: передаём threadId!
+    }
+    
     if (userQuestion) {
       formData.append('userQuestion', userQuestion);
     }
@@ -111,16 +140,33 @@ export async function processFile(
 
     console.log('✅ Файл обработан:', response);
 
+    // ✅ НОВАЯ СТРУКТУРА ОТВЕТА от Backend
+    if (response.success && response.file) {
+      const { fileUrl, extractedText, fileId, fileType } = response.file;
+      
+      // Определяем тип по MIME type
+      const isImage = fileType?.startsWith('image/');
+      
+      return {
+        type: isImage ? 'image' : 'text',
+        content: extractedText || '',
+        analysis: isImage ? extractedText : undefined,
+        fileUrl: fileUrl, // ✅ НОВОЕ: URL файла в Supabase Storage
+        fileId: fileId,   // ✅ НОВОЕ: ID записи в БД
+      };
+    }
+
+    // ✅ СОВМЕСТИМОСТЬ со старым форматом ответа (если Backend ещё не обновлён)
     if (response.type === 'image') {
       return {
         type: 'image',
-        content: response.analysis,
+        content: response.analysis || '',
         analysis: response.analysis,
       };
     } else {
       return {
         type: 'text',
-        content: response.content,
+        content: response.content || '',
       };
     }
   } catch (error: any) {
@@ -163,7 +209,8 @@ export async function sendMessageToAI(
         if (attachment.file) {
           try {
             console.log(`📎 [sendMessageToAI] Вызываем processFile для ${attachment.name}`);
-            const processed = await processFile(attachment.file, message);
+            // ✅ НОВОЕ: передаём userId и threadId
+            const processed = await processFile(attachment.file, message, userId, threadId);
             
             if (processed.type === 'image') {
               // Для изображений добавляем анализ к сообщению
