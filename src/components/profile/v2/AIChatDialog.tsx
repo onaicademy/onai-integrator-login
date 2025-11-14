@@ -676,13 +676,22 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     setIsLoading(true);
     
     try {
-      // Убираем toast при транскрипции - индикатор загрузки и так есть
-      // toast({
-      //   title: "🎙️ Транскрибируем...",
-      //   description: "Преобразуем речь в текст",
-      // });
+      // Получаем реальный userId для логирования токенов
+      let userId = 'user-1'; // Fallback
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          userId = user.id;
+          console.log('✅ Транскрибируем аудио для userId:', userId);
+        }
+      } catch (authError) {
+        console.warn('⚠️  Не удалось получить userId, используем fallback');
+      }
 
-      const transcription = await transcribeAudioToText(audioBlob);
+      // Получаем threadId для логирования
+      const threadId = localStorage.getItem('openai_thread_id') || undefined;
+
+      const transcription = await transcribeAudioToText(audioBlob, userId, threadId);
       
       if (!transcription || transcription.trim().length === 0) {
         throw new Error("Не удалось распознать речь");

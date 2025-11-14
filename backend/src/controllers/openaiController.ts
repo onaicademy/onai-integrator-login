@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as openaiService from '../services/openaiService';
+import * as tokenService from '../services/tokenService'; // ✅ Добавлен импорт
 import { getAssistantId, AssistantType } from '../config/assistants';
 import multer from 'multer';
 
@@ -226,7 +227,15 @@ export async function transcribeAudio(req: Request, res: Response) {
       });
     }
 
-    const { language, prompt } = req.body;
+    const { language, prompt, duration } = req.body;
+    const userId = (req as any).user?.id; // Получаем userId из JWT токена
+
+    console.log('[OpenAI Controller] 🎙️ Транскрибируем аудио:', {
+      size: req.file.size,
+      type: req.file.mimetype,
+      duration: duration,
+      userId: userId,
+    });
 
     // Создаём File объект из Buffer
     const audioFile = new File([req.file.buffer], req.file.originalname || 'recording.webm', {
@@ -235,9 +244,30 @@ export async function transcribeAudio(req: Request, res: Response) {
 
     const transcription = await openaiService.transcribeAudio(audioFile, language, prompt);
 
+    // ✅ Логируем использование Whisper
+    const audioDurationSeconds = parseFloat(duration) || 0;
+    if (audioDurationSeconds > 0 && userId) {
+      try {
+        await tokenService.logTokenUsage({
+          userId: userId,
+          assistantType: 'curator', // Whisper используется только в AI-кураторе
+          model: 'whisper-1',
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          requestType: 'voice_transcription',
+          audioDurationSeconds: audioDurationSeconds,
+        });
+        console.log(`[OpenAI Controller] ✅ Whisper токены залогированы: ${audioDurationSeconds}s`);
+      } catch (logError: any) {
+        console.error('[OpenAI Controller] ⚠️ Не удалось залогировать Whisper:', logError.message);
+        // Не прерываем работу, если логирование не удалось
+      }
+    }
+
     res.json({ 
       text: transcription,
-      duration: req.body.duration || null,
+      duration: audioDurationSeconds,
     });
   } catch (error: any) {
     console.error('❌ Error in transcribeAudio:', error.message);

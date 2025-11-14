@@ -4,7 +4,7 @@ import { OnAILogo } from './OnAILogo';
 export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+      className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4 sm:p-6"
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -19,7 +19,7 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
+            className="absolute w-0.5 h-0.5 sm:w-1 sm:h-1 bg-white rounded-full"
             style={{
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
@@ -37,14 +37,18 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
         ))}
       </div>
 
-      {/* Логотип в центре */}
-      <div className="relative z-10 flex items-center justify-center">
+      {/* Логотип в центре - АДАПТИВНЫЙ */}
+      <div className="relative z-10 flex items-center justify-center w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
+          className="w-full"
         >
-          <OnAILogo variant="full" className="h-32 w-auto text-white" />
+          <OnAILogo 
+            variant="full" 
+            className="h-16 sm:h-20 md:h-24 lg:h-32 w-auto text-white mx-auto" 
+          />
         </motion.div>
       </div>
     </motion.div>

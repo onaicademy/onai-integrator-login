@@ -3,10 +3,11 @@
  * Логирует каждый запрос к API
  */
 
+import { api } from '@/utils/apiClient';
 import { supabase } from './supabase';
 
-export type AgentType = 'ai_curator' | 'ai_mentor' | 'ai_analyst';
-export type ModelType = 'gpt-4o' | 'gpt-3.5-turbo' | 'whisper-1';
+export type AgentType = 'curator' | 'mentor' | 'analyst';
+export type ModelType = 'gpt-4o' | 'gpt-4o-mini' | 'whisper-1';
 export type OperationType = 
   | 'text_message' 
   | 'voice_transcription' 
@@ -28,31 +29,34 @@ interface TokenUsageParams {
 }
 
 /**
- * Логирование использования токенов
+ * Логирование использования токенов через Backend API
  */
 export async function logTokenUsage(params: TokenUsageParams): Promise<string | null> {
   try {
-    const { data, error } = await supabase.rpc('log_token_usage', {
-      p_agent_type: params.agentType,
-      p_model: params.model,
-      p_operation_type: params.operationType,
-      p_prompt_tokens: params.promptTokens,
-      p_completion_tokens: params.completionTokens,
-      p_audio_duration_seconds: params.audioDurationSeconds || null,
-      p_user_id: params.userId || null,
-      p_thread_id: params.threadId || null,
-      p_request_id: params.requestId || generateRequestId()
+    console.log('[TokenTracker] 📊 Логируем токены:', {
+      agent: params.agentType,
+      model: params.model,
+      operation: params.operationType,
+      tokens: params.promptTokens + params.completionTokens,
+      audioDuration: params.audioDurationSeconds,
     });
 
-    if (error) {
-      console.error('❌ Ошибка логирования токенов:', error);
-      return null;
-    }
+    // ✅ Используем Backend API вместо Supabase RPC
+    const response = await api.post('/api/tokens/log', {
+      userId: params.userId,
+      assistantType: params.agentType,
+      model: params.model,
+      promptTokens: params.promptTokens,
+      completionTokens: params.completionTokens,
+      totalTokens: params.promptTokens + params.completionTokens,
+      requestType: params.operationType || 'chat',
+      audioDurationSeconds: params.audioDurationSeconds,
+    });
 
     console.log(`✅ Токены залогированы: ${params.agentType} - ${params.promptTokens + params.completionTokens} tokens`);
-    return data;
-  } catch (error) {
-    console.error('❌ Ошибка:', error);
+    return response.data?.id || null;
+  } catch (error: any) {
+    console.error('❌ Ошибка логирования токенов:', error.message);
     return null;
   }
 }
@@ -137,6 +141,7 @@ export async function trackOpenAIRequest<T>(
   context?: {
     userId?: string;
     threadId?: string;
+    model?: ModelType;
   }
 ): Promise<T> {
   const requestId = generateRequestId();
@@ -152,7 +157,7 @@ export async function trackOpenAIRequest<T>(
     if (usage) {
       await logTokenUsage({
         agentType: agent,
-        model: 'gpt-4o', // Определяется из запроса
+        model: context?.model || 'gpt-4o', // ✅ Можно передать модель из контекста
         operationType: operation,
         promptTokens: usage.prompt_tokens || 0,
         completionTokens: usage.completion_tokens || 0,
@@ -183,8 +188,13 @@ export async function logWhisperUsage(
     threadId?: string;
   }
 ) {
+  console.log('[TokenTracker] 🎙️ Логируем Whisper транскрипцию:', {
+    duration: audioDurationSeconds,
+    userId: context?.userId,
+  });
+  
   return logTokenUsage({
-    agentType: 'ai_curator',
+    agentType: 'curator', // ✅ Исправлено: 'curator' вместо 'ai_curator'
     model: 'whisper-1',
     operationType: 'voice_transcription',
     promptTokens: 0,
