@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import { api } from '@/utils/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
@@ -121,6 +122,23 @@ export default function Login() {
         }
         
         sessionStorage.clear();
+        
+        // Проверяем статус онбординга
+        try {
+          const onboardingStatus = await api.get(`/api/onboarding/status?userId=${data.user.id}`);
+          
+          if (!onboardingStatus.completed) {
+            console.log('🎯 Онбординг не завершён, редирект на /welcome');
+            toast({
+              title: '👋 Добро пожаловать!',
+              description: 'Давайте познакомимся поближе',
+            });
+            navigate('/welcome', { replace: true });
+            return;
+          }
+        } catch (error) {
+          console.warn('⚠️ Не удалось проверить статус онбординга, продолжаем');
+        }
         
         toast({
           title: '✅ Добро пожаловать!',

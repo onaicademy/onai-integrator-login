@@ -21,6 +21,9 @@ import openaiRouter from './routes/openai';
 import telegramRouter from './routes/telegram';
 import supabaseRouter from './routes/supabase';
 import studentsRouter from './routes/students';
+import tokensRouter from './routes/tokens';
+import filesRouter from './routes/files';
+import onboardingRouter from './routes/onboarding';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -70,6 +73,9 @@ app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
 app.use('/api/supabase', supabaseRouter);
 app.use('/api/students', studentsRouter);
+app.use('/api/tokens', tokensRouter);
+app.use('/api/files', filesRouter);
+app.use('/api/onboarding', onboardingRouter);
 
 // 404 обработка
 app.use((req, res) => {

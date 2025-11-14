@@ -72,13 +72,50 @@ export async function getOrCreateThread(): Promise<string> {
 }
 
 /**
- * Загрузить файл в OpenAI
- * ⚠️ НЕ РЕАЛИЗОВАНО - требует Backend endpoint
- * TODO: Создать POST /api/openai/files для загрузки файлов
+ * Обработать файл через Backend API
+ * Возвращает проанализированное содержимое (для изображений) или извлечённый текст (для PDF/DOCX)
  */
-export async function uploadFile(file: File): Promise<string> {
-  console.warn("⚠️ uploadFile через Backend пока не реализован");
-  throw new Error("Загрузка файлов временно недоступна");
+export async function processFile(
+  file: File,
+  userQuestion?: string
+): Promise<{
+  type: 'image' | 'text';
+  content: string;
+  analysis?: string;
+}> {
+  try {
+    console.log(`📎 Обрабатываем файл: ${file.name}, размер: ${file.size} байт`);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    if (userQuestion) {
+      formData.append('userQuestion', userQuestion);
+    }
+
+    const response = await api.post('/api/files/process', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log('✅ Файл обработан:', response);
+
+    if (response.type === 'image') {
+      return {
+        type: 'image',
+        content: response.analysis,
+        analysis: response.analysis,
+      };
+    } else {
+      return {
+        type: 'text',
+        content: response.content,
+      };
+    }
+  } catch (error: any) {
+    console.error('❌ Ошибка обработки файла:', error.message);
+    throw new Error(`Не удалось обработать файл: ${error.message}`);
+  }
 }
 
 /**
@@ -98,15 +135,38 @@ export async function sendMessageToAI(
 
     console.log(`🤖 Используем ${assistantType} assistant`);
 
-    // TODO: Обработка файлов (пока не поддерживается)
+    // Обработка файлов (если есть)
+    let finalMessage = message;
     if (attachments && attachments.length > 0) {
-      console.warn("⚠️ Загрузка файлов временно не поддерживается");
+      console.log(`📎 Обрабатываем ${attachments.length} файл(ов)...`);
+      
+      for (const attachment of attachments) {
+        if (attachment.file) {
+          try {
+            const processed = await processFile(attachment.file, message);
+            
+            if (processed.type === 'image') {
+              // Для изображений добавляем анализ к сообщению
+              finalMessage = message 
+                ? `${message}\n\n[Анализ изображения: ${processed.analysis}]`
+                : `[Анализ изображения: ${processed.analysis}]`;
+            } else {
+              // Для текстовых файлов добавляем извлечённый текст
+              finalMessage = message
+                ? `${message}\n\n[Содержимое документа "${attachment.name}":\n${processed.content}]`
+                : `[Содержимое документа "${attachment.name}":\n${processed.content}]`;
+            }
+          } catch (error) {
+            console.error(`❌ Не удалось обработать файл ${attachment.name}:`, error);
+          }
+        }
+      }
     }
 
     // Добавляем сообщение в thread через Backend
     console.log("💬 Добавляем сообщение в Thread через Backend...");
     await api.post(`/api/openai/threads/${threadId}/messages`, {
-      content: message,
+      content: finalMessage,
       role: 'user',
     });
 
@@ -131,6 +191,7 @@ export async function sendMessageToAI(
     let runStatus = runResponse.status;
     let pollCount = 0;
     const maxPolls = 60; // 30 секунд (60 * 500ms)
+    let tokenUsage: any = null; // Сохраняем usage для логирования
 
     while (runStatus === "queued" || runStatus === "in_progress" || runStatus === "requires_action") {
       if (pollCount >= maxPolls) {
@@ -147,6 +208,12 @@ export async function sendMessageToAI(
       );
       
       runStatus = statusResponse.status;
+      
+      // Сохраняем usage если есть
+      if (statusResponse.usage) {
+        tokenUsage = statusResponse.usage;
+      }
+      
       pollCount++;
 
       // TODO: Обработка function calling (requires_action)
@@ -161,6 +228,19 @@ export async function sendMessageToAI(
     }
 
     if (runStatus === "completed") {
+      // Получаем финальный Run объект с usage данными
+      console.log("📊 Получаем финальный Run для usage данных...");
+      const finalRunResponse = await api.get<{ usage?: any }>(
+        `/api/openai/threads/${threadId}/runs/${runId}`
+      );
+      
+      if (finalRunResponse.usage) {
+        tokenUsage = finalRunResponse.usage;
+        console.log("✅ Usage данные получены:", tokenUsage);
+      } else {
+        console.warn("⚠️ Usage данные не найдены в финальном Run");
+      }
+
       // Получаем последнее сообщение через Backend
       const messagesResponse = await api.get<{ data: any[] }>(
         `/api/openai/threads/${threadId}/messages?limit=1&order=desc`
@@ -197,6 +277,28 @@ export async function sendMessageToAI(
               },
             });
             console.log("✅ Диалог сохранён в Supabase через Backend");
+
+            // Логируем использование токенов (если есть данные)
+            if (tokenUsage) {
+              console.log("📊 Логируем токены:", tokenUsage);
+              try {
+                await api.post('/api/tokens/log', {
+                  userId,
+                  assistantType: 'curator',
+                  promptTokens: tokenUsage.prompt_tokens || 0,
+                  completionTokens: tokenUsage.completion_tokens || 0,
+                  totalTokens: tokenUsage.total_tokens || 0,
+                  modelUsed: 'gpt-4o',
+                  openaiThreadId: threadId,
+                  openaiMessageId: assistantMessage.id,
+                  openaiRunId: runId,
+                });
+                console.log("✅ Токены залогированы успешно");
+              } catch (tokenError) {
+                console.error("⚠️ Не удалось залогировать токены:", tokenError);
+                // Не блокируем выполнение
+              }
+            }
 
             // Обнаруживаем конфликты
             console.log("🔍 Проверяем на конфликты...");

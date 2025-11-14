@@ -6,11 +6,14 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { AdminGuard } from "./components/AdminGuard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
+import AccessDenied from "./pages/AccessDenied";
 import Profile from "./pages/Profile";
 import NeuroHub from "./pages/NeuroHub";
 import Achievements from "./pages/Achievements";
 import Welcome from "./pages/Welcome";
+import Courses from "./pages/Courses";
 import Course from "./pages/Course";
 import Module from "./pages/Module";
 import Lesson from "./pages/Lesson";
@@ -39,30 +42,95 @@ const AppRoutes = () => {
       {/* Публичные страницы (без авторизации) */}
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/welcome" element={<Welcome />} />
+      <Route path="/access-denied" element={<AccessDenied />} />
+      
+      {/* Welcome - требует авторизацию, но доступна для новых пользователей */}
+      <Route path="/welcome" element={
+        <ProtectedRoute>
+          <Welcome />
+        </ProtectedRoute>
+      } />
       
       {/* Защищённые страницы (требуют авторизацию) */}
       <Route path="/profile" element={
-        isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>
+        <ProtectedRoute>
+          {isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>}
+        </ProtectedRoute>
       } />
-      <Route path="/neurohub" element={<MainLayout><NeuroHub /></MainLayout>} />
-      <Route path="/achievements" element={<MainLayout><Achievements /></MainLayout>} />
-      <Route path="/courses" element={<Navigate to="/course/1" replace />} />
-      <Route path="/course/:id" element={<MainLayout><Course /></MainLayout>} />
-      <Route path="/course/:id/module/:moduleId" element={<MainLayout><Module /></MainLayout>} />
-      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={<MainLayout><Lesson /></MainLayout>} />
+      <Route path="/neurohub" element={
+        <ProtectedRoute>
+          <MainLayout><NeuroHub /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/achievements" element={
+        <ProtectedRoute>
+          <MainLayout><Achievements /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/courses" element={
+        <ProtectedRoute>
+          <MainLayout><Courses /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id" element={
+        <ProtectedRoute>
+          <MainLayout><Course /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id/module/:moduleId" element={
+        <ProtectedRoute>
+          <MainLayout><Module /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={
+        <ProtectedRoute>
+          <MainLayout><Lesson /></MainLayout>
+        </ProtectedRoute>
+      } />
       
       {/* Админ-панель (ЗАЩИЩЕНО: только saint@onaiacademy.kz) */}
-      <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
-      <Route path="/admin/activity" element={<AdminGuard><MainLayout><Activity /></MainLayout></AdminGuard>} />
-      <Route path="/admin/students-activity" element={<AdminGuard><MainLayout><StudentsActivity /></MainLayout></AdminGuard>} />
-      <Route path="/admin/ai-analytics" element={<AdminGuard><MainLayout><AIAnalytics /></MainLayout></AdminGuard>} />
-      <Route path="/admin/ai-curator-chats" element={<AdminGuard><MainLayout><AICuratorChats /></MainLayout></AdminGuard>} />
-      <Route path="/admin/token-usage" element={<AdminGuard><MainLayout><TokenUsage /></MainLayout></AdminGuard>} />
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/activity" element={
+        <ProtectedRoute>
+          <AdminGuard><MainLayout><Activity /></MainLayout></AdminGuard>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/students-activity" element={
+        <ProtectedRoute>
+          <AdminGuard><MainLayout><StudentsActivity /></MainLayout></AdminGuard>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/ai-analytics" element={
+        <ProtectedRoute>
+          <AdminGuard><MainLayout><AIAnalytics /></MainLayout></AdminGuard>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/ai-curator-chats" element={
+        <ProtectedRoute>
+          <AdminGuard><MainLayout><AICuratorChats /></MainLayout></AdminGuard>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/token-usage" element={
+        <ProtectedRoute>
+          <AdminGuard><MainLayout><TokenUsage /></MainLayout></AdminGuard>
+        </ProtectedRoute>
+      } />
       
       {/* Настройки и чат (требуют авторизацию) */}
-      <Route path="/settings" element={<MainLayout><ProfileSettings /></MainLayout>} />
-      <Route path="/messages" element={<MainLayout><Messages /></MainLayout>} />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <MainLayout><ProfileSettings /></MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute>
+          <MainLayout><Messages /></MainLayout>
+        </ProtectedRoute>
+      } />
       
       {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}
       {/* <Route path="/test-query" element={<TestQuery />} /> */}

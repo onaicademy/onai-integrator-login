@@ -233,3 +233,47 @@ export async function transcribeAudio(
     throw new Error(`Failed to transcribe audio: ${error.message}`);
   }
 }
+
+/**
+ * Анализ изображения через Vision API (gpt-4o)
+ */
+export async function analyzeImage(
+  imageDataUrl: string,
+  userQuestion?: string
+): Promise<string> {
+  try {
+    console.log('[OpenAI] Analyzing image with Vision API...');
+    
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: userQuestion || 'Опиши что изображено на картинке подробно.',
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: imageDataUrl,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 1000,
+    });
+
+    const description = response.choices[0].message.content || 'Не удалось проанализировать изображение';
+    
+    console.log(`✅ Image analyzed: ${description.length} characters`);
+    console.log(`📊 Tokens used: ${response.usage?.total_tokens || 0}`);
+    
+    return description;
+  } catch (error: any) {
+    console.error('[OpenAI] Failed to analyze image:', error.message);
+    throw new Error(`Failed to analyze image: ${error.message}`);
+  }
+}

@@ -155,9 +155,11 @@ export default function StudentsActivity() {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек timeout
       
       try {
+        // ✅ ИСПРАВЛЕНИЕ: Показываем ВСЕХ пользователей (не только из student_profiles)
         const { data: profiles, error: profilesError } = await supabase
-          .from("student_profiles")
+          .from("users")
           .select("*")
+          .neq("role", "admin") // Исключаем админов
           .order("created_at", { ascending: false });
         
         clearTimeout(timeoutId);
@@ -176,7 +178,7 @@ export default function StudentsActivity() {
           return;
         }
 
-        console.log(`✅ Получено ${profiles?.length || 0} записей из student_profiles`);
+        console.log(`✅ Получено ${profiles?.length || 0} записей из users (без админов)`);
 
       const mapped: StudentRow[] =
         profiles?.map((profile) => {
@@ -185,12 +187,12 @@ export default function StudentsActivity() {
             email: profile.email || "",
             full_name: profile.full_name || profile.email || "Без имени",
             role: profile.role || "student",
-            is_active: profile.is_active ?? true,
+            is_active: profile.role !== 'inactive', // ✅ Активен, если role НЕ 'inactive'
             last_login_at: profile.last_login_at ?? profile.updated_at ?? null,
-            last_active_date: profile.last_active_date ?? null,
-            account_expires_at: profile.account_expires_at ?? null,
-            deleted_at: profile.deleted_at ?? null,
-            deactivation_reason: profile.deactivation_reason ?? null,
+            last_active_date: null, // Нет в users, можно добавить позже
+            account_expires_at: null, // Нет в users
+            deleted_at: null,
+            deactivation_reason: null,
             total_xp: Math.floor(Math.random() * 3000), // Mock
             level: Math.floor(Math.random() * 15) + 1, // Mock
             streak_days: Math.floor(Math.random() * 30), // Mock
@@ -375,10 +377,11 @@ export default function StudentsActivity() {
     try {
       console.log('⛔ Деактивация студента:', studentId);
       
+      // ✅ ИСПРАВЛЕНИЕ: Обновляем users вместо student_profiles
       const { error } = await supabase
-        .from('student_profiles')
+        .from('users')
         .update({ 
-          is_active: false,
+          role: 'inactive', // Меняем роль на inactive
         })
         .eq('id', studentId);
       

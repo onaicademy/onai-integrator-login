@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
+import { api } from '@/utils/apiClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,45 +24,56 @@ const Welcome = () => {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Answer>({})
   const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
 
-  // ВРЕМЕННО ОТКЛЮЧЕНО: проверка авторизации и редиректы
+  // Проверяем статус онбординга при загрузке
   useEffect(() => {
-    // Просто показываем страницу без проверок
-  }, [])
+    if (!user) {
+      console.log('❌ Welcome: пользователь не авторизован, редирект на /login')
+      navigate('/login')
+      return
+    }
 
-  const checkExistingSurvey = async () => {
-    // Отключено
-  }
+    // Проверяем, не завершён ли уже онбординг
+    const checkStatus = async () => {
+      try {
+        const status = await api.get(`/api/onboarding/status?userId=${user.id}`)
+        if (status.completed) {
+          console.log('✅ Онбординг уже завершён, редирект на /profile')
+          navigate('/profile')
+        }
+      } catch (error) {
+        console.warn('⚠️ Не удалось проверить статус онбординга, продолжаем')
+      }
+    }
+
+    checkStatus()
+  }, [user, navigate])
 
   const handleNext = () => {
     setStep(prev => prev + 1)
   }
 
   const handleSubmit = async () => {
-    if (!userId) return
+    if (!user) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Пользователь не авторизован",
+        variant: "destructive",
+      })
+      return
+    }
 
     setLoading(true)
     try {
-      const { error: insertError } = await supabase
-        .from('user_survey')
-        .insert({
-          user_id: userId,
-          ...answers,
-        })
+      console.log('💾 Сохраняем ответы онбординга...', answers)
 
-      if (insertError) throw insertError
-
-      await supabase.auth.updateUser({
-        data: {
-          name: answers.name,
-          job_role: answers.job_role,
-          city: answers.city,
-          motivation: answers.motivation,
-          goal: answers.goal,
-        },
+      // Сохраняем через Backend API
+      await api.post('/api/onboarding/complete', {
+        userId: user.id,
+        responses: answers,
       })
 
       toast({
@@ -69,13 +81,13 @@ const Welcome = () => {
         description: "Добро пожаловать в onAI Academy!",
       })
 
+      console.log('✅ Онбординг завершён, редирект на /profile')
       navigate('/profile')
-    } catch (error) {
-      console.error('Error saving survey:', error)
-      const errorMessage = error instanceof Error ? error.message : "Не удалось сохранить данные"
+    } catch (error: any) {
+      console.error('❌ Ошибка сохранения анкеты:', error)
       toast({
         title: "❌ Ошибка",
-        description: errorMessage,
+        description: error.message || "Не удалось сохранить данные",
         variant: "destructive",
       })
     } finally {
