@@ -354,14 +354,14 @@ export default function Activity() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+      <div className="min-h-screen bg-black p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-          <Skeleton className="h-20 w-full" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
+          <Skeleton className="h-16 sm:h-20 w-full bg-[#1a1a24]" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 sm:h-32 bg-[#1a1a24]" />)}
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[1, 2].map(i => <Skeleton key={i} className="h-64" />)}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {[1, 2].map(i => <Skeleton key={i} className="h-48 sm:h-64 bg-[#1a1a24]" />)}
           </div>
         </div>
       </div>
@@ -370,66 +370,66 @@ export default function Activity() {
 
   if (!isAdmin) return null;
 
-  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
+  const COLORS = ['#00ff00', '#00cc00', '#3b82f6', '#8b5cf6'];
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
-        <div className="max-w-7xl mx-auto space-y-10">
+      <div className="min-h-screen bg-black p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl">
-                <BarChart3 className="h-10 w-10 text-primary" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 rounded-xl border border-[#00ff00]/30">
+                <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ff00]" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">
+                <h1 className="text-3xl sm:text-4xl font-bold text-white">
                   Панель Активности
                 </h1>
-                <p className="text-muted-foreground mt-2">Комплексная аналитика платформы и учеников</p>
+                <p className="text-gray-400 mt-1 text-sm sm:text-base">Комплексная аналитика платформы и учеников</p>
               </div>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <Card className="bg-card/50 border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3 flex-wrap">
+          <Card className="bg-[#1a1a24] border-gray-800">
+            <CardContent className="pt-4 sm:pt-6">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <Button
                   variant="ghost"
-                  className="gap-2 hover:bg-primary/10 hover:text-primary"
+                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
                   onClick={() => {
                     // Scroll to overview section or keep default view
                   }}
                 >
-                  <BarChart3 className="h-4 w-4" />
+                  <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   Обзор
                 </Button>
                 <Button
                   variant="ghost"
-                  className="gap-2 hover:bg-primary/10 hover:text-primary"
+                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
                   onClick={() => setShowTopStudentsModal(true)}
                 >
-                  <Award className="h-4 w-4" />
-                  Топ Ученики
+                  <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Топ</span> Ученики
                 </Button>
                 <Button
                   variant="ghost"
-                  className="gap-2 hover:bg-primary/10 hover:text-primary"
+                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
                   onClick={() => {
                     // Can add another modal or section later
                   }}
                 >
-                  <Users className="h-4 w-4" />
-                  Все Ученики
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Все</span> Ученики
                 </Button>
                 <Button
                   variant="ghost"
-                  className="gap-2 hover:bg-primary/10 hover:text-primary"
+                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
                   onClick={() => navigate("/admin/ai-curator-chats")}
                 >
-                  <MessageSquare className="h-4 w-4" />
-                  Диалоги AI-куратора
+                  <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Диалоги</span> AI
                 </Button>
               </div>
             </CardContent>

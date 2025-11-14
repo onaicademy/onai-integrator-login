@@ -1,10 +1,60 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Brain, Sparkles, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { api } from "@/utils/apiClient";
+
+const KZT_RATE = 460; // 1 USD = 460 KZT
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [tokenStats, setTokenStats] = useState<any>(null);
+
+  // Загружаем статистику токенов при монтировании
+  useEffect(() => {
+    loadTokenStats();
+  }, []);
+
+  const loadTokenStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику токенов...');
+      const response = await api.get('/api/tokens/stats/total');
+      const stats = response.data || response;
+      console.log('[AdminDashboard] ✅ Статистика токенов загружена:', stats);
+      setTokenStats(stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки токенов:', error);
+    }
+  };
+
+  // Форматирование данных для карточки токенов
+  const formatTokenStats = () => {
+    if (!tokenStats) {
+      return [
+        { label: "Затраты сегодня", value: "..." },
+        { label: "Всего токенов", value: "..." },
+        { label: "Запросов", value: "..." },
+      ];
+    }
+
+    const totalCostKZT = Math.round((tokenStats.total_cost_usd || 0) * KZT_RATE);
+    const totalTokens = tokenStats.total_tokens || 0;
+    const totalRequests = tokenStats.total_requests || 0;
+
+    // Форматируем токены (125K, 1.2M и т.д.)
+    const formatTokens = (num: number) => {
+      if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+      if (num >= 1000) return `${Math.round(num / 1000)}K`;
+      return num.toString();
+    };
+
+    return [
+      { label: "Затраты сегодня", value: `${totalCostKZT}₸` },
+      { label: "Всего токенов", value: formatTokens(totalTokens) },
+      { label: "Запросов", value: totalRequests.toString() },
+    ];
+  };
 
   return (
     <div className="min-h-screen bg-black relative p-6">
@@ -66,17 +116,13 @@ export default function AdminDashboard() {
             ]}
           />
 
-          {/* Карточка 4: Токены AI-агентов */}
+          {/* Карточка 4: Токены AI-агентов (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
           <AdminCard
             title="Токены AI-агентов"
             description="Затраты OpenAI, статистика, бюджет"
             icon={<DollarSign className="w-8 h-8" />}
             onClick={() => navigate("/admin/token-usage")}
-            stats={[
-              { label: "Затраты сегодня", value: "2,450₸" },
-              { label: "Всего токенов", value: "125K" },
-              { label: "Запросов", value: "342" },
-            ]}
+            stats={formatTokenStats()}
           />
         </div>
       </div>
