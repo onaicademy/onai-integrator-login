@@ -353,3 +353,5 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
 **💡 ВЫВОД:** Код **ГОТОВ НА 65%**. Основные проблемы — **console.log** и **тестовый роут**. После их исправления — **ГОТОВ К ПРОДАКШЕНУ!** ✅
 
+
+

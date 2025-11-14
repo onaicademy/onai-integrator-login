@@ -1,12 +1,25 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Явно загружаем .env файл из директории backend
+// __dirname = backend/src, поэтому идем на уровень выше к backend/.env
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+// Логируем загруженные переменные (БЕЗ значений для безопасности)
+console.log('🔍 Environment variables loaded:');
+console.log('   SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ SET' : '❌ NOT SET');
+console.log('   SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ SET' : '❌ NOT SET');
+console.log('   OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? '✅ SET' : '❌ NOT SET');
+console.log('   FRONTEND_URL:', process.env.FRONTEND_URL || 'http://localhost:8080 (default)');
 
 import usersRouter from './routes/users';
 import diagnosticsRouter from './routes/diagnostics';
 import openaiRouter from './routes/openai';
 import telegramRouter from './routes/telegram';
+import supabaseRouter from './routes/supabase';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -35,11 +48,26 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint для проверки environment variables
+app.get('/api/debug/env', (req, res) => {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  res.json({
+    SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
+    SUPABASE_SERVICE_ROLE_KEY: serviceKey ? 'SET' : 'NOT SET',
+    SUPABASE_SERVICE_ROLE_KEY_FIRST_10: serviceKey.substring(0, 10),
+    SUPABASE_SERVICE_ROLE_KEY_LAST_10: serviceKey.substring(serviceKey.length - 10),
+    SUPABASE_SERVICE_ROLE_KEY_LENGTH: serviceKey.length,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET',
+    FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET',
+  });
+});
+
 // Routes
 app.use('/api/users', usersRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
+app.use('/api/supabase', supabaseRouter);
 
 // 404 обработка
 app.use((req, res) => {

@@ -3,7 +3,6 @@ import { getUserAchievementsForAI, formatAchievementsForAI } from './achievement
 import { logTokenUsage, logWhisperUsage } from './token-tracker';
 import {
   getChatHistory as getSupabaseChatHistory,
-  saveMessagePair,
   type ChatMessage as SupabaseChatMessage,
 } from './supabase-chat';
 import { detectConflicts } from './conflict-detector';
@@ -182,31 +181,41 @@ export async function sendMessageToAI(
         const responseTime = Date.now() - startTime;
         console.log("✅ Получен ответ от Assistant (длина:", responseText.length, "символов)");
 
-        // Сохраняем диалог в Supabase (если userId передан)
+        // Сохраняем диалог в Supabase через Backend API (если userId передан)
         if (userId) {
-          console.log("💾 Сохраняем диалог в Supabase...");
-          await saveMessagePair(userId, message, responseText, {
-            response_time_ms: responseTime,
-            model_used: 'gpt-4o',
-            openai_message_id: assistantMessage.id,
-            openai_run_id: runId,
-          });
-          console.log("✅ Диалог сохранён в Supabase");
+          console.log("💾 Сохраняем диалог в Supabase через Backend API...");
+          try {
+            await api.post('/api/supabase/curator/messages', {
+              userId,
+              userMessage: message,
+              aiMessage: responseText,
+              options: {
+                response_time_ms: responseTime,
+                model_used: 'gpt-4o',
+                openai_message_id: assistantMessage.id,
+                openai_run_id: runId,
+              },
+            });
+            console.log("✅ Диалог сохранён в Supabase через Backend");
 
-          // Обнаруживаем конфликты
-          console.log("🔍 Проверяем на конфликты...");
-          const conflicts = await detectConflicts({
-            userMessage: message,
-            aiResponse: responseText,
-            threadId,
-            userId,
-            responseTime,
-            tokenCount: undefined, // TODO: получать из runStatus
-            model: 'gpt-4o',
-          });
+            // Обнаруживаем конфликты
+            console.log("🔍 Проверяем на конфликты...");
+            const conflicts = await detectConflicts({
+              userMessage: message,
+              aiResponse: responseText,
+              threadId,
+              userId,
+              responseTime,
+              tokenCount: undefined, // TODO: получать из runStatus
+              model: 'gpt-4o',
+            });
 
-          if (conflicts.length > 0) {
-            console.warn(`⚠️ Обнаружено конфликтов: ${conflicts.length}`);
+            if (conflicts.length > 0) {
+              console.warn(`⚠️ Обнаружено конфликтов: ${conflicts.length}`);
+            }
+          } catch (saveError) {
+            console.error("⚠️ Не удалось сохранить в Supabase (не критично):", saveError);
+            // Не блокируем ответ, если не удалось сохранить
           }
         }
 
