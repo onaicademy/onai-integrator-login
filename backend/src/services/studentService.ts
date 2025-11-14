@@ -145,3 +145,104 @@ export async function getStudents(filters?: {
   }
 }
 
+/**
+ * Получить студента по ID
+ */
+export async function getStudentById(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Failed to fetch student: ${error.message}`);
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error fetching student:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Обновить студента
+ */
+export async function updateStudent(userId: string, updates: {
+  full_name?: string;
+  phone?: string;
+  telegram_chat_id?: number;
+  [key: string]: any;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update student: ${error.message}`);
+    }
+
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error updating student:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Деактивировать студента
+ */
+export async function deactivateStudent(userId: string, reason?: string) {
+  try {
+    // Обновляем student_profiles
+    const { error: profileError } = await supabase
+      .from('student_profiles')
+      .update({
+        is_active: false,
+        deactivation_reason: reason,
+        deleted_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (profileError) {
+      console.warn('[StudentService] Warning updating profile:', profileError);
+    }
+
+    return { success: true, message: 'Student deactivated' };
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error deactivating student:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Активировать студента
+ */
+export async function activateStudent(userId: string) {
+  try {
+    const { error: profileError } = await supabase
+      .from('student_profiles')
+      .update({
+        is_active: true,
+        deactivation_reason: null,
+        deleted_at: null
+      })
+      .eq('user_id', userId);
+
+    if (profileError) {
+      console.warn('[StudentService] Warning updating profile:', profileError);
+    }
+
+    return { success: true, message: 'Student activated' };
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error activating student:', error.message);
+    throw error;
+  }
+}
+

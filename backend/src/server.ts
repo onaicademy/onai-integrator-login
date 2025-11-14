@@ -20,6 +20,7 @@ import diagnosticsRouter from './routes/diagnostics';
 import openaiRouter from './routes/openai';
 import telegramRouter from './routes/telegram';
 import supabaseRouter from './routes/supabase';
+import studentsRouter from './routes/students';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -68,6 +69,7 @@ app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
 app.use('/api/supabase', supabaseRouter);
+app.use('/api/students', studentsRouter);
 
 // 404 обработка
 app.use((req, res) => {
