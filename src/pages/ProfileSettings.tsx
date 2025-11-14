@@ -326,162 +326,229 @@ export default function ProfileSettings() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {/* Заголовок */}
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-neon to-[hsl(var(--cyber-blue))] bg-clip-text text-transparent">
-          ⚙️ Настройки профиля
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Управление вашим аккаунтом
-        </p>
-      </motion.div>
+    <div className="min-h-screen bg-black p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Заголовок */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-5xl font-bold text-white mb-2">
+            Настройки профиля
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Управление вашим аккаунтом
+          </p>
+        </motion.div>
 
-      <div className="space-y-6">
-        {/* Аватарка */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Аватар</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6">
-              <Avatar className="w-24 h-24 border-4 border-neon/30">
-                {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} alt="Avatar" />
-                ) : null}
-                <AvatarFallback className="bg-gradient-to-br from-neon/20 to-[hsl(var(--cyber-blue))]/20 text-2xl font-bold">
-                  {fullName ? getInitials(fullName) : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Загрузите свой аватар (макс 2MB)
-                </p>
-                <div>
-                  <Input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="hidden"
-                    disabled={loading}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById("avatar-upload")?.click()}
-                    disabled={loading}
+        <div className="space-y-6">
+          {/* Аватарка */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-[#00ff00]" />
+                  Аватар
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-6">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <Camera className="w-4 h-4 mr-2" />
-                    {loading ? "Загрузка..." : "Загрузить фото"}
-                  </Button>
+                    <Avatar className="w-24 h-24 border-4 border-[#00ff00]/30">
+                      {avatarUrl ? (
+                        <AvatarImage src={avatarUrl} alt="Avatar" />
+                      ) : null}
+                      <AvatarFallback className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 text-2xl font-bold text-white">
+                        {fullName ? getInitials(fullName) : "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.div>
+                  <div>
+                    <p className="text-sm text-gray-400 mb-3">
+                      Загрузите свой аватар (макс 2MB)
+                    </p>
+                    <div>
+                      <Input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                        disabled={loading}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById("avatar-upload")?.click()}
+                        disabled={loading}
+                        className="bg-transparent border-[#00ff00] text-[#00ff00] hover:bg-[#00ff00]/10"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        {loading ? "Загрузка..." : "Загрузить фото"}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Основная информация */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Основная информация</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="fullName">Полное имя</Label>
-              <Input
-                id="fullName"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Иван Иванов"
-                disabled={profileLoading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                disabled={profileLoading}
-              />
-            </div>
-            <Button onClick={handleUpdateProfile} disabled={loading || profileLoading}>
-              <Save className="w-4 h-4 mr-2" />
-              Сохранить изменения
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Основная информация */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <User className="w-5 h-5 text-[#00ff00]" />
+                  Основная информация
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="fullName" className="text-white">Полное имя</Label>
+                  <Input
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Иван Иванов"
+                    disabled={profileLoading}
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email@example.com"
+                    disabled={profileLoading}
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                  />
+                </div>
+                <Button 
+                  onClick={handleUpdateProfile} 
+                  disabled={loading || profileLoading}
+                  className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Сохранить изменения
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Смена пароля */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Смена пароля</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="newPassword">Новый пароль</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Минимум 6 символов"
-              />
-            </div>
-            <div>
-              <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Повторите пароль"
-              />
-            </div>
-            <Button onClick={handleChangePassword} disabled={loading}>
-              <Key className="w-4 h-4 mr-2" />
-              Изменить пароль
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Смена пароля */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Key className="w-5 h-5 text-[#00ff00]" />
+                  Смена пароля
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="newPassword" className="text-white">Новый пароль</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Минимум 6 символов"
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-white">Подтвердите пароль</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Повторите пароль"
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                  />
+                </div>
+                <Button 
+                  onClick={handleChangePassword} 
+                  disabled={loading}
+                  className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold"
+                >
+                  <Key className="w-4 h-4 mr-2" />
+                  Изменить пароль
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Выход из аккаунта */}
-        <Card className="border-destructive/20">
-          <CardHeader>
-            <CardTitle className="text-destructive">Выход из аккаунта</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Выйти из вашего аккаунта на этом устройстве
-            </p>
-            <Button 
-              variant="destructive" 
-              onClick={handleLogout} 
-              disabled={loading}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Выйти
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Выход из аккаунта */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-[#1a1a24] border-red-900/30 hover:border-red-500/50 transition-all">
+              <CardHeader>
+                <CardTitle className="text-red-500 flex items-center gap-2">
+                  <LogOut className="w-5 h-5" />
+                  Выход из аккаунта
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-400 mb-4">
+                  Выйти из вашего аккаунта на этом устройстве
+                </p>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleLogout} 
+                  disabled={loading}
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Выйти
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Уведомления */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Уведомления</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Настройки уведомлений будут добавлены позже
-            </p>
-          </CardContent>
-        </Card>
+          {/* Уведомления */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-[#00ff00]" />
+                  Уведомления
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-400">
+                  Настройки уведомлений будут добавлены позже
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

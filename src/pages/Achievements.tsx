@@ -237,23 +237,23 @@ export default function Achievements() {
   }, [filteredAchievements]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-black p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start justify-between"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl">
-              <Trophy className="h-10 w-10 text-primary" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 rounded-xl border border-[#00ff00]/30">
+              <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ff00]" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white">
                 Достижения
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-gray-400 mt-1 text-sm sm:text-base">
                 Отслеживайте свой прогресс и получайте награды
               </p>
             </div>
@@ -262,39 +262,42 @@ export default function Achievements() {
           {/* Overall Progress Badge */}
           <Badge
             variant="outline"
-            className="text-lg px-4 py-2 border-primary text-primary"
+            className="text-base sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 border-[#00ff00] text-[#00ff00] bg-[#00ff00]/10"
           >
             {stats.completed} / {stats.total}
           </Badge>
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Общий прогресс</p>
-                    <h3 className="text-3xl font-bold text-primary">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/50 transition-all">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="w-full sm:w-auto">
+                    <p className="text-xs sm:text-sm text-gray-400 mb-1">Общий прогресс</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[#00ff00]">
                       {Math.round(stats.percentage)}%
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {stats.completed} разблокировано
                     </p>
                   </div>
-                  <CircularProgress
-                    percentage={stats.percentage}
-                    size={80}
-                    color="#b1ff32"
-                    glowColor="rgba(177, 255, 50, 0.4)"
-                    showPercentage={false}
-                    icon="🎯"
-                  />
+                  <div className="hidden sm:block">
+                    <CircularProgress
+                      percentage={stats.percentage}
+                      size={60}
+                      color="#00ff00"
+                      glowColor="rgba(0, 255, 0, 0.4)"
+                      showPercentage={false}
+                      icon="🎯"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -304,20 +307,21 @@ export default function Achievements() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/20">
-              <CardContent className="p-6">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-yellow-500/50 transition-all">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Заработано XP</p>
-                    <h3 className="text-3xl font-bold text-yellow-500">
+                    <p className="text-xs sm:text-sm text-gray-400 mb-1">XP</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-yellow-500">
                       {stats.totalXpEarned}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      от достижений
+                    <p className="text-xs text-gray-500 mt-1">
+                      заработано
                     </p>
                   </div>
-                  <Zap className="h-12 w-12 text-yellow-500" />
+                  <Zap className="h-8 w-8 sm:h-10 sm:w-10 text-yellow-500" />
                 </div>
               </CardContent>
             </Card>
@@ -327,20 +331,21 @@ export default function Achievements() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-              <CardContent className="p-6">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-blue-500/50 transition-all">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">В процессе</p>
-                    <h3 className="text-3xl font-bold text-blue-500">
+                    <p className="text-xs sm:text-sm text-gray-400 mb-1">В процессе</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-blue-500">
                       {stats.inProgress}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      достижений
+                    <p className="text-xs text-gray-500 mt-1">
+                      активных
                     </p>
                   </div>
-                  <TrendingUp className="h-12 w-12 text-blue-500" />
+                  <TrendingUp className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
@@ -350,20 +355,21 @@ export default function Achievements() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-              <CardContent className="p-6">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-purple-500/50 transition-all">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Редкие</p>
-                    <h3 className="text-3xl font-bold text-purple-500">
+                    <p className="text-xs sm:text-sm text-gray-400 mb-1">Редкие</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-purple-500">
                       {achievementsWithProgress.filter(a => a.isCompleted && (a.rarity === 'epic' || a.rarity === 'legendary')).length}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      разблокировано
+                    <p className="text-xs text-gray-500 mt-1">
+                      получено
                     </p>
                   </div>
-                  <Crown className="h-12 w-12 text-purple-500" />
+                  <Crown className="h-8 w-8 sm:h-10 sm:w-10 text-purple-500" />
                 </div>
               </CardContent>
             </Card>
@@ -377,12 +383,12 @@ export default function Achievements() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Card className="bg-gradient-to-br from-orange-500/10 via-primary/5 to-purple-500/10 border-orange-500/40 relative overflow-hidden">
+            <Card className="bg-[#1a1a24] border-orange-500/50 relative overflow-hidden hover:border-orange-500 transition-all">
               {/* Animated glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-primary/10 to-purple-500/5 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-orange-500/10 to-orange-500/5 animate-pulse" />
               
               <CardHeader className="relative z-10">
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
                   <div className="flex items-center gap-3 flex-1">
                     <motion.div
                       animate={{ 
@@ -395,21 +401,21 @@ export default function Achievements() {
                         repeatDelay: 3
                       }}
                     >
-                      <Flame className="h-6 w-6 text-orange-500" />
+                      <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
                     </motion.div>
                     <div className="flex-1">
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        Достижения дня
-                        <Badge className="bg-orange-500 text-white hover:bg-orange-600">
+                      <CardTitle className="text-lg sm:text-xl flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <span className="text-white">Достижения дня</span>
+                        <Badge className="bg-orange-500 text-white hover:bg-orange-600 text-xs sm:text-sm">
                           x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP
                         </Badge>
                       </CardTitle>
-                      <CardDescription className="mt-1">
+                      <CardDescription className="mt-1 text-xs sm:text-sm text-gray-400">
                         Выполни до полуночи и получи двойной XP! 🔥
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-orange-500/10 border-orange-500 text-orange-500 flex items-center gap-1">
+                  <Badge variant="outline" className="bg-orange-500/10 border-orange-500 text-orange-500 flex items-center gap-1 text-xs sm:text-sm">
                     <Clock className="h-3 w-3" />
                     {timeUntilReset}
                   </Badge>
@@ -417,7 +423,7 @@ export default function Achievements() {
               </CardHeader>
               <CardContent className="relative z-10">
                 <motion.div 
-                  className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
                   initial="hidden"
                   animate="visible"
                   variants={{
@@ -495,11 +501,11 @@ export default function Achievements() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.2 }}
-                  className="mt-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg"
+                  className="mt-4 sm:mt-6 p-3 sm:p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg"
                 >
-                  <p className="text-sm text-muted-foreground text-center">
+                  <p className="text-xs sm:text-sm text-gray-400 text-center">
                     💡 <span className="font-medium text-orange-500">Совет:</span> Достижения дня обновляются каждый день в полночь. 
-                    Выполни их сегодня, чтобы получить <span className="font-bold text-primary">x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP</span>!
+                    Выполни их сегодня, чтобы получить <span className="font-bold text-[#00ff00]">x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP</span>!
                   </p>
                 </motion.div>
               </CardContent>
@@ -508,16 +514,16 @@ export default function Achievements() {
         )}
 
         {/* Filters and Search */}
-        <Card className="bg-card/50">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+        <Card className="bg-[#1a1a24] border-gray-800">
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Поиск достижений..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
                 />
               </div>
             </div>
@@ -526,37 +532,44 @@ export default function Achievements() {
 
         {/* Tabs by Category */}
         <Tabs value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as any)}>
-          <TabsList className="w-full flex-wrap h-auto bg-card/50 p-2 gap-2">
-            <TabsTrigger value="all" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              Все ({achievementsWithProgress.filter(a => !a.hidden).length})
+          <TabsList className="w-full flex-wrap h-auto bg-[#1a1a24] border border-gray-800 p-2 gap-2">
+            <TabsTrigger 
+              value="all" 
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+            >
+              <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Все</span> ({achievementsWithProgress.filter(a => !a.hidden).length})
             </TabsTrigger>
             {Object.entries(ACHIEVEMENT_CATEGORIES).map(([key, cat]) => {
               const count = achievementsWithProgress.filter(
                 a => a.category === key && !a.hidden
               ).length;
               return (
-                <TabsTrigger key={key} value={key} className="flex items-center gap-2">
+                <TabsTrigger 
+                  key={key} 
+                  value={key} 
+                  className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+                >
                   <span>{cat.icon}</span>
-                  {cat.name} ({count})
+                  <span className="hidden sm:inline">{cat.name}</span> ({count})
                 </TabsTrigger>
               );
             })}
           </TabsList>
 
-          <TabsContent value={selectedCategory} className="mt-6">
+          <TabsContent value={selectedCategory} className="mt-4 sm:mt-6">
             {/* Achievement Grid */}
             {filteredAchievements.length === 0 ? (
-              <Card className="bg-card/50">
-                <CardContent className="py-12 text-center">
-                  <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
+              <Card className="bg-[#1a1a24] border-gray-800">
+                <CardContent className="py-8 sm:py-12 text-center">
+                  <Trophy className="h-10 w-10 sm:h-12 sm:w-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400 text-sm sm:text-base">
                     Достижения не найдены
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-6 sm:space-y-8">
                 {/* По редкости */}
                 {Object.entries(achievementsByRarity).map(([rarity, achievements]) => {
                   if (achievements.length === 0) return null;
@@ -566,24 +579,24 @@ export default function Achievements() {
                   return (
                     <div key={rarity}>
                       <motion.div 
-                        className="flex items-center gap-3 mb-4"
+                        className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4"
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4 }}
                       >
                         <div
-                          className="w-1 h-6 rounded"
+                          className="w-1 h-5 sm:h-6 rounded"
                           style={{ backgroundColor: rarityConfig.color }}
                         />
-                        <h2 className="text-xl font-semibold" style={{ color: rarityConfig.color }}>
+                        <h2 className="text-lg sm:text-xl font-semibold" style={{ color: rarityConfig.color }}>
                           {rarityConfig.name}
                         </h2>
-                        <Badge variant="outline" style={{ borderColor: rarityConfig.color, color: rarityConfig.color }}>
+                        <Badge variant="outline" style={{ borderColor: rarityConfig.color, color: rarityConfig.color }} className="text-xs sm:text-sm">
                           {achievements.length}
                         </Badge>
                       </motion.div>
                       <motion.div 
-                        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
                         initial="hidden"
                         animate="visible"
                         variants={{

@@ -21,26 +21,39 @@ const upload = multer({
  */
 export async function processFile(req: Request, res: Response) {
   try {
+    console.log('[FileController] 🔍 Начало обработки файла...');
+    console.log('[FileController] req.file:', !!req.file);
+    console.log('[FileController] req.body:', req.body);
+    
     if (!req.file) {
+      console.error('[FileController] ❌ Файл не найден в запросе');
       return res.status(400).json({ error: 'No file provided' });
     }
 
     const file = req.file;
     const userQuestion = req.body.userQuestion || '';
 
-    console.log('[FileController] Processing file:', {
+    console.log('[FileController] ✅ Файл получен:', {
       filename: file.originalname,
       mimetype: file.mimetype,
       size: file.size,
+      bufferLength: file.buffer?.length || 0,
       userQuestion: userQuestion ? userQuestion.substring(0, 50) : 'N/A',
     });
 
     // Обрабатываем файл
+    console.log('[FileController] 📎 Вызываем fileProcessingService.processFile...');
     const processed = await fileProcessingService.processFile(
       file.buffer,
       file.mimetype,
       file.originalname
     );
+    
+    console.log('[FileController] ✅ Файл обработан:', {
+      type: processed.type,
+      contentLength: processed.content?.length || 0,
+      originalName: processed.originalName,
+    });
 
     // Для изображений - анализируем через Vision API
     if (processed.type === 'image') {
@@ -71,12 +84,17 @@ export async function processFile(req: Request, res: Response) {
       });
     }
 
+    console.error('[FileController] ❌ Unsupported file type');
     res.status(400).json({ error: 'Unsupported file type' });
   } catch (error: any) {
-    console.error('[FileController] ❌ Error processing file:', error.message);
+    console.error('[FileController] ❌ КРИТИЧЕСКАЯ ОШИБКА обработки файла:');
+    console.error('[FileController] Тип ошибки:', error.constructor.name);
+    console.error('[FileController] Сообщение:', error.message);
+    console.error('[FileController] Стек:', error.stack);
     res.status(500).json({
       error: 'Failed to process file',
       message: error.message,
+      type: error.constructor.name,
     });
   }
 }

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, Brain, Sparkles, Zap, DollarSign } from "lucide-react";
+import { Users, Brain, Sparkles, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 
@@ -148,14 +148,6 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
           ))}
         </div>
 
-        {/* Стрелка */}
-        <motion.div
-          className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-          initial={{ x: -10 }}
-          whileHover={{ x: 0 }}
-        >
-          <Zap className="w-5 h-5 text-[#00ff00]" />
-        </motion.div>
       </Card>
     </motion.div>
   );
