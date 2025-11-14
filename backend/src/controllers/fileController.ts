@@ -1,115 +1,146 @@
 import { Request, Response } from 'express';
-import multer from 'multer';
 import * as fileProcessingService from '../services/fileProcessingService';
 import * as openaiService from '../services/openaiService';
-
-// Multer для обработки multipart/form-data
-const upload = multer({ 
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB макс
-  },
-});
+import { uploadToStorage } from '../services/supabaseStorageService';
+import { saveFileMetadata } from '../services/supabaseDatabaseService';
 
 /**
  * POST /api/files/process
- * Обработать файл (PDF, DOCX, изображение) и вернуть содержимое
+ * 
+ * НОВАЯ АРХИТЕКТУРА:
+ * 1. Получить файл через Multer (req.file.buffer)
+ * 2. Извлечь текст из PDF/DOCX
+ * 3. Загрузить файл в Supabase Storage
+ * 4. Сохранить metadata в БД (таблица file_uploads)
+ * 5. Вернуть URL файла + извлечённый текст
  * 
  * Body (multipart/form-data):
- * - file: файл для обработки
- * - userQuestion?: текст вопроса пользователя (опционально)
+ * - file: файл для обработки (REQUIRED)
+ * - userId: UUID пользователя (REQUIRED)
+ * - threadId: OpenAI thread ID (optional)
+ * - userQuestion: текст вопроса пользователя (optional)
  */
 export async function processFile(req: Request, res: Response) {
   try {
-    console.log('[FileController] 🔍 Начало обработки файла...');
-    console.log('[FileController] ========== REQUEST DEBUG ==========');
-    console.log('[FileController] req.file:', !!req.file);
-    console.log('[FileController] req.body:', req.body);
-    console.log('[FileController] req.headers:', req.headers);
-    console.log('[FileController] Object.keys(req):', Object.keys(req).filter(k => !k.startsWith('_')));
-    console.log('[FileController] req.files:', (req as any).files);
-    console.log('[FileController] Content-Type:', req.get('Content-Type'));
-    console.log('[FileController] ========================================');
+    console.log('[FileController] 🔍 Обработка файла (НОВАЯ АРХИТЕКТУРА)...');
     
+    // 1. Проверка наличия файла
     if (!req.file) {
       console.error('[FileController] ❌ Файл не найден в запросе');
-      console.error('[FileController] ❌ Возможные причины:');
-      console.error('[FileController]    1. Multer не смог распарсить multipart/form-data');
-      console.error('[FileController]    2. Поле формы называется не "file"');
-      console.error('[FileController]    3. Content-Type заголовок неверный');
-      console.error('[FileController]    4. Файл больше лимита (10MB)');
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    const file = req.file;
-    const userQuestion = req.body.userQuestion || '';
+    const { buffer, originalname, mimetype, size } = req.file;
+    const { userId, threadId, userQuestion } = req.body;
 
-    console.log('[FileController] ✅ Файл получен:', {
-      filename: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      bufferLength: file.buffer?.length || 0,
-      userQuestion: userQuestion ? userQuestion.substring(0, 50) : 'N/A',
+    // 2. Проверка userId
+    if (!userId) {
+      console.error('[FileController] ❌ userId отсутствует');
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    console.log('[FileController] 📄 Файл получен:', {
+      filename: originalname,
+      mimetype,
+      size,
+      userId,
+      threadId: threadId || 'N/A',
     });
 
-    // Обрабатываем файл
-    console.log('[FileController] 📎 Вызываем fileProcessingService.processFile...');
-    const processed = await fileProcessingService.processFile(
-      file.buffer,
-      file.mimetype,
-      file.originalname
-    );
+    // 3. Извлечение текста (для PDF/DOCX)
+    let extractedText = '';
     
-    console.log('[FileController] ✅ Файл обработан:', {
-      type: processed.type,
-      contentLength: processed.content?.length || 0,
-      originalName: processed.originalName,
-    });
+    if (mimetype === 'application/pdf') {
+      console.log('[FileController] 📄 Извлекаем текст из PDF...');
+      extractedText = await fileProcessingService.extractTextFromPDF(buffer);
+      console.log(`[FileController] ✅ Извлечено ${extractedText.length} символов из PDF`);
+    } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      console.log('[FileController] 📄 Извлекаем текст из DOCX...');
+      extractedText = await fileProcessingService.extractTextFromDOCX(buffer);
+      console.log(`[FileController] ✅ Извлечено ${extractedText.length} символов из DOCX`);
+    }
 
-    // Для изображений - анализируем через Vision API
-    if (processed.type === 'image') {
-      console.log('[FileController] Image detected, analyzing with Vision API...');
+    // 4. Анализ изображений через Vision API
+    if (mimetype.startsWith('image/')) {
+      console.log('[FileController] 🖼️ Обнаружено изображение, анализируем через Vision API...');
+      
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${mimetype};base64,${base64}`;
       
       const imageAnalysis = await openaiService.analyzeImage(
-        processed.content,
+        dataUrl,
         userQuestion || 'Опиши что изображено на картинке подробно.'
       );
-
-      return res.json({
-        success: true,
-        type: 'image',
-        analysis: imageAnalysis,
-        originalName: processed.originalName,
-      });
-    }
-
-    // Для текстовых файлов (PDF, DOCX) - возвращаем извлечённый текст
-    if (processed.type === 'text') {
-      console.log('[FileController] Text extracted from document');
       
-      return res.json({
-        success: true,
-        type: 'text',
-        content: processed.content,
-        originalName: processed.originalName,
-      });
+      extractedText = imageAnalysis; // Сохраняем описание как "извлечённый текст"
+      console.log('[FileController] ✅ Изображение проанализировано');
     }
 
-    console.error('[FileController] ❌ Unsupported file type');
-    res.status(400).json({ error: 'Unsupported file type' });
+    // 5. Загрузка файла в Supabase Storage
+    console.log('[FileController] 📤 Загружаем файл в Supabase Storage...');
+    const { path, url } = await uploadToStorage(userId, originalname, buffer, mimetype);
+    console.log(`[FileController] ✅ Файл загружен в Storage: ${url}`);
+
+    // 6. Сохранение metadata в БД
+    console.log('[FileController] 💾 Сохраняем metadata в БД...');
+    const fileRecord = await saveFileMetadata({
+      userId,
+      threadId,
+      filename: originalname,
+      filePath: path,
+      fileUrl: url,
+      fileSize: size,
+      fileType: mimetype,
+      extractedText,
+      processingStatus: 'completed',
+    });
+    console.log('[FileController] ✅ Metadata сохранена, ID:', fileRecord.id);
+
+    // 7. Возврат результата
+    res.json({
+      success: true,
+      file: {
+        id: fileRecord.id,
+        filename: originalname,
+        fileUrl: url,
+        fileSize: size,
+        fileType: mimetype,
+        extractedText: extractedText ? extractedText.substring(0, 500) : null, // Первые 500 символов
+        processingStatus: 'completed',
+        createdAt: fileRecord.created_at,
+      },
+    });
+
   } catch (error: any) {
-    console.error('[FileController] ❌ КРИТИЧЕСКАЯ ОШИБКА обработки файла:');
-    console.error('[FileController] Тип ошибки:', error.constructor.name);
+    console.error('[FileController] ❌ КРИТИЧЕСКАЯ ОШИБКА:');
+    console.error('[FileController] Тип:', error.constructor.name);
     console.error('[FileController] Сообщение:', error.message);
     console.error('[FileController] Стек:', error.stack);
+    
+    // Пытаемся сохранить ошибку в БД
+    if (req.body.userId && req.file) {
+      try {
+        await saveFileMetadata({
+          userId: req.body.userId,
+          threadId: req.body.threadId,
+          filename: req.file.originalname,
+          filePath: '',
+          fileUrl: '',
+          fileSize: req.file.size,
+          fileType: req.file.mimetype,
+          processingStatus: 'failed',
+          errorMessage: error.message,
+        });
+        console.log('[FileController] ⚠️ Ошибка сохранена в БД');
+      } catch (dbError) {
+        console.error('[FileController] ❌ Не удалось сохранить ошибку в БД:', dbError);
+      }
+    }
+
     res.status(500).json({
-      error: 'Failed to process file',
-      message: error.message,
+      error: error.message || 'Failed to process file',
       type: error.constructor.name,
     });
   }
 }
-
-// Экспортируем multer middleware
-export const uploadMiddleware = upload.single('file');
 

@@ -1,61 +1,42 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { authenticateJWT } from '../middleware/auth';
+import { upload, handleMulterError as multerErrorHandler, logFileInfo } from '../middleware/multer';
 import * as fileController from '../controllers/fileController';
-import multer from 'multer';
 
 const router = Router();
 
 /**
- * Обработчик ошибок Multer (большой файл, неверный тип и т.д.)
- */
-function handleMulterError(err: any, req: Request, res: Response, next: NextFunction) {
-  if (err instanceof multer.MulterError) {
-    console.error('[Multer Error] Тип:', err.code);
-    console.error('[Multer Error] Сообщение:', err.message);
-    console.error('[Multer Error] Поле:', err.field);
-    
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({
-        error: 'File too large',
-        message: 'Файл слишком большой. Максимальный размер: 10MB',
-        code: err.code,
-      });
-    }
-    
-    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-      return res.status(400).json({
-        error: 'Unexpected field',
-        message: 'Неверное имя поля. Ожидается "file"',
-        code: err.code,
-      });
-    }
-    
-    return res.status(400).json({
-      error: 'Multer error',
-      message: err.message,
-      code: err.code,
-    });
-  }
-  
-  // Если не Multer ошибка - передаём дальше
-  next(err);
-}
-
-/**
  * POST /api/files/process
- * Обработать файл (PDF, DOCX, изображение)
  * 
- * multipart/form-data:
- * - file: файл для обработки
- * - userQuestion?: вопрос пользователя (опционально)
+ * Загрузка и обработка файлов (PDF, DOCX, Images)
+ * 
+ * НОВАЯ АРХИТЕКТУРА:
+ * 1. Multer парсит multipart/form-data → req.file
+ * 2. Controller извлекает текст из PDF/DOCX
+ * 3. Controller загружает файл в Supabase Storage
+ * 4. Controller сохраняет metadata в БД (таблица file_uploads)
+ * 5. Controller возвращает fileUrl + extractedText
+ * 
+ * Body (multipart/form-data):
+ * - file: файл для обработки (REQUIRED)
+ * - userId: UUID пользователя (REQUIRED)
+ * - threadId: OpenAI thread ID (optional)
+ * - userQuestion: текст вопроса пользователя (optional)
+ * 
+ * Middleware chain:
+ * - authenticateJWT: проверка JWT токена
+ * - upload.single('file'): Multer парсинг файла
+ * - logFileInfo: логирование информации о файле
+ * - multerErrorHandler: обработка ошибок Multer
+ * - fileController.processFile: основная логика обработки
  */
 router.post(
   '/process',
   authenticateJWT,
-  fileController.uploadMiddleware,
-  handleMulterError, // ✅ Обработчик ошибок Multer
+  upload.single('file'),
+  logFileInfo,
+  multerErrorHandler,
   fileController.processFile
 );
 
 export default router;
-
