@@ -72,6 +72,12 @@ type StudentRow = {
   level?: number | null;
   streak_days?: number | null;
   total_study_time?: number | null;
+  courses?: Array<{
+    course_id: number;
+    course_name: string;
+    course_slug: string;
+    progress_percentage: number;
+  }>;
 };
 
 // Mock данные для демонстрации
@@ -197,11 +203,54 @@ export default function StudentsActivity() {
             level: Math.floor(Math.random() * 15) + 1, // Mock
             streak_days: Math.floor(Math.random() * 30), // Mock
             total_study_time: Math.floor(Math.random() * 5000), // Mock в минутах
+            courses: [], // Будет заполнено позже
           };
         }) ?? [];
 
       console.log(`✅ Смаппировано ${mapped.length} студентов`);
-      console.log('📊 Первые 3 студента:', mapped.slice(0, 3));
+
+      // ✅ Загружаем курсы для каждого студента
+      try {
+        const { data: allCourses, error: coursesError } = await supabase
+          .from('user_courses')
+          .select(`
+            user_id,
+            course_id,
+            progress_percentage,
+            courses:course_id (
+              id,
+              name,
+              slug
+            )
+          `);
+
+        if (!coursesError && allCourses) {
+          // Группируем курсы по user_id
+          const coursesByUser: Record<string, any[]> = {};
+          allCourses.forEach((item: any) => {
+            if (!coursesByUser[item.user_id]) {
+              coursesByUser[item.user_id] = [];
+            }
+            coursesByUser[item.user_id].push({
+              course_id: item.course_id,
+              course_name: item.courses?.name || 'Unknown',
+              course_slug: item.courses?.slug || '',
+              progress_percentage: item.progress_percentage || 0,
+            });
+          });
+
+          // Добавляем курсы к студентам
+          mapped.forEach((student) => {
+            student.courses = coursesByUser[student.id] || [];
+          });
+
+          console.log('✅ Курсы загружены для студентов');
+        }
+      } catch (error) {
+        console.warn('⚠️ Не удалось загрузить курсы студентов:', error);
+      }
+
+      console.log('📊 Первые 3 студента с курсами:', mapped.slice(0, 3));
       setAllStudents(mapped);
       
       } catch (err: any) {
@@ -613,6 +662,7 @@ export default function StudentsActivity() {
                   <TableHead className="text-gray-300">Имя</TableHead>
                   <TableHead className="text-gray-300">Email</TableHead>
                   <TableHead className="text-gray-300">Роль</TableHead>
+                  <TableHead className="text-gray-300">Назначенные курсы</TableHead>
                   <TableHead className="text-gray-300">Статус</TableHead>
                   <TableHead className="text-gray-300">Последняя активность</TableHead>
                   <TableHead className="text-right text-gray-300">Действия</TableHead>
@@ -633,6 +683,31 @@ export default function StudentsActivity() {
                       <Badge variant="secondary" className="bg-zinc-700 text-gray-300 border-zinc-600">
                         {student.role}
                       </Badge>
+                    </TableCell>
+                    {/* ✅ Назначенные курсы */}
+                    <TableCell>
+                      {student.courses && student.courses.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {student.courses.map((course) => {
+                            const courseIcon = course.course_id === 1 ? '📚' : course.course_id === 2 ? '🎨' : '💻';
+                            const courseColor = course.course_id === 1 ? 'bg-purple-600/20 text-purple-300 border-purple-500/30' :
+                                              course.course_id === 2 ? 'bg-blue-600/20 text-blue-300 border-blue-500/30' :
+                                              'bg-green-600/20 text-green-300 border-green-500/30';
+                            return (
+                              <Badge
+                                key={course.course_id}
+                                variant="outline"
+                                className={`text-xs ${courseColor}`}
+                                title={`${course.course_name} - ${course.progress_percentage}% пройдено`}
+                              >
+                                {courseIcon} {course.progress_percentage}%
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 text-sm">Нет курсов</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge className={`text-black ${student.is_active ? 'bg-[#00ff00] shadow-[0_0_10px_rgba(0,255,0,0.3)]' : 'bg-gray-500'}`}>
