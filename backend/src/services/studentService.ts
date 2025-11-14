@@ -62,9 +62,10 @@ export async function createStudent(data: {
       const { error: studentProfileError } = await supabase
         .from('student_profiles')
         .insert({
-          user_id: authData.user.id,
+          id: authData.user.id, // student_profiles.id = users.id
+          email: data.email,
+          full_name: data.full_name,
           phone: data.phone || null,
-          account_expires_at: data.account_expires_at || null,
           is_active: true,
         });
 
