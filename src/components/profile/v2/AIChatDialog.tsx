@@ -175,39 +175,73 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
-    Array.from(files).forEach((file) => {
-      // Проверка размера файла (макс 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "Ошибка",
-          description: `Файл ${file.name} слишком большой (макс. 10MB)`,
-          variant: "destructive",
-        });
-        return;
-      }
+    // ✅ КРИТИЧНО: Создаём копии File objects ДО очистки input'а
+    const filesToProcess = Array.from(files);
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const attachment: FileAttachment = {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          file: file,
-          preview: e.target?.result as string,
-        };
-        setAttachments((prev) => [...prev, attachment]);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Очищаем input для возможности повторного выбора того же файла
+    // Очищаем input сразу для возможности повторного выбора того же файла
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+
+    // Обрабатываем файлы ПОСЛЕ очистки input'а
+    for (const originalFile of filesToProcess) {
+      // Проверка размера файла (макс 10MB)
+      if (originalFile.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Ошибка",
+          description: `Файл ${originalFile.name} слишком большой (макс. 10MB)`,
+          variant: "destructive",
+        });
+        continue;
+      }
+
+      try {
+        // ✅ КРИТИЧНО: Создаём КОПИЮ File object из Blob данных
+        // Это нужно, чтобы File не зависел от очищенного input'а
+        const arrayBuffer = await originalFile.arrayBuffer();
+        const blob = new Blob([arrayBuffer], { type: originalFile.type });
+        const fileCopy = new File([blob], originalFile.name, {
+          type: originalFile.type,
+          lastModified: originalFile.lastModified,
+        });
+
+        console.log('📎 [handleFileSelect] Создана копия файла:', {
+          name: fileCopy.name,
+          size: fileCopy.size,
+          type: fileCopy.type,
+        });
+
+        // Создаём preview для изображений (используем исходный файл)
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const attachment: FileAttachment = {
+            name: fileCopy.name,
+            type: fileCopy.type,
+            size: fileCopy.size,
+            url: URL.createObjectURL(fileCopy),
+            file: fileCopy, // ✅ Сохраняем КОПИЮ файла
+            preview: e.target?.result as string,
+          };
+          setAttachments((prev) => [...prev, attachment]);
+          console.log('✅ [handleFileSelect] Файл добавлен в attachments:', {
+            name: attachment.name,
+            size: attachment.size,
+            hasFile: !!attachment.file,
+          });
+        };
+        reader.readAsDataURL(fileCopy);
+      } catch (error: any) {
+        console.error('❌ [handleFileSelect] Ошибка копирования файла:', error);
+        toast({
+          title: "Ошибка",
+          description: `Не удалось обработать файл ${originalFile.name}`,
+          variant: "destructive",
+        });
+      }
     }
   };
 

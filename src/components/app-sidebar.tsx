@@ -76,8 +76,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
   console.log('✅ Показываем пунктов:', menuItems.length, 'для роли:', role);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-800 bg-gradient-to-b from-gray-950 to-black">
-      <SidebarHeader className="border-b border-gray-800 px-3 sm:px-4 py-3 sm:py-4 bg-black/50 backdrop-blur-sm">
+    <Sidebar collapsible="icon" className="border-r border-gray-800 bg-[#18181b]">
+      <SidebarHeader className="border-b border-gray-800 px-3 sm:px-4 py-3 sm:py-4 bg-[#18181b]">
         <div className={cn(
           "flex items-center transition-all duration-300",
           isCollapsed ? "justify-center p-1" : "justify-start p-2 pl-1"
