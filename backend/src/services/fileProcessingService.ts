@@ -1,5 +1,5 @@
-import * as pdfParse from 'pdf-parse';
 import * as mammoth from 'mammoth';
+const pdfParse = require('pdf-parse');
 
 /**
  * Извлечь текст из PDF
