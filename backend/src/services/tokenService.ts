@@ -126,6 +126,7 @@ export async function getUserTokenStats(userId: string, assistantType?: string) 
     const stats = {
       total_tokens: data.reduce((sum, row) => sum + row.total_tokens, 0),
       total_cost_usd: data.reduce((sum, row) => sum + (row.total_cost_usd || 0), 0),
+      total_requests: data.length, // ✅ Общее количество запросов
       by_assistant: {} as Record<string, { tokens: number; cost: number; requests: number }>,
       by_model: {} as Record<string, { tokens: number; cost: number; requests: number }>,
       recent_requests: data.slice(0, 10),
@@ -175,7 +176,9 @@ export async function getTotalTokenStats() {
       total_cost_usd: data.reduce((sum, row) => sum + (row.total_cost_usd || 0), 0),
       total_requests: data.length,
       by_assistant: {} as Record<string, { tokens: number; cost: number; requests: number }>,
+      by_model: {} as Record<string, { tokens: number; cost: number; requests: number }>,
       by_user: {} as Record<string, { tokens: number; cost: number; requests: number }>,
+      recent_requests: data.slice(0, 10),
     };
 
     data.forEach((row) => {
@@ -186,6 +189,14 @@ export async function getTotalTokenStats() {
       stats.by_assistant[row.assistant_type].tokens += row.total_tokens;
       stats.by_assistant[row.assistant_type].cost += row.total_cost_usd || 0;
       stats.by_assistant[row.assistant_type].requests += 1;
+
+      // By model
+      if (!stats.by_model[row.model]) {
+        stats.by_model[row.model] = { tokens: 0, cost: 0, requests: 0 };
+      }
+      stats.by_model[row.model].tokens += row.total_tokens;
+      stats.by_model[row.model].cost += row.total_cost_usd || 0;
+      stats.by_model[row.model].requests += 1;
 
       // By user
       if (!stats.by_user[row.user_id]) {

@@ -27,23 +27,34 @@ export default function TokenUsagePage() {
     if (user?.id) {
       loadStats();
     }
-  }, [user?.id]);
+  }, [user?.id, user?.role]); // ✅ Перезагружаем при смене роли
 
   const loadStats = async () => {
     setIsLoading(true);
     try {
       console.log('📊 Загружаем статистику токенов для пользователя:', user?.id);
+      console.log('👤 Роль пользователя:', user?.role);
       
-      // Получаем статистику с Backend
-      const response = await api.get(`/api/tokens/stats?userId=${user?.id}`);
+      // Для админа получаем ОБЩУЮ статистику (всех пользователей)
+      // Для обычных пользователей - только свою
+      const endpoint = user?.role === 'admin' 
+        ? '/api/tokens/stats/total'
+        : `/api/tokens/stats?userId=${user?.id}`;
       
-      console.log('✅ Статистика получена:', response);
+      console.log('🔗 Запрос к:', endpoint);
+      const response = await api.get(endpoint);
+      
+      console.log('✅ Полный response:', response);
+      console.log('📊 Статистика (response.data):', response.data);
+      
+      // Backend возвращает { success: true, data: {...} }
       setStats(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Ошибка загрузки статистики:', error);
+      console.error('❌ Детали ошибки:', error.message);
       toast({
         title: "Ошибка загрузки",
-        description: "Не удалось загрузить статистику использования токенов",
+        description: error.message || "Не удалось загрузить статистику использования токенов",
         variant: "destructive",
       });
     } finally {
@@ -125,13 +136,13 @@ export default function TokenUsagePage() {
         />
         <MetricCard
           title="Всего запросов"
-          value={(stats?.recent_requests?.length || 0).toString()}
-          subtitle="За последнее время"
+          value={(stats?.total_requests || 0).toString()}
+          subtitle="К OpenAI API"
           icon={<Zap className="h-5 w-5" />}
         />
         <MetricCard
           title="Средняя стоимость"
-          value={formatCurrency((stats?.total_cost_usd || 0) / (stats?.recent_requests?.length || 1))}
+          value={formatCurrency((stats?.total_cost_usd || 0) / (stats?.total_requests || 1))}
           subtitle="На запрос"
           icon={<TrendingUp className="h-5 w-5" />}
         />

@@ -1,18 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/utils/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { OnAILogo } from '@/components/OnAILogo';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -166,7 +169,17 @@ export default function Login() {
   // Если мы здесь - значит сессии нет, показываем форму логина
   
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
+    <>
+      {/* Заставка загрузки */}
+      <AnimatePresence>
+        {showLoadingScreen && (
+          <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Основная страница логина */}
+      {!showLoadingScreen && (
+        <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
       {/* v2.0.FINAL - СЕРЫЙ БЛИК КАЖДЫЕ 5 СЕК */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
@@ -220,23 +233,8 @@ export default function Login() {
         {/* Хедер */}
         <header className="flex items-center justify-between px-4 sm:px-8 py-6 flex-shrink-0">
           <div className="flex items-center gap-4 sm:gap-12">
-            {/* SVG ЛОГОТИП ONAI ACADEMY */}
-            <svg width="120" height="60" viewBox="0 0 120 60" className="w-24 sm:w-32 h-auto">
-              <defs>
-                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#00ff00', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#00cc00', stopOpacity: 1 }} />
-                </linearGradient>
-              </defs>
-              {/* ONAI - зеленый */}
-              <text x="0" y="25" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="bold" fill="url(#logoGradient)">
-                ONAI
-              </text>
-              {/* ACADEMY - белый */}
-              <text x="0" y="50" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="600" fill="#ffffff">
-                ACADEMY
-              </text>
-            </svg>
+            {/* ЛОГОТИП ONAI ACADEMY */}
+            <OnAILogo variant="full" className="h-10 sm:h-12 w-auto text-white" />
           </div>
           
           <div className="flex items-center gap-4">
@@ -425,6 +423,8 @@ export default function Login() {
           </div>
         </footer>
       </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
