@@ -25,5 +25,17 @@ router.post('/:id/deactivate', studentController.deactivateStudent);
 // POST /api/students/:id/activate - Активировать
 router.post('/:id/activate', studentController.activateStudent);
 
+// GET /api/students/:id/courses - Получить курсы студента
+router.get('/:id/courses', studentController.getUserCourses);
+
+// POST /api/students/:id/courses - Назначить курсы студенту
+router.post('/:id/courses', studentController.assignCourses);
+
+// DELETE /api/students/:id/courses/:courseId - Отозвать курс
+router.delete('/:id/courses/:courseId', studentController.revokeCourse);
+
+// GET /api/courses - Получить все доступные курсы
+router.get('/courses/all', studentController.getAllCourses);
+
 export default router;
 

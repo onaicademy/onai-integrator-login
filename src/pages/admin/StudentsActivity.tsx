@@ -116,7 +116,7 @@ export default function StudentsActivity() {
     password: '',
     role: 'student',
     accountDuration: '12',
-    selectedCourses: [] as string[]
+    selectedCourses: [] as number[] // ✅ Изменено: числовые ID курсов
   });
 
   // Загрузка студентов при монтировании компонента
@@ -302,20 +302,28 @@ export default function StudentsActivity() {
         console.log('📅 Срок действия: вечный (role !== student)');
       }
       
-      // Вызываем Edge Function для создания студента
-      const { data, error } = await supabase.functions.invoke('create-student', {
-        body: {
+      // ✅ Вызываем Backend API для создания студента
+      const response = await fetch('http://localhost:3000/api/students/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: formData.email.trim(),
           full_name: formData.fullName.trim(),
           phone: formData.phone.trim(),
           password: formData.password,
           role: formData.role,
           account_expires_at: expiresAt,
-          course_ids: formData.selectedCourses,
-        },
+          course_ids: formData.selectedCourses.map(String), // Конвертируем в строки для совместимости
+        }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Unknown error');
+      }
 
       if (data.success) {
         // Сохраняем данные для показа
@@ -788,20 +796,21 @@ export default function StudentsActivity() {
                   </div>
                 </Label>
                 <div className="space-y-2 mt-2">
+                  {/* Курс 1: Интегратор 2.0 */}
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="course-integrator"
-                      checked={formData.selectedCourses.includes('6518f042-54b9-4b69-8e93-b18df98cd7eb')}
+                      checked={formData.selectedCourses.includes(1)}
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setFormData(prev => ({
                             ...prev,
-                            selectedCourses: [...prev.selectedCourses, '6518f042-54b9-4b69-8e93-b18df98cd7eb']
+                            selectedCourses: [...prev.selectedCourses, 1]
                           }));
                         } else {
                           setFormData(prev => ({
                             ...prev,
-                            selectedCourses: prev.selectedCourses.filter(id => id !== '6518f042-54b9-4b69-8e93-b18df98cd7eb')
+                            selectedCourses: prev.selectedCourses.filter(id => id !== 1)
                           }));
                         }
                       }}
@@ -811,27 +820,52 @@ export default function StudentsActivity() {
                       📚 Интегратор 2.0
                     </label>
                   </div>
+                  {/* Курс 2: Креатор 2.0 */}
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="course-creator"
-                      checked={formData.selectedCourses.includes('febcb120-b8b4-4a8a-bd2e-62275f6d0115')}
+                      checked={formData.selectedCourses.includes(2)}
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setFormData(prev => ({
                             ...prev,
-                            selectedCourses: [...prev.selectedCourses, 'febcb120-b8b4-4a8a-bd2e-62275f6d0115']
+                            selectedCourses: [...prev.selectedCourses, 2]
                           }));
                         } else {
                           setFormData(prev => ({
                             ...prev,
-                            selectedCourses: prev.selectedCourses.filter(id => id !== 'febcb120-b8b4-4a8a-bd2e-62275f6d0115')
+                            selectedCourses: prev.selectedCourses.filter(id => id !== 2)
                           }));
                         }
                       }}
                       className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
                     />
                     <label htmlFor="course-creator" className="text-sm text-gray-300 cursor-pointer">
-                      🎨 Креатор
+                      🎨 Креатор 2.0
+                    </label>
+                  </div>
+                  {/* Курс 3: Программист на Cursor */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="course-programmer"
+                      checked={formData.selectedCourses.includes(3)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            selectedCourses: [...prev.selectedCourses, 3]
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            selectedCourses: prev.selectedCourses.filter(id => id !== 3)
+                          }));
+                        }
+                      }}
+                      className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
+                    />
+                    <label htmlFor="course-programmer" className="text-sm text-gray-300 cursor-pointer">
+                      💻 Программист на Cursor
                     </label>
                   </div>
                 </div>

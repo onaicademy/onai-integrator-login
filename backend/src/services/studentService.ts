@@ -79,21 +79,21 @@ export async function createStudent(data: {
 
     // 4. Назначаем курсы (если указаны)
     if (data.course_ids && data.course_ids.length > 0) {
-      const enrollments = data.course_ids.map(courseId => ({
-        student_id: authData.user!.id,
+      const courseAssignments = data.course_ids.map(courseId => ({
+        user_id: authData.user!.id,
         course_id: parseInt(courseId),
-        enrolled_at: new Date().toISOString(),
+        is_active: true,
       }));
 
-      const { error: enrollmentError } = await supabase
-        .from('course_enrollments')
-        .insert(enrollments);
+      const { error: coursesError } = await supabase
+        .from('user_courses')
+        .insert(courseAssignments);
 
-      if (enrollmentError) {
-        console.warn('[StudentService] Enrollment warning:', enrollmentError);
+      if (coursesError) {
+        console.warn('[StudentService] Courses assignment warning:', coursesError);
         // Не критично, продолжаем
       } else {
-        console.log(`[StudentService] ✅ Enrolled in ${data.course_ids.length} courses`);
+        console.log(`[StudentService] ✅ Assigned ${data.course_ids.length} courses`);
       }
     }
 
@@ -243,6 +243,108 @@ export async function activateStudent(userId: string) {
     return { success: true, message: 'Student activated' };
   } catch (error: any) {
     console.error('[StudentService] ❌ Error activating student:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Получить назначенные курсы студента
+ */
+export async function getUserCourses(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('user_courses')
+      .select(`
+        *,
+        courses:course_id (
+          id,
+          name,
+          slug,
+          description
+        )
+      `)
+      .eq('user_id', userId)
+      .order('assigned_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch user courses: ${error.message}`);
+    }
+
+    return data || [];
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error fetching courses:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Назначить курсы студенту
+ */
+export async function assignCourses(userId: string, courseIds: number[]) {
+  try {
+    const assignments = courseIds.map(courseId => ({
+      user_id: userId,
+      course_id: courseId,
+      is_active: true,
+    }));
+
+    const { error } = await supabase
+      .from('user_courses')
+      .upsert(assignments, {
+        onConflict: 'user_id,course_id',
+      });
+
+    if (error) {
+      throw new Error(`Failed to assign courses: ${error.message}`);
+    }
+
+    return { success: true, message: `Assigned ${courseIds.length} courses` };
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error assigning courses:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Отозвать курс у студента
+ */
+export async function revokeCourse(userId: string, courseId: number) {
+  try {
+    const { error } = await supabase
+      .from('user_courses')
+      .delete()
+      .eq('user_id', userId)
+      .eq('course_id', courseId);
+
+    if (error) {
+      throw new Error(`Failed to revoke course: ${error.message}`);
+    }
+
+    return { success: true, message: 'Course revoked' };
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error revoking course:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Получить все доступные курсы
+ */
+export async function getAllCourses() {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('is_active', true)
+      .order('id');
+
+    if (error) {
+      throw new Error(`Failed to fetch courses: ${error.message}`);
+    }
+
+    return data || [];
+  } catch (error: any) {
+    console.error('[StudentService] ❌ Error fetching courses:', error.message);
     throw error;
   }
 }
