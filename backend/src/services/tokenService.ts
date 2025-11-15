@@ -21,15 +21,29 @@ const PRICING = {
 };
 
 /**
- * Рассчитать стоимость на основе токенов
+ * Рассчитать стоимость на основе токенов или длительности аудио
  */
 function calculateCost(
   model: string,
   promptTokens: number,
-  completionTokens: number
+  completionTokens: number,
+  audioDurationSeconds?: number
 ): { promptCost: number; completionCost: number; totalCost: number } {
   const pricing = PRICING[model as keyof typeof PRICING] || PRICING['gpt-4o'];
 
+  // ✅ Для Whisper используем длительность аудио (в минутах)
+  if (model === 'whisper-1' && audioDurationSeconds !== undefined) {
+    const audioDurationMinutes = audioDurationSeconds / 60;
+    const totalCost = audioDurationMinutes * pricing.prompt; // $0.006 per minute
+    
+    return {
+      promptCost: parseFloat(totalCost.toFixed(6)),
+      completionCost: 0,
+      totalCost: parseFloat(totalCost.toFixed(6)),
+    };
+  }
+
+  // Для других моделей используем токены
   const promptCost = (promptTokens / 1_000_000) * pricing.prompt;
   const completionCost = (completionTokens / 1_000_000) * pricing.completion;
   const totalCost = promptCost + completionCost;
@@ -63,10 +77,11 @@ export async function logTokenUsage(data: {
       assistant: data.assistantType,
       model: data.model,
       tokens: data.totalTokens,
+      audioDuration: data.audioDurationSeconds,
     });
 
-    // Рассчитываем стоимость
-    const cost = calculateCost(data.model, data.promptTokens, data.completionTokens);
+    // Рассчитываем стоимость (для Whisper используется audioDurationSeconds)
+    const cost = calculateCost(data.model, data.promptTokens, data.completionTokens, data.audioDurationSeconds);
 
     // Сохраняем в БД
     const { data: result, error } = await supabase

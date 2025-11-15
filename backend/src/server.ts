@@ -24,6 +24,7 @@ import studentsRouter from './routes/students';
 import tokensRouter from './routes/tokens';
 import filesRouter from './routes/files';
 import onboardingRouter from './routes/onboarding';
+import fileCleanupRouter from './routes/fileCleanup';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -76,6 +77,7 @@ app.use('/api/students', studentsRouter);
 app.use('/api/tokens', tokensRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/onboarding', onboardingRouter);
+app.use('/api/admin/cleanup', fileCleanupRouter);
 
 // 404 обработка
 app.use((req, res) => {

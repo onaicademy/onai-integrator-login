@@ -1,53 +1,52 @@
 import * as mammoth from 'mammoth';
-const pdfParse = require('pdf-parse');
+import pdfParse from 'pdf-parse';
 
 /**
- * Извлечь текст из PDF
+ * Извлечь текст из PDF (РАБОЧАЯ ВЕРСИЯ!)
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    console.log('[FileProcessing] Извлекаем текст из PDF...');
+    console.log('[FileProcessing] ✅ Начинаем парсинг PDF (pdf-parse@1.1.1)...');
     console.log('[FileProcessing] Buffer size:', buffer.length, 'bytes');
-    console.log('[FileProcessing] Buffer first 50 bytes:', buffer.slice(0, 50).toString('hex'));
-    
+
     if (buffer.length === 0) {
       throw new Error('PDF buffer is empty!');
     }
-    
+
+    // ✅ ПРАВИЛЬНЫЙ СИНТАКСИС для v1.1.1
     const data = await pdfParse(buffer);
-    console.log(`[FileProcessing] ✅ Извлечено ${data.text.length} символов из PDF`);
+
+    console.log(`[FileProcessing] ✅ УСПЕХ! Извлечено ${data.text.length} символов из PDF`);
+    console.log('[FileProcessing] Pages:', data.numpages);
+    
     return data.text;
   } catch (error: any) {
-    console.error('[FileProcessing] ❌ КРИТИЧЕСКАЯ ОШИБКА парсинга PDF:');
-    console.error('[FileProcessing] Тип ошибки:', error.constructor.name);
-    console.error('[FileProcessing] Сообщение:', error.message);
-    console.error('[FileProcessing] Стек:', error.stack);
-    console.error('[FileProcessing] Buffer размер:', buffer?.length || 0);
+    console.error('[FileProcessing] ❌ ОШИБКА парсинга PDF:');
+    console.error('[FileProcessing] Message:', error.message);
+    console.error('[FileProcessing] Stack:', error.stack);
     throw new Error(`Failed to parse PDF: ${error.message}`);
   }
 }
 
 /**
- * Извлечь текст из DOCX
+ * Извлечь текст из DOCX (РАБОТАЕТ)
  */
 export async function extractTextFromDOCX(buffer: Buffer): Promise<string> {
   try {
-    console.log('[FileProcessing] Извлекаем текст из DOCX...');
-    console.log('[FileProcessing] Buffer size:', buffer.length, 'bytes');
-    
+    console.log('[FileProcessing] ✅ Начинаем парсинг DOCX...');
+
     if (buffer.length === 0) {
       throw new Error('DOCX buffer is empty!');
     }
-    
+
     const result = await mammoth.extractRawText({ buffer });
-    console.log(`[FileProcessing] ✅ Извлечено ${result.value.length} символов из DOCX`);
+    
+    console.log(`[FileProcessing] ✅ УСПЕХ! Извлечено ${result.value.length} символов из DOCX`);
+    
     return result.value;
   } catch (error: any) {
-    console.error('[FileProcessing] ❌ КРИТИЧЕСКАЯ ОШИБКА парсинга DOCX:');
-    console.error('[FileProcessing] Тип ошибки:', error.constructor.name);
-    console.error('[FileProcessing] Сообщение:', error.message);
-    console.error('[FileProcessing] Стек:', error.stack);
-    console.error('[FileProcessing] Buffer размер:', buffer?.length || 0);
+    console.error('[FileProcessing] ❌ ОШИБКА парсинга DOCX:');
+    console.error('[FileProcessing] Message:', error.message);
     throw new Error(`Failed to parse DOCX: ${error.message}`);
   }
 }

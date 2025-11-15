@@ -189,11 +189,11 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
 
     // Обрабатываем файлы ПОСЛЕ очистки input'а
     for (const originalFile of filesToProcess) {
-      // Проверка размера файла (макс 10MB)
-      if (originalFile.size > 10 * 1024 * 1024) {
+      // Проверка размера файла (макс 20MB - соответствует backend)
+      if (originalFile.size > 20 * 1024 * 1024) {
         toast({
           title: "Ошибка",
-          description: `Файл ${originalFile.name} слишком большой (макс. 10MB)`,
+          description: `Файл ${originalFile.name} слишком большой (макс. 20MB)`,
           variant: "destructive",
         });
         continue;

@@ -212,23 +212,41 @@ export async function sendMessageToAI(
             // ✅ НОВОЕ: передаём userId и threadId
             const processed = await processFile(attachment.file, message, userId, threadId);
             
+            console.log(`📎 [sendMessageToAI] ✅ Файл обработан. Результат:`, {
+              type: processed.type,
+              contentLength: processed.content?.length || 0,
+              hasAnalysis: !!processed.analysis,
+              fileUrl: processed.fileUrl,
+            });
+            
             if (processed.type === 'image') {
               // Для изображений добавляем анализ к сообщению
               finalMessage = message 
                 ? `${message}\n\n[Анализ изображения: ${processed.analysis}]`
                 : `[Анализ изображения: ${processed.analysis}]`;
+              console.log(`📎 [sendMessageToAI] Добавлен анализ изображения к сообщению`);
             } else {
               // Для текстовых файлов добавляем извлечённый текст
+              const textPreview = processed.content ? processed.content.substring(0, 100) : 'ПУСТО';
+              console.log(`📎 [sendMessageToAI] Извлечённый текст (первые 100 символов): "${textPreview}..."`);
+              
               finalMessage = message
                 ? `${message}\n\n[Содержимое документа "${attachment.name}":\n${processed.content}]`
                 : `[Содержимое документа "${attachment.name}":\n${processed.content}]`;
+              
+              console.log(`📎 [sendMessageToAI] ✅ Текст добавлен к сообщению. Длина finalMessage: ${finalMessage.length}`);
             }
           } catch (error) {
             console.error(`❌ Не удалось обработать файл ${attachment.name}:`, error);
           }
+        } else {
+          console.warn(`⚠️ [sendMessageToAI] У attachment "${attachment.name}" отсутствует файл!`);
         }
       }
     }
+    
+    console.log(`📤 [sendMessageToAI] Итоговое сообщение для OpenAI (длина: ${finalMessage.length}):`, 
+      finalMessage.length > 200 ? finalMessage.substring(0, 200) + '...' : finalMessage);
 
     // Добавляем сообщение в thread через Backend
     console.log("💬 Добавляем сообщение в Thread через Backend...");

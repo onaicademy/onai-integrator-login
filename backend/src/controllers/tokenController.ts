@@ -7,9 +7,11 @@ import * as tokenService from '../services/tokenService';
  */
 export async function logTokenUsage(req: Request, res: Response) {
   try {
-    const { userId, assistantType, promptTokens, completionTokens, totalTokens, modelUsed, openaiThreadId, openaiMessageId, openaiRunId } = req.body;
+    const { userId, assistantType, promptTokens, completionTokens, totalTokens, modelUsed, openaiThreadId, openaiMessageId, openaiRunId, audioDurationSeconds } = req.body;
 
-    if (!userId || !assistantType || !promptTokens || !completionTokens || !totalTokens) {
+    // ✅ ИСПРАВЛЕНО: проверяем !== undefined вместо !value, чтобы 0 был валидным
+    if (userId === undefined || assistantType === undefined || 
+        promptTokens === undefined || completionTokens === undefined || totalTokens === undefined) {
       return res.status(400).json({ 
         error: 'Missing required fields: userId, assistantType, promptTokens, completionTokens, totalTokens' 
       });
@@ -25,6 +27,7 @@ export async function logTokenUsage(req: Request, res: Response) {
       openaiThreadId,
       openaiMessageId,
       openaiRunId,
+      audioDurationSeconds, // ✅ Передаем длительность аудио для Whisper
     });
 
     res.json(result);

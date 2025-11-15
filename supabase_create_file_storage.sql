@@ -145,9 +145,6 @@ SELECT * FROM pg_policies WHERE tablename = 'file_uploads';
 -- Посмотреть все политики для storage.objects:
 SELECT * FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage';
 
--- Посмотреть структуру таблицы:
-\d public.file_uploads;
-
 -- =====================================================
 -- ГОТОВО!
 -- =====================================================
