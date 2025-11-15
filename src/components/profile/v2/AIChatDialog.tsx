@@ -894,10 +894,11 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
             {/* Кнопка "Новый чат" */}
             <button
               onClick={handleNewConversation}
-              className="flex-shrink-0 px-3 py-2 rounded-lg bg-[#3a3b3c] hover:bg-[#4e4f50] text-gray-200 text-sm font-medium flex items-center gap-2 transition-colors"
+              className="flex-shrink-0 h-9 px-3 rounded-full bg-gradient-to-r from-[#00d95f] to-[#00b84f] hover:from-[#00e66c] hover:to-[#00c95b] text-black text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm hover:shadow-md"
+              title="Начать новый разговор"
             >
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden sm:inline">Новый чат</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Новый</span>
             </button>
           </div>
         </DialogHeader>
@@ -932,7 +933,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                   <div
                     className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                       message.role === "user"
-                        ? "bg-[#0084ff] text-white"
+                        ? "bg-[#00d95f] text-black font-medium"
                         : "bg-[#3a3b3c] text-white"
                     }`}
                   >
@@ -1009,7 +1010,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                                 href={href} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="text-blue-400 underline hover:text-blue-300 transition-colors text-sm break-all"
+                                className="text-[#00d95f] underline hover:text-[#00e66c] transition-colors text-sm break-all font-medium"
                               >
                                 {children}
                               </a>
@@ -1122,8 +1123,8 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                   </div>
 
                   {message.role === "user" && (
-                    <div className="h-8 w-8 rounded-full bg-[#0084ff] flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                    <div className="h-8 w-8 rounded-full bg-[#00d95f] flex items-center justify-center">
+                      <User className="w-4 h-4 text-black" />
                     </div>
                   )}
                 </motion.div>
@@ -1197,7 +1198,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                       ? "bg-red-500"
                       : duration >= MAX_RECORDING_DURATION - 30
                       ? "bg-yellow-500"
-                      : "bg-blue-500"
+                      : "bg-[#00d95f]"
                   }`}
                   initial={{ width: 0 }}
                   animate={{ width: `${(duration / MAX_RECORDING_DURATION) * 100}%` }}
@@ -1240,7 +1241,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               onKeyDown={handleKeyPress}
               placeholder="Напишите сообщение..."
               disabled={isLoading}
-              className="flex-1 min-h-[40px] max-h-[200px] resize-none overflow-y-auto bg-[#3a3b3c] border-none text-white placeholder:text-gray-400 focus:ring-1 focus:ring-blue-500 rounded-3xl px-4 py-2"
+              className="flex-1 min-h-[40px] max-h-[200px] resize-none overflow-y-auto bg-[#3a3b3c] border-none text-white placeholder:text-gray-400 focus:ring-1 focus:ring-[#00d95f] rounded-3xl px-4 py-2"
               rows={1}
             />
             {/* Кнопка микрофона - TOGGLE (клик = старт/стоп) */}
@@ -1267,7 +1268,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || (input.trim() === "" && attachments.length === 0)}
-              className="shrink-0 bg-[#0084ff] text-white hover:bg-[#0073e6] rounded-full w-9 h-9 p-0 disabled:opacity-50"
+              className="shrink-0 bg-[#00d95f] text-black hover:bg-[#00e66c] rounded-full w-9 h-9 p-0 disabled:opacity-50 font-semibold shadow-sm hover:shadow-md transition-all"
               size="icon"
             >
               {isLoading ? (
