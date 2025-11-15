@@ -3,7 +3,7 @@
  * Клиент для работы с Backend API недельных целей
  */
 
-import { apiClient } from '../utils/apiClient';
+import { api } from '../utils/apiClient';
 
 interface WeeklyGoal {
   id: string;
@@ -25,9 +25,7 @@ export async function getWeeklyGoals(userId: string): Promise<WeeklyGoal[]> {
   try {
     console.log('🎯 [GoalsAPI] Запрос недельных целей для:', userId);
     
-    const response = await apiClient(`/goals/weekly/${userId}`, {
-      method: 'GET',
-    });
+    const response = await api.get(`/goals/weekly/${userId}`);
 
     if (!response.success) {
       throw new Error(response.error || 'Failed to fetch goals');
@@ -52,10 +50,7 @@ export async function updateGoalProgress(
   try {
     console.log('🎯 [GoalsAPI] Обновление цели:', goalType);
     
-    await apiClient('/goals/update-progress', {
-      method: 'POST',
-      body: JSON.stringify({ userId, goalType, incrementValue }),
-    });
+    await api.post('/goals/update-progress', { userId, goalType, incrementValue });
 
     console.log('✅ [GoalsAPI] Прогресс цели обновлён');
   } catch (error) {

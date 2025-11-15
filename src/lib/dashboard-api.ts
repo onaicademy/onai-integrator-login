@@ -3,7 +3,7 @@
  * Клиент для работы с Backend API dashboard студента (/neurohub)
  */
 
-import { apiClient } from '../utils/apiClient';
+import { api } from '../utils/apiClient';
 
 interface DashboardActivity {
   date: string;
@@ -55,9 +55,7 @@ export async function getStudentDashboard(userId: string): Promise<DashboardData
   try {
     console.log('📊 [DashboardAPI] Запрос dashboard для:', userId);
     
-    const response = await apiClient(`/analytics/student/${userId}/dashboard`, {
-      method: 'GET',
-    });
+    const response = await api.get(`/analytics/student/${userId}/dashboard`);
 
     if (!response.success) {
       throw new Error(response.error || 'Failed to fetch dashboard');

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Brain, Target, MessageCircle, TrendingUp, Flame, CheckCircle, Sparkles, Zap, Award, Clock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { getStudentDashboard } from "@/lib/dashboard-api";
 
 const NeuroHub = () => {

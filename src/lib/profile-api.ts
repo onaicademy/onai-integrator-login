@@ -3,7 +3,7 @@
  * Клиент для работы с Backend API профиля студента
  */
 
-import { apiClient } from '../utils/apiClient';
+import { api } from '../utils/apiClient';
 
 interface UserProfile {
   id: string;
@@ -42,9 +42,7 @@ export async function getUserProfile(userId: string): Promise<ProfileResponse> {
   try {
     console.log('📊 [ProfileAPI] Запрос профиля для:', userId);
     
-    const response = await apiClient(`/users/${userId}/profile`, {
-      method: 'GET',
-    });
+    const response = await api.get(`/users/${userId}/profile`);
 
     if (!response.success) {
       throw new Error(response.error || 'Failed to fetch profile');
