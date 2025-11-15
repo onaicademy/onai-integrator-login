@@ -25,6 +25,14 @@ import tokensRouter from './routes/tokens';
 import filesRouter from './routes/files';
 import onboardingRouter from './routes/onboarding';
 import fileCleanupRouter from './routes/fileCleanup';
+import analyticsRouter from './routes/analytics';
+import goalsRouter from './routes/goals';
+import missionsRouter from './routes/missions';
+import coursesRouter from './routes/courses';
+import modulesRouter from './routes/modules';
+import lessonsRouter from './routes/lessons';
+import videosRouter from './routes/videos';
+import materialsRouter from './routes/materials';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -78,6 +86,14 @@ app.use('/api/tokens', tokensRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/admin/cleanup', fileCleanupRouter);
+app.use('/api/analytics', analyticsRouter);
+app.use('/api/goals', goalsRouter);
+app.use('/api/missions', missionsRouter);
+app.use('/api/courses', coursesRouter);
+app.use('/api/modules', modulesRouter);
+app.use('/api/lessons', lessonsRouter);
+app.use('/api/videos', videosRouter);
+app.use('/api/materials', materialsRouter);
 
 // 404 обработка
 app.use((req, res) => {
