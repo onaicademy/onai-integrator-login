@@ -76,49 +76,62 @@ export function AppSidebar({ role }: AppSidebarProps) {
   console.log('✅ Показываем пунктов:', menuItems.length, 'для роли:', role);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-800 bg-[#18181b]">
-      <SidebarHeader className="border-b border-gray-800 px-3 sm:px-4 py-3 sm:py-4 bg-[#18181b]">
+    <Sidebar collapsible="icon" className="border-r border-gray-800 bg-[#18181b] md:data-[state=collapsed]:w-[4rem]">
+      <SidebarHeader className="border-b border-gray-800 px-3 sm:px-4 py-4 bg-[#18181b] min-h-[64px] flex items-center">
         <div className={cn(
-          "flex items-center transition-all duration-300",
-          isCollapsed ? "justify-center p-1" : "justify-start p-2 pl-1"
+          "flex items-center transition-all duration-300 w-full",
+          isCollapsed ? "justify-center p-1" : "justify-start p-2 px-3"
         )}>
           {isCollapsed ? (
-            <OnAILogo variant="icon" className="w-10 h-10 text-[#00ff00]" />
+            <motion.div
+              whileHover={{ scale: 1.1, filter: "drop-shadow(0 0 8px rgba(0,255,0,0.6))" }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center justify-center"
+            >
+              <OnAILogo variant="icon" className="w-7 h-7 text-[#00ff00]" />
+            </motion.div>
           ) : (
-            <OnAILogo variant="full" className="h-8 w-auto text-white" />
+            <OnAILogo variant="full" className="h-7 w-auto text-white" />
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 sm:px-3">
+      <SidebarContent className={cn(
+        "transition-all duration-300 pt-6 md:pt-8",
+        isCollapsed ? "px-1" : "px-3 sm:px-4"
+      )}>
         <SidebarGroup>
           <SidebarGroupLabel className={cn(
-            "px-2 text-sm sm:text-base text-[#00ff00] transition-all duration-300 uppercase tracking-wider font-bold",
-            isCollapsed && "opacity-0"
+            "px-3 text-sm font-semibold text-[#00ff00] transition-all duration-300 uppercase tracking-wider mb-2",
+            isCollapsed && "opacity-0 h-0 overflow-hidden mb-0"
           )}>
             Навигация
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1.5">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title} size="lg">
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
                       className={({ isActive }) =>
                         cn(
-                          "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 overflow-hidden",
+                          "group relative flex items-center rounded-xl transition-all duration-300 overflow-hidden",
                           "hover:scale-[1.02] active:scale-[0.98]",
                           "text-white hover:text-[#00ff00]",
-                          isActive && "bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10 shadow-lg shadow-[#00ff00]/20"
+                          isCollapsed 
+                            ? "!size-12 !p-0 justify-center items-center hover:bg-[#00ff00]/10 hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]" 
+                            : "!h-12 gap-3 px-4 py-3 justify-start items-center w-full",
+                          isActive && !isCollapsed && "bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10 shadow-lg shadow-[#00ff00]/20",
+                          isActive && isCollapsed && "bg-[#00ff00]/20 shadow-[0_0_20px_rgba(0,255,0,0.4)]"
                         )
                       }
                     >
                       {({ isActive }) => (
                         <>
-                          {/* Фон для активной кнопки */}
-                          {isActive && (
+                          {/* Фон для активной кнопки (только для развернутого) */}
+                          {isActive && !isCollapsed && (
                             <motion.div
                               className="absolute inset-0 bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10"
                               animate={{
@@ -134,23 +147,33 @@ export function AppSidebar({ role }: AppSidebarProps) {
                           
                           {/* Иконка с эффектом */}
                           <motion.div
-                            whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+                            whileHover={{ 
+                              scale: 1.15,
+                              filter: isCollapsed ? "drop-shadow(0 0 6px rgba(0,255,0,0.8))" : "none"
+                            }}
                             whileTap={{ scale: 0.9 }}
-                            transition={{ duration: 0.3 }}
-                            className="relative z-10"
+                            transition={{ duration: 0.2 }}
+                            className={cn(
+                              "relative z-10 flex items-center justify-center",
+                              isCollapsed && isActive && "drop-shadow-[0_0_8px_rgba(0,255,0,0.6)]"
+                            )}
                           >
-                            <item.icon className="w-5 h-5 flex-shrink-0 transition-colors duration-300" />
+                            <item.icon className={cn(
+                              "flex-shrink-0 transition-all duration-300",
+                              "!w-5 !h-5",
+                              isActive && isCollapsed && "text-[#00ff00]"
+                            )} />
                           </motion.div>
                           
                           {/* Текст */}
                           {!isCollapsed && (
-                            <span className="relative z-10 font-medium transition-colors duration-300 truncate">
+                            <span className="relative z-10 font-medium transition-colors duration-300 text-sm flex-1 text-left whitespace-nowrap overflow-hidden text-ellipsis">
                               {item.title}
                             </span>
                           )}
                           
-                          {/* Индикатор активности */}
-                          {isActive && (
+                          {/* Индикатор активности (только для развернутого) */}
+                          {isActive && !isCollapsed && (
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: "3px" }}
@@ -168,12 +191,15 @@ export function AppSidebar({ role }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-800 bg-black/30">
+      <SidebarFooter className={cn(
+        "py-3 sm:py-4 border-t border-gray-800 bg-black/30 transition-all duration-300",
+        isCollapsed ? "px-2" : "px-3 sm:px-4"
+      )}>
         <div className={cn(
-          "text-xs text-gray-600 transition-opacity",
-          isCollapsed && "opacity-0"
+          "text-xs text-gray-500 transition-all duration-300",
+          isCollapsed ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
         )}>
-          <p className="leading-relaxed">© 2025 onAI Academy</p>
+          <p className="leading-relaxed text-center">© 2025 onAI Academy</p>
         </div>
       </SidebarFooter>
     </Sidebar>

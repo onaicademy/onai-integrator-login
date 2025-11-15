@@ -10,7 +10,7 @@ import { DollarSign, Zap, TrendingUp, Calendar as CalendarIcon, Activity } from 
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/utils/apiClient';
 
 const KZT_RATE = 460; // 1 USD = 460 KZT (можно сделать динамическим)

@@ -873,76 +873,41 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-4xl h-[80vh] w-[95vw] sm:w-auto flex flex-col p-0 gap-0 bg-black border-[#00ff00]/50 shadow-2xl shadow-[#00ff00]/20 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="max-w-4xl h-[80vh] w-[95vw] sm:w-auto flex flex-col p-0 gap-0 bg-[#242526] border-gray-700"
       >
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-800 bg-gradient-to-r from-[#00ff00]/5 to-transparent">
+        <DialogHeader className="px-6 py-4 border-b border-gray-700 bg-[#1c1e21]">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               {/* Аватар AI куратора */}
-              <div className="relative flex-shrink-0">
-                <motion.div
-                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00ff00] via-[#00cc00] to-[#00aa00] flex items-center justify-center border-2 border-[#00ff00]/30"
-                  animate={{
-                    boxShadow: [
-                      "0 0 20px rgba(0,255,0,0.3)",
-                      "0 0 35px rgba(0,255,0,0.6)",
-                      "0 0 20px rgba(0,255,0,0.3)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <Bot className="w-7 h-7 text-black" strokeWidth={2.5} />
-                </motion.div>
-                {/* Online индикатор */}
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-black rounded-full border-2 border-[#00ff00]/50 flex items-center justify-center">
-                  <motion.div
-                    className="w-2.5 h-2.5 rounded-full bg-[#00ff00]"
-                    animate={{
-                      scale: [1, 1.4, 1],
-                      opacity: [1, 0.6, 1],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                </div>
+              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#3a3b3c] flex items-center justify-center">
+                <Bot className="w-5 h-5 text-gray-300" />
               </div>
               <div className="min-w-0">
-                <DialogTitle className="text-2xl font-bold text-white leading-tight mb-1">
+                <DialogTitle className="text-lg font-semibold text-white leading-tight">
                   AI-куратор
                 </DialogTitle>
-                <DialogDescription className="text-gray-400 text-sm leading-tight flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#00ff00] animate-pulse" />
-                  Онлайн • Готов помочь 24/7
+                <DialogDescription className="text-gray-400 text-xs leading-tight">
+                  Онлайн
                 </DialogDescription>
               </div>
             </div>
             {/* Кнопка "Новый чат" */}
-            <motion.button
+            <button
               onClick={handleNewConversation}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold flex items-center gap-2 shadow-lg shadow-[#00ff00]/30 transition-all group"
+              className="flex-shrink-0 px-3 py-2 rounded-lg bg-[#3a3b3c] hover:bg-[#4e4f50] text-gray-200 text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <Sparkles className="w-4 h-4" />
               <span className="hidden sm:inline">Новый чат</span>
-              <span className="sm:hidden">Новый</span>
-            </motion.button>
+            </button>
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-6 [&>[data-radix-scroll-area-scrollbar]]:bg-transparent" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1 px-6 bg-[#242526] [&>[data-radix-scroll-area-scrollbar]]:bg-transparent" ref={scrollAreaRef}>
           <div className="py-4 space-y-4">
             {isLoadingHistory ? (
               <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#00ff00]" />
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                   <p className="text-sm text-gray-400">Загрузка истории...</p>
                 </div>
               </div>
@@ -959,53 +924,16 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                   }`}
                 >
                   {message.role === "assistant" && (
-                    <motion.div
-                      animate={isTyping && index === messages.length - 1 ? {
-                        scale: [1, 1.08, 1],
-                      } : {}}
-                      transition={{
-                        duration: 1,
-                        repeat: isTyping && index === messages.length - 1 ? Infinity : 0,
-                        ease: "easeInOut",
-                      }}
-                      className="flex-shrink-0"
-                    >
-                      <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border border-[#00ff00]/30 flex items-center justify-center relative overflow-hidden">
-                        {/* Анимация "печатает" */}
-                        {isTyping && index === messages.length - 1 && message.role === "assistant" && (
-                          <motion.div
-                            className="absolute inset-0 flex items-center justify-center gap-0.5"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                          >
-                            {[0, 1, 2].map((i) => (
-                              <motion.div
-                                key={i}
-                                className="w-1.5 h-1.5 bg-[#00ff00] rounded-full"
-                                animate={{
-                                  y: [0, -4, 0],
-                                  opacity: [0.3, 1, 0.3],
-                                }}
-                                transition={{
-                                  duration: 0.6,
-                                  repeat: Infinity,
-                                  delay: i * 0.2,
-                                  ease: "easeInOut",
-                                }}
-                              />
-                            ))}
-                          </motion.div>
-                        )}
-                        <Bot className={`w-5 h-5 text-[#00ff00] relative z-10 ${isTyping && index === messages.length - 1 && message.role === "assistant" ? 'opacity-30' : ''}`} />
-                      </div>
-                    </motion.div>
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#3a3b3c] flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-gray-300" />
+                    </div>
                   )}
 
                   <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                       message.role === "user"
-                        ? "bg-[#00ff00] text-black font-medium shadow-lg shadow-[#00ff00]/20"
-                        : "bg-[#1a1a24] text-white border border-gray-800"
+                        ? "bg-[#0084ff] text-white"
+                        : "bg-[#3a3b3c] text-white"
                     }`}
                   >
                     {/* Message content with Markdown support */}
@@ -1021,12 +949,12 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                             
                             // Жирный текст (**текст**)
                             strong: ({ children }) => (
-                              <strong className="font-bold text-[#00ff00]">{children}</strong>
+                              <strong className="font-semibold text-white">{children}</strong>
                             ),
                             
                             // Курсив (*текст*)
                             em: ({ children }) => (
-                              <em className="italic text-gray-300">{children}</em>
+                              <em className="italic text-gray-200">{children}</em>
                             ),
                             
                             // Заголовки
@@ -1054,11 +982,11 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                             // Код (инлайн `код` и блоки)
                             code: ({ inline, children, ...props }: any) => 
                               inline ? (
-                                <code className="px-2 py-0.5 bg-black/60 rounded text-xs font-mono text-[#00ff00] border border-[#00ff00]/20" {...props}>
+                                <code className="px-1.5 py-0.5 bg-black/40 rounded text-xs font-mono text-gray-200" {...props}>
                                   {children}
                                 </code>
                               ) : (
-                                <code className="block p-3 bg-black/60 rounded-lg text-xs font-mono overflow-x-auto my-2 border border-gray-700 break-words overflow-wrap-anywhere text-[#00ff00]" {...props}>
+                                <code className="block p-3 bg-black/40 rounded-lg text-xs font-mono overflow-x-auto my-2 break-words overflow-wrap-anywhere text-gray-200" {...props}>
                                   {children}
                                 </code>
                               ),
@@ -1070,7 +998,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                             
                             // Цитаты (> текст)
                             blockquote: ({ children }) => (
-                              <blockquote className="border-l-4 border-[#00ff00]/60 pl-3 py-1 italic text-gray-400 mb-2 bg-black/30 rounded-r text-sm break-words overflow-wrap-anywhere">
+                              <blockquote className="border-l-3 border-gray-500 pl-3 py-1 italic text-gray-300 mb-2 bg-black/20 rounded-r text-sm break-words overflow-wrap-anywhere">
                                 {children}
                               </blockquote>
                             ),
@@ -1081,7 +1009,7 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                                 href={href} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="text-[#00ff00] underline hover:text-[#00cc00] transition-colors text-sm break-all font-medium"
+                                className="text-blue-400 underline hover:text-blue-300 transition-colors text-sm break-all"
                               >
                                 {children}
                               </a>
@@ -1194,11 +1122,9 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
                   </div>
 
                   {message.role === "user" && (
-                    <Avatar className="h-8 w-8 border border-neon/30">
-                      <AvatarFallback className="bg-neon/10">
-                        <User className="w-4 h-4 text-neon" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="h-8 w-8 rounded-full bg-[#0084ff] flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
                   )}
                 </motion.div>
               ))}
@@ -1206,53 +1132,14 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               {/* Индикатор "печатает..." с анимацией */}
               {isTyping && (
                 <div className="flex gap-3 justify-start">
-                  <motion.div
-                    animate={{
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    <Avatar className="h-8 w-8 border border-neon/30">
-                      <AvatarFallback className="bg-neon/10 relative overflow-hidden">
-                        {/* Анимация "печатает" - пульсирующие точки */}
-                        <motion.div
-                          className="absolute inset-0 flex items-center justify-center gap-0.5"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                        >
-                          {[0, 1, 2].map((i) => (
-                            <motion.div
-                              key={i}
-                              className="w-1 h-1 bg-neon rounded-full"
-                              animate={{
-                                y: [0, -4, 0],
-                                opacity: [0.3, 1, 0.3],
-                              }}
-                              transition={{
-                                duration: 0.6,
-                                repeat: Infinity,
-                                delay: i * 0.2,
-                                ease: "easeInOut",
-                              }}
-                            />
-                          ))}
-                        </motion.div>
-                        <Bot className="w-5 h-5 text-[#00ff00] relative z-10 opacity-50" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </motion.div>
-                <div className="bg-[#1a1a24] rounded-2xl px-4 py-3 border border-gray-800">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm text-gray-300 font-medium">{typingStatus}</span>
-                    <div className="flex gap-1">
-                      <span className="animate-bounce text-[#00ff00]" style={{ animationDelay: '0ms' }}>.</span>
-                        <span className="animate-bounce text-[#00ff00]" style={{ animationDelay: '150ms' }}>.</span>
-                        <span className="animate-bounce text-[#00ff00]" style={{ animationDelay: '300ms' }}>.</span>
-                      </div>
+                  <div className="h-8 w-8 rounded-full bg-[#3a3b3c] flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-gray-300" />
+                  </div>
+                  <div className="bg-[#3a3b3c] rounded-2xl px-4 py-2.5">
+                    <div className="flex items-center gap-1">
+                      <span className="animate-bounce text-gray-300" style={{ animationDelay: '0ms' }}>.</span>
+                      <span className="animate-bounce text-gray-300" style={{ animationDelay: '150ms' }}>.</span>
+                      <span className="animate-bounce text-gray-300" style={{ animationDelay: '300ms' }}>.</span>
                     </div>
                   </div>
                 </div>
@@ -1264,33 +1151,33 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
 
         {/* Вложения */}
         {attachments.length > 0 && (
-          <div className="px-6 py-3 border-t border-gray-800 bg-[#1a1a24]/50">
+          <div className="px-6 py-3 border-t border-gray-700 bg-[#1c1e21]">
             <div className="flex flex-wrap gap-2">
               {attachments.map((attachment, index) => (
-                <Badge
+                <div
                   key={index}
-                  className="flex items-center gap-2 pr-1 bg-[#00ff00]/10 border border-[#00ff00]/30 text-white hover:bg-[#00ff00]/20"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-[#3a3b3c] rounded-lg text-white"
                 >
-                  <Paperclip className="w-3 h-3 text-[#00ff00]" />
+                  <Paperclip className="w-3 h-3 text-gray-400" />
                   <span className="text-xs">
                     {attachment.name} ({formatFileSize(attachment.size)})
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-5 w-5 p-0 hover:bg-red-500/20 rounded-full"
+                    className="h-4 w-4 p-0 hover:bg-red-500/20 rounded-full ml-1"
                     onClick={() => removeAttachment(index)}
                   >
-                    <X className="w-3 h-3 text-white" />
+                    <X className="w-3 h-3 text-gray-400 hover:text-white" />
                   </Button>
-                </Badge>
+                </div>
               ))}
             </div>
           </div>
         )}
 
         {/* Input область */}
-        <div className="px-6 pb-6 pt-4 border-t border-gray-800 bg-gradient-to-t from-black/50 to-transparent">
+        <div className="px-6 pb-4 pt-3 border-t border-gray-700 bg-[#1c1e21]">
           {/* Индикатор записи */}
           {isRecording && (
             <motion.div
@@ -1299,18 +1186,18 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               className="flex flex-col gap-1 mb-2"
             >
               <div className="flex items-center gap-2 text-xs text-red-400 font-medium">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50" />
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 <span>Запись... {duration}с / {MAX_RECORDING_DURATION}с</span>
               </div>
               {/* Прогресс-бар максимального времени */}
-              <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${
                     duration >= MAX_RECORDING_DURATION - 10
                       ? "bg-red-500"
                       : duration >= MAX_RECORDING_DURATION - 30
                       ? "bg-yellow-500"
-                      : "bg-[#00ff00]"
+                      : "bg-blue-500"
                   }`}
                   initial={{ width: 0 }}
                   animate={{ width: `${(duration / MAX_RECORDING_DURATION) * 100}%` }}
@@ -1339,12 +1226,12 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               accept=".pdf,.doc,.docx,.txt,.md,.jpg,.jpeg,.png,.gif"
             />
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={() => fileInputRef.current?.click()}
-              className="shrink-0 border-gray-700 hover:border-[#00ff00]/50 hover:bg-[#00ff00]/10 text-white"
+              className="shrink-0 text-gray-400 hover:text-gray-200 hover:bg-[#3a3b3c]"
             >
-              <Paperclip className="w-4 h-4" />
+              <Paperclip className="w-5 h-5" />
             </Button>
             <Textarea
               ref={textareaRef}
@@ -1353,34 +1240,35 @@ export const AIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) => {
               onKeyDown={handleKeyPress}
               placeholder="Напишите сообщение..."
               disabled={isLoading}
-              className="flex-1 min-h-[44px] max-h-[200px] resize-none overflow-y-auto bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/20"
+              className="flex-1 min-h-[40px] max-h-[200px] resize-none overflow-y-auto bg-[#3a3b3c] border-none text-white placeholder:text-gray-400 focus:ring-1 focus:ring-blue-500 rounded-3xl px-4 py-2"
               rows={1}
             />
             {/* Кнопка микрофона - TOGGLE (клик = старт/стоп) */}
             <Button
               size="icon"
-              variant={isRecording ? "destructive" : "outline"}
+              variant="ghost"
               className={`flex-shrink-0 relative select-none ${
                 isRecording 
-                  ? "bg-red-500 hover:bg-red-600 border-red-500" 
-                  : "border-gray-700 hover:border-[#00ff00]/50 hover:bg-[#00ff00]/10 text-white"
+                  ? "text-red-500 hover:bg-red-500/10" 
+                  : "text-gray-400 hover:text-gray-200 hover:bg-[#3a3b3c]"
               }`}
               onClick={handleMicrophoneToggle}
               disabled={isLoading}
               title={isRecording ? "Нажмите для остановки записи" : "Нажмите для начала записи"}
             >
-              <Mic className={`w-4 h-4 ${isRecording ? "animate-pulse text-white" : ""}`} />
+              <Mic className={`w-5 h-5 ${isRecording ? "animate-pulse" : ""}`} />
               {isRecording && (
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-300"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                 </span>
               )}
             </Button>
             <Button
               onClick={sendMessage}
               disabled={isLoading || (input.trim() === "" && attachments.length === 0)}
-              className="shrink-0 bg-[#00ff00] text-black hover:bg-[#00cc00] font-bold shadow-lg shadow-[#00ff00]/30 disabled:opacity-50"
+              className="shrink-0 bg-[#0084ff] text-white hover:bg-[#0073e6] rounded-full w-9 h-9 p-0 disabled:opacity-50"
+              size="icon"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

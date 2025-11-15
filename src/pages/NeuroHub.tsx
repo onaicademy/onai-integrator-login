@@ -1,19 +1,48 @@
 import { motion } from "framer-motion";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Target, MessageCircle, TrendingUp, Flame, CheckCircle, Sparkles, Zap, Award, Clock } from "lucide-react";
+import { Brain, Target, MessageCircle, TrendingUp, Flame, CheckCircle, Sparkles, Zap, Award, Clock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { getStudentDashboard } from "@/lib/dashboard-api";
 
 const NeuroHub = () => {
   const navigate = useNavigate();
-  const [streak] = useState(4);
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const missions = [
-    { id: 1, title: "Пройди 3 урока подряд", completed: false, progress: 1 },
-    { id: 2, title: "Создай первого бота", completed: false, progress: 0 },
-    { id: 3, title: "Заработай +100 XP за день", completed: true, progress: 100 },
-  ];
+  // Загрузка данных dashboard
+  useEffect(() => {
+    async function loadDashboard() {
+      if (!user?.id) {
+        console.warn('⚠️ User ID not found, skipping dashboard load');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log('📊 Загружаем dashboard для пользователя:', user.id);
+        const data = await getStudentDashboard(user.id);
+        setDashboardData(data);
+        console.log('✅ Dashboard загружен:', data);
+      } catch (err: any) {
+        console.error('❌ Ошибка загрузки dashboard:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDashboard();
+  }, [user?.id]);
+
+  // Фоллбэк данные (если API не доступен или пусто)
+  const streak = dashboardData?.user_info?.current_streak || 0;
+  const missions = dashboardData?.active_missions || [];
+  const todayStats = dashboardData?.today_stats || { lessons_completed: 0, watch_time_minutes: 0, xp_earned: 0 };
 
   const updates = [
     { id: 1, title: "Добавлен новый модуль 'Продажи на высокий чек'", date: "Сегодня" },
@@ -39,6 +68,18 @@ const NeuroHub = () => {
       delay: i * 0.5,
     })), []
   );
+
+  // Индикатор загрузки
+  if (isLoading) {
+    return (
+      <div className="relative overflow-hidden min-h-screen bg-gradient-to-br from-black via-zinc-950 to-black flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-[#00ff00] animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Загрузка NeuroHub...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden min-h-screen bg-gradient-to-br from-black via-zinc-950 to-black">
@@ -416,8 +457,10 @@ const NeuroHub = () => {
                   <div className="flex items-center gap-3">
                     <Clock className="w-5 h-5 text-[#00ff00]" />
                     <div>
-                      <p className="text-sm text-gray-400">Время обучения</p>
-                      <p className="text-lg font-bold text-white">2ч 15м</p>
+                      <p className="text-sm text-gray-400">Время обучения сегодня</p>
+                      <p className="text-lg font-bold text-white">
+                        {Math.floor(todayStats.watch_time_minutes / 60)}ч {todayStats.watch_time_minutes % 60}м
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -445,45 +488,62 @@ const NeuroHub = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {missions.map((mission) => (
-                  <motion.div
-                    key={mission.id}
-                    className="p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 flex items-center justify-between group hover:bg-zinc-900/70 transition-colors"
-                    whileHover={{ x: 5 }}
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <motion.div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          mission.completed
-                            ? 'bg-[#00ff00] border-[#00ff00]'
-                            : 'border-[#00ff00]/40'
-                        }`}
-                        animate={
-                          mission.completed
-                            ? {
-                                boxShadow: [
-                                  '0 0 0px rgba(0,255,0,0.5)',
-                                  '0 0 15px rgba(0,255,0,0.8)',
-                                  '0 0 0px rgba(0,255,0,0.5)',
-                                ],
-                              }
-                            : {}
-                        }
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        {mission.completed && (
-                          <CheckCircle className="w-4 h-4 text-black" />
-                        )}
-                      </motion.div>
-                      <span className={`text-sm ${mission.completed ? 'text-white' : 'text-gray-400'}`}>
-                        {mission.title}
-                      </span>
-                    </div>
-                    {!mission.completed && mission.progress > 0 && (
-                      <span className="text-xs text-[#00ff00] font-semibold">{mission.progress}/3</span>
-                    )}
-                  </motion.div>
-                ))}
+                {missions.length > 0 ? (
+                  missions.map((mission: any) => (
+                    <motion.div
+                      key={mission.id}
+                      className="p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 flex items-center justify-between group hover:bg-zinc-900/70 transition-colors"
+                      whileHover={{ x: 5 }}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <motion.div
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            mission.is_completed
+                              ? 'bg-[#00ff00] border-[#00ff00]'
+                              : 'border-[#00ff00]/40'
+                          }`}
+                          animate={
+                            mission.is_completed
+                              ? {
+                                  boxShadow: [
+                                    '0 0 0px rgba(0,255,0,0.5)',
+                                    '0 0 15px rgba(0,255,0,0.8)',
+                                    '0 0 0px rgba(0,255,0,0.5)',
+                                  ],
+                                }
+                              : {}
+                          }
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          {mission.is_completed && (
+                            <CheckCircle className="w-4 h-4 text-black" />
+                          )}
+                        </motion.div>
+                        <div className="flex-1">
+                          <span className={`text-sm block ${mission.is_completed ? 'text-white' : 'text-gray-400'}`}>
+                            {mission.title}
+                          </span>
+                          {mission.description && (
+                            <span className="text-xs text-gray-500">{mission.description}</span>
+                          )}
+                        </div>
+                      </div>
+                      {!mission.is_completed && mission.current_value > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#00ff00] font-semibold">
+                            {mission.current_value}/{mission.target_value}
+                          </span>
+                          <span className="text-xs text-gray-500">+{mission.xp_reward} XP</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    <p className="text-sm">Нет активных миссий</p>
+                    <p className="text-xs mt-1">Новые миссии появятся скоро!</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

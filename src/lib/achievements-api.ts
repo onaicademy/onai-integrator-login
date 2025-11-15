@@ -39,7 +39,7 @@ export async function getUserAchievementsForAI(userId: string) {
     try {
       // Запрос статистики пользователя
       const { data: stats, error: statsError } = await supabase
-        .from('user_statistics')
+        .from('user_stats')
         .select('*')
         .eq('user_id', userId)
         .single();
@@ -47,14 +47,14 @@ export async function getUserAchievementsForAI(userId: string) {
       if (statsError) {
         if (statsError.code === '42P01') {
           // Таблица не существует - миграции не применены
-          console.warn('⚠️  Таблица user_statistics не найдена. Используем mock данные.');
+          console.warn('⚠️  Таблица user_stats не найдена. Используем mock данные.');
           console.warn('💡 Примените миграции: см. APPLY_MIGRATIONS_NOW.md');
           useMockData = true;
         } else if (statsError.code === 'PGRST116') {
           // Запись не найдена - создаём новую
           console.log('ℹ️  Статистика пользователя не найдена, инициализируем...');
           const { data: newStats, error: insertError } = await supabase
-            .from('user_statistics')
+            .from('user_stats')
             .insert({ user_id: userId })
             .select()
             .single();

@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 
 export function TokenDiagnostics() {
