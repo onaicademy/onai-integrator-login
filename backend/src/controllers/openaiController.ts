@@ -3,6 +3,7 @@ import * as openaiService from '../services/openaiService';
 import * as tokenService from '../services/tokenService'; // ✅ Добавлен импорт
 import { getAssistantId, AssistantType } from '../config/assistants';
 import multer from 'multer';
+import { toFile } from 'openai/uploads'; // ✅ Для создания File объекта в Node.js
 
 // Multer для обработки multipart/form-data (загрузка файлов)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -237,8 +238,8 @@ export async function transcribeAudio(req: Request, res: Response) {
       userId: userId,
     });
 
-    // Создаём File объект из Buffer
-    const audioFile = new File([req.file.buffer], req.file.originalname || 'recording.webm', {
+    // ✅ Создаём File объект из Buffer (используя toFile из openai/uploads)
+    const audioFile = await toFile(req.file.buffer, req.file.originalname || 'recording.webm', {
       type: req.file.mimetype,
     });
 

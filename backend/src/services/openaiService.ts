@@ -211,12 +211,12 @@ export async function getThreadRun(threadId: string, runId: string) {
  * Транскрипция аудио через Whisper
  */
 export async function transcribeAudio(
-  audioFile: File,
+  audioFile: any, // FileLike из openai/uploads (Buffer в Node.js)
   language: string = 'ru',
   prompt?: string
 ) {
   try {
-    console.log(`[OpenAI] Transcribing audio: size=${audioFile.size} bytes`);
+    console.log(`[OpenAI] Transcribing audio...`);
     
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
