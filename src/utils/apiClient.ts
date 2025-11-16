@@ -21,7 +21,7 @@ export async function apiRequest<T = any>(
   const token = localStorage.getItem('supabase_token');
   
   // Формируем URL для запроса
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const url = `${baseUrl}${endpoint}`;
   
   // ✅ Проверяем тип body (FormData или JSON)

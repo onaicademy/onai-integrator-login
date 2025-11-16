@@ -9,7 +9,7 @@ import {
 import { detectConflicts } from './conflict-detector';
 
 // API базовый URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Локальное хранилище для ID Assistant и Thread
 const ASSISTANT_ID_KEY = "openai_assistant_id";
