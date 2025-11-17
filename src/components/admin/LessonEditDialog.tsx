@@ -145,8 +145,8 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
 
       // ✅ Исправление: backend может вернуть { lesson: {...} } или { data: { lesson: {...} } }
       console.log('🔍 Backend response:', lessonRes);
-      const lesson = lessonRes.lesson || lessonRes.data?.lesson || lessonRes;
-      const newLessonId = lesson.id;
+      const createdLesson = lessonRes.lesson || lessonRes.data?.lesson || lessonRes;
+      const newLessonId = createdLesson.id;
 
       if (!newLessonId) {
         console.error('❌ Backend не вернул ID урока. Response:', lessonRes);
