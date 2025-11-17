@@ -16,10 +16,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// ✅ Cloudflare R2 клиент (ИСПРАВЛЕНО из research report)
+// ✅ Cloudflare R2 клиент (ИСПРАВЛЕНО: endpoint уже содержит https:// в .env)
 const s3 = new S3Client({
   region: 'auto', // ✅ Обязательно для Cloudflare R2
-  endpoint: `https://${process.env.R2_ENDPOINT}`, // ✅ Добавляем https:// здесь (endpoint в .env БЕЗ protocol)
+  endpoint: process.env.R2_ENDPOINT!, // ✅ ИСПРАВЛЕНО: НЕ добавляем https://, он уже в .env!
   credentials: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
