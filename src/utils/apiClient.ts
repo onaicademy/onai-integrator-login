@@ -53,7 +53,25 @@ export async function apiRequest<T = any>(
   }
   
   try {
+    console.log('='.repeat(80));
     console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
+    console.log('📦 Body type:', isFormData ? 'FormData' : typeof options.body);
+    console.log('📋 Headers:', headers);
+    
+    if (isFormData) {
+      console.log('📤 FormData detected - checking entries:');
+      const formData = options.body as FormData;
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  - ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  - ${key}: ${value}`);
+        }
+      }
+    } else if (options.body) {
+      console.log('📤 Body:', options.body);
+    }
+    console.log('='.repeat(80));
     
     const response = await fetch(url, {
       ...options,
@@ -72,7 +90,9 @@ export async function apiRequest<T = any>(
     
     // Парсим JSON ответ
     const data = await response.json();
-    console.log(`✅ API Response:`, data);
+    console.log('='.repeat(80));
+    console.log(`✅ API Response ${response.status}:`, data);
+    console.log('='.repeat(80));
     
     return data as T;
     

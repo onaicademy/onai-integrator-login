@@ -1,18 +1,31 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, Clock, BookOpen } from "lucide-react";
 
 interface ModuleCardProps {
   id: number;
   title: string;
+  description?: string;
   progress: number;
   icon: LucideIcon;
   index: number;
+  lessons?: number;
+  duration?: string;
   onClick?: () => void;
 }
 
-export const ModuleCard = ({ id, title, progress, icon: Icon, index, onClick }: ModuleCardProps) => {
+export const ModuleCard = ({ 
+  id, 
+  title, 
+  description,
+  progress, 
+  icon: Icon, 
+  index, 
+  lessons,
+  duration,
+  onClick 
+}: ModuleCardProps) => {
   const isCompleted = progress === 100;
   const isStarted = progress > 0;
 
@@ -20,100 +33,101 @@ export const ModuleCard = ({ id, title, progress, icon: Icon, index, onClick }: 
     <motion.article
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ scale: 1.02 }}
+      transition={{ delay: index * 0.03 }}
+      whileHover={{ x: 4, borderColor: "rgba(0, 255, 0, 0.4)" }}
       onClick={onClick}
-      className="relative bg-black border border-border/30 rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer"
+      className="relative bg-[#0a0a0f] border border-gray-800/50 rounded-2xl overflow-hidden group cursor-pointer hover:shadow-lg hover:shadow-[#00ff00]/10 transition-all duration-300"
       role="article"
       aria-label={`Модуль ${id}: ${title}, прогресс ${progress}%`}
     >
-      {/* Module Number Badge */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20">
-        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
-          модуль {id}
-        </span>
-      </div>
-
-      {/* Action Button */}
-      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
-        <Button 
-          size="sm"
-          className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/20 rounded-full px-2 sm:px-3 md:px-4 font-medium text-[10px] sm:text-xs md:text-sm"
-          aria-label={`${isCompleted ? 'Повторить' : isStarted ? 'Продолжить' : 'Пройти'} модуль: ${title}`}
-        >
-          <span className="hidden sm:inline">{isCompleted ? "повторить" : isStarted ? "продолжить" : "пройти"}</span>
-          <span className="sm:hidden">{isCompleted ? "↻" : isStarted ? "→" : "▶"}</span>
-          <span className="ml-1 sm:ml-2 text-sm sm:text-lg hidden sm:inline">→</span>
-        </Button>
-      </div>
-
-      {/* 3D Icon/Image Container */}
-      <div className="relative h-36 sm:h-40 md:h-48 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-card/20 to-transparent overflow-hidden">
-        {/* Cyberpunk Background Glow */}
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            background: "radial-gradient(circle at center, rgba(177, 255, 50, 0.3), rgba(99, 102, 241, 0.2), transparent 70%)"
-          }}
-        />
-        
-        <motion.div 
-          className="relative z-10"
-          animate={{ 
-            y: [0, -6, 0, -4, 0],
-            rotateZ: [0, 1, -1, 2, -2, 0],
-            scale: [1, 1.02, 0.99, 1.03, 0.98, 1]
-          }}
-          transition={{ 
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          whileHover={{ 
-            scale: 1.15,
-            y: -10,
-            transition: { duration: 0.3 }
-          }}
-        >
-          <motion.div
-            animate={{
-              filter: [
-                "drop-shadow(0 0 20px rgba(177, 255, 50, 0.6)) drop-shadow(0 0 40px rgba(99, 102, 241, 0.3))",
-                "drop-shadow(0 0 30px rgba(177, 255, 50, 0.8)) drop-shadow(0 0 50px rgba(99, 102, 241, 0.5))",
-                "drop-shadow(0 0 20px rgba(177, 255, 50, 0.6)) drop-shadow(0 0 40px rgba(99, 102, 241, 0.3))"
-              ]
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+      {/* Horizontal Layout */}
+      <div className="flex items-center gap-4 p-5 sm:p-6">
+        {/* Icon Section */}
+        <div className="flex-shrink-0">
+          <motion.div 
+            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-[#00ff00]/10 to-[#00cc00]/5 border border-[#00ff00]/20 flex items-center justify-center"
+            whileHover={{ scale: 1.05, rotate: 3 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
             <Icon 
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 text-neon" 
+              className="w-7 h-7 sm:w-8 sm:h-8 text-[#00ff00]" 
               strokeWidth={1.5}
               aria-hidden="true"
             />
           </motion.div>
-        </motion.div>
-       </div>
+        </div>
 
-       {/* Module Info */}
-      <div className="p-4 sm:p-5 md:p-6 pt-3 sm:pt-4">
-        <h3 className="font-bold text-white text-sm sm:text-base md:text-lg leading-tight mb-2 sm:mb-3">
-          {title}
-        </h3>
-        
-        {/* Progress Bar */}
-        {isStarted && (
-          <div className="mt-3 sm:mt-4">
-            <Progress 
-              value={progress} 
-              className="h-1 sm:h-1.5" 
-              aria-label={`Прогресс модуля: ${progress}%`}
-            />
+        {/* Content Section */}
+        <div className="flex-1 min-w-0">
+          {/* Module Number + Title */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-semibold text-[#00ff00]/60 uppercase tracking-wider">
+              Модуль {id}
+            </span>
           </div>
-        )}
+          
+          <h3 className="font-bold text-white text-base sm:text-lg leading-tight mb-2">
+            {title}
+          </h3>
+          
+          {description && (
+            <p className="text-gray-400 text-xs sm:text-sm leading-relaxed line-clamp-2 mb-3">
+              {description}
+            </p>
+          )}
+
+          {/* Meta Info */}
+          <div className="flex items-center gap-4 text-[11px] sm:text-xs text-gray-500">
+            {lessons && (
+              <div className="flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>{lessons} уроков</span>
+              </div>
+            )}
+            {duration && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{duration}</span>
+              </div>
+            )}
+            {isStarted && (
+              <div className="flex items-center gap-1.5 text-[#00ff00]">
+                <span className="font-semibold">{progress}%</span>
+              </div>
+            )}
+          </div>
+
+          {/* Progress Bar */}
+          {isStarted && (
+            <div className="mt-3">
+              <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.05 }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Button */}
+        <div className="flex-shrink-0">
+          <Button 
+            size="sm"
+            className={`${
+              isCompleted 
+                ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
+                : isStarted 
+                  ? "bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/30 hover:bg-[#00ff00]/20" 
+                  : "bg-[#00ff00] text-black hover:bg-[#00cc00]"
+            } font-semibold rounded-xl px-4 py-2 text-xs sm:text-sm transition-all`}
+            aria-label={`${isCompleted ? 'Повторить' : isStarted ? 'Продолжить' : 'Начать'} модуль: ${title}`}
+          >
+            {isCompleted ? "Повторить" : isStarted ? "Продолжить" : "Начать"}
+          </Button>
+        </div>
       </div>
     </motion.article>
   );

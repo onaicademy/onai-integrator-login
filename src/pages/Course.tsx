@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { CourseStats } from "@/components/course/CourseStats";
 import { AIChatDialog } from "@/components/profile/v2/AIChatDialog";
-import { useMemo, useState } from "react";
+import { ModuleEditDialog } from "@/components/admin/ModuleEditDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
+import { api } from "@/utils/apiClient";
 import {
   DoorOpen,
   MessagesSquare,
@@ -17,297 +20,386 @@ import {
   Gift,
   Users,
   Download,
-  Bot
+  Bot,
+  Plus
 } from "lucide-react";
 
 const modules = [
-  { id: 1, title: "Введение в профессию", progress: 100, icon: DoorOpen },
-  { id: 2, title: "Создание GPT бота и CRM", progress: 90, icon: MessagesSquare },
-  { id: 3, title: "Интеграция amoCRM и Bitrix24", progress: 80, icon: Cable },
-  { id: 4, title: "Автоматизация при помощи Make", progress: 60, icon: Workflow },
-  { id: 5, title: "N8N автоматизация и работа с API", progress: 50, icon: Network },
-  { id: 6, title: "Реализация и закрытие проекта", progress: 40, icon: FileCheck },
-  { id: 7, title: "Упаковка и продвижение", progress: 30, icon: Megaphone },
-  { id: 8, title: "Продажи на высокий чек", progress: 20, icon: CreditCard },
-  { id: 9, title: "Бонусы", progress: 10, icon: Gift },
-  { id: 10, title: "Воркшопы", progress: 0, icon: Users }
+  { 
+    id: 1, 
+    title: "Введение в профессию", 
+    description: "Знакомство с профессией интегратора, современными инструментами автоматизации и перспективами развития.",
+    progress: 100, 
+    icon: DoorOpen,
+    lessons: 5,
+    duration: "45 мин"
+  },
+  { 
+    id: 2, 
+    title: "Создание GPT бота и CRM", 
+    description: "Создание умного чат-бота на базе GPT и интеграция с системами управления клиентами.",
+    progress: 90, 
+    icon: MessagesSquare,
+    lessons: 8,
+    duration: "2ч 30м"
+  },
+  { 
+    id: 3, 
+    title: "Интеграция amoCRM и Bitrix24", 
+    description: "Подключение и настройка популярных CRM-систем для автоматизации бизнес-процессов.",
+    progress: 80, 
+    icon: Cable,
+    lessons: 7,
+    duration: "2ч 15м"
+  },
+  { 
+    id: 4, 
+    title: "Автоматизация при помощи Make", 
+    description: "Изучение платформы Make (Integromat) для создания сложных автоматизированных сценариев.",
+    progress: 60, 
+    icon: Workflow,
+    lessons: 10,
+    duration: "3ч 20м"
+  },
+  { 
+    id: 5, 
+    title: "N8N автоматизация и работа с API", 
+    description: "Продвинутая автоматизация с N8N, работа с API и создание кастомных интеграций.",
+    progress: 50, 
+    icon: Network,
+    lessons: 12,
+    duration: "4ч 10м"
+  },
+  { 
+    id: 6, 
+    title: "Реализация и закрытие проекта", 
+    description: "Практические навыки запуска проектов, тестирование и успешная сдача клиенту.",
+    progress: 40, 
+    icon: FileCheck,
+    lessons: 6,
+    duration: "1ч 50м"
+  },
+  { 
+    id: 7, 
+    title: "Упаковка и продвижение", 
+    description: "Создание портфолио, личного бренда и эффективное продвижение услуг интегратора.",
+    progress: 30, 
+    icon: Megaphone,
+    lessons: 5,
+    duration: "1ч 30м"
+  },
+  { 
+    id: 8, 
+    title: "Продажи на высокий чек", 
+    description: "Техники продаж премиальных услуг, работа с корпоративными клиентами и ценообразование.",
+    progress: 20, 
+    icon: CreditCard,
+    lessons: 6,
+    duration: "2ч"
+  },
+  { 
+    id: 9, 
+    title: "Бонусы", 
+    description: "Дополнительные материалы, кейсы и инструменты для ускорения вашего развития.",
+    progress: 10, 
+    icon: Gift,
+    lessons: 4,
+    duration: "1ч"
+  },
+  { 
+    id: 10, 
+    title: "Воркшопы", 
+    description: "Живые практические занятия с разбором реальных проектов и вопросов студентов.",
+    progress: 0, 
+    icon: Users,
+    lessons: 8,
+    duration: "4ч"
+  }
 ];
 
 const Course = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const courseProgress = 45;
-  const studyTime = "6ч 30м";
-  const modulesCount = "8 + бонусы";
+  const { user, userRole } = useAuth();
+  const isAdmin = userRole === 'admin';
+
+  // 🔍 ДИАГНОСТИКА
+  useEffect(() => {
+    console.log('🔥 Course.tsx - userRole:', userRole);
+    console.log('🔥 Course.tsx - isAdmin:', isAdmin);
+  }, [userRole, isAdmin]);
+
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [moduleDialog, setModuleDialog] = useState<{ open: boolean; module: any | null }>({ 
+    open: false, 
+    module: null 
+  });
+  const [apiModules, setApiModules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Загрузить модули из API
+  useEffect(() => {
+    if (id && isAdmin) {
+      loadModulesFromAPI();
+    }
+  }, [id, isAdmin]);
+
+  const loadModulesFromAPI = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/api/courses/${id}`);
+      if (response?.course?.modules) {
+        setApiModules(response.course.modules);
+        console.log('✅ Загружено модулей:', response.course.modules.length);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка загрузки модулей:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleModuleClick = (moduleId: number) => {
     navigate(`/course/${id}/module/${moduleId}`);
   };
 
-  // Генерация узлов для нейронной сети (один раз)
-  const neuralNodes = useMemo(() => 
-    Array.from({ length: 12 }, (_, i) => {
-      const angle = (i / 12) * Math.PI * 2;
-      const radius = 80 + Math.random() * 40;
-      return {
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        delay: i * 0.1,
-      };
-    }), []
-  );
+  const handleAddModule = () => {
+    console.log('=======================================');
+    console.log('🔥 handleAddModule вызвана');
+    console.log('🔥 courseId:', id);
+    console.log('🔥 moduleDialog before:', moduleDialog);
+    console.log('=======================================');
+    
+    setModuleDialog({ open: true, module: null });
+    
+    console.log('✅ setModuleDialog вызван с open: true');
+  };
 
-  // Генерация орбитальных атомов (один раз)
-  const orbitingAtoms = useMemo(() => 
-    Array.from({ length: 8 }, (_, i) => {
-      const orbitRadius = 140 + i * 15;
-      const speed = 15 + i * 2;
-      const startAngle = (i / 8) * 360;
-      return {
-        orbitRadius,
-        speed,
-        startAngle,
-        size: 3 + Math.random() * 2,
-      };
-    }), []
-  );
+  const handleSaveModule = async (data: { title: string; description?: string }) => {
+    try {
+      console.log('💾 Сохранение модуля:', data);
+      
+      // Создать модуль через API
+      const response = await api.post('/api/modules', {
+        ...data,
+        course_id: parseInt(id!)
+      });
+
+      console.log('✅ Модуль создан:', response);
+      alert('✅ Модуль успешно создан!');
+      
+      // Обновить список модулей
+      await loadModulesFromAPI();
+      
+      // ModuleEditDialog сам закроет диалог
+    } catch (error: any) {
+      console.error('❌ Ошибка сохранения модуля:', error);
+      alert(`❌ Ошибка: ${error?.message || 'Не удалось создать модуль'}`);
+      throw error;
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: number, moduleTitle: string) => {
+    if (!confirm(`❌ Вы уверены, что хотите удалить модуль "${moduleTitle}"?\n\nВсе уроки, видео и материалы будут удалены. Это действие нельзя отменить.`)) {
+      return;
+    }
+    
+    try {
+      console.log('=======================================');
+      console.log('🗑️ Удаление модуля:', moduleId);
+      console.log('🗑️ Название:', moduleTitle);
+      console.log('=======================================');
+      
+      // TODO: Здесь будет API запрос для удаления модуля
+      await api.delete(`/api/modules/${moduleId}`);
+      
+      alert(`✅ Модуль "${moduleTitle}" удалён!`);
+      
+      // Обновить список модулей
+      await loadModulesFromAPI();
+      
+    } catch (error: any) {
+      console.error('❌ Ошибка удаления модуля:', error);
+      alert(error.response?.data?.error || `❌ Ошибка: ${error?.message || 'Не удалось удалить модуль'}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Flying Stars Background (as in Login page) */}
+      {/* Neural Network Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }).map((_, i) => (
-        <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
+        {/* Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-10"
           style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-              opacity: [0.2, 0.8, 0.2],
-              scale: [1, 1.5, 1],
-          }}
-          transition={{
-              duration: 3 + Math.random() * 2,
-            repeat: Infinity,
-              delay: Math.random() * 2,
+            backgroundImage: `
+              linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
           }}
         />
+        
+        {/* Floating Neural Nodes */}
+        {Array.from({ length: 30 }).map((_, i) => {
+          const size = 2 + Math.random() * 4;
+          const x = Math.random() * 100;
+          const y = Math.random() * 100;
+          const duration = 10 + Math.random() * 20;
+          
+          return (
+            <motion.div
+              key={`node-${i}`}
+              className="absolute rounded-full bg-[#00ff00]"
+              style={{
+                width: size,
+                height: size,
+                left: `${x}%`,
+                top: `${y}%`,
+                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 0, 0.6)`,
+              }}
+              animate={{
+                x: [0, Math.random() * 40 - 20, 0],
+                y: [0, Math.random() * 40 - 20, 0],
+                opacity: [0.3, 0.8, 0.3],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: Math.random() * 5,
+              }}
+            />
+          );
+        })}
+        
+        {/* Connection Lines */}
+        <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#00ff00" stopOpacity="0" />
+              <stop offset="50%" stopColor="#00ff00" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#00ff00" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          
+          {Array.from({ length: 15 }).map((_, i) => {
+            const x1 = Math.random() * 100;
+            const y1 = Math.random() * 100;
+            const x2 = Math.random() * 100;
+            const y2 = Math.random() * 100;
+            
+            return (
+              <motion.line
+                key={`line-${i}`}
+                x1={`${x1}%`}
+                y1={`${y1}%`}
+                x2={`${x2}%`}
+                y2={`${y2}%`}
+                stroke="url(#lineGradient)"
+                strokeWidth="1"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{
+                  pathLength: [0, 1, 0],
+                  opacity: [0, 0.4, 0],
+                }}
+                transition={{
+                  duration: 8 + Math.random() * 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: Math.random() * 3,
+                }}
+              />
+            );
+          })}
+        </svg>
+        
+        {/* Data Particles */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <motion.div
+            key={`particle-${i}`}
+            className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -100, -200, -300],
+              x: [0, Math.random() * 50 - 25],
+              opacity: [0, 1, 1, 0],
+            }}
+            transition={{
+              duration: 6 + Math.random() * 4,
+              repeat: Infinity,
+              ease: "linear",
+              delay: Math.random() * 6,
+            }}
+          />
         ))}
       </div>
 
-      {/* ЗЕЛЕНАЯ НЕЙРОННАЯ СФЕРА - УЛУЧШЕННАЯ */}
-      <div className="fixed top-1/2 right-[10%] -translate-y-1/2 pointer-events-none z-0">
-        <svg
-          width="500"
-          height="500"
-          viewBox="-250 -250 500 500"
-          className="overflow-visible"
-        >
-          <defs>
-            {/* Зеленый градиент для сферы */}
-            <radialGradient id="sphereGradient">
-              <stop offset="0%" stopColor="#00ff00" stopOpacity="0.9" />
-              <stop offset="30%" stopColor="#00ff00" stopOpacity="0.7" />
-              <stop offset="60%" stopColor="#00cc00" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#008800" stopOpacity="0.1" />
-            </radialGradient>
-            
-            {/* Усиленный фильтр свечения */}
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="6" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            
-            {/* Пульсирующее свечение */}
-            <filter id="pulsGlow">
-              <feGaussianBlur stdDeviation="10" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {/* Связи между узлами */}
-          <g opacity="0.3">
-            {neuralNodes.map((node, i) => 
-              neuralNodes.slice(i + 1).map((otherNode, j) => {
-                const distance = Math.sqrt(
-                  Math.pow(node.x - otherNode.x, 2) + Math.pow(node.y - otherNode.y, 2)
-                );
-                if (distance < 120) {
-                  return (
-                    <motion.line
-                      key={`${i}-${j}`}
-                      x1={node.x}
-                      y1={node.y}
-                      x2={otherNode.x}
-                      y2={otherNode.y}
-                      stroke="#00ff00"
-                      strokeWidth="1"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      animate={{ pathLength: 1, opacity: 0.6 }}
-                      transition={{
-                        duration: 2,
-                        delay: node.delay + otherNode.delay,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                      }}
-                    />
-                  );
-                }
-                return null;
-              })
-            )}
-          </g>
-
-          {/* Внешнее пульсирующее кольцо */}
-          <motion.circle
-            cx="0"
-            cy="0"
-            r="90"
-            fill="none"
-            stroke="#00ff00"
-            strokeWidth="2"
-            strokeOpacity="0.2"
-            filter="url(#glow)"
-            animate={{ 
-              r: [85, 95, 85],
-              strokeOpacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          {/* Центральная пульсирующая сфера - ЯДРО */}
-          <motion.circle
-            cx="0"
-            cy="0"
-            r="70"
-            fill="url(#sphereGradient)"
-            filter="url(#pulsGlow)"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ 
-              scale: [0.9, 1.1, 0.9],
-              opacity: [0.8, 1, 0.8],
-            }}
-            transition={{
-              scale: {
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-              opacity: {
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-            }}
-          />
+      {/* Shooting Stars / Comets - BURST EFFECT */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {Array.from({ length: 5 }).map((_, i) => {
+          const startX = Math.random() * 100;
+          const startY = Math.random() * 80;
+          const angle = 30 + Math.random() * 40;
+          const duration = 0.8 + Math.random() * 0.4;
+          const delay = Math.random() * 0.3;
+          const size = 4 + Math.random() * 3;
+          const tailLength = 120 + Math.random() * 80;
           
-          {/* Внутренняя яркая сфера */}
-          <motion.circle
-            cx="0"
-            cy="0"
-            r="50"
-            fill="#00ff00"
-            fillOpacity="0.6"
-            filter="url(#glow)"
-            animate={{ 
-              scale: [1, 1.15, 1],
-              opacity: [0.6, 0.9, 0.6],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.3,
-            }}
-          />
-
-          {/* Узлы нейронной сети */}
-          {neuralNodes.map((node, i) => (
-            <motion.circle
-              key={i}
-              cx={node.x}
-              cy={node.y}
-              r="4"
-              fill="#00ff00"
-              filter="url(#glow)"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: [1, 1.3, 1],
-                opacity: [0.6, 1, 0.6],
+          return (
+            <motion.div
+              key={`comet-${i}`}
+              className="absolute"
+              style={{
+                left: `${startX}%`,
+                top: `${startY}%`,
+              }}
+              initial={{ opacity: 0 }}
+              animate={{
+                x: [0, Math.cos(angle * Math.PI / 180) * 1500],
+                y: [0, Math.sin(angle * Math.PI / 180) * 1500],
+                opacity: [0, 1, 1, 0],
               }}
               transition={{
-                duration: 2,
-                delay: node.delay,
+                duration,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: "easeIn",
+                delay,
+                repeatDelay: 7,
               }}
-            />
-          ))}
-
-          {/* Орбитальные сферы - УЛУЧШЕННЫЕ (3D эффект) */}
-          {orbitingAtoms.map((atom, i) => (
-            <motion.g key={`atom-${i}`}>
-              {/* Орбита (путь) */}
-              <motion.ellipse
-                cx="0"
-                cy="0"
-                rx={atom.orbitRadius}
-                ry={atom.orbitRadius * 0.3}
-                fill="none"
-                stroke="#00ff00"
-                strokeWidth="0.5"
-                strokeOpacity="0.1"
-                animate={{
-                  strokeOpacity: [0.05, 0.15, 0.05],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.2,
+            >
+              {/* Star head - MASSIVE */}
+              <div
+                className="absolute bg-white rounded-full"
+                style={{
+                  width: size,
+                  height: size,
+                  boxShadow: `
+                    0 0 ${size * 6}px rgba(255, 255, 255, 1),
+                    0 0 ${size * 3}px rgba(220, 220, 255, 0.8),
+                    0 0 ${size}px rgba(255, 255, 255, 1)
+                  `,
                 }}
               />
-              
-              {/* Вращающаяся сфера */}
-              <motion.circle
-                r={atom.size + 2}
-                fill="#00ff00"
-                filter="url(#glow)"
-                animate={{
-                  cx: [
-                    Math.cos((atom.startAngle * Math.PI) / 180) * atom.orbitRadius,
-                    Math.cos(((atom.startAngle + 360) * Math.PI) / 180) * atom.orbitRadius,
-                  ],
-                  cy: [
-                    Math.sin((atom.startAngle * Math.PI) / 180) * atom.orbitRadius * 0.3,
-                    Math.sin(((atom.startAngle + 360) * Math.PI) / 180) * atom.orbitRadius * 0.3,
-                  ],
-                  opacity: [0.4, 1, 0.4],
-                  scale: [0.8, 1.3, 0.8],
-                }}
-                transition={{
-                  duration: atom.speed,
-                  repeat: Infinity,
-                  ease: "linear",
+              {/* Tail - MASSIVE */}
+              <motion.div
+                className="absolute top-0 left-0 origin-left"
+                style={{
+                  width: tailLength,
+                  height: 3,
+                  background: 'linear-gradient(90deg, rgba(240, 240, 255, 0.8) 0%, rgba(200, 200, 230, 0.5) 30%, rgba(160, 160, 200, 0.3) 60%, transparent 100%)',
+                  transform: `rotate(${180 - angle}deg)`,
+                  filter: 'blur(1px)',
+                  boxShadow: '0 0 8px rgba(200, 200, 240, 0.4)',
                 }}
               />
-            </motion.g>
-          ))}
-        </svg>
+            </motion.div>
+          );
+        })}
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
@@ -317,25 +409,125 @@ const Course = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <div className="relative bg-black rounded-2xl sm:rounded-3xl overflow-hidden border border-border/30 p-6 sm:p-8 md:p-10 lg:p-12">
+          <div className="relative bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] rounded-3xl overflow-hidden border border-[#00ff00]/20 p-8 sm:p-10 md:p-12 lg:p-16">
+            {/* Animated Background Pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `
+                    radial-gradient(circle at 20% 50%, rgba(0, 255, 0, 0.3) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 50%, rgba(0, 255, 0, 0.2) 0%, transparent 50%)
+                  `
+                }}
+                animate={{
+                  backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
+                }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+            </div>
+
+            {/* Green Glow Effect */}
+            <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#00ff00]/10 rounded-full blur-3xl" />
+            
             {/* Hero Content */}
-            <div className="relative z-10 max-w-2xl">
-              <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-400 mb-2 sm:mb-3 uppercase tracking-wide leading-tight">
-                самый полный курс по автоматизации<br className="hidden sm:inline" />
-                <span className="sm:hidden"> </span>при помощи нейросетей
-              </p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 text-white font-gilroy leading-tight whitespace-nowrap">
-                Интегратор <span className="text-[#00ff00] drop-shadow-[0_0_15px_rgba(0,255,0,0.8)]">2.0</span>
-              </h1>
-              <Button 
-                size="lg" 
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 rounded-full shadow-[0_0_30px_rgba(0,255,0,0.5)] hover:shadow-[0_0_40px_rgba(0,255,0,0.7)] transition-all w-full sm:w-auto"
-                aria-label="onAI Куратор"
+            <div className="relative z-10 max-w-3xl">
+              {/* Top Badge */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-full px-4 py-2 mb-6"
               >
-                <Bot className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-2 flex-shrink-0" />
-                <span className="truncate whitespace-nowrap font-gilroy">onAI Куратор</span>
-              </Button>
+                <span className="w-2 h-2 bg-[#00ff00] rounded-full animate-pulse" />
+                <p className="text-xs sm:text-sm text-[#00ff00] font-semibold uppercase tracking-wide">
+                  Самый полный курс по автоматизации при помощи нейросетей
+                </p>
+              </motion.div>
+
+              {/* Main Title */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 text-white font-gilroy leading-tight"
+              >
+                Интегратор{" "}
+                <span className="relative inline-block">
+                  <span className="text-[#00ff00] relative z-10">2.0</span>
+                  <motion.span
+                    className="absolute inset-0 bg-[#00ff00] blur-xl opacity-50"
+                    animate={{
+                      opacity: [0.3, 0.6, 0.3],
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                </span>
+              </motion.h1>
+
+              {/* AI Curator Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <Button 
+                  size="lg" 
+                  onClick={() => setIsAIChatOpen(true)}
+                  className="group relative bg-transparent border-2 border-[#00ff00]/40 hover:border-[#00ff00] text-[#00ff00] hover:bg-[#00ff00]/5 font-semibold text-sm md:text-base px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-300 w-full sm:w-auto"
+                  aria-label="onAI Куратор"
+                >
+                  <div className="relative flex items-center justify-center gap-2.5">
+                    <motion.div
+                      className="relative"
+                      animate={{
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Bot className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
+                      {/* Pulsing ring */}
+                      <motion.div
+                        className="absolute inset-0 rounded-full border-2 border-[#00ff00]"
+                        animate={{
+                          scale: [1, 1.5, 1.5],
+                          opacity: [0.6, 0, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeOut"
+                        }}
+                      />
+                    </motion.div>
+                    <span className="font-gilroy tracking-wide">onAI Куратор</span>
+                    <motion.div
+                      className="w-1.5 h-1.5 bg-[#00ff00] rounded-full"
+                      animate={{
+                        opacity: [0.4, 1, 0.4],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  </div>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </motion.header>
@@ -344,23 +536,84 @@ const Course = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {/* Modules Section */}
           <section className="lg:col-span-2" aria-labelledby="modules-heading">
-            <h2 id="modules-heading" className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4 md:mb-6 leading-tight">
-              Модули курса
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-6">
+              <h2 id="modules-heading" className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight">
+                Модули курса
+              </h2>
+              
+              {/* Admin: Add Module Button */}
+              {isAdmin && (
+                <div className="relative z-[100]">
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('🔥 КНОПКА "ДОБАВИТЬ МОДУЛЬ" НАЖАТА!');
+                      handleAddModule();
+                    }}
+                    onMouseDown={(e) => {
+                      console.log('🖱️ MOUSEDOWN на кнопке "Добавить модуль"!');
+                    }}
+                    type="button"
+                    className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                    style={{ zIndex: 101, pointerEvents: 'auto' }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Добавить модуль</span>
+                    <span className="sm:hidden">Модуль</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-3">
               {modules.map((module, index) => (
-                <ModuleCard
-                  key={module.id}
-                  {...module}
-                  index={index}
-                  onClick={() => handleModuleClick(module.id)}
-                />
+                <div key={module.id} className="relative group">
+                  <ModuleCard
+                    {...module}
+                    index={index}
+                    onClick={() => handleModuleClick(module.id)}
+                  />
+                  
+                  {/* Admin: Delete Button (Overlay) */}
+                  {isAdmin && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteModule(module.id, module.title);
+                      }}
+                      className="absolute top-4 right-4 z-[102] bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-xl px-3 py-2 transition-all opacity-0 group-hover:opacity-100"
+                      title="Удалить модуль"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="hover:scale-110 transition-transform"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        <line x1="10" x2="10" y1="11" y2="17" />
+                        <line x1="14" x2="14" y1="11" y2="17" />
+                      </svg>
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           </section>
 
           {/* Right Sidebar */}
-          <aside className="space-y-4 sm:space-y-6" aria-label="Дополнительная информация">
+          <aside className="space-y-4 sm:space-y-6 lg:pt-[60px]" aria-label="Дополнительная информация">
             {/* Course Materials */}
             <motion.section
               initial={{ opacity: 0, x: 20 }}
@@ -489,6 +742,17 @@ const Course = () => {
 
       {/* AI Chat Dialog */}
       <AIChatDialog open={isAIChatOpen} onOpenChange={setIsAIChatOpen} />
+      
+      {/* Admin: Module Edit Dialog */}
+      {isAdmin && (
+        <ModuleEditDialog
+          open={moduleDialog.open}
+          onClose={() => setModuleDialog({ open: false, module: null })}
+          onSave={handleSaveModule}
+          module={moduleDialog.module}
+          courseId={Number(id) || 1}
+        />
+      )}
     </div>
   );
 };

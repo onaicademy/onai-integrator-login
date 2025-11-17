@@ -14,6 +14,14 @@ console.log('   SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ SET' : '❌ NOT 
 console.log('   SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ SET' : '❌ NOT SET');
 console.log('   OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? '✅ SET' : '❌ NOT SET');
 console.log('   FRONTEND_URL:', process.env.FRONTEND_URL || 'http://localhost:8080 (default)');
+console.log('');
+console.log('☁️ Cloudflare R2 Config:');
+console.log('   R2_ENDPOINT:', process.env.R2_ENDPOINT || '❌ NOT SET');
+console.log('   R2_BUCKET_NAME:', process.env.R2_BUCKET_NAME || '❌ NOT SET');
+console.log('   R2_PUBLIC_URL:', process.env.R2_PUBLIC_URL || '❌ NOT SET');
+console.log('   R2_ACCESS_KEY_ID:', process.env.R2_ACCESS_KEY_ID ? '✅ SET' : '❌ NOT SET');
+console.log('   R2_SECRET_ACCESS_KEY:', process.env.R2_SECRET_ACCESS_KEY ? '✅ SET' : '❌ NOT SET');
+console.log('');
 
 import usersRouter from './routes/users';
 import diagnosticsRouter from './routes/diagnostics';
@@ -44,13 +52,19 @@ app.use(helmet());
 // CORS конфигурация
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:8080',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept'
+  ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600
 }));
 
-// Body parser
-app.use(express.json());
-
-// Логирование запросов (опционально)
+// Логирование запросов
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
@@ -60,6 +74,29 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// ============================================
+// ✅ КРИТИЧНО: MULTER ROUTES ДО express.json()
+// ============================================
+console.log('🔥 Registering Multer routes BEFORE express.json()');
+app.use('/api/videos', videosRouter);
+app.use('/api/materials', materialsRouter);
+
+// ✅ Explicit OPTIONS handler для file upload routes
+app.options('/api/videos/upload/:lessonId', cors());
+app.options('/api/materials/upload', cors());
+
+// ============================================
+// ✅ express.json() ПОСЛЕ Multer routes
+// ✅ КРИТИЧНО: Conditional type filter - игнорирует multipart/form-data
+// ============================================
+app.use(express.json({
+  type: (req) => {
+    const contentType = req.headers['content-type'] || '';
+    // Пропускаем multipart - оставляем для Multer
+    return !contentType.includes('multipart/form-data');
+  }
+}));
 
 // Debug endpoint для проверки environment variables
 app.get('/api/debug/env', (req, res) => {
@@ -75,7 +112,9 @@ app.get('/api/debug/env', (req, res) => {
   });
 });
 
-// Routes
+// ============================================
+// ✅ Остальные routes ПОСЛЕ express.json()
+// ============================================
 app.use('/api/users', usersRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/openai', openaiRouter);
@@ -92,8 +131,6 @@ app.use('/api/missions', missionsRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/modules', modulesRouter);
 app.use('/api/lessons', lessonsRouter);
-app.use('/api/videos', videosRouter);
-app.use('/api/materials', materialsRouter);
 
 // 404 обработка
 app.use((req, res) => {
