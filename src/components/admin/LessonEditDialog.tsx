@@ -57,12 +57,15 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
   }, [open, lesson, moduleId, savedLessonId]);
 
   useEffect(() => {
-    if (lesson) {
+    if (lesson && lesson.id) {
       setTitle(lesson.title);
       setDescription(lesson.description || '');
       // duration удален - загружается автоматически
       setSavedLessonId(lesson.id);
-      loadLessonData(lesson.id);
+      // ✅ ИСПРАВЛЕНО: загружаем данные только если lesson.id валидный
+      if (typeof lesson.id === 'number' && lesson.id > 0) {
+        loadLessonData(lesson.id);
+      }
     } else {
       setTitle('');
       setDescription('');
@@ -74,6 +77,12 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
   }, [lesson, open]);
 
   const loadLessonData = async (lessonId: number) => {
+    // ✅ ИСПРАВЛЕНО: проверка на валидный lessonId
+    if (!lessonId || typeof lessonId !== 'number' || lessonId <= 0) {
+      console.log('⚠️ loadLessonData: невалидный lessonId', lessonId);
+      return;
+    }
+    
     // Загрузить видео
     try {
       const videoRes = await api.get(`/api/videos/lesson/${lessonId}`);
@@ -81,7 +90,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
         setVideoUrl(videoRes.video.video_url);
       }
     } catch (error) {
-      console.log('Видео не найдено');
+      console.log('Видео не найдено для урока', lessonId);
     }
     
     // Материалы загружаются через MaterialsManager

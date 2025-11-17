@@ -818,7 +818,7 @@ const Lesson = () => {
           open={editDialogOpen}
           onClose={() => setEditDialogOpen(false)}
           onSave={handleUpdateLesson}
-          lesson={lesson ? {
+          lesson={lesson && lesson.id ? {
             id: lesson.id,
             title: lesson.title || '',
             description: lesson.description || '',
