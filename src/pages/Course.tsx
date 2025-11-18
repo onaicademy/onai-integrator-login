@@ -618,7 +618,7 @@ const Course = () => {
                         e.stopPropagation();
                         handleDeleteModule(module.id, module.title);
                       }}
-                      className="absolute top-4 right-4 z-[102] bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-xl px-3 py-2 transition-all opacity-0 group-hover:opacity-100"
+                      className="absolute top-4 right-4 z-[102] bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-xl px-3 py-2 transition-all"
                       title="Удалить модуль"
                     >
                       <svg

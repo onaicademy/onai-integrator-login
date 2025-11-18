@@ -147,13 +147,17 @@ app.use(express.json({
 // Debug endpoint для проверки environment variables
 app.get('/api/debug/env', (req, res) => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const openaiKey = process.env.OPENAI_API_KEY || '';
   res.json({
     SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
     SUPABASE_SERVICE_ROLE_KEY: serviceKey ? 'SET' : 'NOT SET',
     SUPABASE_SERVICE_ROLE_KEY_FIRST_10: serviceKey.substring(0, 10),
     SUPABASE_SERVICE_ROLE_KEY_LAST_10: serviceKey.substring(serviceKey.length - 10),
     SUPABASE_SERVICE_ROLE_KEY_LENGTH: serviceKey.length,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET',
+    OPENAI_API_KEY: openaiKey ? 'SET' : 'NOT SET',
+    OPENAI_API_KEY_FIRST_20: openaiKey ? openaiKey.substring(0, 20) : 'EMPTY',
+    OPENAI_API_KEY_LAST_10: openaiKey ? openaiKey.substring(openaiKey.length - 10) : 'EMPTY',
+    OPENAI_API_KEY_LENGTH: openaiKey.length,
     FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET',
   });
 });
