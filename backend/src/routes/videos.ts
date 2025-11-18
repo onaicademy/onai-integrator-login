@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
 import mime from 'mime-types';
 
@@ -16,17 +16,82 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// ✅ Cloudflare R2 клиент (ИСПРАВЛЕНО: endpoint уже содержит https:// в .env)
-const s3 = new S3Client({
-  region: 'auto', // ✅ Обязательно для Cloudflare R2
-  endpoint: process.env.R2_ENDPOINT!, // ✅ ИСПРАВЛЕНО: НЕ добавляем https://, он уже в .env!
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-  // ✅ forcePathStyle для совместимости с R2
-  forcePathStyle: false // R2 использует virtual-hosted-style
-});
+// Bunny CDN Configuration
+const BUNNY_STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE || 'onai-course-videos';
+const BUNNY_STORAGE_PASSWORD = process.env.BUNNY_STORAGE_PASSWORD!;
+const BUNNY_STORAGE_HOSTNAME = process.env.BUNNY_STORAGE_HOSTNAME || 'storage.bunnycdn.com';
+const BUNNY_CDN_URL = process.env.BUNNY_CDN_URL || 'https://onai-videos.b-cdn.net';
+
+console.log('🐰 Bunny CDN Configuration:');
+console.log('   Storage Zone:', BUNNY_STORAGE_ZONE);
+console.log('   Hostname:', BUNNY_STORAGE_HOSTNAME);
+console.log('   CDN URL:', BUNNY_CDN_URL);
+console.log('   Password:', BUNNY_STORAGE_PASSWORD ? '***' + BUNNY_STORAGE_PASSWORD.slice(-4) : 'NOT SET');
+
+/**
+ * Upload file to Bunny Storage
+ */
+async function uploadToBunny(fileBuffer: Buffer, filename: string, contentType: string): Promise<string> {
+  const storageUrl = `https://${BUNNY_STORAGE_HOSTNAME}/${BUNNY_STORAGE_ZONE}/videos/${filename}`;
+  
+  console.log('🐰 Bunny Upload:');
+  console.log('   URL:', storageUrl);
+  console.log('   Size:', (fileBuffer.length / 1024 / 1024).toFixed(2), 'MB');
+  console.log('   Content-Type:', contentType);
+
+  try {
+    const response = await axios.put(storageUrl, fileBuffer, {
+      headers: {
+        'AccessKey': BUNNY_STORAGE_PASSWORD,
+        'Content-Type': contentType,
+      },
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+      timeout: 300000, // 5 minutes timeout
+    });
+
+    console.log('✅ Bunny upload success:', response.status, response.statusText);
+
+    // Return CDN URL for playback
+    const cdnUrl = `${BUNNY_CDN_URL}/videos/${filename}`;
+    console.log('🔗 CDN URL:', cdnUrl);
+
+    return cdnUrl;
+  } catch (error: any) {
+    console.error('❌ Bunny upload error:', error.message);
+    if (error.response) {
+      console.error('   Status:', error.response.status);
+      console.error('   Data:', error.response.data);
+    }
+    throw new Error(`Bunny upload failed: ${error.message}`);
+  }
+}
+
+/**
+ * Delete file from Bunny Storage
+ */
+async function deleteFromBunny(filename: string): Promise<void> {
+  const storageUrl = `https://${BUNNY_STORAGE_HOSTNAME}/${BUNNY_STORAGE_ZONE}/videos/${filename}`;
+  
+  console.log('🗑️ Bunny Delete:', storageUrl);
+
+  try {
+    const response = await axios.delete(storageUrl, {
+      headers: {
+        'AccessKey': BUNNY_STORAGE_PASSWORD,
+      },
+    });
+
+    console.log('✅ Bunny delete success:', response.status);
+  } catch (error: any) {
+    console.error('⚠️ Bunny delete error:', error.message);
+    if (error.response) {
+      console.error('   Status:', error.response.status);
+      console.error('   Data:', error.response.data);
+    }
+    // Don't throw - file might already be deleted
+  }
+}
 
 // GET /api/videos/lesson/:lessonId - Получить видео урока
 router.get('/lesson/:lessonId', async (req, res) => {
@@ -56,125 +121,81 @@ router.get('/lesson/:lessonId', async (req, res) => {
   }
 });
 
-// POST /api/videos/upload/:lessonId - Загрузить видео
+// POST /api/videos/upload/:lessonId - Загрузить видео на Bunny CDN
 router.post('/upload/:lessonId', upload.single('video'), async (req, res) => {
   console.log('===========================================');
   console.log('📥 VIDEO UPLOAD - REQUEST RECEIVED');
   console.log('===========================================');
-  console.log('1️⃣ req.headers:', JSON.stringify(req.headers, null, 2));
-  console.log('2️⃣ req.params:', req.params);
-  console.log('3️⃣ req.body:', req.body);
-  console.log('4️⃣ req.file:', req.file);
-  console.log('5️⃣ req.file exists?', !!req.file);
-  console.log('===========================================');
+  console.log('1️⃣ Lesson ID:', req.params.lessonId);
+  console.log('2️⃣ File exists:', !!req.file);
   
   try {
-    console.log('='.repeat(80));
-    console.log('=== VIDEO UPLOAD REQUEST ===');
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', req.body);
-    console.log('File:', req.file ? {
-      fieldname: req.file.fieldname,
-      originalname: req.file.originalname,
-      encoding: req.file.encoding,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-      bufferLength: req.file.buffer?.length
-    } : 'NO FILE');
-    console.log('Params:', req.params);
-    console.log('='.repeat(80));
-    
     const file = req.file;
     const { lessonId } = req.params;
 
     if (!file) {
-      console.error('❌ Файл не предоставлен - req.file = undefined');
+      console.error('❌ Файл не предоставлен');
       return res.status(400).json({ error: 'Файл не предоставлен' });
     }
 
-    console.log('✅ 1. File received:', file.originalname);
-    console.log('📹 Загрузка видео для урока:', lessonId);
-    console.log('📦 Размер файла:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+    console.log('✅ File received:', file.originalname);
+    console.log('📦 Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+    console.log('📝 MIME:', file.mimetype);
 
     // Проверка размера (макс 3GB)
     if (file.size > 3 * 1024 * 1024 * 1024) {
       return res.status(400).json({ error: 'Файл слишком большой (макс 3GB)' });
     }
 
-    // Генерация ключа для R2
+    // Генерация имени файла
     const ext = mime.extension(file.mimetype) || 'mp4';
-    const key = `lessons/${lessonId}/video_${Date.now()}.${ext}`;
-
-    console.log('✅ 2. Starting R2 upload...');
-    console.log('☁️ Bucket:', process.env.R2_BUCKET_NAME);
-    console.log('☁️ Key:', key);
-    console.log('☁️ Endpoint:', process.env.R2_ENDPOINT);
-
-    // Загрузка на Cloudflare R2
-    const r2Command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    });
+    const filename = `lesson-${lessonId}-${Date.now()}.${ext}`;
     
-    const r2Result = await s3.send(r2Command);
-    console.log('✅ 3. R2 upload success:', r2Result);
+    console.log('📹 Generated filename:', filename);
 
-    // Public URL
-    const videoUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
-
-    console.log('🔗 URL видео:', videoUrl);
+    // Загрузка на Bunny CDN
+    console.log('☁️ Uploading to Bunny CDN...');
+    const cdnUrl = await uploadToBunny(file.buffer, filename, file.mimetype);
 
     // Сохранить video_url в таблицу lessons
-    console.log('✅ 4. Saving video_url to lessons table...');
+    console.log('💾 Saving to database...');
     const { data: lesson, error } = await supabase
       .from('lessons')
-      .update({
-        video_url: videoUrl,
-      })
+      .update({ video_url: cdnUrl })
       .eq('id', parseInt(lessonId))
       .select()
       .single();
 
     if (error) {
-      console.error('❌ Ошибка сохранения в БД:', error);
-      console.error('DB Error details:', JSON.stringify(error, null, 2));
+      console.error('❌ Database error:', error);
       throw error;
     }
 
-    console.log('✅ 5. DB save success:', lesson);
-    console.log('✅ Видео успешно загружено');
+    console.log('✅ Video uploaded successfully');
     
-    // ✅ ВСЕГДА возвращаем стандартную структуру
     const response = {
       success: true,
       video: {
         id: lesson.id,
         lesson_id: lesson.id,
         video_url: lesson.video_url,
-        duration_seconds: lesson.duration || 0,
+        duration_seconds: lesson.duration_minutes ? lesson.duration_minutes * 60 : 0,
         file_size_bytes: file.size
       }
     };
     
-    console.log('✅ Sending response:', response);
-    console.log('='.repeat(80));
+    console.log('📤 Response:', response);
+    console.log('===========================================');
     
     res.json(response);
   } catch (error: any) {
-    console.error('❌ Ошибка загрузки видео:', error);
-    console.error('❌ Error type:', typeof error);
-    console.error('❌ Error keys:', Object.keys(error || {}));
+    console.error('❌ Upload error:', error);
     console.error('❌ Stack:', error?.stack);
-    console.error('❌ Message:', error?.message);
-    console.error('❌ Name:', error?.name);
-    console.error('❌ Full error:', JSON.stringify(error, null, 2));
     
     res.status(500).json({ 
       success: false,
       error: 'Ошибка загрузки видео',
-      details: error?.message || error?.toString() || 'Unknown error'
+      details: error?.message || 'Unknown error'
     });
   }
 });
@@ -206,26 +227,16 @@ router.delete('/lesson/:lessonId', async (req, res) => {
       return res.json({ success: true, message: 'У урока нет видео для удаления' });
     }
 
-    console.log('📹 Текущий video_url:', lesson.video_url);
+    console.log('📹 Current video_url:', lesson.video_url);
 
-    // Извлечь ключ из URL (например: lessons/18/video_1234567890.mp4)
-    const publicUrl = process.env.R2_PUBLIC_URL || '';
-    const key = lesson.video_url.replace(`${publicUrl}/`, '');
+    // Извлечь имя файла из CDN URL
+    // Например: https://onai-videos.b-cdn.net/videos/lesson-18-1234567890.mp4
+    // -> lesson-18-1234567890.mp4
+    const filename = lesson.video_url.split('/videos/').pop();
     
-    console.log('🔑 Извлечённый ключ для R2:', key);
-
-    // Удалить файл из Cloudflare R2
-    try {
-      const deleteCommand = new DeleteObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME!,
-        Key: key,
-      });
-      
-      await s3.send(deleteCommand);
-      console.log('✅ Файл удалён из Cloudflare R2');
-    } catch (r2Error: any) {
-      console.error('⚠️ Ошибка удаления из R2 (возможно файл уже удалён):', r2Error.message);
-      // Продолжаем даже если файл не найден в R2
+    if (filename) {
+      console.log('🔑 Filename to delete:', filename);
+      await deleteFromBunny(filename);
     }
 
     // Очистить video_url в таблице lessons
@@ -235,11 +246,11 @@ router.delete('/lesson/:lessonId', async (req, res) => {
       .eq('id', parseInt(lessonId));
 
     if (updateError) {
-      console.error('❌ Ошибка обновления БД:', updateError);
+      console.error('❌ Database update error:', updateError);
       throw updateError;
     }
 
-    console.log('✅ video_url очищен в БД');
+    console.log('✅ Video deleted successfully');
     console.log('===========================================');
 
     res.json({ 
@@ -247,7 +258,7 @@ router.delete('/lesson/:lessonId', async (req, res) => {
       message: 'Видео успешно удалено' 
     });
   } catch (error: any) {
-    console.error('❌ Ошибка удаления видео:', error);
+    console.error('❌ Delete error:', error);
     res.status(500).json({ 
       error: 'Ошибка удаления видео',
       details: error?.message 
