@@ -8,20 +8,66 @@ import * as path from 'path';
 // __dirname = backend/src, поэтому идем на уровень выше к backend/.env
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-// Логируем загруженные переменные (БЕЗ значений для безопасности)
-console.log('🔍 Environment variables loaded:');
-console.log('   SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ SET' : '❌ NOT SET');
-console.log('   SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ SET' : '❌ NOT SET');
-console.log('   OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? '✅ SET' : '❌ NOT SET');
-console.log('   FRONTEND_URL:', process.env.FRONTEND_URL || 'http://localhost:8080 (default)');
-console.log('');
-console.log('☁️ Cloudflare R2 Config:');
-console.log('   R2_ENDPOINT:', process.env.R2_ENDPOINT || '❌ NOT SET');
-console.log('   R2_BUCKET_NAME:', process.env.R2_BUCKET_NAME || '❌ NOT SET');
-console.log('   R2_PUBLIC_URL:', process.env.R2_PUBLIC_URL || '❌ NOT SET');
-console.log('   R2_ACCESS_KEY_ID:', process.env.R2_ACCESS_KEY_ID ? '✅ SET' : '❌ NOT SET');
-console.log('   R2_SECRET_ACCESS_KEY:', process.env.R2_SECRET_ACCESS_KEY ? '✅ SET' : '❌ NOT SET');
-console.log('');
+// ═══════════════════════════════════════════════════════════════
+// 🔍 ДИАГНОСТИКА .ENV VARIABLES
+// ═══════════════════════════════════════════════════════════════
+console.log('\n═══════════════════════════════════════════════════════════════');
+console.log('🔍 ДИАГНОСТИКА .ENV VARIABLES');
+console.log('═══════════════════════════════════════════════════════════════\n');
+
+console.log('📂 Current directory:', process.cwd());
+console.log('📂 __dirname:', __dirname);
+console.log('\n');
+
+// OpenAI
+const openaiKey = process.env.OPENAI_API_KEY;
+console.log('🔑 OPENAI_API_KEY:');
+console.log('   - Exists:', !!openaiKey);
+console.log('   - Length:', openaiKey?.length || 0);
+console.log('   - First 20 chars:', openaiKey?.substring(0, 20) || 'EMPTY');
+console.log('   - Last 10 chars:', openaiKey?.substring(openaiKey.length - 10) || 'EMPTY');
+console.log('\n');
+
+// Cloudflare R2
+const r2AccessKey = process.env.R2_ACCESS_KEY_ID;
+const r2SecretKey = process.env.R2_SECRET_ACCESS_KEY;
+console.log('🗄️ CLOUDFLARE R2:');
+console.log('   - R2_ACCESS_KEY_ID exists:', !!r2AccessKey);
+console.log('   - R2_ACCESS_KEY_ID length:', r2AccessKey?.length || 0);
+console.log('   - R2_ACCESS_KEY_ID first 10:', r2AccessKey?.substring(0, 10) || 'EMPTY');
+console.log('   - R2_SECRET_ACCESS_KEY exists:', !!r2SecretKey);
+console.log('   - R2_SECRET_ACCESS_KEY length:', r2SecretKey?.length || 0);
+console.log('   - R2_ENDPOINT:', process.env.R2_ENDPOINT || 'EMPTY');
+console.log('   - R2_BUCKET_NAME:', process.env.R2_BUCKET_NAME || 'EMPTY');
+console.log('   - R2_PUBLIC_URL:', process.env.R2_PUBLIC_URL || 'EMPTY');
+console.log('\n');
+
+// Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+console.log('🗃️ SUPABASE:');
+console.log('   - SUPABASE_URL:', supabaseUrl || 'EMPTY');
+console.log('   - SUPABASE_SERVICE_ROLE_KEY exists:', !!supabaseKey);
+console.log('   - SUPABASE_SERVICE_ROLE_KEY length:', supabaseKey?.length || 0);
+console.log('\n');
+
+console.log('═══════════════════════════════════════════════════════════════\n');
+
+// Проверка критичных переменных
+if (!openaiKey || openaiKey.length < 50) {
+  console.error('❌ КРИТИЧНАЯ ОШИБКА: OPENAI_API_KEY не загружен или неправильный!');
+  console.error('❌ Backend не сможет работать с OpenAI API!');
+}
+
+if (!r2AccessKey || !r2SecretKey) {
+  console.error('❌ КРИТИЧНАЯ ОШИБКА: R2 credentials не загружены!');
+  console.error('❌ Backend не сможет загружать видео!');
+}
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ КРИТИЧНАЯ ОШИБКА: Supabase credentials не загружены!');
+  console.error('❌ Backend не сможет подключиться к БД!');
+}
 
 import usersRouter from './routes/users';
 import diagnosticsRouter from './routes/diagnostics';
