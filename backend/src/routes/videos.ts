@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { createClient } from '@supabase/supabase-js';
 import mime from 'mime-types';
 
@@ -175,6 +175,82 @@ router.post('/upload/:lessonId', upload.single('video'), async (req, res) => {
       success: false,
       error: 'Ошибка загрузки видео',
       details: error?.message || error?.toString() || 'Unknown error'
+    });
+  }
+});
+
+// DELETE /api/videos/lesson/:lessonId - Удалить видео урока
+router.delete('/lesson/:lessonId', async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    
+    console.log('===========================================');
+    console.log('🗑️ VIDEO DELETE REQUEST');
+    console.log('Lesson ID:', lessonId);
+    console.log('===========================================');
+
+    // Получить текущий video_url из БД
+    const { data: lesson, error: fetchError } = await supabase
+      .from('lessons')
+      .select('id, video_url')
+      .eq('id', parseInt(lessonId))
+      .single();
+
+    if (fetchError || !lesson) {
+      console.error('❌ Урок не найден:', fetchError);
+      return res.status(404).json({ error: 'Урок не найден' });
+    }
+
+    if (!lesson.video_url) {
+      console.log('ℹ️ У урока нет видео');
+      return res.json({ success: true, message: 'У урока нет видео для удаления' });
+    }
+
+    console.log('📹 Текущий video_url:', lesson.video_url);
+
+    // Извлечь ключ из URL (например: lessons/18/video_1234567890.mp4)
+    const publicUrl = process.env.R2_PUBLIC_URL || '';
+    const key = lesson.video_url.replace(`${publicUrl}/`, '');
+    
+    console.log('🔑 Извлечённый ключ для R2:', key);
+
+    // Удалить файл из Cloudflare R2
+    try {
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: key,
+      });
+      
+      await s3.send(deleteCommand);
+      console.log('✅ Файл удалён из Cloudflare R2');
+    } catch (r2Error: any) {
+      console.error('⚠️ Ошибка удаления из R2 (возможно файл уже удалён):', r2Error.message);
+      // Продолжаем даже если файл не найден в R2
+    }
+
+    // Очистить video_url в таблице lessons
+    const { error: updateError } = await supabase
+      .from('lessons')
+      .update({ video_url: null })
+      .eq('id', parseInt(lessonId));
+
+    if (updateError) {
+      console.error('❌ Ошибка обновления БД:', updateError);
+      throw updateError;
+    }
+
+    console.log('✅ video_url очищен в БД');
+    console.log('===========================================');
+
+    res.json({ 
+      success: true, 
+      message: 'Видео успешно удалено' 
+    });
+  } catch (error: any) {
+    console.error('❌ Ошибка удаления видео:', error);
+    res.status(500).json({ 
+      error: 'Ошибка удаления видео',
+      details: error?.message 
     });
   }
 });

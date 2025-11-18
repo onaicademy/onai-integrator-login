@@ -474,7 +474,7 @@ const Course = () => {
                 </span>
               </motion.h1>
 
-              {/* AI Curator Button */}
+              {/* AI Curator Button - КРЕАТИВНЫЙ */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -483,46 +483,80 @@ const Course = () => {
                 <Button 
                   size="lg" 
                   onClick={() => setIsAIChatOpen(true)}
-                  className="group relative bg-transparent border-2 border-[#00ff00]/40 hover:border-[#00ff00] text-[#00ff00] hover:bg-[#00ff00]/5 font-semibold text-sm md:text-base px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-300 w-full sm:w-auto"
-                  aria-label="onAI Куратор"
+                  className="group relative bg-black/40 backdrop-blur-sm border-2 border-[#00ff00]/30 hover:border-[#00ff00]/60 hover:bg-black/60 text-white font-bold text-base md:text-lg px-8 md:px-10 py-4 md:py-5 rounded-2xl transition-all duration-500 w-full sm:w-auto overflow-hidden"
+                  aria-label="AI Куратор"
                 >
-                  <div className="relative flex items-center justify-center gap-2.5">
-                    <motion.div
-                      className="relative"
-                      animate={{
-                        scale: [1, 1.1, 1],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <Bot className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
-                      {/* Pulsing ring */}
+                  {/* Subtle shimmer effect - раз в 5 секунд */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    initial={{ x: '-200%' }}
+                    animate={{ x: '200%' }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatDelay: 3.5,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  
+                  <div className="relative flex items-center gap-3">
+                    {/* AI indicator - пульсирующая линия вместо робота */}
+                    <div className="flex items-center gap-1.5">
                       <motion.div
-                        className="absolute inset-0 rounded-full border-2 border-[#00ff00]"
+                        className="w-0.5 h-5 bg-[#00ff00] rounded-full"
                         animate={{
-                          scale: [1, 1.5, 1.5],
-                          opacity: [0.6, 0, 0],
+                          height: [20, 12, 20],
+                          opacity: [1, 0.4, 1],
                         }}
                         transition={{
-                          duration: 2,
+                          duration: 1.2,
                           repeat: Infinity,
-                          ease: "easeOut"
+                          ease: "easeInOut"
                         }}
                       />
-                    </motion.div>
-                    <span className="font-gilroy tracking-wide">onAI Куратор</span>
+                      <motion.div
+                        className="w-0.5 h-3 bg-[#00ff00] rounded-full"
+                        animate={{
+                          height: [12, 20, 12],
+                          opacity: [0.6, 1, 0.6],
+                        }}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.2
+                        }}
+                      />
+                      <motion.div
+                        className="w-0.5 h-4 bg-[#00ff00] rounded-full"
+                        animate={{
+                          height: [16, 10, 16],
+                          opacity: [0.8, 0.5, 0.8],
+                        }}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.4
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Gradient text */}
+                    <span className="bg-gradient-to-r from-[#00ff00] via-[#00ff00] to-[#00cc00] bg-clip-text text-transparent font-extrabold tracking-wide">
+                      AI Куратор
+                    </span>
+                    
+                    {/* Typing cursor effect */}
                     <motion.div
-                      className="w-1.5 h-1.5 bg-[#00ff00] rounded-full"
+                      className="w-0.5 h-5 bg-[#00ff00] rounded-full"
                       animate={{
-                        opacity: [0.4, 1, 0.4],
+                        opacity: [1, 0, 1],
                       }}
                       transition={{
-                        duration: 2,
+                        duration: 0.8,
                         repeat: Infinity,
-                        ease: "easeInOut"
+                        ease: "steps(2)"
                       }}
                     />
                   </div>

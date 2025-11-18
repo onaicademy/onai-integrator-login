@@ -12,6 +12,12 @@ interface ModuleCardProps {
   index: number;
   lessons?: number;
   duration?: string;
+  stats?: {
+    total_lessons: number;
+    total_minutes: number;
+    total_hours: number;
+    formatted_duration: string;
+  };
   onClick?: () => void;
 }
 
@@ -24,10 +30,15 @@ export const ModuleCard = ({
   index, 
   lessons,
   duration,
+  stats,
   onClick 
 }: ModuleCardProps) => {
   const isCompleted = progress === 100;
   const isStarted = progress > 0;
+  
+  // 📊 Используем stats если есть, иначе fallback на старые props
+  const displayLessons = stats?.total_lessons ?? lessons;
+  const displayDuration = stats?.formatted_duration ?? duration;
 
   return (
     <motion.article
@@ -78,16 +89,18 @@ export const ModuleCard = ({
 
           {/* Meta Info */}
           <div className="flex items-center gap-4 text-[11px] sm:text-xs text-gray-500">
-            {lessons && (
+            {displayLessons !== undefined && displayLessons !== null && (
               <div className="flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>{lessons} уроков</span>
+                <span>
+                  {displayLessons} {displayLessons === 1 ? 'урок' : displayLessons < 5 ? 'урока' : 'уроков'}
+                </span>
               </div>
             )}
-            {duration && (
+            {displayDuration && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" />
-                <span>{duration}</span>
+                <span>{displayDuration}</span>
               </div>
             )}
             {isStarted && (

@@ -85,7 +85,70 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
     }
   };
 
-  // ✅ handleUploadAll удалена - загрузка теперь через LessonEditDialog
+  // ✅ Загрузка материалов (только для новых файлов в режиме редактирования)
+  const handleUploadAll = async () => {
+    if (!lessonId) {
+      alert('❌ Сначала сохраните урок');
+      return;
+    }
+
+    // Найти материалы, которые ещё не загружены (нет material.id)
+    const pendingMaterials = materials.filter(m => m.file && !m.id);
+    
+    if (pendingMaterials.length === 0) {
+      alert('ℹ️ Нет новых материалов для загрузки');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      console.log(`📤 Загружаем ${pendingMaterials.length} материалов...`);
+      
+      for (let i = 0; i < pendingMaterials.length; i++) {
+        const material = pendingMaterials[i];
+        const materialIndex = materials.findIndex(m => m === material);
+        
+        // Отметить как "загружается"
+        const updated = [...materials];
+        updated[materialIndex].uploading = true;
+        setMaterials(updated);
+        
+        console.log(`📤 Загружаем материал ${i + 1}/${pendingMaterials.length}:`, material.display_name);
+        
+        // Создать FormData
+        const formData = new FormData();
+        formData.append('file', material.file!);
+        formData.append('lessonId', lessonId.toString());
+        formData.append('display_name', material.display_name);
+        
+        // Отправить на сервер
+        const res = await api.post('/api/materials/upload', formData);
+        console.log('✅ Материал загружен:', res);
+        
+        // Обновить материал с ID
+        updated[materialIndex] = {
+          ...updated[materialIndex],
+          id: res.material?.id || res.id,
+          uploading: false,
+          file_url: res.material?.public_url || res.public_url
+        };
+        setMaterials(updated);
+      }
+      
+      console.log('✅ Все материалы загружены!');
+      alert(`✅ Загружено материалов: ${pendingMaterials.length}`);
+      
+      // Перезагрузить список материалов с сервера
+      await loadMaterials();
+      
+    } catch (error: any) {
+      console.error('❌ Ошибка загрузки материалов:', error);
+      alert(`❌ Ошибка загрузки: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -172,7 +235,16 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
             ))}
           </div>
 
-          {/* ✅ Кнопка "Загрузить все материалы" удалена - загрузка через кнопку "Создать урок" */}
+          {/* ✅ Кнопка "Загрузить материалы" для режима редактирования */}
+          {lessonId && materials.some(m => m.file && !m.id) && (
+            <Button
+              onClick={handleUploadAll}
+              disabled={loading}
+              className="w-full mt-4 bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold"
+            >
+              {loading ? '⏳ Загрузка...' : `📤 Загрузить материалы (${materials.filter(m => m.file && !m.id).length})`}
+            </Button>
+          )}
         </Card>
       )}
     </div>

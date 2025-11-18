@@ -753,3 +753,4 @@ SELECT email, role FROM users WHERE email = 'saint@onaiacademy.kz';
 **Срок:** Согласовать с командой
 
 
+

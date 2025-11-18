@@ -13,9 +13,8 @@ router.get('/:courseId', async (req: Request, res: Response) => {
       .select(`
         *,
         lessons (
-          *,
-          video_content (*),
-          lesson_materials (*)
+          id,
+          duration_minutes
         )
       `)
       .eq('course_id', parseInt(courseId))
@@ -26,7 +25,28 @@ router.get('/:courseId', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Ошибка получения модулей' });
     }
 
-    res.json({ modules });
+    // 📊 Добавляем статистику для каждого модуля
+    const modulesWithStats = (modules || []).map(module => {
+      const lessons = module.lessons || [];
+      const totalLessons = lessons.length;
+      const totalMinutes = lessons.reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0);
+      const totalHours = Math.floor(totalMinutes / 60);
+      const remainingMinutes = totalMinutes % 60;
+
+      return {
+        ...module,
+        stats: {
+          total_lessons: totalLessons,
+          total_minutes: totalMinutes,
+          total_hours: totalHours,
+          formatted_duration: totalHours > 0
+            ? `${totalHours}ч ${remainingMinutes}мин`
+            : `${totalMinutes}мин`,
+        },
+      };
+    });
+
+    res.json({ modules: modulesWithStats });
   } catch (error) {
     console.error('Get modules error:', error);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });

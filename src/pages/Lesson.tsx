@@ -47,6 +47,7 @@ const Lesson = () => {
 
   // Video player
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -54,6 +55,7 @@ const Lesson = () => {
   const [muted, setMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showControls, setShowControls] = useState(true);
+  const [videoQuality, setVideoQuality] = useState<'auto' | '1080p' | '720p' | '480p' | '360p'>('auto');
   
   // Session ID для аналитики
   const [sessionId] = useState(() => Math.random().toString(36).substring(7));
@@ -70,7 +72,7 @@ const Lesson = () => {
       
       // Загрузить урок
       console.log('📚 Загрузка урока:', lessonId);
-      const lessonRes = await api.get(`/api/lessons/${lessonId}`);
+      const lessonRes = await api.get(`/api/lessons/single/${lessonId}`);
       const lessonData = lessonRes?.lesson || lessonRes;
       setLesson(lessonData);
       
@@ -215,15 +217,24 @@ const Lesson = () => {
   };
 
   // Fullscreen
-  const toggleFullscreen = () => {
-    if (!videoRef.current?.parentElement) return;
-    
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      videoRef.current.parentElement.requestFullscreen();
+  const toggleFullscreen = async () => {
+    if (!videoContainerRef.current) {
+      console.error('❌ videoContainerRef не найден');
+      return;
     }
-    trackEvent('fullscreen_toggle');
+    
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        console.log('✅ Вышли из полноэкранного режима');
+      } else {
+        await videoContainerRef.current.requestFullscreen();
+        console.log('✅ Вошли в полноэкранный режим');
+      }
+      trackEvent('fullscreen_toggle');
+    } catch (error) {
+      console.error('❌ Ошибка переключения fullscreen:', error);
+    }
   };
 
   // Seek
@@ -558,6 +569,7 @@ const Lesson = () => {
             {video?.video_url ? (
               <div className="relative rounded-2xl overflow-hidden border border-[#00ff00]/20 shadow-lg shadow-[#00ff00]/10">
                 <div 
+                  ref={videoContainerRef}
                   className="relative aspect-video bg-black"
                   onMouseEnter={() => setShowControls(true)}
                   onMouseLeave={() => playing && setShowControls(false)}
@@ -642,11 +654,30 @@ const Lesson = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
+                          {/* Video Quality */}
+                          <select
+                            value={videoQuality}
+                            onChange={(e) => {
+                              const quality = e.target.value as typeof videoQuality;
+                              setVideoQuality(quality);
+                              console.log('✅ Качество видео изменено:', quality);
+                            }}
+                            className="bg-black/50 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-[#00ff00] outline-none cursor-pointer"
+                            title="Качество видео"
+                          >
+                            <option value="auto">Авто</option>
+                            <option value="1080p">1080p</option>
+                            <option value="720p">720p</option>
+                            <option value="480p">480p</option>
+                            <option value="360p">360p</option>
+                          </select>
+                          
                           {/* Playback Speed */}
                           <select
                             value={playbackRate}
                             onChange={(e) => changePlaybackRate(parseFloat(e.target.value))}
                             className="bg-black/50 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-[#00ff00] outline-none cursor-pointer"
+                            title="Скорость воспроизведения"
                           >
                             <option value="0.5">0.5x</option>
                             <option value="0.75">0.75x</option>
@@ -794,35 +825,41 @@ const Lesson = () => {
             </motion.div>
 
             {/* Tips Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-gradient-to-br from-[#00ff00]/10 to-[#00cc00]/5 border border-[#00ff00]/30 rounded-2xl p-6"
-            >
-              <h3 className="text-base font-bold text-[#00ff00] mb-3 flex items-center gap-2">
-                <span className="text-xl">💡</span>
-                Совет
-              </h3>
-              <p className="text-sm text-gray-300 leading-relaxed">
-                После просмотра видео обязательно попрактикуйтесь с материалами урока. Это поможет лучше усвоить материал.
-              </p>
-            </motion.div>
+            {lesson?.tip && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-gradient-to-br from-[#00ff00]/10 to-[#00cc00]/5 border border-[#00ff00]/30 rounded-2xl p-6"
+              >
+                <h3 className="text-base font-bold text-[#00ff00] mb-3 flex items-center gap-2">
+                  <span className="text-xl">💡</span>
+                  Совет по уроку
+                </h3>
+                <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {lesson.tip}
+                </p>
+              </motion.div>
+            )}
           </aside>
         </div>
       </div>
       
       {/* ✅ Диалог редактирования урока */}
-      {isAdmin && (
+      {isAdmin && lesson && (
         <LessonEditDialog
           open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
+          onClose={() => {
+            setEditDialogOpen(false);
+            loadLessonData(); // Перезагрузить данные после закрытия
+          }}
           onSave={handleUpdateLesson}
-          lesson={lesson && lesson.id ? {
+          lesson={lesson.id ? {
             id: lesson.id,
             title: lesson.title || '',
             description: lesson.description || '',
-            duration_minutes: lesson.duration_minutes || 0
+            duration_minutes: lesson.duration_minutes || 0,
+            tip: (lesson as any).tip || ''
           } : null}
           moduleId={parseInt(moduleId!)}
         />

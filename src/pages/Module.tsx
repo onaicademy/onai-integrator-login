@@ -14,8 +14,27 @@ import {
   ChevronLeft,
   FileText,
   Plus,
-  BookOpen
+  BookOpen,
+  Edit,
+  GripVertical
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // Mock data - в реальном приложении это будет из API
 const moduleData = {
@@ -33,6 +52,110 @@ const moduleData = {
     ]
   }
 };
+
+// 🎯 Sortable Lesson Component для Drag & Drop
+interface SortableLessonProps {
+  lesson: any;
+  index: number;
+  onLessonClick: (id: number, status: string) => void;
+  onEdit: (lesson: any) => void;
+  onDelete: (id: number, title: string) => void;
+  isAdmin: boolean;
+}
+
+function SortableLesson({ lesson, index, onLessonClick, onEdit, onDelete, isAdmin }: SortableLessonProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lesson.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const lessonStatus = lesson.status || 'active';
+
+  return (
+    <motion.article
+      ref={setNodeRef}
+      style={style}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className={`
+        relative overflow-hidden rounded-2xl border transition-all duration-300 group
+        ${isDragging ? 'z-50 shadow-2xl shadow-[#00ff00]/30 border-[#00ff00]/60' : ''}
+        ${lessonStatus === "active"
+          ? "border-[#00ff00]/40 bg-[#00ff00]/5 shadow-lg shadow-[#00ff00]/10"
+          : lessonStatus === "completed"
+          ? "border-gray-800 bg-[#0a0a0f]"
+          : "border-gray-800 bg-[#0a0a0f] opacity-60"}
+        ${lessonStatus !== "locked" ? "cursor-pointer hover:border-[#00ff00]/40 hover:bg-[#00ff00]/5" : "cursor-not-allowed"}
+      `}
+    >
+      <div className="p-4 sm:p-5">
+        <div className="flex items-center gap-4">
+          {/* Drag Handle (только для admin) */}
+          {isAdmin && (
+            <div
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <GripVertical className="w-5 h-5 text-[#00ff00]/60 hover:text-[#00ff00]" />
+            </div>
+          )}
+
+          {/* Lesson Number Badge */}
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#00ff00]/10 border border-[#00ff00]/30 shrink-0">
+            <span className="text-lg font-bold text-[#00ff00]">
+              {index + 1}
+            </span>
+          </div>
+
+          {/* Content */}
+          <div
+            className="flex-1 min-w-0"
+            onClick={() => onLessonClick(lesson.id, lessonStatus)}
+          >
+            <h3 className="text-base sm:text-lg font-bold text-white mb-1 truncate">
+              {lesson.title}
+            </h3>
+            {lesson.duration && (
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <Clock className="w-4 h-4" />
+                <span>{lesson.duration}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Admin Buttons */}
+          {isAdmin && (
+            <div className="flex gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(lesson);
+                }}
+                className="bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
 
 const Module = () => {
   // 🚨 ЭКСТРЕННАЯ ДИАГНОСТИКА - САМОЕ ПЕРВОЕ!
@@ -72,6 +195,18 @@ const Module = () => {
   });
   const [apiLessons, setApiLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 🎯 Drag & Drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Перетаскивание начнётся после движения на 8px
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   
   // Используем moduleId или fallback на "2"
   const module = moduleData[moduleId as keyof typeof moduleData] || moduleData["2"];
@@ -120,18 +255,51 @@ const Module = () => {
     console.log('✅ setLessonDialog вызван с open: true');
   };
 
+  const handleEditLesson = (lesson: any) => {
+    console.log('=======================================');
+    console.log('🔥 handleEditLesson вызвана');
+    console.log('🔥 lesson:', lesson);
+    console.log('🔥 lesson.id:', lesson?.id);
+    console.log('🔥 lesson.title:', lesson?.title);
+    console.log('=======================================');
+    
+    setLessonDialog({ 
+      open: true, 
+      lesson: lesson // ✅ Передаём ВЕСЬ объект!
+    });
+    
+    console.log('✅ setLessonDialog вызван для редактирования');
+  };
+
   const handleSaveLesson = async (data: { title: string; description?: string; duration_minutes?: number }) => {
     try {
       console.log('💾 Сохранение урока:', data);
+      console.log('📝 Текущий lesson:', lessonDialog.lesson);
       
-      // Создать урок через API
-      const response = await api.post('/api/lessons', {
-        ...data,
-        module_id: parseInt(moduleId!)
-      });
+      if (lessonDialog.lesson && lessonDialog.lesson.id) {
+        // ✅ РЕЖИМ РЕДАКТИРОВАНИЯ - обновляем существующий урок
+        console.log('📝 Обновление существующего урока ID:', lessonDialog.lesson.id);
+        
+        const response = await api.put(`/api/lessons/${lessonDialog.lesson.id}`, {
+          title: data.title,
+          description: data.description || '',
+          duration_minutes: data.duration_minutes || 0
+        });
 
-      console.log('✅ Урок создан:', response);
-      alert('✅ Урок успешно создан!');
+        console.log('✅ Урок обновлён:', response);
+        alert('✅ Урок успешно обновлён!');
+      } else {
+        // ✅ РЕЖИМ СОЗДАНИЯ - создаём новый урок
+        console.log('🚀 Создание нового урока');
+        
+        const response = await api.post('/api/lessons', {
+          ...data,
+          module_id: parseInt(moduleId!)
+        });
+
+        console.log('✅ Урок создан:', response);
+        alert('✅ Урок успешно создан!');
+      }
       
       // Обновить список уроков
       await loadLessonsFromAPI();
@@ -139,7 +307,7 @@ const Module = () => {
       // LessonEditDialog сам закроет диалог
     } catch (error: any) {
       console.error('❌ Ошибка сохранения урока:', error);
-      alert(`❌ Ошибка: ${error?.message || 'Не удалось создать урок'}`);
+      alert(`❌ Ошибка: ${error?.message || 'Не удалось сохранить урок'}`);
       throw error;
     }
   };
@@ -165,6 +333,50 @@ const Module = () => {
     } catch (error: any) {
       console.error('❌ Ошибка удаления урока:', error);
       alert(error.response?.data?.error || `❌ Ошибка: ${error?.message || 'Не удалось удалить урок'}`);
+    }
+  };
+
+  // 🎯 Drag & Drop handler
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = apiLessons.findIndex((l) => l.id === active.id);
+    const newIndex = apiLessons.findIndex((l) => l.id === over.id);
+
+    console.log('🔥 Drag ended:', {
+      lessonId: active.id,
+      from: oldIndex,
+      to: newIndex,
+    });
+
+    // Оптимистичное обновление UI
+    const reorderedLessons = arrayMove(apiLessons, oldIndex, newIndex).map(
+      (lesson, idx) => ({
+        ...lesson,
+        order_index: idx,
+      })
+    );
+    setApiLessons(reorderedLessons);
+
+    // Обновление в БД
+    try {
+      await api.put('/api/lessons/reorder', {
+        lessons: reorderedLessons.map((l, idx) => ({
+          id: l.id,
+          order_index: idx,
+        })),
+      });
+
+      console.log('✅ Порядок уроков обновлён в БД');
+    } catch (error) {
+      console.error('❌ Ошибка обновления порядка уроков:', error);
+      // Откат изменений
+      await loadLessonsFromAPI();
+      alert('❌ Не удалось изменить порядок уроков');
     }
   };
 
@@ -488,9 +700,35 @@ const Module = () => {
             )}
           </div>
           
-          <div className="space-y-3">
-            {/* Используем apiLessons для админа, иначе module.lessons */}
-            {(isAdmin && apiLessons.length > 0 ? apiLessons : module.lessons).map((lesson, index) => {
+          {/* 🎯 Drag & Drop Context для админов */}
+          {isAdmin && apiLessons.length > 0 ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={apiLessons.map((l) => l.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {apiLessons.map((lesson, index) => (
+                    <SortableLesson
+                      key={lesson.id}
+                      lesson={lesson}
+                      index={index}
+                      onLessonClick={handleLessonClick}
+                      onEdit={handleEditLesson}
+                      onDelete={handleDeleteLesson}
+                      isAdmin={isAdmin}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="space-y-3">
+              {module.lessons.map((lesson, index) => {
               // ✅ FIX: Для уроков из API устанавливаем status = "active" (они всегда доступны)
               const lessonStatus = lesson.status || 'active';
               
@@ -576,6 +814,23 @@ const Module = () => {
                         </Button>
                       )}
                       
+                      {/* Admin: Edit Button */}
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('✏️ Редактирование урока:', lesson);
+                            handleEditLesson(lesson);
+                          }}
+                          className="relative z-[102] bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30 hover:border-[#00ff00]/50 rounded-xl px-3 py-2 transition-all group"
+                          title="Редактировать урок"
+                        >
+                          <Edit className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        </Button>
+                      )}
+                      
                       {/* Admin: Delete Button */}
                       {isAdmin && (
                         <Button
@@ -615,6 +870,7 @@ const Module = () => {
               );
             })}
           </div>
+          )}
         </section>
 
         {/* Module Materials */}

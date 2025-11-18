@@ -548,3 +548,4 @@ router.delete('/api/lessons/:lessonId', adminGuard, async (req, res) => {
 **Приоритет:** 🔴 Высокий  
 **Ответственный:** Backend разработчик
 
+

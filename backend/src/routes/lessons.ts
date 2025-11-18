@@ -94,9 +94,9 @@ router.get('/single/:id', async (req: Request, res: Response) => {
 // POST /api/lessons - создать урок
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { module_id, title, content, lesson_type, duration_minutes, order_index, is_preview } = req.body;
+    const { module_id, title, content, lesson_type, duration_minutes, order_index, is_preview, description, tip } = req.body;
 
-    console.log('📝 Создание урока:', { module_id, title, duration_minutes });
+    console.log('📝 Создание урока:', { module_id, title, duration_minutes, tip });
 
     if (!module_id || !title) {
       return res.status(400).json({ error: 'module_id и title обязательны' });
@@ -133,11 +133,13 @@ router.post('/', async (req: Request, res: Response) => {
         id: nextId, // Явно указываем ID
         module_id: parseInt(module_id),
         title,
+        description: description || '',
         content,
         lesson_type: lesson_type || 'video',
         duration_minutes: duration_minutes || 0,
         order_index: finalOrderIndex,
         is_preview: is_preview || false,
+        tip: tip || null, // ✅ Совет по уроку
       })
       .select()
       .single();
@@ -159,15 +161,17 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, content, lesson_type, duration_minutes, order_index, is_preview } = req.body;
+    const { title, description, content, lesson_type, duration_minutes, order_index, is_preview, tip } = req.body;
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
     if (content !== undefined) updateData.content = content;
     if (lesson_type !== undefined) updateData.lesson_type = lesson_type;
     if (duration_minutes !== undefined) updateData.duration_minutes = duration_minutes;
     if (order_index !== undefined) updateData.order_index = order_index;
     if (is_preview !== undefined) updateData.is_preview = is_preview;
+    if (tip !== undefined) updateData.tip = tip; // ✅ Совет по уроку
     
     // ✅ updated_at removed - column doesn't exist in lessons table
 
@@ -267,6 +271,35 @@ router.delete('/:id', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('❌ Ошибка удаления урока:', error);
     res.status(500).json({ error: 'Ошибка удаления урока' });
+  }
+});
+
+// PUT /api/lessons/reorder - изменить порядок уроков (Drag & Drop)
+router.put('/reorder', async (req: Request, res: Response) => {
+  try {
+    const { lessons } = req.body; // [{ id: 1, order_index: 0 }, { id: 2, order_index: 1 }, ...]
+
+    if (!Array.isArray(lessons)) {
+      return res.status(400).json({ error: 'lessons должен быть массивом' });
+    }
+
+    console.log('🔄 Изменение порядка уроков:', lessons);
+
+    // Обновляем каждый урок
+    const updates = lessons.map((lesson) =>
+      supabase
+        .from('lessons')
+        .update({ order_index: lesson.order_index })
+        .eq('id', parseInt(lesson.id.toString()))
+    );
+
+    await Promise.all(updates);
+
+    console.log('✅ Порядок уроков обновлён');
+    res.json({ success: true, message: 'Порядок уроков обновлен' });
+  } catch (error) {
+    console.error('❌ Reorder lessons error:', error);
+    res.status(500).json({ error: 'Ошибка изменения порядка уроков' });
   }
 });
 

@@ -26,6 +26,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
   // Основное
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [tip, setTip] = useState('');
   // ✅ duration убран - будет автоматически из метаданных видео
   
   // Видео
@@ -60,6 +61,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
     if (lesson && lesson.id) {
       setTitle(lesson.title);
       setDescription(lesson.description || '');
+      setTip((lesson as any).tip || ''); // ✅ Загружаем совет
       // duration удален - загружается автоматически
       setSavedLessonId(lesson.id);
       // ✅ ИСПРАВЛЕНО: загружаем данные только если lesson.id валидный
@@ -69,6 +71,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
     } else {
       setTitle('');
       setDescription('');
+      setTip(''); // ✅ Очищаем совет
       // duration удален - загружается автоматически
       setVideoFile(null);
       setVideoUrl('');
@@ -117,6 +120,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
         await api.put(`/api/lessons/${lesson.id}`, {
           title: title,
           description: description || '',
+          tip: tip || '', // ✅ Совет по уроку
         });
         
         setUploadProgress(100);
@@ -148,6 +152,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
       const lessonRes = await api.post('/api/lessons', {
         title: title || 'Новый урок',
         description: description || '',
+        tip: tip || '', // ✅ Совет по уроку
         // duration_minutes удален - будет автоматически из метаданных видео
         module_id: moduleId
       });
@@ -360,6 +365,18 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="tip" className="text-white">💡 Совет по уроку</Label>
+              <Textarea
+                id="tip"
+                value={tip}
+                onChange={(e) => setTip(e.target.value)}
+                placeholder="Полезный совет или рекомендация для студента (отображается на странице урока)"
+                rows={3}
+                className="bg-[#1a1a24] border-gray-800 text-white placeholder:text-gray-500"
+              />
+            </div>
+
             {/* ✅ Длительность убрана - будет автоматически из метаданных видео */}
 
             {/* ✅ Progress Bar для единой загрузки */}
@@ -473,10 +490,26 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        if (confirm('Удалить текущее видео? Вы сможете загрузить новое.')) {
+                      onClick={async () => {
+                        if (!confirm('Удалить текущее видео? Вы сможете загрузить новое.')) return;
+                        
+                        try {
+                          console.log('🗑️ Удаление видео для урока:', savedLessonId);
+                          
+                          if (savedLessonId) {
+                            // ✅ Вызываем API для удаления видео из БД и R2
+                            await api.delete(`/api/videos/lesson/${savedLessonId}`);
+                            console.log('✅ Видео удалено из БД и R2');
+                          }
+                          
+                          // Очистить локальное состояние
                           setVideoUrl('');
                           setVideoFile(null);
+                          
+                          alert('✅ Видео успешно удалено!');
+                        } catch (error: any) {
+                          console.error('❌ Ошибка удаления видео:', error);
+                          alert(`❌ Ошибка удаления: ${error.message}`);
                         }
                       }}
                       className="text-red-400 hover:text-red-300 border-red-400/30 hover:border-red-400/50"
