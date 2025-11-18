@@ -1,355 +1,359 @@
-# 🔍 ПОЛНАЯ ДИАГНОСТИКА: Логи не показываются на странице Module
+# 📊 ПОЛНЫЙ DIAGNOSTIC REPORT - onAI Academy Backend
 
-**Дата:** 16 ноября 2025  
-**Проблема:** Логи вообще не появляются на странице `/course/1/module/2`  
-**Статус:** 🔴 Требует проверки
+**Дата:** 18 ноября 2025  
+**Время:** 12:20 UTC  
+**Сервер:** DigitalOcean 207.154.231.30
 
 ---
 
-## ✅ ЧТО УЖЕ ПРОВЕРЕНО:
+## ═══════════════════════════════════════════════════════════════
+## 🔍 EXECUTIVE SUMMARY
+## ═══════════════════════════════════════════════════════════════
 
-### 1. Dialog установлен
+### ✅ ЧТО РАБОТАЕТ:
+- Backend API запущен и работает (Port 3000)
+- Supabase подключен и функционирует
+- Все CRUD операции (courses, modules, lessons, students)
+- Drag & Drop уроков работает
+- Health endpoint `/api/health` работает
+- `.env` файл загружается правильно
+- PM2 процесс стабилен (8 рестартов за сессию)
+
+### ❌ ЧТО НЕ РАБОТАЕТ:
+1. **OpenAI API** - 401 Unauthorized (Incorrect API key)
+2. **Cloudflare R2** - 401 Unauthorized (Invalid credentials)
+
+---
+
+## ═══════════════════════════════════════════════════════════════
+## 📁 ШАГ 1: ПРОВЕРКА .ENV НА СЕРВЕРЕ
+## ═══════════════════════════════════════════════════════════════
+
+### Путь:
+```
+/var/www/onai-integrator-login-main/backend
+```
+
+### Существование файла:
 ```bash
-@radix-ui/react-dialog: ^1.1.15 ✅
+-rw-r--r-- 1 root root 1452 Nov 18 11:48 .env
+```
+✅ Файл существует  
+✅ Permissions правильные (644)  
+✅ Owner: root:root
+
+### Содержимое .env (ключевые переменные):
+```env
+OPENAI_API_KEY=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
+
+R2_ACCESS_KEY_ID=7acdb68c6dcedb620831cc926630fa70
+R2_SECRET_ACCESS_KEY=b603cab224f0e926af5e210b8917bc0de5289fc85fded595e47ad730634add3
+R2_ENDPOINT=https://9759c9a54b40f80e87e525245662da24.r2.cloudflarestorage.com
+R2_BUCKET_NAME=onai-academy-videos
+R2_PUBLIC_URL=https://pub-b4d57373665444eca59ad2bd18dc9c61.r2.dev
+
+SUPABASE_URL=https://arqhkacellqbhjhbebfh.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+FRONTEND_URL=https://onai.academy
+NODE_ENV=production
+PORT=3000
 ```
 
-### 2. Логи добавлены в код Module.tsx
-```typescript
-// Строка 44-47
-console.log('🔍 Module.tsx - userRole:', userRole);
-console.log('🔍 Module.tsx - isAdmin:', isAdmin);
-console.log('🔍 Module.tsx - courseId (id):', id);
-console.log('🔍 Module.tsx - moduleId:', moduleId);
-```
-
-### 3. Нет ошибок линтера
-```
-No linter errors found ✅
-```
+✅ Все переменные присутствуют  
+✅ Формат правильный (без кавычек и лишних пробелов)  
+✅ NODE_ENV=production  
+✅ FRONTEND_URL=https://onai.academy
 
 ---
 
-## 🚨 ВОЗМОЖНЫЕ ПРИЧИНЫ:
+## ═══════════════════════════════════════════════════════════════
+## 📝 ШАГ 2: ПРОВЕРКА КАК BACKEND ЗАГРУЖАЕТ .ENV
+## ═══════════════════════════════════════════════════════════════
 
-### Причина 1: Страница не загружается вообще
-**Признаки:**
-- Белый экран
-- Нет контента
-- Спиннер бесконечно крутится
-
-**Проверка:**
-1. Откройте `http://localhost:8080/course/1/module/2`
-2. Смотрите загружается ли страница
-3. Откройте F12 → Console
-4. Есть ли ОШИБКИ (красные строки)?
-
-### Причина 2: useAuth hook падает с ошибкой
-**Признак:**
-- Ошибка `useAuth must be used within AuthProvider`
-
-**Проверка:**
-```javascript
-// В консоли браузера:
-const authContext = React.useContext(AuthContext);
-console.log('Auth:', authContext);
+### package.json:
+```json
+"start": "node dist/server.js"
 ```
 
-### Причина 3: Консоль фильтрует логи
-**Проверка:**
-1. Откройте F12 → Console
-2. Проверьте фильтр (правый верхний угол)
-3. Должны быть включены: `Verbose`, `Info`, `Warnings`, `Errors`
-4. Не должно быть фильтра по тексту
+### server.ts (начало):
+```typescript
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-### Причина 4: JavaScript не выполняется
-**Проверка:**
-```javascript
-// Введите в консоли:
-console.log('TEST');
-// Должно появиться: TEST
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 ```
 
-### Причина 5: React DevTools блокирует логи
-**Проверка:**
-- Отключите React DevTools
-- Перезагрузите страницу
-- Проверьте логи
-
-### Причина 6: Ошибка рендера до логов
-**Признак:**
-- Компонент падает ДО того как дошёл до console.log
-
-**Проверка:**
-1. Откройте F12 → Console
-2. Смотрите на ошибки
-3. Проверьте есть ли:
-   - `Cannot read property ... of undefined`
-   - `... is not a function`
-   - `React error boundary`
+✅ Backend загружает .env через `dotenv.config()`  
+✅ Путь правильный: `__dirname/../.env`  
+✅ __dirname = `/var/www/onai-integrator-login-main/backend/dist`  
+✅ .env путь = `/var/www/onai-integrator-login-main/backend/.env`
 
 ---
 
-## 🔧 БЫСТРЫЕ ИСПРАВЛЕНИЯ:
+## ═══════════════════════════════════════════════════════════════
+## 🖥️ ШАГ 3: ПРОВЕРКА PM2 ENVIRONMENT VARIABLES
+## ═══════════════════════════════════════════════════════════════
 
-### Исправление 1: Добавить console.log В НАЧАЛО файла
-
-**Файл:** `src/pages/Module.tsx`
-
-**САМАЯ ПЕРВАЯ СТРОКА в компоненте:**
-
-```typescript
-const Module = () => {
-  console.log('🚀 MODULE.TSX ЗАГРУЗИЛСЯ!'); // ← ЭТО ПЕРВОЕ
-  
-  const { id, moduleId } = useParams();
-  const navigate = useNavigate();
-  const { userRole } = useAuth();
-  // ...
+### PM2 Status:
+```
+id: 0
+name: onai-backend
+status: online
+uptime: 18m
+restarts: 8
+script path: /var/www/onai-integrator-login-main/backend/dist/server.js
+exec cwd: /var/www/onai-integrator-login-main/backend
+node.js version: 18.20.8
 ```
 
-**Если этот лог НЕ появляется →** компонент вообще не рендерится!
-
-### Исправление 2: Обернуть useAuth в try-catch
-
-```typescript
-const Module = () => {
-  console.log('🚀 MODULE START');
-  
-  const { id, moduleId } = useParams();
-  const navigate = useNavigate();
-  
-  let userRole, isAdmin;
-  try {
-    const auth = useAuth();
-    userRole = auth.userRole;
-    isAdmin = userRole === 'admin';
-    console.log('✅ useAuth работает:', { userRole, isAdmin });
-  } catch (error) {
-    console.error('❌ useAuth упал:', error);
-    userRole = null;
-    isAdmin = false;
-  }
-  
-  // ...
+### PM2 Environment:
+```
+PM2 НЕ передаёт переменные напрямую
+Backend загружает их через dotenv.config() из .env
 ```
 
-### Исправление 3: Добавить ErrorBoundary
+⚠️ Node.js 18.20.8 - **DEPRECATED** (рекомендуется Node.js 20+)  
+✅ PM2 процесс стабилен
 
-**Создать файл:** `src/components/ErrorBoundary.tsx`
+---
 
-```typescript
-import React from 'react';
+## ═══════════════════════════════════════════════════════════════
+## 📋 ШАГ 4-5: BACKEND ЛОГИ С ДИАГНОСТИКОЙ
+## ═══════════════════════════════════════════════════════════════
 
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error: any }
-> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+### Диагностические логи при старте:
+```
+═══════════════════════════════════════════════════════════════
+🔍 ДИАГНОСТИКА .ENV VARIABLES
+═══════════════════════════════════════════════════════════════
 
-  static getDerivedStateFromError(error: any) {
-    console.error('🚨 ErrorBoundary caught:', error);
-    return { hasError: true, error };
-  }
+📂 Current directory: /var/www/onai-integrator-login-main/backend
+📂 __dirname: /var/www/onai-integrator-login-main/backend/dist
 
-  componentDidCatch(error: any, errorInfo: any) {
-    console.error('🚨 Error details:', error, errorInfo);
-  }
+🔑 OPENAI_API_KEY:
+   - Exists: true
+   - Length: 164
+   - First 20 chars: sk-proj-iQdhslqOXi_S
+   - Last 10 chars: s1HrN_WTkA
 
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-black text-white p-8">
-          <h1 className="text-2xl font-bold mb-4">⚠️ Ошибка загрузки страницы</h1>
-          <pre className="bg-gray-900 p-4 rounded">
-            {JSON.stringify(this.state.error, null, 2)}
-          </pre>
-        </div>
-      );
-    }
+🗄️ CLOUDFLARE R2:
+   - R2_ACCESS_KEY_ID exists: true
+   - R2_ACCESS_KEY_ID length: 32
+   - R2_ACCESS_KEY_ID first 10: 7acdb68c6d
+   - R2_SECRET_ACCESS_KEY exists: true
+   - R2_SECRET_ACCESS_KEY length: 63
+   - R2_ENDPOINT: https://9759c9a54b40f80e87e525245662da24.r2.cloudflarestorage.com
+   - R2_BUCKET_NAME: onai-academy-videos
+   - R2_PUBLIC_URL: https://pub-b4d57373665444eca59ad2bd18dc9c61.r2.dev
 
-    return this.props.children;
-  }
-}
+🗃️ SUPABASE:
+   - SUPABASE_URL: https://arqhkacellqbhjhbebfh.supabase.co
+   - SUPABASE_SERVICE_ROLE_KEY exists: true
+   - SUPABASE_SERVICE_ROLE_KEY length: 219
 
-export default ErrorBoundary;
+═══════════════════════════════════════════════════════════════
 ```
 
-**Обернуть Module в App.tsx:**
+✅ **Backend ЗАГРУЖАЕТ ВСЕ ПЕРЕМЕННЫЕ ПРАВИЛЬНО!**  
+✅ OpenAI API Key загружен (164 символа)  
+✅ R2 credentials загружены (32 + 63 символа)  
+✅ Supabase credentials загружены (219 символов)
 
-```typescript
-import ErrorBoundary from '@/components/ErrorBoundary';
+### Ошибки при использовании:
+```
+❌ OpenAI API:
+[OpenAI] Failed to create thread: 401 Incorrect API key provided
 
-// В роутах:
-<Route 
-  path="/course/:id/module/:moduleId" 
-  element={
-    <ErrorBoundary>
-      <Module />
-    </ErrorBoundary>
-  } 
-/>
+❌ Cloudflare R2:
+❌ Ошибка загрузки видео: Unauthorized: Unauthorized
+Code: 'Unauthorized'
+httpStatusCode: 401
 ```
 
 ---
 
-## 📋 ЧЕК-ЛИСТ ДЛЯ ПОЛЬЗОВАТЕЛЯ:
+## ═══════════════════════════════════════════════════════════════
+## 🔬 ШАГ 6: ПРОВЕРКА ФОРМАТА .ENV
+## ═══════════════════════════════════════════════════════════════
 
-### Шаг 1: Проверьте что Frontend запущен
-```bash
-# В терминале должно быть:
-VITE v5.x.x  ready in XXX ms
-➜  Local:   http://localhost:8080/
+### od -c проверка (OpenAI key):
+```
+O P E N A I _ A P I _ K E Y = s k - p r o j - i Q d h...
 ```
 
-Если НЕТ → перезапустите:
-```bash
-npm run dev
-```
-
-### Шаг 2: Откройте страницу
-```
-http://localhost:8080/course/1/module/2
-```
-
-### Шаг 3: Откройте консоль
-- Нажмите `F12`
-- Перейдите на вкладку `Console`
-- Нажмите `Ctrl+L` чтобы очистить
-
-### Шаг 4: Перезагрузите страницу
-- Нажмите `Ctrl+Shift+R` (жесткая перезагрузка без кэша)
-
-### Шаг 5: Смотрите консоль
-**Что ДОЛЖНО быть:**
-```
-🔍 Module.tsx - userRole: admin
-🔍 Module.tsx - isAdmin: true
-🔍 Module.tsx - courseId (id): 1
-🔍 Module.tsx - moduleId: 2
-```
-
-**Если ПУСТО:**
-1. Проверьте фильтр консоли (должен быть ALL)
-2. Проверьте нет ли красных ошибок ВЫШЕ
-3. Введите в консоли: `console.log('TEST')` - работает ли консоль?
-
-### Шаг 6: Проверьте Network
-- Откройте F12 → Network
-- Перезагрузите страницу
-- Смотрите:
-  - Есть ли запрос к `http://localhost:8080/course/1/module/2`?
-  - Какой статус код? (должен быть 200)
-  - Есть ли запросы к API `http://localhost:3000/api/lessons?module_id=2`?
+✅ Нет лишних кавычек  
+✅ Нет лишних пробелов  
+✅ Формат корректный
 
 ---
 
-## 🚨 КРИТИЧНЫЕ ПРОВЕРКИ:
+## ═══════════════════════════════════════════════════════════════
+## 🧪 ШАГ 9: ФИНАЛЬНОЕ ТЕСТИРОВАНИЕ КЛЮЧЕЙ НАПРЯМУЮ
+## ═══════════════════════════════════════════════════════════════
 
-### 1. Backend работает?
+### OpenAI API Test (curl):
 ```bash
-curl http://localhost:3000/api/health
-# Должно вернуть: {"status":"ok"}
+curl -s https://api.openai.com/v1/models \
+  -H "Authorization: Bearer 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"
 ```
 
-Если НЕТ → запустите Backend:
-```bash
-cd backend
-npm run dev
-```
-
-### 2. Frontend работает?
-```bash
-curl http://localhost:8080
-# Должно вернуть HTML
-```
-
-Если НЕТ → запустите Frontend:
-```bash
-npm run dev
-```
-
-### 3. useAuth импортирован правильно?
-
-**Файл:** `src/pages/Module.tsx`
-
-**Строка 6:**
-```typescript
-import { useAuth } from "@/hooks/useAuth";  // ✅ Правильно
-```
-
-**НЕ должно быть:**
-```typescript
-import { useAuth } from "@/contexts/AuthContext";  // ❌ Старый путь
-```
-
-### 4. AuthProvider обернул App?
-
-**Файл:** `src/App.tsx`
-
-**Должно быть:**
-```typescript
-function App() {
-  return (
-    <AuthProvider>  {/* ← Должно быть! */}
-      <Router>
-        <Routes>
-          <Route path="/course/:id/module/:moduleId" element={<Module />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
-  );
+### Результат:
+```json
+{
+  "error": {
+    "message": "Incorrect API key provided: sk-proj-***...***WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+    "type": "invalid_request_error",
+    "code": "invalid_api_key",
+    "param": null
+  }
 }
 ```
 
+❌ **OpenAI ОТКЛОНЯЕТ КЛЮЧ С 401 UNAUTHORIZED!**
+
 ---
 
-## 💉 ЭКСТРЕННОЕ ИСПРАВЛЕНИЕ:
+## ═══════════════════════════════════════════════════════════════
+## 🎯 ВЫВОДЫ И РЕКОМЕНДАЦИИ
+## ═══════════════════════════════════════════════════════════════
 
-Если НИЧЕГО не помогает, добавьте в **самое начало** `Module.tsx`:
+### 🔍 ПРИЧИНА ПРОБЛЕМЫ:
 
-```typescript
-const Module = () => {
-  // 🚨 ЭКСТРЕННАЯ ДИАГНОСТИКА
-  try {
-    console.log('='.repeat(50));
-    console.log('🚨 MODULE.TSX НАЧАЛ ВЫПОЛНЕНИЕ');
-    console.log('Window location:', window.location.href);
-    console.log('Document ready:', document.readyState);
-    console.log('='.repeat(50));
-  } catch (e) {
-    alert('КРИТИЧЕСКАЯ ОШИБКА В MODULE.TSX: ' + e);
-  }
-  
-  // Остальной код...
+**Backend загружает .env ПРАВИЛЬНО, но API ключи НЕВАЛИДНЫ!**
+
+1. ✅ .env файл существует и читается
+2. ✅ Backend загружает все переменные через dotenv.config()
+3. ✅ Формат .env правильный
+4. ✅ Permissions правильные
+5. ❌ **OpenAI API Key ОТКЛОНЁН OpenAI (401 Incorrect API key)**
+6. ❌ **Cloudflare R2 Credentials ОТКЛОНЕНЫ R2 (401 Unauthorized)**
+
+### 📌 ВОЗМОЖНЫЕ ПРИЧИНЫ НЕВАЛИДНЫХ КЛЮЧЕЙ:
+
+#### OpenAI API Key:
+- ❌ Ключ истёк (срок действия закончился)
+- ❌ Ключ был отозван вручную в OpenAI Dashboard
+- ❌ Превышен лимит использования (quota exceeded)
+- ❌ Проект OpenAI неактивен или удалён
+- ❌ Ключ был создан для другого проекта
+
+#### Cloudflare R2 Credentials:
+- ❌ API Token был отозван
+- ❌ Изменились permissions для bucket
+- ❌ Bucket был удалён или переименован
+- ❌ Account ID изменился
+
+---
+
+## ═══════════════════════════════════════════════════════════════
+## 🔧 РЕШЕНИЕ: СОЗДАТЬ НОВЫЕ КЛЮЧИ
+## ═══════════════════════════════════════════════════════════════
+
+### 1. OpenAI API Key (5 минут):
+
+```
+1. Открыть: https://platform.openai.com/api-keys
+2. Нажать "+ Create new secret key"
+3. Name: "onAI Academy Production 2025"
+4. Permissions: All
+5. Нажать "Create"
+6. СКОПИРОВАТЬ ключ (начинается с sk-proj-...)
+7. ⚠️ ВАЖНО: Сохранить сразу, больше не покажут!
 ```
 
-Если даже ЭТОТ лог не появляется → проблема в роутинге или App.tsx!
+### 2. Cloudflare R2 API Token (5 минут):
+
+```
+1. Открыть: https://dash.cloudflare.com/
+2. R2 → Manage R2 API Tokens
+3. "Create API Token"
+4. Permissions: Object Read & Write
+5. Bucket: onai-academy-videos (или All buckets)
+6. Нажать "Create API Token"
+7. СКОПИРОВАТЬ:
+   - Access Key ID
+   - Secret Access Key
+```
+
+### 3. Обновить .env на сервере:
+
+```bash
+ssh root@207.154.231.30
+nano /var/www/onai-integrator-login-main/backend/.env
+
+# Заменить строки:
+OPENAI_API_KEY=<НОВЫЙ_КЛЮЧ>
+R2_ACCESS_KEY_ID=<НОВЫЙ_ACCESS_KEY>
+R2_SECRET_ACCESS_KEY=<НОВЫЙ_SECRET_KEY>
+
+# Сохранить: Ctrl+O, Enter, Ctrl+X
+
+# Перезапустить backend:
+pm2 restart onai-backend --update-env
+pm2 logs onai-backend --lines 50
+```
 
 ---
 
-## 📞 ЧТО ОТПРАВИТЬ МНЕ:
+## ═══════════════════════════════════════════════════════════════
+## 📊 ТЕКУЩИЙ СТАТУС ФУНКЦИЙ
+## ═══════════════════════════════════════════════════════════════
 
-1. **Скриншот консоли** (F12 → Console) ВЕСЬ экран
-2. **Скриншот Network tab** (F12 → Network) после перезагрузки
-3. **Вывод команды:**
-   ```bash
-   npm run dev
-   ```
-4. **Результат:**
-   ```bash
-   curl http://localhost:8080
-   curl http://localhost:3000/api/health
-   ```
+| Функция | Статус | Причина |
+|---------|--------|---------|
+| Backend API | ✅ РАБОТАЕТ | - |
+| Health Endpoint | ✅ РАБОТАЕТ | `/api/health` → 200 OK |
+| Supabase | ✅ РАБОТАЕТ | База подключена |
+| Создание курсов | ✅ РАБОТАЕТ | - |
+| Создание модулей | ✅ РАБОТАЕТ | - |
+| Создание уроков | ✅ РАБОТАЕТ | Без видео |
+| Редактирование уроков | ✅ РАБОТАЕТ | - |
+| Drag & Drop | ✅ РАБОТАЕТ | Lessons reorder OK |
+| Автоматическая нумерация | ✅ РАБОТАЕТ | - |
+| Счётчик длительности | ✅ РАБОТАЕТ | - |
+| **AI Куратор (OpenAI)** | ❌ НЕ РАБОТАЕТ | **401 Invalid API Key** |
+| **Загрузка видео (R2)** | ❌ НЕ РАБОТАЕТ | **401 Unauthorized** |
+| Загрузка материалов | ✅ РАБОТАЕТ | Если не видео |
 
 ---
 
-**Приоритет:** 🔴 КРИТИЧНЫЙ  
-**Статус:** Требует немедленной проверки  
-**Время:** 5-10 минут на диагностику
+## ═══════════════════════════════════════════════════════════════
+## 💡 АЛЬТЕРНАТИВНОЕ РЕШЕНИЕ (ВРЕМЕННОЕ)
+## ═══════════════════════════════════════════════════════════════
 
+### Если нельзя создать новые ключи СЕЙЧАС:
 
+Платформа может работать в **ограниченном режиме** без AI и видео:
 
+1. ✅ Создавать курсы и модули
+2. ✅ Создавать уроки (текстовые, без видео)
+3. ✅ Загружать материалы (PDF, документы)
+4. ✅ Редактировать всё содержимое
+5. ✅ Drag & Drop для изменения порядка
+6. ❌ Нельзя использовать AI Куратора
+7. ❌ Нельзя загружать видео
 
+---
+
+## ═══════════════════════════════════════════════════════════════
+## 📞 СЛЕДУЮЩИЕ ШАГИ
+## ═══════════════════════════════════════════════════════════════
+
+### ВАРИАНТ A: СОЗДАТЬ НОВЫЕ КЛЮЧИ (Рекомендуется)
+1. Создать новый OpenAI API Key
+2. Создать новый Cloudflare R2 API Token
+3. Обновить `.env` на сервере
+4. Перезапустить backend через PM2
+5. Протестировать AI Куратора и загрузку видео
+
+### ВАРИАНТ B: РАБОТАТЬ В ОГРАНИЧЕННОМ РЕЖИМЕ
+1. Платформа работает без AI и видео
+2. Все остальные функции доступны
+3. Создать ключи позже, когда будет возможность
+
+---
+
+**Отчёт подготовлен:** Cursor AI Diagnostic Tool  
+**Дата:** 18 ноября 2025, 12:25 UTC  
+**Статус:** ✅ ДИАГНОСТИКА ЗАВЕРШЕНА

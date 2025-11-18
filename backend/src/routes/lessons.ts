@@ -198,54 +198,66 @@ router.put('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const lessonId = parseInt(id); // ✅ ИСПРАВЛЕНО: Преобразуем строку в число
 
-    console.log('🗑️ Удаление урока:', id);
+    console.log('🗑️ Удаление урока:', lessonId, '(тип:', typeof lessonId, ')');
+    
+    // Проверка валидности ID
+    if (isNaN(lessonId)) {
+      return res.status(400).json({ error: 'Некорректный ID урока' });
+    }
     
     // Получить данные урока
-    const { data: lesson } = await supabase
+    const { data: lesson, error: fetchError } = await supabase
       .from('lessons')
       .select('id')
-      .eq('id', id)
+      .eq('id', lessonId) // ✅ ИСПРАВЛЕНО: Используем число
       .single();
     
-    if (!lesson) {
+    if (fetchError || !lesson) {
+      console.error('❌ Урок не найден:', fetchError);
       return res.status(404).json({ error: 'Урок не найден' });
     }
     
+    console.log('✅ Урок найден, начинаем удаление связанных данных...');
+    
     // Удалить связанные данные
     // 1. Видео
-    await supabase.from('video_content').delete().eq('lesson_id', id);
+    await supabase.from('video_content').delete().eq('lesson_id', lessonId); // ✅ ИСПРАВЛЕНО
     
     // 2. Материалы (получить пути файлов для удаления из Storage)
     const { data: materials } = await supabase
       .from('lesson_materials')
       .select('storage_path')
-      .eq('lesson_id', id);
+      .eq('lesson_id', lessonId); // ✅ ИСПРАВЛЕНО
     
     if (materials && materials.length > 0) {
       const paths = materials.map(m => m.storage_path);
       await supabase.storage.from('materials').remove(paths);
     }
     
-    await supabase.from('lesson_materials').delete().eq('lesson_id', id);
+    await supabase.from('lesson_materials').delete().eq('lesson_id', lessonId); // ✅ ИСПРАВЛЕНО
     
     // 3. Аналитика
-    await supabase.from('video_analytics').delete().eq('lesson_id', id);
+    await supabase.from('video_analytics').delete().eq('lesson_id', lessonId); // ✅ ИСПРАВЛЕНО
     
     // 4. Удалить урок
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from('lessons')
       .delete()
-      .eq('id', id);
+      .eq('id', lessonId); // ✅ ИСПРАВЛЕНО
 
-    if (error) throw error;
+    if (deleteError) {
+      console.error('❌ Ошибка удаления урока из БД:', deleteError);
+      throw deleteError;
+    }
     
-    console.log('✅ Урок удален');
-    res.json({ success: true });
+    console.log('✅ Урок удален успешно');
+    res.json({ success: true, message: 'Урок успешно удален' });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Ошибка удаления урока:', error);
-    res.status(500).json({ error: 'Ошибка удаления урока' });
+    res.status(500).json({ error: 'Ошибка удаления урока', details: error?.message });
   }
 });
 
