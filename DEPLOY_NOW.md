@@ -1,203 +1,237 @@
-# 🚀 ГОТОВО! Теперь заливай на сервер
+# 🚀 ДЕПЛОЙ НА PRODUCTION - ФИНАЛЬНАЯ ИНСТРУКЦИЯ
 
-## ✅ ВСЁ УЖЕ НА GITHUB!
+## ✅ ВЫПОЛНЕНО:
 
-**GitHub полностью обновлён:** https://github.com/onaicademy/onai-integrator-login
+- ✅ Все изменения добавлены в Git
+- ✅ Commit создан: `98cbbab`
+- ✅ Push на GitHub: `main -> main`
+- ✅ Код на GitHub обновлён
+
+**Коммит:** `feat: Add module duration counter, fix duplicate reorder route, add tip/description columns`
 
 ---
 
-## 📋 ЧТО ДЕЛАТЬ СЕЙЧАС
+## ⚠️ КРИТИЧНО: SQL МИГРАЦИЯ (ВЫПОЛНИ СЕЙЧАС!)
 
-### 1️⃣ Подключись к серверу:
+**URL:** https://supabase.com/dashboard/project/arqhkacellqbhjhbebfh
 
-```bash
-ssh root@178.128.203.40
+**SQL Editor → New Query → Вставь и запусти:**
+
+```sql
+-- Добавляем отсутствующие колонки
+ALTER TABLE lessons 
+ADD COLUMN IF NOT EXISTS description TEXT;
+
+ALTER TABLE lessons 
+ADD COLUMN IF NOT EXISTS tip TEXT;
+
+-- Комментарии
+COMMENT ON COLUMN lessons.description IS 'Описание урока';
+COMMENT ON COLUMN lessons.tip IS 'Полезный совет или рекомендация для студента по данному уроку';
+
+-- Перезагрузка схемы PostgREST (КРИТИЧНО!)
+NOTIFY pgrst, 'reload schema';
+
+-- Проверка (должна показать все колонки)
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'lessons' 
+ORDER BY ordinal_position;
 ```
 
+**ПРОВЕРЬ РЕЗУЛЬТАТ:**  
+В таблице внизу должны быть строки:
+- ✅ `description | text | YES`
+- ✅ `tip | text | YES`
+
 ---
 
-### 2️⃣ Перейди в директорию проекта:
+## 🔧 ДЕПЛОЙ BACKEND НА DIGITALOCEAN
+
+### Способ 1: Одной командой (рекомендуется)
+
+**Скопируй и выполни:**
 
 ```bash
-cd /var/www/onai-integrator-login
+ssh root@207.154.231.30 "cd /var/www/onai-integrator-login-main && git pull origin main && cd backend && npm install --production && npm run build && pm2 restart onai-backend && pm2 logs onai-backend --lines 20"
 ```
 
----
-
-### 3️⃣ Получи все изменения с GitHub:
+### Способ 2: Пошагово (если хочешь видеть каждый шаг)
 
 ```bash
+# 1. Подключись к серверу
+ssh root@207.154.231.30
+
+# 2. Перейди в директорию
+cd /var/www/onai-integrator-login-main
+
+# 3. Стяни изменения
 git pull origin main
-```
 
-Должно показать:
-```
-Updating 6e76426..de9ef0e
-Fast-forward
- COMMIT_CONFIRMATION.md     | 276 +++++++++++++++++++
- GITHUB_SYNC_COMPLETE.md    | 435 +++++++++++++++++++++++++++
- LOCAL_SAVE_SNAPSHOT.md     | 297 +++++++++++++++++++
- 3 files changed, 1008 insertions(+)
-```
+# 4. Перейди в backend
+cd backend
 
----
+# 5. Установи зависимости
+npm install --production
 
-### 4️⃣ Запусти автоматический деплой:
-
-```bash
-./server-deploy.sh
-```
-
-**ИЛИ вручную:**
-
-```bash
-# Установить зависимости
-npm install
-
-# Собрать проект
+# 6. Собери проект
 npm run build
 
-# Выставить права
-chown -R www-data:www-data dist
+# 7. Перезапусти PM2
+pm2 restart onai-backend
 
-# Перезапустить Nginx
-systemctl restart nginx
+# 8. Проверь логи
+pm2 logs onai-backend --lines 20
+
+# 9. Проверь статус
+pm2 status
 ```
 
 ---
 
-### 5️⃣ Проверь что всё работает:
+## ✅ ПРОВЕРКА BACKEND ПОСЛЕ ДЕПЛОЯ:
 
-Открой в браузере:
-- **Главная:** https://integratoronai.kz/
-- **Профиль:** https://integratoronai.kz/profile
-- **Админка:** https://integratoronai.kz/admin/activity
-
----
-
-## ✅ ЧТО ЗАГРУЖЕНО НА GITHUB
-
-### Админ-панель:
-✅ `Activity.tsx` (53KB) - полный редизайн  
-✅ `ActivitySection.tsx`  
-✅ `MetricCard.tsx`  
-✅ `StatCard.tsx`  
-
-### Утилиты:
-✅ `admin-utils.ts` (14KB)  
-✅ `logger.ts`  
-
-### Документация:
-✅ Все 25+ MD файлов  
-✅ Инструкции по деплою  
-✅ Отчеты и гайды  
-
-### Скрипты:
-✅ `server-deploy.sh` - автодеплой  
-✅ Все setup скрипты  
-
-**ВСЕГО:** 185 файлов ✅
-
----
-
-## ⚠️ ВАЖНО ПРОВЕРИТЬ НА СЕРВЕРЕ
-
-### 1. Nginx конфигурация:
-
-Должно быть:
-```nginx
-location / {
-    try_files $uri $uri/ /index.html;
-}
+### 1. Health Check
+```bash
+curl https://api.onai.academy/api/health
 ```
 
-Если нет - добавь:
+**Ожидаемый ответ:**
+```json
+{"status":"ok","timestamp":"2025-11-18T..."}
+```
+
+### 2. Проверка в браузере
+```
+https://api.onai.academy/api/health
+```
+
+Должен показать: `{"status":"ok","timestamp":"..."}`
+
+---
+
+## 🌐 ДЕПЛОЙ FRONTEND НА VERCEL
+
+### Автоматический (уже запущен)
+После push на GitHub, Vercel автоматически начал деплой:
+- ✅ Следи за статусом: https://vercel.com/dashboard
+- ✅ Или дождись webhook уведомления
+
+### Вручную (если нужно форсировать)
 ```bash
-nano /etc/nginx/sites-available/onai-integrator-login
-# Добавь try_files
-systemctl restart nginx
+# В локальной директории проекта
+cd C:\onai-integrator-login
+npx vercel --prod
 ```
 
 ---
 
-### 2. .env файл на сервере:
+## 🔍 ФИНАЛЬНАЯ ПРОВЕРКА:
 
-Проверь что есть:
+### 1. Backend работает?
 ```bash
-cat /var/www/onai-integrator-login/.env
+curl https://api.onai.academy/api/health
 ```
+**Статус:** 200 OK
 
-Должен содержать:
-```env
-VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGc...
-VITE_SITE_URL=https://integratoronai.kz
+### 2. Frontend доступен?
 ```
+https://onai.academy
+```
+**Статус:** Загружается без ошибок
+
+### 3. Создание урока работает?
+1. Открой: `https://onai.academy/course/1/module/1`
+2. Нажми "Добавить урок"
+3. Заполни поля (название, описание, совет)
+4. Нажми "Создать урок"
+5. **Должно работать БЕЗ ошибок!**
+
+### 4. Счётчик длительности?
+1. Открой: `https://onai.academy/course/1/module/1`
+2. Под прогресс-баром должна быть строка:
+   ```
+   ⏱️ Общая длительность: X минут (Y уроков)
+   ```
+
+### 5. Drag & Drop работает?
+1. Наведи на урок
+2. Появится иконка захвата
+3. Перетащи урок вверх/вниз
+4. Обнови страницу → порядок сохранён
 
 ---
 
-## 🎯 ЕСЛИ ЧТО-ТО НЕ РАБОТАЕТ
+## 🐛 ЕСЛИ ЧТО-ТО НЕ РАБОТАЕТ:
 
-### Проверь логи Nginx:
-```bash
-tail -f /var/log/nginx/error.log
-```
+### Проблема 1: "Could not find the 'description' column"
+**Решение:** Выполни SQL миграцию (см. выше)
 
-### Проверь статус сервиса:
+### Проблема 2: Backend не обновился
 ```bash
-systemctl status nginx
-```
-
-### Пересобери проект:
-```bash
-cd /var/www/onai-integrator-login
+ssh root@207.154.231.30
+cd /var/www/onai-integrator-login-main
+git reset --hard origin/main
+git pull origin main
+cd backend
 npm run build
-chown -R www-data:www-data dist
-systemctl restart nginx
+pm2 restart onai-backend
+pm2 logs onai-backend
 ```
 
-### Очисти кеш браузера:
+### Проблема 3: Frontend показывает старую версию
+1. Открой DevTools (F12)
+2. Нажми Ctrl+Shift+R (hard refresh)
+3. Очисти кэш браузера
+4. Проверь Vercel Dashboard - деплой завершён?
+
+### Проблема 4: CORS ошибки
+**На сервере проверь `.env`:**
+```bash
+ssh root@207.154.231.30
+cat /var/www/onai-integrator-login-main/backend/.env | grep FRONTEND_URL
 ```
-Ctrl+Shift+R (или Cmd+Shift+R на Mac)
+Должно быть: `FRONTEND_URL=https://onai.academy`
+
+---
+
+## 📋 ЧЕКЛИСТ:
+
+- [ ] **1. SQL миграция выполнена** ⚠️ КРИТИЧНО!
+- [ ] **2. Backend задеплоен на DigitalOcean**
+- [ ] **3. Backend health check OK**
+- [ ] **4. Frontend задеплоен на Vercel**
+- [ ] **5. Frontend доступен https://onai.academy**
+- [ ] **6. Создание урока работает**
+- [ ] **7. Счётчик длительности отображается**
+- [ ] **8. Drag & Drop работает**
+
+---
+
+## 🎯 КОМАНДЫ ДЛЯ КОПИРОВАНИЯ:
+
+### SQL Миграция (Supabase):
+```sql
+ALTER TABLE lessons ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE lessons ADD COLUMN IF NOT EXISTS tip TEXT;
+COMMENT ON COLUMN lessons.description IS 'Описание урока';
+COMMENT ON COLUMN lessons.tip IS 'Полезный совет или рекомендация для студента по данному уроку';
+NOTIFY pgrst, 'reload schema';
+SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = 'lessons' ORDER BY ordinal_position;
+```
+
+### Backend Deploy (DigitalOcean):
+```bash
+ssh root@207.154.231.30 "cd /var/www/onai-integrator-login-main && git pull origin main && cd backend && npm install --production && npm run build && pm2 restart onai-backend && pm2 logs onai-backend --lines 20"
+```
+
+### Backend Health Check:
+```bash
+curl https://api.onai.academy/api/health
 ```
 
 ---
 
-## 📊 ПОСЛЕДНИЕ КОММИТЫ НА GITHUB
-
-```
-de9ef0e docs: полный отчет о синхронизации с GitHub - готово к деплою
-a535028 docs: отчет о локальном сохранении snapshot
-b4cec81 💾 Local Save: Complete project snapshot
-6e76426 docs: подтверждение успешного сохранения всех изменений
-70605ae 🚀 Full update: admin/activity redesign and full sync
-```
-
----
-
-## ✅ CHECKLIST ДЕПЛОЯ
-
-```
-□ SSH на сервер (ssh root@178.128.203.40)
-□ cd /var/www/onai-integrator-login
-□ git pull origin main
-□ npm install
-□ npm run build
-□ chown -R www-data:www-data dist
-□ systemctl restart nginx
-□ Открыть https://integratoronai.kz/
-□ Проверить https://integratoronai.kz/admin/activity
-□ Проверить консоль браузера (F12)
-```
-
----
-
-## 🎉 ВСЁ ГОТОВО!
-
-**GitHub обновлён:** ✅  
-**Локально сохранено:** ✅  
-**Документация создана:** ✅  
-**Готово к деплою:** ✅  
-
-**ЗАЛИВАЙ НА СЕРВЕР!** 🚀
-
+**Создано:** 2025-11-18  
+**Коммит:** 98cbbab  
+**Статус:** READY TO DEPLOY 🚀

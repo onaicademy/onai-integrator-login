@@ -260,21 +260,29 @@ router.put('/reorder', async (req: Request, res: Response) => {
 
     console.log('🔄 Изменение порядка уроков:', lessons);
 
-    // Обновляем каждый урок
-    const updates = lessons.map((lesson) =>
-      supabase
+    // Обновляем каждый урок с обработкой ошибок
+    const updates = lessons.map(async (lesson) => {
+      const { error } = await supabase
         .from('lessons')
         .update({ order_index: lesson.order_index })
-        .eq('id', parseInt(lesson.id.toString()))
-    );
+        .eq('id', parseInt(lesson.id.toString()));
+      
+      if (error) {
+        console.error(`❌ Ошибка обновления урока ${lesson.id}:`, error);
+        throw error;
+      }
+    });
 
     await Promise.all(updates);
 
     console.log('✅ Порядок уроков обновлён');
     res.json({ success: true, message: 'Порядок уроков обновлен' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Reorder lessons error:', error);
-    res.status(500).json({ error: 'Ошибка изменения порядка уроков' });
+    res.status(500).json({ 
+      error: 'Ошибка изменения порядка уроков', 
+      details: error?.message || 'Unknown error' 
+    });
   }
 });
 
