@@ -663,6 +663,19 @@ const Module = () => {
                     transition={{ duration: 1, ease: "easeOut" }}
                   />
                 </div>
+                {/* Module Duration */}
+                {apiLessons.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-gray-400 pt-2 border-t border-gray-800">
+                    <Clock className="w-4 h-4 text-[#00ff00]" />
+                    <span>
+                      Общая длительность: {' '}
+                      <span className="text-white font-semibold">
+                        {apiLessons.reduce((total, lesson) => total + (lesson.duration_minutes || 0), 0)} минут
+                      </span>
+                      {' '}({apiLessons.length} {apiLessons.length === 1 ? 'урок' : apiLessons.length < 5 ? 'урока' : 'уроков'})
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

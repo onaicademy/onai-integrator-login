@@ -194,31 +194,6 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/lessons/reorder - изменить порядок уроков
-router.put('/reorder', async (req: Request, res: Response) => {
-  try {
-    const { lessons } = req.body; // [{ id: 1, order_index: 0 }, { id: 2, order_index: 1 }, ...]
-
-    if (!Array.isArray(lessons)) {
-      return res.status(400).json({ error: 'lessons должен быть массивом' });
-    }
-
-    const updates = lessons.map((lesson) =>
-      supabase
-        .from('lessons')
-        .update({ order_index: lesson.order_index })
-        .eq('id', parseInt(lesson.id))
-    );
-
-    await Promise.all(updates);
-
-    res.json({ success: true, message: 'Порядок уроков обновлен' });
-  } catch (error) {
-    console.error('Reorder lessons error:', error);
-    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-  }
-});
-
 // DELETE /api/lessons/:id - удалить урок
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
