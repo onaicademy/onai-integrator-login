@@ -21,11 +21,11 @@ export default defineConfig(({ mode }) => {
       strictPort: true, // Не менять порт, если занят
       // Включаем HTTPS если есть сертификаты
       ...(useHttps && {
-      https: {
-        key: fs.readFileSync(path.resolve(__dirname, "ssl/key.pem")),
-        cert: fs.readFileSync(path.resolve(__dirname, "ssl/cert.pem")),
-      },
-    }),
+        https: {
+          key: fs.readFileSync(path.resolve(__dirname, "ssl/key.pem")),
+          cert: fs.readFileSync(path.resolve(__dirname, "ssl/cert.pem")),
+        },
+      }),
   },
   preview: {
     host: "0.0.0.0", // Для production preview тоже
