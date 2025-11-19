@@ -158,11 +158,13 @@ router.post('/upload/:lessonId', upload, async (req, res) => {
 
     // ✅ Получаем длительность из req.body (благодаря правильному порядку FormData)
     const durationSeconds = req.body.duration_seconds ? parseInt(req.body.duration_seconds) : null;
-    const durationMinutes = durationSeconds ? Math.round(durationSeconds / 60) : null;
+    // 🔥 FIX: Округляем ВВЕРХ (Math.ceil) чтобы даже короткие видео учитывались
+    const durationMinutes = durationSeconds ? Math.ceil(durationSeconds / 60) : null;
     
     console.log('⏱️ Duration from request:', {
       duration_seconds: durationSeconds,
-      duration_minutes: durationMinutes
+      duration_minutes: durationMinutes,
+      calculation: durationSeconds ? `Math.ceil(${durationSeconds} / 60) = ${durationMinutes}` : 'N/A'
     });
 
     // Генерация имени файла
@@ -183,8 +185,12 @@ router.post('/upload/:lessonId', upload, async (req, res) => {
     };
     if (durationMinutes && durationMinutes > 0) {
       updateData.duration_minutes = durationMinutes;
-      console.log(`✅ Saving duration_minutes: ${durationMinutes} минут (${durationSeconds} секунд)`);
+      console.log(`✅ Saving duration_minutes to lessons: ${durationMinutes} минут (${durationSeconds} секунд)`);
+    } else {
+      console.warn('⚠️ No duration_minutes to save (video too short or duration not provided)');
     }
+    
+    console.log('📝 Update data:', updateData);
     
     const { data: lesson, error: lessonError } = await adminSupabase
       .from('lessons')
@@ -195,10 +201,13 @@ router.post('/upload/:lessonId', upload, async (req, res) => {
 
     if (lessonError) {
       console.error('❌ Lesson update error:', lessonError);
+      console.error('❌ Error code:', lessonError.code);
+      console.error('❌ Error message:', lessonError.message);
       throw lessonError;
     }
 
     console.log('✅ Lesson updated:', lesson);
+    console.log('✅ Confirmed duration_minutes in DB:', lesson.duration_minutes);
     
     // ✅ ШАГ 2: Сохраняем в video_content (для fallback)
     console.log('💾 Step 2: Saving to video_content table...');
@@ -221,10 +230,20 @@ router.post('/upload/:lessonId', upload, async (req, res) => {
       .single();
 
     if (videoError) {
-      console.error('⚠️ Video_content save warning:', videoError);
-      // Не бросаем ошибку - это не критично
+      console.error('❌ Video_content save ERROR:', videoError);
+      console.error('❌ Error code:', videoError.code);
+      console.error('❌ Error message:', videoError.message);
+      console.error('❌ Error details:', videoError.details);
+      console.error('🚨 CRITICAL: Video uploaded to CDN but NOT saved to video_content table!');
+      console.error('🚨 This will cause duration to not display correctly!');
+      // 🔥 НЕ БРОСАЕМ - но логируем подробно
     } else {
       console.log('✅ Video_content saved:', videoContent);
+      console.log('✅ Saved data:', {
+        lesson_id: videoContent?.lesson_id,
+        duration_seconds: videoContent?.duration_seconds,
+        filename: videoContent?.filename
+      });
     }
 
     console.log('✅ Video uploaded successfully');

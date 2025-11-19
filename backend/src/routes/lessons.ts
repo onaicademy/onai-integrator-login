@@ -67,7 +67,8 @@ router.get('/', async (req: Request, res: Response) => {
           const video = videoContentArray[0];
           
           if (video && video.duration_seconds && video.duration_seconds > 0) {
-            lesson.duration_minutes = Math.round(video.duration_seconds / 60);
+            // 🔥 FIX: Округляем ВВЕРХ (Math.ceil) чтобы даже короткие видео учитывались
+            lesson.duration_minutes = Math.ceil(video.duration_seconds / 60);
             console.log(`   ✅ ВЫЧИСЛЕНО duration_minutes: ${lesson.duration_minutes} минут (из ${video.duration_seconds} секунд)`);
           } else {
             console.log(`   ⚠️ У видео нет duration_seconds!`);

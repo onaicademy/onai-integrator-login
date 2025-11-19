@@ -20,9 +20,10 @@ interface LessonEditDialogProps {
     duration_minutes?: number;
   } | null;
   moduleId: number;
+  onVideoUploaded?: () => void; // Callback после загрузки видео
 }
 
-export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: LessonEditDialogProps) {
+export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVideoUploaded }: LessonEditDialogProps) {
   // Основное
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -393,6 +394,12 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
         setVideoUrl(newVideoUrl);
         console.log('✅ Видео загружено:', newVideoUrl);
         console.log('✅ Длительность сохранена:', res.data?.video?.duration_minutes || res.video?.duration_minutes, 'минут');
+        
+        // 🔥 FIX: Перезагружаем список уроков после загрузки видео
+        if (onVideoUploaded) {
+          console.log('🔄 Перезагружаем список уроков...');
+          onVideoUploaded();
+        }
       } else {
         throw new Error('Backend не вернул URL видео');
       }

@@ -327,7 +327,8 @@ const Module = () => {
             if (lesson.video_content && Array.isArray(lesson.video_content) && lesson.video_content.length > 0) {
               const video = lesson.video_content[0];
               if (video.duration_seconds && video.duration_seconds > 0) {
-                lesson.duration_minutes = Math.round(video.duration_seconds / 60);
+                // 🔥 FIX: Округляем ВВЕРХ (Math.ceil) чтобы даже короткие видео учитывались
+                lesson.duration_minutes = Math.ceil(video.duration_seconds / 60);
                 console.log(`📹 Frontend: Вычислена длительность для урока ${lesson.id}: ${lesson.duration_minutes} минут (из ${video.duration_seconds} секунд)`);
               }
             }
@@ -573,50 +574,62 @@ const Module = () => {
   const completedLessons = apiLessons.filter(l => lessonProgress[l.id] === true).length;
   const totalLessons = apiLessons.length;
   
-  // ✅ Вычисляем общую длительность модуля в минутах
+  // ✅ Вычисляем общую длительность модуля в СЕКУНДАХ (не минутах!)
   console.log('\n⏱️ ===== РАСЧЕТ ВРЕМЕНИ МОДУЛЯ =====');
   console.log('📦 Уроков получено:', apiLessons.length);
   
-  const totalDurationMinutes = apiLessons.reduce((total, lesson, index) => {
-    let lessonDuration = lesson.duration_minutes || 0;
+  const totalDurationSeconds = apiLessons.reduce((total, lesson, index) => {
+    let lessonSeconds = 0;
     
-    // ✅ Fallback: если duration_minutes не установлен, пытаемся вычислить из video_content
-    if (!lessonDuration || lessonDuration === 0) {
-      if (lesson.video_content && Array.isArray(lesson.video_content) && lesson.video_content.length > 0) {
-        const video = lesson.video_content[0];
-        if (video.duration_seconds && video.duration_seconds > 0) {
-          lessonDuration = Math.round(video.duration_seconds / 60);
-          console.log(`   ${index + 1}. "${lesson.title}": ${lessonDuration} минут (вычислено из ${video.duration_seconds} секунд)`);
-        } else {
-          console.log(`   ${index + 1}. "${lesson.title}": 0 минут (видео без duration_seconds)`);
-        }
-      } else {
-        console.log(`   ${index + 1}. "${lesson.title}": 0 минут (нет видео)`);
+    // Приоритет: video_content.duration_seconds (точные данные)
+    if (lesson.video_content && Array.isArray(lesson.video_content) && lesson.video_content.length > 0) {
+      const video = lesson.video_content[0];
+      if (video.duration_seconds && video.duration_seconds > 0) {
+        lessonSeconds = video.duration_seconds;
+        console.log(`   ${index + 1}. "${lesson.title}": ${lessonSeconds} секунд`);
       }
+    } 
+    // Fallback: lessons.duration_minutes (если видео нет, но минуты указаны)
+    else if (lesson.duration_minutes && lesson.duration_minutes > 0) {
+      lessonSeconds = lesson.duration_minutes * 60;
+      console.log(`   ${index + 1}. "${lesson.title}": ${lesson.duration_minutes} минут (${lessonSeconds} секунд)`);
     } else {
-      console.log(`   ${index + 1}. "${lesson.title}": ${lessonDuration} минут`);
+      console.log(`   ${index + 1}. "${lesson.title}": 0 секунд (нет видео)`);
     }
     
-    return total + lessonDuration;
+    return total + lessonSeconds;
   }, 0);
   
-  console.log('⏱️ ИТОГО:', totalDurationMinutes, 'минут');
-  console.log('⏱️ ===== КОНЕЦ РАСЧЕТА =====\n');
+  console.log('⏱️ ИТОГО СЕКУНД:', totalDurationSeconds);
   
-  // ✅ Преобразуем минуты в часы и минуты для отображения
-  const totalHours = Math.floor(totalDurationMinutes / 60);
-  const totalMins = totalDurationMinutes % 60;
+  // ✅ Форматируем в читаемый вид:
+  // < 60 сек → "20 секунд"
+  // 60-3599 сек → "5 минут" или "59 минут"
+  // ≥ 3600 сек (60 минут) → "1 час 30 минут"
   
   let durationDisplay = '';
-  if (totalHours > 0 && totalMins > 0) {
-    durationDisplay = `${totalHours} ${totalHours === 1 ? 'час' : totalHours < 5 ? 'часа' : 'часов'} ${totalMins} ${totalMins === 1 ? 'минута' : totalMins < 5 ? 'минуты' : 'минут'}`;
-  } else if (totalHours > 0) {
-    durationDisplay = `${totalHours} ${totalHours === 1 ? 'час' : totalHours < 5 ? 'часа' : 'часов'}`;
-  } else if (totalMins > 0) {
+  
+  if (totalDurationSeconds < 60) {
+    // Меньше минуты - показываем секунды
+    durationDisplay = `${totalDurationSeconds} ${totalDurationSeconds === 1 ? 'секунда' : totalDurationSeconds < 5 ? 'секунды' : 'секунд'}`;
+  } else if (totalDurationSeconds < 3600) {
+    // От 1 минуты до 1 часа - показываем только минуты
+    const totalMins = Math.floor(totalDurationSeconds / 60);
     durationDisplay = `${totalMins} ${totalMins === 1 ? 'минута' : totalMins < 5 ? 'минуты' : 'минут'}`;
   } else {
-    durationDisplay = '0 минут';
+    // Больше часа - показываем часы и минуты
+    const totalHours = Math.floor(totalDurationSeconds / 3600);
+    const totalMins = Math.floor((totalDurationSeconds % 3600) / 60);
+    
+    if (totalMins > 0) {
+      durationDisplay = `${totalHours} ${totalHours === 1 ? 'час' : totalHours < 5 ? 'часа' : 'часов'} ${totalMins} ${totalMins === 1 ? 'минута' : totalMins < 5 ? 'минуты' : 'минут'}`;
+    } else {
+      durationDisplay = `${totalHours} ${totalHours === 1 ? 'час' : totalHours < 5 ? 'часа' : 'часов'}`;
+    }
   }
+  
+  console.log('⏱️ ОТОБРАЖЕНИЕ:', durationDisplay);
+  console.log('⏱️ ===== КОНЕЦ РАСЧЕТА =====\n');
   
   // ✅ Вычисляем процент прогресса
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
@@ -1161,6 +1174,10 @@ const Module = () => {
           onSave={handleSaveLesson}
           lesson={lessonDialog.lesson}
           moduleId={Number(moduleId) || 1}
+          onVideoUploaded={async () => {
+            console.log('🔄 Видео загружено, перезагружаем уроки...');
+            await loadLessonsFromAPI();
+          }}
         />
       )}
     </div>
