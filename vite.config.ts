@@ -16,11 +16,11 @@ export default defineConfig(({ mode }) => {
   return {
     base: '/', // Важно: указываем корневой путь для правильной работы роутинга
     server: {
-    host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
-    port: 8080,
-    strictPort: true, // Не менять порт, если занят
-    // Включаем HTTPS если есть сертификаты
-    ...(useHttps && {
+      host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
+      port: 8080,
+      strictPort: true, // Не менять порт, если занят
+      // Включаем HTTPS если есть сертификаты
+      ...(useHttps && {
       https: {
         key: fs.readFileSync(path.resolve(__dirname, "ssl/key.pem")),
         cert: fs.readFileSync(path.resolve(__dirname, "ssl/cert.pem")),
