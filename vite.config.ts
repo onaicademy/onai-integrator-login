@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -9,7 +9,11 @@ const useHttps = fs.existsSync(path.resolve(__dirname, "ssl/cert.pem")) &&
                  fs.existsSync(path.resolve(__dirname, "ssl/key.pem"));
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  // Загружаем env переменные
+  const env = loadEnv(mode, process.cwd(), '');
+  
+  return {
   base: '/', // Важно: указываем корневой путь для правильной работы роутинга
   server: {
     host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
@@ -60,5 +64,9 @@ export default defineConfig(({ mode }) => ({
       // 🔥 БЕЗОПАСНОСТЬ: Удаляем console.log и debugger в production
       drop: mode === 'production' ? ['console', 'debugger'] : [],
     },
-  },
-}));
+    // ✅ Поддержка process.env для совместимости (если где-то используется)
+    define: {
+      'process.env': env,
+    },
+  };
+});

@@ -232,16 +232,33 @@ const modules = [
 ];
 
 const Course = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, userRole } = useAuth();
   const isAdmin = userRole === 'admin';
 
+  // ✅ ЗАЩИТА: Проверка на undefined id
+  if (!id) {
+    console.error('❌ Course.tsx: id is undefined');
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Ошибка</h1>
+          <p className="text-gray-400 mb-6">ID курса не указан</p>
+          <Button onClick={() => navigate('/courses')} className="bg-[#00ff00] text-black">
+            Вернуться к курсам
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // 🔍 ДИАГНОСТИКА
   useEffect(() => {
+    console.log('🔥 Course.tsx - id:', id);
     console.log('🔥 Course.tsx - userRole:', userRole);
     console.log('🔥 Course.tsx - isAdmin:', isAdmin);
-  }, [userRole, isAdmin]);
+  }, [id, userRole, isAdmin]);
 
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [moduleDialog, setModuleDialog] = useState<{ open: boolean; module: any | null }>({ 
@@ -249,31 +266,46 @@ const Course = () => {
     module: null 
   });
   const [apiModules, setApiModules] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Загрузить модули из API
   useEffect(() => {
-    if (id && isAdmin) {
+    if (id) {
       loadModulesFromAPI();
     }
-  }, [id, isAdmin]);
+  }, [id]);
 
   const loadModulesFromAPI = async () => {
+    if (!id) {
+      setError('ID курса не указан');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+      setError(null);
       const response = await api.get(`/api/courses/${id}`);
       if (response?.course?.modules) {
         setApiModules(response.course.modules);
         console.log('✅ Загружено модулей:', response.course.modules.length);
+      } else {
+        setError('Курс не найден или не содержит модулей');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Ошибка загрузки модулей:', error);
+      setError(error?.message || 'Не удалось загрузить модули курса');
     } finally {
       setLoading(false);
     }
   };
 
   const handleModuleClick = (moduleId: number) => {
+    if (!id) {
+      console.error('❌ Cannot navigate: id is undefined');
+      return;
+    }
     navigate(`/course/${id}/module/${moduleId}`);
   };
 
@@ -290,13 +322,23 @@ const Course = () => {
   };
 
   const handleSaveModule = async (data: { title: string; description?: string }) => {
+    if (!id) {
+      toast.error('ID курса не указан');
+      return;
+    }
+
     try {
       console.log('💾 Сохранение модуля:', data);
       
       // Создать модуль через API
+      const courseId = parseInt(id);
+      if (isNaN(courseId)) {
+        throw new Error('Некорректный ID курса');
+      }
+
       const response = await api.post('/api/modules', {
         ...data,
-        course_id: parseInt(id!)
+        course_id: courseId
       });
 
       console.log('✅ Модуль создан:', response);
@@ -389,6 +431,37 @@ const Course = () => {
       });
     }
   };
+
+  // ✅ Обработка состояний загрузки и ошибок
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#00ff00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-xl text-white">Загрузка курса...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-white mb-4">Ошибка загрузки</h1>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <div className="flex gap-4 justify-center">
+            <Button onClick={() => loadModulesFromAPI()} className="bg-[#00ff00] text-black">
+              Попробовать снова
+            </Button>
+            <Button onClick={() => navigate('/courses')} variant="outline" className="border-gray-600 text-white">
+              Вернуться к курсам
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -929,7 +1002,7 @@ const Course = () => {
           onClose={() => setModuleDialog({ open: false, module: null })}
           onSave={handleSaveModule}
           module={moduleDialog.module}
-          courseId={Number(id) || 1}
+          courseId={id ? Number(id) : 0}
         />
       )}
     </div>
