@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { supabase } from '../config/supabase';
+import { adminSupabase } from '../config/supabase';  // ✅ Use admin client with Authorization header
 
 const router = Router();
 
@@ -46,7 +46,7 @@ router.post('/video-event', async (req: Request, res: Response) => {
     if (playback_rate !== undefined && playback_rate !== null) insertData.playback_rate = playback_rate;
     if (progress_percent !== undefined && progress_percent !== null) insertData.progress_percent = progress_percent;
 
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('video_analytics')
       .insert(insertData)
       .select()
@@ -86,7 +86,7 @@ router.get('/video/:lessonId', async (req: Request, res: Response) => {
   try {
     const { lessonId } = req.params;
 
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('video_analytics')
       .select('*')
       .eq('lesson_id', lessonId)

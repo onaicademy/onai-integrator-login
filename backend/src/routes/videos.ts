@@ -1,20 +1,19 @@
 import { Router } from 'express';
 import multer from 'multer';
 import axios from 'axios';
-import { createClient } from '@supabase/supabase-js';
 import mime from 'mime-types';
+import { adminSupabase } from '../config/supabase';  // ✅ Use admin client with Authorization header
 
 const router = Router();
+
+// 🔥 КРИТИЧНО: Используем multer.fields() для явного парсинга файла И полей
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 3 * 1024 * 1024 * 1024 } // 3GB
-});
-
-// Supabase клиент
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+}).fields([
+  { name: 'video', maxCount: 1 },
+  { name: 'duration_seconds', maxCount: 1 }  // Явно указываем поле
+]);
 
 // Bunny CDN Configuration
 const BUNNY_STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE || 'onai-course-videos';
@@ -98,7 +97,7 @@ router.get('/lesson/:lessonId', async (req, res) => {
   try {
     const { lessonId } = req.params;
 
-    const { data: lesson, error } = await supabase
+    const { data: lesson, error } = await adminSupabase
       .from('lessons')
       .select('id, title, video_url')
       .eq('id', parseInt(lessonId))
@@ -122,56 +121,114 @@ router.get('/lesson/:lessonId', async (req, res) => {
 });
 
 // POST /api/videos/upload/:lessonId - Загрузить видео на Bunny CDN
-router.post('/upload/:lessonId', upload.single('video'), async (req, res) => {
+router.post('/upload/:lessonId', upload, async (req, res) => {
   console.log('===========================================');
   console.log('📥 VIDEO UPLOAD - REQUEST RECEIVED');
   console.log('===========================================');
   console.log('1️⃣ Lesson ID:', req.params.lessonId);
-  console.log('2️⃣ File exists:', !!req.file);
+  console.log('2️⃣ req.files:', req.files);
+  console.log('3️⃣ req.body:', req.body);
   
   try {
-    const file = req.file;
     const { lessonId } = req.params;
+    
+    // 🔥 КРИТИЧНО: С multer.fields() используем req.files, не req.file
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const videoFile = files['video']?.[0];
 
-    if (!file) {
+    if (!videoFile) {
       console.error('❌ Файл не предоставлен');
-      return res.status(400).json({ error: 'Файл не предоставлен' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'Файл не предоставлен' 
+      });
     }
 
-    console.log('✅ File received:', file.originalname);
-    console.log('📦 Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
-    console.log('📝 MIME:', file.mimetype);
+    console.log('✅ File received:', videoFile.originalname);
+    console.log('📦 Size:', (videoFile.size / 1024 / 1024).toFixed(2), 'MB');
+    console.log('📝 MIME:', videoFile.mimetype);
 
     // Проверка размера (макс 3GB)
-    if (file.size > 3 * 1024 * 1024 * 1024) {
-      return res.status(400).json({ error: 'Файл слишком большой (макс 3GB)' });
+    if (videoFile.size > 3 * 1024 * 1024 * 1024) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Файл слишком большой (макс 3GB)' 
+      });
     }
 
+    // ✅ Получаем длительность из req.body (благодаря правильному порядку FormData)
+    const durationSeconds = req.body.duration_seconds ? parseInt(req.body.duration_seconds) : null;
+    const durationMinutes = durationSeconds ? Math.round(durationSeconds / 60) : null;
+    
+    console.log('⏱️ Duration from request:', {
+      duration_seconds: durationSeconds,
+      duration_minutes: durationMinutes
+    });
+
     // Генерация имени файла
-    const ext = mime.extension(file.mimetype) || 'mp4';
+    const ext = mime.extension(videoFile.mimetype) || 'mp4';
     const filename = `lesson-${lessonId}-${Date.now()}.${ext}`;
     
     console.log('📹 Generated filename:', filename);
 
     // Загрузка на Bunny CDN
     console.log('☁️ Uploading to Bunny CDN...');
-    const cdnUrl = await uploadToBunny(file.buffer, filename, file.mimetype);
+    const cdnUrl = await uploadToBunny(videoFile.buffer, filename, videoFile.mimetype);
 
-    // Сохранить video_url в таблицу lessons
-    console.log('💾 Saving to database...');
-    const { data: lesson, error } = await supabase
+    // ✅ ШАГ 1: Обновляем lessons.duration_minutes
+    console.log('💾 Step 1: Updating lessons table...');
+    const updateData: any = { 
+      video_url: cdnUrl,
+      updated_at: new Date().toISOString()
+    };
+    if (durationMinutes && durationMinutes > 0) {
+      updateData.duration_minutes = durationMinutes;
+      console.log(`✅ Saving duration_minutes: ${durationMinutes} минут (${durationSeconds} секунд)`);
+    }
+    
+    const { data: lesson, error: lessonError } = await adminSupabase
       .from('lessons')
-      .update({ video_url: cdnUrl })
+      .update(updateData)
       .eq('id', parseInt(lessonId))
       .select()
       .single();
 
-    if (error) {
-      console.error('❌ Database error:', error);
-      throw error;
+    if (lessonError) {
+      console.error('❌ Lesson update error:', lessonError);
+      throw lessonError;
+    }
+
+    console.log('✅ Lesson updated:', lesson);
+    
+    // ✅ ШАГ 2: Сохраняем в video_content (для fallback)
+    console.log('💾 Step 2: Saving to video_content table...');
+    const { data: videoContent, error: videoError } = await adminSupabase
+      .from('video_content')
+      .upsert({
+        lesson_id: parseInt(lessonId),
+        public_url: cdnUrl,  // ✅ FIXED: Правильное название колонки!
+        r2_object_key: filename,  // ✅ Обязательное поле (используем filename)
+        r2_bucket_name: BUNNY_STORAGE_ZONE,  // ✅ Обязательное поле
+        filename: videoFile.originalname,
+        file_size_bytes: videoFile.size,
+        duration_seconds: durationSeconds,
+        upload_status: 'completed',  // Статус загрузки
+        created_at: new Date().toISOString()
+      }, {
+        onConflict: 'lesson_id'
+      })
+      .select()
+      .single();
+
+    if (videoError) {
+      console.error('⚠️ Video_content save warning:', videoError);
+      // Не бросаем ошибку - это не критично
+    } else {
+      console.log('✅ Video_content saved:', videoContent);
     }
 
     console.log('✅ Video uploaded successfully');
+    console.log('✅ Lesson duration_minutes:', lesson.duration_minutes);
     
     const response = {
       success: true,
@@ -179,8 +236,9 @@ router.post('/upload/:lessonId', upload.single('video'), async (req, res) => {
         id: lesson.id,
         lesson_id: lesson.id,
         video_url: lesson.video_url,
-        duration_seconds: lesson.duration_minutes ? lesson.duration_minutes * 60 : 0,
-        file_size_bytes: file.size
+        duration_seconds: lesson.duration_minutes ? lesson.duration_minutes * 60 : (durationSeconds || 0),
+        duration_minutes: lesson.duration_minutes || durationMinutes || 0,
+        file_size_bytes: videoFile.size
       }
     };
     
@@ -211,7 +269,7 @@ router.delete('/lesson/:lessonId', async (req, res) => {
     console.log('===========================================');
 
     // Получить текущий video_url из БД
-    const { data: lesson, error: fetchError } = await supabase
+    const { data: lesson, error: fetchError } = await adminSupabase
       .from('lessons')
       .select('id, video_url')
       .eq('id', parseInt(lessonId))
@@ -240,7 +298,7 @@ router.delete('/lesson/:lessonId', async (req, res) => {
     }
 
     // Очистить video_url в таблице lessons
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminSupabase
       .from('lessons')
       .update({ video_url: null })
       .eq('id', parseInt(lessonId));

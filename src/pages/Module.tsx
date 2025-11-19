@@ -211,6 +211,7 @@ const Module = () => {
   });
   const [apiLessons, setApiLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [lessonProgress, setLessonProgress] = useState<Record<number, boolean>>({});
   
   // 🎯 Drag & Drop sensors
   const sensors = useSensors(
@@ -228,9 +229,27 @@ const Module = () => {
   const [module, setModule] = useState<any>(null);
   const [moduleError, setModuleError] = useState<string | null>(null);
 
+  // ✅ Загрузка прогресса пользователя по урокам (определяем ДО использования)
+  const loadLessonProgress = async () => {
+    if (!moduleId) return;
+    
+    try {
+      const response = await api.get(`/api/lessons/progress/${moduleId}`);
+      if (response?.progress) {
+        setLessonProgress(response.progress);
+        console.log('✅ Прогресс загружен:', response.progress);
+      }
+    } catch (error: any) {
+      console.error('❌ Ошибка загрузки прогресса:', error);
+      // Не критично, продолжаем работу
+    }
+  };
+
   // 🔍 Отслеживаем изменения lessonDialog
   useEffect(() => {
     console.log('🔄 lessonDialog изменился:', lessonDialog);
+    console.log('🔄 lessonDialog.open:', lessonDialog.open);
+    console.log('🔄 lessonDialog.lesson:', lessonDialog.lesson);
   }, [lessonDialog]);
 
   // ✅ Загрузить модуль из API
@@ -256,15 +275,28 @@ const Module = () => {
     try {
       setLoading(true);
       setModuleError(null);
+      
+      console.log('🔍 ===== ЗАГРУЗКА МОДУЛЯ =====');
+      console.log('📌 Module ID:', moduleId);
+      console.log('📌 Module ID type:', typeof moduleId);
+      
       const response = await api.get(`/api/modules/${moduleId}`);
+      console.log('📦 Полный ответ API:', response);
+      console.log('📦 response.module:', response?.module);
+      
       if (response?.module) {
         setModule(response.module);
         console.log('✅ Модуль загружен:', response.module);
+        console.log('✅ Модуль установлен в state:', response.module.id, response.module.title);
       } else {
+        console.warn('⚠️ Модуль не найден в ответе API');
         setModuleError('Модуль не найден');
       }
+      
+      console.log('🔍 ===== ЗАГРУЗКА МОДУЛЯ ЗАВЕРШЕНА =====');
     } catch (error: any) {
       console.error('❌ Ошибка загрузки модуля:', error);
+      console.error('❌ Детали ошибки:', error?.response || error?.message);
       setModuleError(error?.message || 'Не удалось загрузить модуль');
     } finally {
       setLoading(false);
@@ -278,23 +310,56 @@ const Module = () => {
 
     try {
       setLoading(true);
+      console.log('🔍 ===== ЗАГРУЗКА УРОКОВ =====');
+      console.log('📌 Module ID:', moduleId);
+      
       const response = await api.get(`/api/lessons?module_id=${moduleId}`);
+      console.log('📦 Полный ответ API:', response);
+      console.log('📦 response.lessons:', response?.lessons);
+      
       if (response?.lessons) {
-        // ✅ Сортируем уроки по order_index
-        const sortedLessons = [...response.lessons].sort((a, b) => {
+        const lessons = response.lessons;
+        console.log('📊 Уроки ДО сортировки:', lessons.map((l: any) => ({ id: l.id, order_index: l.order_index, title: l.title })));
+        
+        // ✅ Вычисляем duration_minutes из video_content для каждого урока (если не установлено)
+        const lessonsWithDuration = lessons.map((lesson: any) => {
+          if (!lesson.duration_minutes || lesson.duration_minutes === 0) {
+            if (lesson.video_content && Array.isArray(lesson.video_content) && lesson.video_content.length > 0) {
+              const video = lesson.video_content[0];
+              if (video.duration_seconds && video.duration_seconds > 0) {
+                lesson.duration_minutes = Math.round(video.duration_seconds / 60);
+                console.log(`📹 Frontend: Вычислена длительность для урока ${lesson.id}: ${lesson.duration_minutes} минут (из ${video.duration_seconds} секунд)`);
+              }
+            }
+          }
+          return lesson;
+        });
+        
+        // ✅ Дополнительная сортировка на фронте (API уже сортирует, но на всякий случай)
+        const sortedLessons = [...lessonsWithDuration].sort((a, b) => {
           const orderA = a.order_index ?? a.id ?? 0;
           const orderB = b.order_index ?? b.id ?? 0;
           return orderA - orderB;
         });
+        
+        console.log('📊 Уроки ПОСЛЕ сортировки:', sortedLessons.map(l => ({ id: l.id, order_index: l.order_index, title: l.title, duration_minutes: l.duration_minutes })));
+        
         setApiLessons(sortedLessons);
         console.log('✅ Загружено уроков:', sortedLessons.length);
-        console.log('📊 Порядок уроков:', sortedLessons.map(l => ({ id: l.id, order_index: l.order_index, title: l.title })));
+        console.log('✅ apiLessons установлен:', sortedLessons.length, 'уроков');
+        
+        // Загружаем прогресс пользователя
+        loadLessonProgress();
       } else {
+        console.warn('⚠️ Уроки не найдены в ответе API');
         setApiLessons([]);
         console.log('ℹ️ Уроки не найдены для модуля:', moduleId);
       }
+      
+      console.log('🔍 ===== ЗАГРУЗКА УРОКОВ ЗАВЕРШЕНА =====');
     } catch (error: any) {
       console.error('❌ Ошибка загрузки уроков:', error);
+      console.error('❌ Детали ошибки:', error?.response || error?.message);
       setApiLessons([]);
     } finally {
       setLoading(false);
@@ -331,12 +396,22 @@ const Module = () => {
     console.log('=======================================');
     console.log('🔥 handleAddLesson вызвана');
     console.log('🔥 moduleId:', moduleId);
+    console.log('🔥 moduleId type:', typeof moduleId);
+    console.log('🔥 isAdmin:', isAdmin);
     console.log('🔥 lessonDialog before:', lessonDialog);
     console.log('=======================================');
     
-    setLessonDialog({ open: true, lesson: null });
-    
-    console.log('✅ setLessonDialog вызван с open: true');
+    try {
+      setLessonDialog({ open: true, lesson: null });
+      console.log('✅ setLessonDialog вызван с open: true');
+      
+      // Проверяем через небольшую задержку
+      setTimeout(() => {
+        console.log('🔍 lessonDialog после обновления:', lessonDialog);
+      }, 100);
+    } catch (error) {
+      console.error('❌ Ошибка в handleAddLesson:', error);
+    }
   };
 
   const handleEditLesson = (lesson: any) => {
@@ -448,14 +523,20 @@ const Module = () => {
 
     // Обновление в БД
     try {
-      const response = await api.put('/api/lessons/reorder', {
+      const payload = {
         lessons: reorderedLessons.map((l, idx) => ({
           id: l.id,
           order_index: idx,
         })),
-      });
+      };
+      
+      console.log('📤 Отправка данных для reorder уроков:', JSON.stringify(payload, null, 2));
+      
+      const response = await api.put('/api/lessons/reorder', payload);
+      console.log('📥 Ответ от backend:', response);
 
-      if (response.data?.success) {
+      // ✅ Backend возвращает { success: true, message: '...' } напрямую
+      if (response.success) {
         console.log('✅ Порядок уроков обновлён в БД');
         toast.success('Порядок уроков обновлён');
       } else {
@@ -488,9 +569,57 @@ const Module = () => {
     }
   };
 
-  // ✅ Используем apiLessons вместо module.lessons
-  const completedLessons = apiLessons.filter(l => l.status === "completed").length;
+  // ✅ Используем реальный прогресс из БД
+  const completedLessons = apiLessons.filter(l => lessonProgress[l.id] === true).length;
   const totalLessons = apiLessons.length;
+  
+  // ✅ Вычисляем общую длительность модуля в минутах
+  console.log('\n⏱️ ===== РАСЧЕТ ВРЕМЕНИ МОДУЛЯ =====');
+  console.log('📦 Уроков получено:', apiLessons.length);
+  
+  const totalDurationMinutes = apiLessons.reduce((total, lesson, index) => {
+    let lessonDuration = lesson.duration_minutes || 0;
+    
+    // ✅ Fallback: если duration_minutes не установлен, пытаемся вычислить из video_content
+    if (!lessonDuration || lessonDuration === 0) {
+      if (lesson.video_content && Array.isArray(lesson.video_content) && lesson.video_content.length > 0) {
+        const video = lesson.video_content[0];
+        if (video.duration_seconds && video.duration_seconds > 0) {
+          lessonDuration = Math.round(video.duration_seconds / 60);
+          console.log(`   ${index + 1}. "${lesson.title}": ${lessonDuration} минут (вычислено из ${video.duration_seconds} секунд)`);
+        } else {
+          console.log(`   ${index + 1}. "${lesson.title}": 0 минут (видео без duration_seconds)`);
+        }
+      } else {
+        console.log(`   ${index + 1}. "${lesson.title}": 0 минут (нет видео)`);
+      }
+    } else {
+      console.log(`   ${index + 1}. "${lesson.title}": ${lessonDuration} минут`);
+    }
+    
+    return total + lessonDuration;
+  }, 0);
+  
+  console.log('⏱️ ИТОГО:', totalDurationMinutes, 'минут');
+  console.log('⏱️ ===== КОНЕЦ РАСЧЕТА =====\n');
+  
+  // ✅ Преобразуем минуты в часы и минуты для отображения
+  const totalHours = Math.floor(totalDurationMinutes / 60);
+  const totalMins = totalDurationMinutes % 60;
+  
+  let durationDisplay = '';
+  if (totalHours > 0 && totalMins > 0) {
+    durationDisplay = `${totalHours} ${totalHours === 1 ? 'час' : totalHours < 5 ? 'часа' : 'часов'} ${totalMins} ${totalMins === 1 ? 'минута' : totalMins < 5 ? 'минуты' : 'минут'}`;
+  } else if (totalHours > 0) {
+    durationDisplay = `${totalHours} ${totalHours === 1 ? 'час' : totalHours < 5 ? 'часа' : 'часов'}`;
+  } else if (totalMins > 0) {
+    durationDisplay = `${totalMins} ${totalMins === 1 ? 'минута' : totalMins < 5 ? 'минуты' : 'минут'}`;
+  } else {
+    durationDisplay = '0 минут';
+  }
+  
+  // ✅ Вычисляем процент прогресса
+  const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -745,13 +874,13 @@ const Module = () => {
                   <span className="text-gray-400">
                     Прогресс: {completedLessons} из {totalLessons} уроков
                   </span>
-                  <span className="text-[#00ff00] font-bold">{module.progress}%</span>
+                  <span className="text-[#00ff00] font-bold">{progressPercent}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
                     initial={{ width: 0 }}
-                    animate={{ width: `${module.progress}%` }}
+                    animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
                   />
                 </div>
@@ -760,9 +889,9 @@ const Module = () => {
                   <div className="flex items-center gap-2 text-sm text-gray-400 pt-2 border-t border-gray-800">
                     <Clock className="w-4 h-4 text-[#00ff00]" />
                     <span>
-                      Общая длительность: {' '}
+                      Время прохождения модуля: {' '}
                       <span className="text-white font-semibold">
-                        {apiLessons.reduce((total, lesson) => total + (lesson.duration_minutes || 0), 0)} минут
+                        {durationDisplay}
                       </span>
                       {' '}({apiLessons.length} {apiLessons.length === 1 ? 'урок' : apiLessons.length < 5 ? 'урока' : 'уроков'})
                     </span>
@@ -774,34 +903,36 @@ const Module = () => {
         </motion.header>
 
         {/* Lessons Section */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
+        <section className="relative z-10">
+          <div className="flex items-center justify-between mb-6 relative z-20">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
               Уроки модуля
             </h2>
             
             {/* Admin: Add Lesson Button */}
             {isAdmin && (
-              <div className="relative z-[100]">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🔥 КНОПКА "ДОБАВИТЬ УРОК" НАЖАТА!');
-                    handleAddLesson();
-                  }}
-                  onMouseDown={(e) => {
-                    console.log('🖱️ MOUSEDOWN на кнопке "Добавить урок"!');
-                  }}
-                  type="button"
-                  className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
-                  style={{ zIndex: 101, pointerEvents: 'auto' }}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Добавить урок</span>
-                  <span className="sm:hidden">Урок</span>
-                </Button>
-              </div>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🔥 КНОПКА "ДОБАВИТЬ УРОК" НАЖАТА!');
+                  console.log('🔥 moduleId:', moduleId);
+                  console.log('🔥 isAdmin:', isAdmin);
+                  handleAddLesson();
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🖱️ MOUSEDOWN на кнопке "Добавить урок"!');
+                }}
+                type="button"
+                className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer relative z-50"
+                style={{ position: 'relative', zIndex: 9999, pointerEvents: 'auto' }}
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Добавить урок</span>
+                <span className="sm:hidden">Урок</span>
+              </Button>
             )}
           </div>
           
@@ -835,8 +966,9 @@ const Module = () => {
             <div className="space-y-3">
               {apiLessons.length > 0 ? (
                 apiLessons.map((lesson, index) => {
-                  // ✅ FIX: Для уроков из API устанавливаем status = "active" (они всегда доступны)
-                  const lessonStatus = lesson.status || 'active';
+                  // ✅ Используем реальный прогресс из БД
+                  const isCompleted = lessonProgress[lesson.id] === true;
+                  const lessonStatus = lesson.is_archived ? "locked" : (isCompleted ? "completed" : "active");
               
               return (
                 <motion.article

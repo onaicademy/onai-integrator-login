@@ -68,6 +68,8 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
       if (typeof lesson.id === 'number' && lesson.id > 0) {
         loadLessonData(lesson.id);
       }
+      // ✅ Очищаем материалы при открытии диалога редактирования - они загрузятся через MaterialsManager
+      setMaterials([]);
     } else {
       setTitle('');
       setDescription('');
@@ -76,6 +78,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
       setVideoFile(null);
       setVideoUrl('');
       setSavedLessonId(null);
+      setMaterials([]); // ✅ Очищаем материалы при создании нового урока
     }
   }, [lesson, open]);
 
@@ -115,18 +118,79 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
       // ========================================
       if (lesson && lesson.id) {
         setUploadStatus('💾 Сохраняем изменения...');
+        setUploadProgress(10);
         console.log('💾 Обновляем урок:', lesson.id, { title, description });
         
+        // ШАГ 1: Обновить основные данные урока (10% → 30%)
         await api.put(`/api/lessons/${lesson.id}`, {
           title: title,
           description: description || '',
           tip: tip || '', // ✅ Совет по уроку
         });
         
-        setUploadProgress(100);
-        setUploadStatus('✅ Изменения сохранены!');
+        setUploadProgress(30);
+        console.log('✅ Основные данные урока обновлены');
         
-        console.log('✅ Урок обновлен');
+        // ШАГ 2: Загрузить новое видео, если выбрано (30% → 60%)
+        if (videoFile) {
+          setUploadStatus('📹 Загружаем новое видео...');
+          console.log('📹 Загружаем новое видео для урока:', lesson.id);
+          
+          // ✅ Вычисляем длительность видео
+          const durationSeconds = await getVideoDuration(videoFile);
+          console.log(`⏱️ Длительность видео: ${durationSeconds} секунд (${Math.round(durationSeconds / 60)} минут)`);
+          
+          const formData = new FormData();
+          // 🔥 КРИТИЧНО: Поля ПЕРЕД файлом! (Multer Field Order Issue)
+          formData.append('duration_seconds', durationSeconds.toString());
+          formData.append('video', videoFile);
+          
+          await api.post(`/api/videos/upload/${lesson.id}`, formData);
+          
+          setUploadProgress(60);
+          console.log('✅ Видео обновлено с длительностью');
+        } else {
+          setUploadProgress(60);
+        }
+        
+        // ШАГ 3: Обновить материалы (60% → 90%)
+        const materialsToUpload = materials.filter(m => !m.id && m.file);
+        const materialsToDelete = materials.filter(m => m.id && m._delete);
+        
+        if (materialsToDelete.length > 0) {
+          setUploadStatus(`🗑️ Удаляем ${materialsToDelete.length} материалов...`);
+          for (const material of materialsToDelete) {
+            await api.delete(`/api/materials/${material.id}`);
+          }
+        }
+        
+        if (materialsToUpload.length > 0) {
+          setUploadStatus(`📚 Загружаем ${materialsToUpload.length} материалов...`);
+          const totalMaterials = materialsToUpload.length;
+          
+          for (let i = 0; i < totalMaterials; i++) {
+            const material = materialsToUpload[i];
+            const percent = 60 + Math.floor(((i + 1) / totalMaterials) * 30);
+            setUploadProgress(percent);
+            setUploadStatus(`📚 Загружаем материал ${i + 1}/${totalMaterials}: ${material.display_name}`);
+            
+            const formData = new FormData();
+            formData.append('file', material.file);
+            formData.append('lessonId', lesson.id.toString());
+            formData.append('display_name', material.display_name);
+            
+            await api.post('/api/materials/upload', formData);
+            console.log(`✅ Материал загружен: ${material.display_name}`);
+          }
+        }
+        
+        setUploadProgress(90);
+        
+        // ШАГ 4: Финализация (90% → 100%)
+        setUploadStatus('✅ Изменения сохранены!');
+        setUploadProgress(100);
+        
+        console.log('✅ Урок полностью обновлен');
         
         // Вызываем onSave для обновления родительской страницы
         if (onSave) {
@@ -175,16 +239,22 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
       // ШАГ 2: Загрузить видео (10% → 50%)
       // ========================================
       if (videoFile) {
-        setUploadStatus('📹 Загружаем видео на Cloudflare R2...');
+        setUploadStatus('📹 Загружаем видео на сервер...');
         console.log('📹 Загружаем видео:', videoFile.name);
         
+        // ✅ Вычисляем длительность видео
+        const durationSeconds = await getVideoDuration(videoFile);
+        console.log(`⏱️ Длительность видео: ${durationSeconds} секунд (${Math.round(durationSeconds / 60)} минут)`);
+        
         const formData = new FormData();
+        // 🔥 КРИТИЧНО: Поля ПЕРЕД файлом! (Multer Field Order Issue)
+        formData.append('duration_seconds', durationSeconds.toString());
         formData.append('video', videoFile);
 
         await api.post(`/api/videos/upload/${newLessonId}`, formData);
         
         setUploadProgress(50);
-        console.log('✅ Видео загружено');
+        console.log('✅ Видео загружено с длительностью');
       } else {
         setUploadProgress(50);
       }
@@ -247,6 +317,29 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
     }
   };
 
+  // ✅ Функция для получения длительности видео
+  const getVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        const duration = Math.round(video.duration);
+        console.log(`⏱️ Длительность видео: ${duration} секунд (${Math.round(duration / 60)} минут)`);
+        resolve(duration);
+      };
+      
+      video.onerror = () => {
+        window.URL.revokeObjectURL(video.src);
+        console.warn('⚠️ Не удалось получить длительность видео, используем 0');
+        resolve(0);
+      };
+      
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
   // ✅ НОВАЯ ЛОГИКА: Только ВЫБОР файла (НЕ загрузка!)
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -264,12 +357,20 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
     setUploadProgress(0);
     
     try {
+      // ✅ Вычисляем длительность видео перед загрузкой
+      console.log('⏱️ Вычисляем длительность видео...');
+      const durationSeconds = await getVideoDuration(videoFile);
+      console.log(`✅ Длительность: ${durationSeconds} секунд (${Math.round(durationSeconds / 60)} минут)`);
+      
       const formData = new FormData();
+      // 🔥 КРИТИЧНО: Поля ПЕРЕД файлом! (Multer Field Order Issue)
+      formData.append('duration_seconds', durationSeconds.toString());
       formData.append('video', videoFile);
 
-      console.log('📤 Загружаем видео на Cloudflare R2...');
+      console.log('📤 Загружаем видео на сервер...');
       console.log('  - Файл:', videoFile.name);
       console.log('  - Размер:', (videoFile.size / 1024 / 1024).toFixed(2), 'MB');
+      console.log('  - Длительность:', durationSeconds, 'секунд');
       console.log('  - Lesson ID:', lessonId);
       
       // Симуляция progress (т.к. fetch не поддерживает onUploadProgress)
@@ -291,6 +392,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
       if (newVideoUrl) {
         setVideoUrl(newVideoUrl);
         console.log('✅ Видео загружено:', newVideoUrl);
+        console.log('✅ Длительность сохранена:', res.data?.video?.duration_minutes || res.video?.duration_minutes, 'минут');
       } else {
         throw new Error('Backend не вернул URL видео');
       }
@@ -398,7 +500,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId }: Le
                 {/* Детальный статус */}
                 <div className="text-xs text-gray-400 space-y-1 pt-2">
                   {uploadProgress >= 10 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Урок создан в базе данных</div>}
-                  {uploadProgress >= 50 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Видео загружено на Cloudflare R2</div>}
+                  {uploadProgress >= 50 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Видео загружено на сервер</div>}
                   {uploadProgress >= 90 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Материалы загружены в Supabase Storage</div>}
                   {uploadProgress === 100 && <div className="flex items-center gap-2 text-[#00ff00] font-medium animate-pulse">🎉 Готово! Переходим к уроку...</div>}
                 </div>

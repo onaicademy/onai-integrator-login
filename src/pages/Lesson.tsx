@@ -42,6 +42,10 @@ const Lesson = () => {
   const [loading, setLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   
+  // ✅ Все уроки модуля для навигации
+  const [allLessons, setAllLessons] = useState<any[]>([]);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(-1);
+  
   // Edit dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -61,10 +65,52 @@ const Lesson = () => {
   const [sessionId] = useState(() => Math.random().toString(36).substring(7));
 
   useEffect(() => {
+    if (moduleId) {
+      loadAllLessons(); // ✅ Загружаем все уроки модуля для навигации
+    }
+  }, [moduleId]); // ✅ Загружаем уроки только при смене модуля
+
+  useEffect(() => {
     if (lessonId) {
-      loadLessonData();
+      loadLessonData(); // ✅ Загружаем данные урока при смене lessonId
     }
   }, [lessonId]);
+
+  // ✅ Обновляем индекс текущего урока при изменении lessonId или allLessons
+  useEffect(() => {
+    if (lessonId && allLessons.length > 0) {
+      const currentIndex = allLessons.findIndex(l => l.id === parseInt(lessonId || '0'));
+      setCurrentLessonIndex(currentIndex);
+      console.log('📍 Обновлён индекс текущего урока:', currentIndex, 'из', allLessons.length);
+    }
+  }, [lessonId, allLessons]);
+
+  // ✅ Загрузить все уроки модуля для навигации
+  const loadAllLessons = async () => {
+    if (!moduleId) return;
+    
+    try {
+      const response = await api.get(`/api/lessons?module_id=${moduleId}`);
+      if (response?.lessons) {
+        // ✅ Сортируем по order_index
+        const sortedLessons = [...response.lessons].sort((a, b) => {
+          const orderA = a.order_index ?? a.id ?? 0;
+          const orderB = b.order_index ?? b.id ?? 0;
+          return orderA - orderB;
+        });
+        setAllLessons(sortedLessons);
+        
+        // ✅ Находим индекс текущего урока
+        const currentIndex = sortedLessons.findIndex(l => l.id === parseInt(lessonId || '0'));
+        setCurrentLessonIndex(currentIndex);
+        
+        console.log('✅ Загружено уроков для навигации:', sortedLessons.length);
+        console.log('📍 Текущий урок индекс:', currentIndex);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка загрузки уроков для навигации:', error);
+    }
+  };
 
   const loadLessonData = async () => {
     try {
@@ -76,9 +122,19 @@ const Lesson = () => {
       const lessonData = lessonRes?.lesson || lessonRes;
       setLesson(lessonData);
       
-      // Проверить завершение
-      const completed = localStorage.getItem(`lesson-${lessonId}-completed`);
-      setIsCompleted(completed === "true");
+      // Загружаем статус завершения из БД
+      try {
+        // Получаем прогресс через API модуля
+        const progressResponse = await api.get(`/api/lessons/progress/${moduleId}`);
+        if (progressResponse?.progress && progressResponse.progress[parseInt(lessonId || '0')]) {
+          setIsCompleted(true);
+        }
+      } catch (error) {
+        console.error('❌ Ошибка загрузки статуса урока:', error);
+        // Fallback на localStorage для обратной совместимости
+        const completed = localStorage.getItem(`lesson-${lessonId}-completed`);
+        setIsCompleted(completed === "true");
+      }
 
       // Загрузить видео
       try {
@@ -100,16 +156,10 @@ const Lesson = () => {
         console.log('ℹ️ Материалы не найдены для урока:', lessonId);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Ошибка загрузки урока:', error);
-      // Fallback к mock данным
-      setLesson({
-        id: parseInt(lessonId!),
-        module_id: parseInt(moduleId!),
-        title: "Урок загружается...",
-        description: "Данные урока загружаются из API",
-        duration_minutes: 0
-      });
+      // ✅ Не используем мок-данные - показываем ошибку
+      setLesson(null);
     } finally {
       setLoading(false);
     }
@@ -121,12 +171,13 @@ const Lesson = () => {
       console.log('📝 Обновление урока:', lessonId, data);
       await api.put(`/api/lessons/${lessonId}`, data);
       console.log('✅ Урок обновлен');
-      // Перезагрузить урок
+      // ✅ Перезагрузить урок и все уроки модуля (для обновления навигации)
       await loadLessonData();
+      await loadAllLessons();
       setEditDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Ошибка обновления урока:', error);
-      alert('Ошибка обновления урока');
+      alert(`Ошибка обновления урока: ${error?.message || 'Неизвестная ошибка'}`);
     }
   };
 
@@ -253,16 +304,70 @@ const Lesson = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleComplete = () => {
-    localStorage.setItem(`lesson-${lessonId}-completed`, "true");
-    setIsCompleted(true);
-    trackEvent('lesson_complete');
+  const handleComplete = async () => {
+    try {
+      console.log('✅ Завершение урока:', lessonId);
+      
+      const response = await api.post(`/api/lessons/${lessonId}/complete`);
+      
+      if (response?.success) {
+        setIsCompleted(true);
+        trackEvent('lesson_complete');
+        console.log('✅ Урок успешно завершен');
+        
+        // Показываем уведомление
+        // TODO: Добавить toast уведомление
+      } else {
+        console.error('❌ Ошибка завершения урока:', response);
+        // TODO: Показать ошибку пользователю
+      }
+    } catch (error: any) {
+      console.error('❌ Ошибка завершения урока:', error);
+      
+      // Проверяем, есть ли домашнее задание
+      if (error?.response?.data?.error?.includes('домашнее задание')) {
+        // TODO: Показать сообщение о необходимости выполнить домашнее задание
+        alert('Для завершения урока необходимо выполнить домашнее задание и дождаться проверки куратором.');
+      } else {
+        // TODO: Показать общую ошибку
+        alert('Не удалось завершить урок. Попробуйте еще раз.');
+      }
+    }
   };
 
+  // ✅ Навигация к следующему уроку по order_index
   const handleNext = () => {
-    const nextLessonId = Number(lessonId) + 1;
-    navigate(`/course/${id}/module/${moduleId}/lesson/${nextLessonId}`);
+    if (currentLessonIndex >= 0 && currentLessonIndex < allLessons.length - 1) {
+      const nextLesson = allLessons[currentLessonIndex + 1];
+      if (nextLesson) {
+        console.log('➡️ Переход к следующему уроку:', nextLesson.id, nextLesson.title);
+        navigate(`/course/${id}/module/${moduleId}/lesson/${nextLesson.id}`);
+      }
+    } else {
+      console.log('ℹ️ Следующий урок не найден');
+      // Можно показать toast или вернуться к модулю
+    }
   };
+
+  // ✅ Навигация к предыдущему уроку
+  const handlePrevious = () => {
+    if (currentLessonIndex > 0) {
+      const prevLesson = allLessons[currentLessonIndex - 1];
+      if (prevLesson) {
+        console.log('⬅️ Переход к предыдущему уроку:', prevLesson.id, prevLesson.title);
+        navigate(`/course/${id}/module/${moduleId}/lesson/${prevLesson.id}`);
+      }
+    }
+  };
+
+  // ✅ Получить номер урока (1-based для отображения)
+  const getLessonNumber = () => {
+    return currentLessonIndex >= 0 ? currentLessonIndex + 1 : 0;
+  };
+
+  // ✅ Проверка наличия следующего/предыдущего урока
+  const hasNextLesson = currentLessonIndex >= 0 && currentLessonIndex < allLessons.length - 1;
+  const hasPreviousLesson = currentLessonIndex > 0;
 
   const getMaterialIcon = (type: string) => {
     switch (type) {
@@ -527,7 +632,7 @@ const Lesson = () => {
         >
           <div className="flex items-center gap-3 mb-3 flex-wrap">
             <span className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
-              Модуль {moduleId} • Урок {lessonId}
+              Модуль {moduleId} • Урок {getLessonNumber()} из {allLessons.length}
             </span>
             {isCompleted && (
               <div className="flex items-center gap-1.5 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-full px-3 py-1">
@@ -727,14 +832,41 @@ const Lesson = () => {
                 <CheckCircle2 className="w-5 h-5 mr-2" />
                 {isCompleted ? "Урок завершён" : "Завершить урок"}
               </Button>
-              <Button
-                size="lg"
-                onClick={handleNext}
-                className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
-              >
-                Следующий урок
-                <ChevronRight className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="flex gap-3 w-full">
+                {/* ✅ Кнопка "Предыдущий урок" */}
+                {hasPreviousLesson && (
+                  <Button
+                    size="lg"
+                    onClick={handlePrevious}
+                    variant="outline"
+                    className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5 mr-2" />
+                    Предыдущий урок
+                  </Button>
+                )}
+                
+                {/* ✅ Кнопка "Следующий урок" */}
+                {hasNextLesson ? (
+                  <Button
+                    size="lg"
+                    onClick={handleNext}
+                    className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
+                  >
+                    Следующий урок
+                    <ChevronRight className="w-5 h-5 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    onClick={() => navigate(`/course/${id}/module/${moduleId}`)}
+                    className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
+                  >
+                    Вернуться к модулю
+                    <ChevronRight className="w-5 h-5 ml-2" />
+                  </Button>
+                )}
+              </div>
             </div>
           </motion.section>
 
@@ -851,7 +983,9 @@ const Lesson = () => {
           open={editDialogOpen}
           onClose={() => {
             setEditDialogOpen(false);
-            loadLessonData(); // Перезагрузить данные после закрытия
+            // ✅ Перезагрузить данные урока и все уроки модуля после закрытия
+            loadLessonData();
+            loadAllLessons();
           }}
           onSave={handleUpdateLesson}
           lesson={lesson.id ? {

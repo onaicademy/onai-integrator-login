@@ -1,26 +1,60 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+/**
+ * Supabase Configuration
+ * 
+ * 🔥 CRITICAL: Service Role Key requires BOTH apikey AND Authorization headers
+ * to properly bypass RLS policies.
+ * 
+ * Source: Supabase official troubleshooting docs
+ * "RLS is enforced based on the Authorization header and not the apikey header."
+ */
 
-// Загружаем .env СРАЗУ при импорте модуля
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+import { createClient } from '@supabase/supabase-js';
 
-console.log('[Supabase Config] Initializing Supabase client...');
-console.log('[Supabase Config] SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
-console.log('[Supabase Config] SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `SET (${process.env.SUPABASE_SERVICE_ROLE_KEY.length} chars)` : 'NOT SET');
+const supabaseUrl = process.env.SUPABASE_URL!;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('[Supabase Config] ❌ Missing environment variables!');
-  throw new Error('Missing Supabase environment variables');
+if (!supabaseUrl || !serviceRoleKey) {
+  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables');
 }
 
-// Backend использует service_role_key для полного доступа к БД
-export const supabase = createClient(supabaseUrl, supabaseServiceKey);
+/**
+ * Admin Supabase Client
+ * 
+ * ✅ Uses service_role_key with explicit Authorization header
+ * ✅ Bypasses RLS policies
+ * ✅ Isolated from user sessions (no persistence)
+ * 
+ * Use this for ALL admin operations (CRUD, file uploads, etc.)
+ */
+export const adminSupabase = createClient(supabaseUrl, serviceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false  // Prevent session contamination
+  },
+  global: {
+    headers: {
+      Authorization: `Bearer ${serviceRoleKey}`  // 🔥 CRITICAL: Explicit Bearer token
+    }
+  }
+});
 
-console.log('[Supabase Config] ✅ Supabase client initialized successfully');
+console.log('✅ Admin Supabase client initialized with service_role_key');
+console.log('   URL:', supabaseUrl);
+console.log('   Authorization: Bearer ***' + serviceRoleKey.slice(-8));
 
-export default supabase;
+/**
+ * Backward Compatibility Export
+ * 
+ * For existing code that imports 'supabase', provide adminSupabase as default.
+ * This ensures all existing code automatically uses the fixed client.
+ * 
+ * ⚠️ Gradually migrate all imports to use 'adminSupabase' explicitly.
+ */
+export const supabase = adminSupabase;
 
+/**
+ * NEVER use this client for user-facing operations!
+ * Service role key has unrestricted access to the database.
+ * 
+ * For user operations, create a separate client with anon_key.
+ */

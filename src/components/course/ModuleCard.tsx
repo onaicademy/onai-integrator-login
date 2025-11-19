@@ -10,6 +10,7 @@ interface ModuleCardProps {
   progress: number;
   icon: LucideIcon;
   index: number;
+  order_index: number;
   lessons?: number;
   duration?: string;
   stats?: {
@@ -27,7 +28,8 @@ export const ModuleCard = ({
   description,
   progress, 
   icon: Icon, 
-  index, 
+  index,
+  order_index,
   lessons,
   duration,
   stats,
@@ -73,7 +75,7 @@ export const ModuleCard = ({
           {/* Module Number + Title */}
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-semibold text-[#00ff00]/60 uppercase tracking-wider">
-              Модуль {id}
+              Модуль {order_index + 1}
             </span>
           </div>
           

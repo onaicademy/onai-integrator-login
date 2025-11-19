@@ -94,10 +94,32 @@ function SortableModule({ module, index, onModuleClick, onDelete, isAdmin }: Sor
             progress={module.progress || 0}
             icon={Icon}
             index={index}
-            lessons={module.lessons?.length || module.total_lessons}
-            duration={module.formatted_duration}
-            stats={module.stats}
-            onClick={() => onModuleClick(module.id)}
+            order_index={module.order_index ?? index}
+            lessons={module.lessons?.length || module.stats?.total_lessons || module.total_lessons || 0}
+            duration={module.formatted_duration || module.stats?.formatted_duration}
+            stats={{
+              total_lessons: module.lessons?.length || 0,
+              total_minutes: module.lessons?.reduce((sum: number, lesson: any) => sum + (lesson.duration_minutes || 0), 0) || 0,
+              total_hours: Math.floor((module.lessons?.reduce((sum: number, lesson: any) => sum + (lesson.duration_minutes || 0), 0) || 0) / 60),
+              formatted_duration: (() => {
+                const totalMinutes = module.lessons?.reduce((sum: number, lesson: any) => sum + (lesson.duration_minutes || 0), 0) || 0;
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                if (hours > 0 && minutes > 0) return `${hours} ч ${minutes} мин`;
+                if (hours > 0) return `${hours} ч`;
+                if (minutes > 0) return `${minutes} мин`;
+                return '0 мин';
+              })()
+            }}
+            onClick={() => {
+              console.log('🖱️ ModuleCard onClick:', { 
+                moduleId: module.id, 
+                moduleTitle: module.title, 
+                order_index: module.order_index,
+                lessonsCount: module.lessons?.length || 0
+              });
+              onModuleClick(module.id);
+            }}
           />
         </div>
       </div>
@@ -204,27 +226,52 @@ const Course = () => {
       setLoading(true);
       setError(null);
       
-      // ✅ Загружаем модули из API с сортировкой по order_index
+      console.log('🔍 ===== ЗАГРУЗКА МОДУЛЕЙ =====');
+      console.log('📌 Course ID:', id);
+      
+      // ✅ Загружаем модули из API
       const response = await api.get(`/api/courses/${id}`);
       
+      console.log('📦 Полный ответ API:', response);
+      console.log('📦 response.course:', response?.course);
+      console.log('📦 response.course?.modules:', response?.course?.modules);
+      
       if (response?.course?.modules) {
-        // ✅ Сортируем модули по order_index (на случай если API не отсортировал)
-        const sortedModules = [...response.course.modules].sort((a, b) => {
+        const modules = response.course.modules;
+        console.log('📊 Модули ДО сортировки:', modules.map((m: any) => ({ id: m.id, order_index: m.order_index, title: m.title })));
+        
+        // ✅ Дополнительная сортировка на фронте (backend уже сортирует, но на всякий случай)
+        // ⚠️ ВАЖНО: Не меняем порядок, если backend уже отсортировал правильно
+        const sortedModules = [...modules].sort((a, b) => {
           const orderA = a.order_index ?? a.id ?? 0;
           const orderB = b.order_index ?? b.id ?? 0;
           return orderA - orderB;
         });
         
+        console.log('📊 Модули ПОСЛЕ сортировки:', sortedModules.map(m => ({ id: m.id, order_index: m.order_index, title: m.title })));
+        
+        // ✅ Проверка: порядок должен совпадать с backend
+        const isOrderCorrect = sortedModules.every((m, idx) => {
+          const expectedOrder = idx;
+          const actualOrder = m.order_index ?? m.id ?? 0;
+          return actualOrder === expectedOrder || idx === sortedModules.length - 1; // Последний может быть любым
+        });
+        console.log('✅ Порядок модулей корректен:', isOrderCorrect ? 'ДА' : 'НЕТ');
+        
         setApiModules(sortedModules);
         console.log('✅ Загружено модулей:', sortedModules.length);
-        console.log('📊 Порядок модулей:', sortedModules.map(m => ({ id: m.id, order_index: m.order_index, title: m.title })));
+        console.log('✅ apiModules установлен:', sortedModules.length, 'модулей');
       } else {
         // ✅ Если модулей нет - показываем пустой список (не ошибку)
+        console.warn('⚠️ Модули не найдены в ответе API');
         setApiModules([]);
         console.log('ℹ️ Модули не найдены для курса:', id);
       }
+      
+      console.log('🔍 ===== ЗАГРУЗКА МОДУЛЕЙ ЗАВЕРШЕНА =====');
     } catch (error: any) {
       console.error('❌ Ошибка загрузки модулей:', error);
+      console.error('❌ Детали ошибки:', error?.response || error?.message);
       setError(error?.message || 'Не удалось загрузить модули курса');
       setApiModules([]); // ✅ При ошибке показываем пустой список
     } finally {
@@ -233,11 +280,20 @@ const Course = () => {
   };
 
   const handleModuleClick = (moduleId: number) => {
+    console.log('🖱️ ===== КЛИК НА МОДУЛЬ =====');
+    console.log('📌 Course ID:', id);
+    console.log('📌 Module ID:', moduleId);
+    console.log('📌 Module ID type:', typeof moduleId);
+    
     if (!id) {
       console.error('❌ Cannot navigate: id is undefined');
       return;
     }
-    navigate(`/course/${id}/module/${moduleId}`);
+    
+    const targetUrl = `/course/${id}/module/${moduleId}`;
+    console.log('🧭 Навигация к:', targetUrl);
+    navigate(targetUrl);
+    console.log('🖱️ ===== КЛИК НА МОДУЛЬ ЗАВЕРШЁН =====');
   };
 
   const handleAddModule = () => {
@@ -340,14 +396,20 @@ const Course = () => {
 
     // Обновление в БД
     try {
-      const response = await api.put('/api/modules/reorder', {
+      const payload = {
         modules: reorderedModules.map((m, idx) => ({
           id: m.id,
           order_index: idx,
         })),
-      });
+      };
+      
+      console.log('📤 Отправка данных для reorder модулей:', JSON.stringify(payload, null, 2));
+      
+      const response = await api.put('/api/modules/reorder', payload);
+      console.log('📥 Ответ от backend:', response);
 
-      if (response.data?.success) {
+      // ✅ Backend возвращает { success: true, message: '...' } напрямую
+      if (response.success) {
         console.log('✅ Порядок модулей обновлён в БД');
         toast.success('Порядок модулей обновлён');
       } else {
@@ -726,7 +788,7 @@ const Course = () => {
                       transition={{
                         duration: 0.8,
                         repeat: Infinity,
-                        ease: "steps(2)"
+                        ease: "easeInOut"
                       }}
                     />
                   </div>
@@ -780,28 +842,38 @@ const Course = () => {
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-3">
-                  {apiModules.length > 0 ? (
-                    apiModules.map((module, index) => (
-                    <SortableModule
-                      key={module.id}
-                      module={module}
-                      index={index}
-                      onModuleClick={handleModuleClick}
-                      onDelete={handleDeleteModule}
-                      isAdmin={isAdmin}
-                    />
-                    ))
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-gray-400 mb-4">Модули не найдены</p>
-                      {isAdmin && (
-                        <Button onClick={handleAddModule} className="bg-[#00ff00] text-black">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Добавить первый модуль
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    console.log('🎨 РЕНДЕР: apiModules.length =', apiModules.length);
+                    console.log('🎨 РЕНДЕР: apiModules =', apiModules.map(m => ({ id: m.id, order_index: m.order_index, title: m.title })));
+                    
+                    if (apiModules.length > 0) {
+                      return apiModules.map((module, index) => {
+                        console.log(`🎨 РЕНДЕР модуля ${index}:`, { id: module.id, order_index: module.order_index, title: module.title });
+                        return (
+                          <SortableModule
+                            key={module.id}
+                            module={module}
+                            index={index}
+                            onModuleClick={handleModuleClick}
+                            onDelete={handleDeleteModule}
+                            isAdmin={isAdmin}
+                          />
+                        );
+                      });
+                    } else {
+                      return (
+                        <div className="text-center py-12">
+                          <p className="text-gray-400 mb-4">Модули не найдены</p>
+                          {isAdmin && (
+                            <Button onClick={handleAddModule} className="bg-[#00ff00] text-black">
+                              <Plus className="w-4 h-4 mr-2" />
+                              Добавить первый модуль
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
               </SortableContext>
             </DndContext>
@@ -942,7 +1014,11 @@ const Course = () => {
       {isAdmin && (
         <ModuleEditDialog
           open={moduleDialog.open}
-          onClose={() => setModuleDialog({ open: false, module: null })}
+          onClose={() => {
+            setModuleDialog({ open: false, module: null });
+            // ✅ Обновляем список модулей после закрытия диалога
+            loadModulesFromAPI();
+          }}
           onSave={handleSaveModule}
           module={moduleDialog.module}
           courseId={id ? Number(id) : 0}

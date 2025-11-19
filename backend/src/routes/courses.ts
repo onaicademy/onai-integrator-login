@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { supabase } from '../config/supabase';
+import { adminSupabase } from '../config/supabase';  // ✅ Use admin client with Authorization header
 
 const router = Router();
 
 // GET /api/courses - получить все курсы
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { data: courses, error } = await supabase
+    const { data: courses, error } = await adminSupabase
       .from('courses')
       .select(`
         *,
@@ -40,25 +40,79 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const { data: course, error } = await supabase
+    // Сначала получаем курс
+    const { data: course, error: courseError } = await adminSupabase
       .from('courses')
-      .select(`
-        *,
-        modules (
-          *,
-          lessons (
-            *,
-            video_content (*),
-            lesson_materials (*)
-          )
-        )
-      `)
+      .select('*')
       .eq('id', parseInt(id))
       .single();
 
-    if (error) {
-      console.error('Get course error:', error);
+    if (courseError || !course) {
+      console.error('Get course error:', courseError);
       return res.status(404).json({ error: 'Курс не найден' });
+    }
+
+    // Затем получаем модули отдельным запросом
+    const { data: modules, error: modulesError } = await adminSupabase
+      .from('modules')
+      .select(`
+        *,
+        lessons!lessons_module_id_fkey(
+          *,
+          video_content (*),
+          lesson_materials (*)
+        )
+      `)
+      .eq('course_id', parseInt(id))
+      .eq('is_archived', false)
+      .order('order_index', { ascending: true });
+
+    if (modulesError) {
+      console.error('Get modules error:', modulesError);
+    }
+
+    // Добавляем модули к курсу
+    course.modules = modules || [];
+
+    // ✅ Фильтруем архивные модули и уроки
+    if (course.modules && Array.isArray(course.modules)) {
+      // Фильтруем архивные модули
+      course.modules = course.modules.filter((module: any) => !module.is_archived);
+      
+      // Сортируем модули по order_index
+      course.modules = course.modules.sort((a: any, b: any) => {
+        const orderA = a.order_index ?? a.id ?? 0;
+        const orderB = b.order_index ?? b.id ?? 0;
+        return orderA - orderB;
+      });
+      
+      // Фильтруем и сортируем уроки внутри каждого модуля
+      course.modules.forEach((module: any) => {
+        if (module.lessons && Array.isArray(module.lessons)) {
+          // Фильтруем архивные уроки
+          module.lessons = module.lessons.filter((lesson: any) => !lesson.is_archived);
+          // Сортируем по order_index
+          module.lessons = module.lessons.sort((a: any, b: any) => {
+            const orderA = a.order_index ?? a.id ?? 0;
+            const orderB = b.order_index ?? b.id ?? 0;
+            return orderA - orderB;
+          });
+          
+          console.log(`📚 Модуль "${module.title}": ${module.lessons.length} уроков`);
+          module.lessons.forEach((lesson: any) => {
+            console.log(`  ⏱️ Урок "${lesson.title}": ${lesson.duration_minutes || 0} минут`);
+          });
+        } else {
+          console.log(`📚 Модуль "${module.title}": 0 уроков`);
+        }
+      });
+      
+      console.log('✅ Модули отсортированы по order_index:', course.modules.map((m: any) => ({ 
+        id: m.id, 
+        order_index: m.order_index, 
+        title: m.title,
+        lessons_count: m.lessons?.length || 0
+      })));
     }
 
     res.json({ course });
@@ -77,7 +131,7 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Название курса обязательно' });
     }
 
-    const { data: course, error } = await supabase
+    const { data: course, error } = await adminSupabase
       .from('courses')
       .insert({
         title,
@@ -120,7 +174,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     
     // ✅ updated_at removed - column doesn't exist in courses table
 
-    const { data: course, error } = await supabase
+    const { data: course, error } = await adminSupabase
       .from('courses')
       .update(updateData)
       .eq('id', parseInt(id))
@@ -144,7 +198,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase
+    const { error } = await adminSupabase
       .from('courses')
       .delete()
       .eq('id', parseInt(id));

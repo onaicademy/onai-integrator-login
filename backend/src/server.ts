@@ -196,11 +196,57 @@ app.use((req, res) => {
 // Error handler (ДОЛЖЕН быть последний!)
 app.use(errorHandler);
 
+// ═══════════════════════════════════════════════════════════════
+// 🛡️ ОБРАБОТКА КРИТИЧЕСКИХ ОШИБОК - ПРЕДОТВРАЩЕНИЕ ПАДЕНИЯ
+// ═══════════════════════════════════════════════════════════════
+
+// Обработка необработанных исключений
+process.on('uncaughtException', (error: Error) => {
+  console.error('💥 КРИТИЧЕСКАЯ ОШИБКА: uncaughtException');
+  console.error('💥 Тип:', error.constructor.name);
+  console.error('💥 Сообщение:', error.message);
+  console.error('💥 Стек:', error.stack);
+  console.error('💥 Backend продолжит работу, но ошибка была залогирована');
+  // НЕ выходим из процесса - продолжаем работу
+});
+
+// Обработка необработанных Promise rejections
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  console.error('💥 КРИТИЧЕСКАЯ ОШИБКА: unhandledRejection');
+  console.error('💥 Причина:', reason);
+  console.error('💥 Promise:', promise);
+  if (reason instanceof Error) {
+    console.error('💥 Сообщение:', reason.message);
+    console.error('💥 Стек:', reason.stack);
+  }
+  console.error('💥 Backend продолжит работу, но ошибка была залогирована');
+  // НЕ выходим из процесса - продолжаем работу
+});
+
+// Обработка SIGINT (Ctrl+C)
+process.on('SIGINT', () => {
+  console.log('🛑 Получен SIGINT, завершение работы...');
+  server.close(() => {
+    console.log('✅ Сервер закрыт');
+    process.exit(0);
+  });
+});
+
 // Запуск сервера
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Backend API запущен на http://localhost:${PORT}`);
   console.log(`Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log('🛡️ Обработчики критических ошибок активированы');
+});
+
+// Graceful shutdown для сервера (SIGTERM)
+process.on('SIGTERM', () => {
+  console.log('🛑 Получен SIGTERM, закрытие сервера...');
+  server.close(() => {
+    console.log('✅ Сервер закрыт');
+    process.exit(0);
+  });
 });
 
 export default app;

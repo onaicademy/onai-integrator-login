@@ -14,6 +14,7 @@ interface Material {
   file_size_bytes?: number;
   file?: File;
   uploading?: boolean;
+  _delete?: boolean; // ✅ Флаг для удаления при редактировании
 }
 
 interface MaterialsManagerProps {
@@ -36,6 +37,9 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
   useEffect(() => {
     if (lessonId) {
       loadMaterials();
+    } else {
+      // Если lessonId сброшен, очищаем материалы
+      setMaterials([]);
     }
   }, [lessonId]);
 
@@ -72,16 +76,19 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
   };
 
   // Удалить загруженный материал
+  // ✅ ИСПРАВЛЕНО: При редактировании урока помечаем материал для удаления, а не удаляем сразу
   const handleDeleteUploaded = async (materialId: string, index: number) => {
     if (!confirm('Удалить материал?')) return;
     
-    try {
-      await api.delete(`/api/materials/${materialId}`);
+    // Если это режим редактирования (lessonId уже существует), помечаем для удаления
+    if (lessonId) {
+      const updated = [...materials];
+      updated[index] = { ...updated[index], _delete: true };
+      setMaterials(updated);
+      console.log('🗑️ Материал помечен для удаления:', materialId);
+    } else {
+      // Если урок ещё не создан, просто удаляем из списка
       setMaterials(materials.filter((_, i) => i !== index));
-      alert('✅ Материал удален');
-    } catch (error) {
-      console.error('Ошибка удаления:', error);
-      alert('❌ Ошибка удаления');
     }
   };
 
@@ -177,10 +184,13 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
       </div>
 
       {/* Список материалов */}
-      {materials.length > 0 && (
+      {materials.filter(m => !m._delete).length > 0 && (
         <Card className="p-4 bg-[#1a1a24] border-gray-800">
           <div className="space-y-3">
-            {materials.map((material, index) => (
+            {materials.filter(m => !m._delete).map((material, index) => {
+              // Находим реальный индекс в исходном массиве для правильной работы с кнопками
+              const realIndex = materials.findIndex(m => (m.id || m.filename) === (material.id || material.filename));
+              return (
               <div
                 key={index}
                 className="flex items-start gap-3 p-3 border border-gray-800 rounded-lg bg-black/40"
@@ -223,8 +233,8 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
                   size="sm"
                   onClick={() => 
                     material.id 
-                      ? handleDeleteUploaded(material.id, index)
-                      : handleRemoveFromQueue(index)
+                      ? handleDeleteUploaded(material.id, realIndex)
+                      : handleRemoveFromQueue(realIndex)
                   }
                   disabled={material.uploading}
                   className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
@@ -232,7 +242,8 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           {/* ✅ Кнопка "Загрузить материалы" для режима редактирования */}

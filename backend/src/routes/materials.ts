@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { supabase } from '../config/supabase';
+import { adminSupabase } from '../config/supabase';  // ✅ Use admin client with Authorization header
 import multer from 'multer';
 import path from 'path';
 
@@ -128,7 +128,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     console.log('✅ 1. File received:', file.originalname);
 
     // Получаем информацию об уроке для построения пути
-    const { data: lesson, error: lessonError } = await supabase
+    const { data: lesson, error: lessonError } = await adminSupabase
       .from('lessons')
       .select('id, module_id, modules(course_id)')
       .eq('id', lessonId)
@@ -157,7 +157,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     
     // ✅ Проверяем что bucket существует (из research report)
     console.log('✅ 2. Checking if bucket exists...');
-    const { data: buckets, error: bucketError } = await supabase
+    const { data: buckets, error: bucketError } = await adminSupabase
       .storage
       .listBuckets();
     
@@ -170,7 +170,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     if (!bucketExists) {
       console.log('⚠️ Bucket "lesson-materials" не существует, создаем...');
       // ✅ Создаем bucket если не существует
-      const { error: createError } = await supabase
+      const { error: createError } = await adminSupabase
         .storage
         .createBucket('lesson-materials', {
           public: true,
@@ -189,7 +189,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     console.log('✅ 3. Starting Supabase Storage upload...');
 
     // Загружаем файл в Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await adminSupabase.storage
       .from('lesson-materials')
       .upload(storagePath, file.buffer, {
         contentType: file.mimetype,
@@ -207,7 +207,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
 
     // ✅ Создаем запись в БД (filename = sanitized, display_name = original)
     console.log('✅ 5. Saving to database...');
-    const { data: material, error: dbError } = await supabase
+    const { data: material, error: dbError } = await adminSupabase
       .from('lesson_materials')
       .insert({
         lesson_id: parseInt(lessonId),
@@ -226,14 +226,14 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
       console.error('❌ Ошибка сохранения в БД:', dbError);
       console.error('DB Error details:', JSON.stringify(dbError, null, 2));
       // Удаляем файл из Storage если не удалось создать запись в БД
-      await supabase.storage.from('lesson-materials').remove([storagePath]);
+      await adminSupabase.storage.from('lesson-materials').remove([storagePath]);
       throw dbError;
     }
     
     console.log('✅ 6. DB save success:', material);
 
     // Получаем публичный URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = adminSupabase.storage
       .from('lesson-materials')
       .getPublicUrl(storagePath);
 
@@ -269,7 +269,7 @@ router.get('/:lessonId', async (req: Request, res: Response) => {
   try {
     const { lessonId } = req.params;
 
-    const { data: materials, error } = await supabase
+    const { data: materials, error } = await adminSupabase
       .from('lesson_materials')
       .select('*')
       .eq('lesson_id', parseInt(lessonId))
@@ -282,7 +282,7 @@ router.get('/:lessonId', async (req: Request, res: Response) => {
 
     // Добавляем публичные URL
     const materialsWithUrls = materials.map((material) => {
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = adminSupabase.storage
         .from(material.bucket_name)
         .getPublicUrl(material.storage_path);
 
@@ -305,7 +305,7 @@ router.delete('/:materialId', async (req: Request, res: Response) => {
     const { materialId } = req.params;
 
     // Получаем информацию о материале
-    const { data: material, error: getError } = await supabase
+    const { data: material, error: getError } = await adminSupabase
       .from('lesson_materials')
       .select('*')
       .eq('id', materialId)
@@ -316,7 +316,7 @@ router.delete('/:materialId', async (req: Request, res: Response) => {
     }
 
     // Удаляем файл из Storage
-    const { error: storageError } = await supabase.storage
+    const { error: storageError } = await adminSupabase.storage
       .from(material.bucket_name)
       .remove([material.storage_path]);
 
@@ -326,7 +326,7 @@ router.delete('/:materialId', async (req: Request, res: Response) => {
     }
 
     // Удаляем запись из БД
-    const { error: dbError } = await supabase
+    const { error: dbError } = await adminSupabase
       .from('lesson_materials')
       .delete()
       .eq('id', materialId);
