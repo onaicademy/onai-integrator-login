@@ -148,7 +148,7 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/modules/reorder - изменить порядок модулей
+// PUT /api/modules/reorder - изменить порядок модулей (Drag & Drop)
 router.put('/reorder', async (req: Request, res: Response) => {
   try {
     const { modules } = req.body; // [{ id: 1, order_index: 0 }, { id: 2, order_index: 1 }, ...]
@@ -157,20 +157,32 @@ router.put('/reorder', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'modules должен быть массивом' });
     }
 
-    // Обновляем каждый модуль
-    const updates = modules.map((module) =>
-      supabase
+    console.log('🔄 Изменение порядка модулей:', modules);
+
+    // Обновляем каждый модуль с обработкой ошибок
+    const updates = modules.map(async (module) => {
+      const moduleId = parseInt(module.id.toString()); // ✅ ИСПРАВЛЕНО: Преобразуем в число
+      const { error } = await supabase
         .from('modules')
         .update({ order_index: module.order_index })
-        .eq('id', parseInt(module.id))
-    );
+        .eq('id', moduleId);
+      
+      if (error) {
+        console.error(`❌ Ошибка обновления модуля ${moduleId}:`, error);
+        throw error;
+      }
+    });
 
     await Promise.all(updates);
 
+    console.log('✅ Порядок модулей обновлён');
     res.json({ success: true, message: 'Порядок модулей обновлен' });
-  } catch (error) {
-    console.error('Reorder modules error:', error);
-    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  } catch (error: any) {
+    console.error('❌ Reorder modules error:', error);
+    res.status(500).json({ 
+      error: 'Ошибка изменения порядка модулей', 
+      details: error?.message || 'Unknown error' 
+    });
   }
 });
 

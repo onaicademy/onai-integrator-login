@@ -35,6 +35,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { toast } from 'sonner';
 
 // Mock data - в реальном приложении это будет из API
 const moduleData = {
@@ -394,19 +395,26 @@ const Module = () => {
 
     // Обновление в БД
     try {
-      await api.put('/api/lessons/reorder', {
+      const response = await api.put('/api/lessons/reorder', {
         lessons: reorderedLessons.map((l, idx) => ({
           id: l.id,
           order_index: idx,
         })),
       });
 
-      console.log('✅ Порядок уроков обновлён в БД');
-    } catch (error) {
+      if (response.data?.success) {
+        console.log('✅ Порядок уроков обновлён в БД');
+        toast.success('Порядок уроков обновлён');
+      } else {
+        throw new Error('Backend не вернул success');
+      }
+    } catch (error: any) {
       console.error('❌ Ошибка обновления порядка уроков:', error);
       // Откат изменений
       await loadLessonsFromAPI();
-      alert('❌ Не удалось изменить порядок уроков');
+      toast.error('Не удалось изменить порядок уроков', {
+        description: error?.response?.data?.error || error?.message || 'Попробуйте еще раз'
+      });
     }
   };
 

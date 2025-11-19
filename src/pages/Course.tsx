@@ -8,6 +8,7 @@ import { ModuleEditDialog } from "@/components/admin/ModuleEditDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { api } from "@/utils/apiClient";
+import { toast } from 'sonner';
 import {
   DoorOpen,
   MessagesSquare,
@@ -21,8 +22,121 @@ import {
   Users,
   Download,
   Bot,
-  Plus
+  Plus,
+  GripVertical
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// 🎯 Sortable Module Component для Drag & Drop
+interface SortableModuleProps {
+  module: any;
+  index: number;
+  onModuleClick: (moduleId: number) => void;
+  onDelete: (moduleId: number, moduleTitle: string) => void;
+  isAdmin: boolean;
+}
+
+function SortableModule({ module, index, onModuleClick, onDelete, isAdmin }: SortableModuleProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: module.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  // Определяем иконку по умолчанию
+  const Icon = DoorOpen; // Можно добавить логику выбора иконки
+
+  return (
+    <div ref={setNodeRef} style={style} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div className="flex items-center gap-2">
+        {/* Drag Handle */}
+        {isAdmin && (
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-gray-500 hover:text-[#00ff00] transition-colors p-2"
+            title="Перетащить для изменения порядка"
+          >
+            <GripVertical className="w-5 h-5" />
+          </div>
+        )}
+        
+        <div className="flex-1">
+          <ModuleCard
+            id={module.id}
+            title={module.title}
+            description={module.description}
+            progress={module.progress || 0}
+            icon={Icon}
+            index={index}
+            lessons={module.lessons?.length || module.total_lessons}
+            duration={module.formatted_duration}
+            stats={module.stats}
+            onClick={() => onModuleClick(module.id)}
+          />
+        </div>
+      </div>
+
+      {/* Admin: Delete Button (Overlay) */}
+      {isAdmin && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(module.id, module.title);
+          }}
+          className="absolute top-4 right-4 z-[102] bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-xl px-3 py-2 transition-all"
+          title="Удалить модуль"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="hover:scale-110 transition-transform"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            <line x1="10" x2="10" y1="11" y2="17" />
+            <line x1="14" x2="14" y1="11" y2="17" />
+          </svg>
+        </Button>
+      )}
+    </div>
+  );
+}
 
 const modules = [
   { 
@@ -210,17 +324,69 @@ const Course = () => {
       console.log('🗑️ Название:', moduleTitle);
       console.log('=======================================');
       
-      // TODO: Здесь будет API запрос для удаления модуля
       await api.delete(`/api/modules/${moduleId}`);
       
-      alert(`✅ Модуль "${moduleTitle}" удалён!`);
+      toast.success(`Модуль "${moduleTitle}" удалён!`);
       
       // Обновить список модулей
       await loadModulesFromAPI();
       
     } catch (error: any) {
       console.error('❌ Ошибка удаления модуля:', error);
-      alert(error.response?.data?.error || `❌ Ошибка: ${error?.message || 'Не удалось удалить модуль'}`);
+      toast.error('Не удалось удалить модуль', {
+        description: error.response?.data?.error || error?.message || 'Попробуйте еще раз'
+      });
+    }
+  };
+
+  // 🎯 Drag & Drop handler для модулей
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = apiModules.findIndex((m) => m.id === active.id);
+    const newIndex = apiModules.findIndex((m) => m.id === over.id);
+
+    console.log('🔥 Drag ended (modules):', {
+      moduleId: active.id,
+      from: oldIndex,
+      to: newIndex,
+    });
+
+    // Оптимистичное обновление UI
+    const reorderedModules = arrayMove(apiModules, oldIndex, newIndex).map(
+      (module, idx) => ({
+        ...module,
+        order_index: idx,
+      })
+    );
+    setApiModules(reorderedModules);
+
+    // Обновление в БД
+    try {
+      const response = await api.put('/api/modules/reorder', {
+        modules: reorderedModules.map((m, idx) => ({
+          id: m.id,
+          order_index: idx,
+        })),
+      });
+
+      if (response.data?.success) {
+        console.log('✅ Порядок модулей обновлён в БД');
+        toast.success('Порядок модулей обновлён');
+      } else {
+        throw new Error('Backend не вернул success');
+      }
+    } catch (error: any) {
+      console.error('❌ Ошибка обновления порядка модулей:', error);
+      // Откат изменений
+      await loadModulesFromAPI();
+      toast.error('Не удалось изменить порядок модулей', {
+        description: error?.response?.data?.error || error?.message || 'Попробуйте еще раз'
+      });
     }
   };
 
@@ -600,50 +766,29 @@ const Course = () => {
               )}
             </div>
             
-            <div className="space-y-3">
-              {modules.map((module, index) => (
-                <div key={module.id} className="relative group">
-                  <ModuleCard
-                    {...module}
-                    index={index}
-                    onClick={() => handleModuleClick(module.id)}
-                  />
-                  
-                  {/* Admin: Delete Button (Overlay) */}
-                  {isAdmin && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteModule(module.id, module.title);
-                      }}
-                      className="absolute top-4 right-4 z-[102] bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-xl px-3 py-2 transition-all"
-                      title="Удалить модуль"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="hover:scale-110 transition-transform"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                        <line x1="10" x2="10" y1="11" y2="17" />
-                        <line x1="14" x2="14" y1="11" y2="17" />
-                      </svg>
-                    </Button>
-                  )}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={apiModules.length > 0 ? apiModules.map(m => m.id) : modules.map(m => m.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {(apiModules.length > 0 ? apiModules : modules).map((module, index) => (
+                    <SortableModule
+                      key={module.id}
+                      module={module}
+                      index={index}
+                      onModuleClick={handleModuleClick}
+                      onDelete={handleDeleteModule}
+                      isAdmin={isAdmin}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
           </section>
 
           {/* Right Sidebar */}
