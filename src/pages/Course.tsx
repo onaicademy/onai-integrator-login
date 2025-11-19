@@ -138,98 +138,7 @@ function SortableModule({ module, index, onModuleClick, onDelete, isAdmin }: Sor
   );
 }
 
-const modules = [
-  { 
-    id: 1, 
-    title: "Введение в профессию", 
-    description: "Знакомство с профессией интегратора, современными инструментами автоматизации и перспективами развития.",
-    progress: 100, 
-    icon: DoorOpen,
-    lessons: 5,
-    duration: "45 мин"
-  },
-  { 
-    id: 2, 
-    title: "Создание GPT бота и CRM", 
-    description: "Создание умного чат-бота на базе GPT и интеграция с системами управления клиентами.",
-    progress: 90, 
-    icon: MessagesSquare,
-    lessons: 8,
-    duration: "2ч 30м"
-  },
-  { 
-    id: 3, 
-    title: "Интеграция amoCRM и Bitrix24", 
-    description: "Подключение и настройка популярных CRM-систем для автоматизации бизнес-процессов.",
-    progress: 80, 
-    icon: Cable,
-    lessons: 7,
-    duration: "2ч 15м"
-  },
-  { 
-    id: 4, 
-    title: "Автоматизация при помощи Make", 
-    description: "Изучение платформы Make (Integromat) для создания сложных автоматизированных сценариев.",
-    progress: 60, 
-    icon: Workflow,
-    lessons: 10,
-    duration: "3ч 20м"
-  },
-  { 
-    id: 5, 
-    title: "N8N автоматизация и работа с API", 
-    description: "Продвинутая автоматизация с N8N, работа с API и создание кастомных интеграций.",
-    progress: 50, 
-    icon: Network,
-    lessons: 12,
-    duration: "4ч 10м"
-  },
-  { 
-    id: 6, 
-    title: "Реализация и закрытие проекта", 
-    description: "Практические навыки запуска проектов, тестирование и успешная сдача клиенту.",
-    progress: 40, 
-    icon: FileCheck,
-    lessons: 6,
-    duration: "1ч 50м"
-  },
-  { 
-    id: 7, 
-    title: "Упаковка и продвижение", 
-    description: "Создание портфолио, личного бренда и эффективное продвижение услуг интегратора.",
-    progress: 30, 
-    icon: Megaphone,
-    lessons: 5,
-    duration: "1ч 30м"
-  },
-  { 
-    id: 8, 
-    title: "Продажи на высокий чек", 
-    description: "Техники продаж премиальных услуг, работа с корпоративными клиентами и ценообразование.",
-    progress: 20, 
-    icon: CreditCard,
-    lessons: 6,
-    duration: "2ч"
-  },
-  { 
-    id: 9, 
-    title: "Бонусы", 
-    description: "Дополнительные материалы, кейсы и инструменты для ускорения вашего развития.",
-    progress: 10, 
-    icon: Gift,
-    lessons: 4,
-    duration: "1ч"
-  },
-  { 
-    id: 10, 
-    title: "Воркшопы", 
-    description: "Живые практические занятия с разбором реальных проектов и вопросов студентов.",
-    progress: 0, 
-    icon: Users,
-    lessons: 8,
-    duration: "4ч"
-  }
-];
+// ✅ Мок-данные удалены - используем только данные из Supabase API
 
 const Course = () => {
   const { id } = useParams<{ id: string }>();
@@ -294,16 +203,30 @@ const Course = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // ✅ Загружаем модули из API с сортировкой по order_index
       const response = await api.get(`/api/courses/${id}`);
+      
       if (response?.course?.modules) {
-        setApiModules(response.course.modules);
-        console.log('✅ Загружено модулей:', response.course.modules.length);
+        // ✅ Сортируем модули по order_index (на случай если API не отсортировал)
+        const sortedModules = [...response.course.modules].sort((a, b) => {
+          const orderA = a.order_index ?? a.id ?? 0;
+          const orderB = b.order_index ?? b.id ?? 0;
+          return orderA - orderB;
+        });
+        
+        setApiModules(sortedModules);
+        console.log('✅ Загружено модулей:', sortedModules.length);
+        console.log('📊 Порядок модулей:', sortedModules.map(m => ({ id: m.id, order_index: m.order_index, title: m.title })));
       } else {
-        setError('Курс не найден или не содержит модулей');
+        // ✅ Если модулей нет - показываем пустой список (не ошибку)
+        setApiModules([]);
+        console.log('ℹ️ Модули не найдены для курса:', id);
       }
     } catch (error: any) {
       console.error('❌ Ошибка загрузки модулей:', error);
       setError(error?.message || 'Не удалось загрузить модули курса');
+      setApiModules([]); // ✅ При ошибке показываем пустой список
     } finally {
       setLoading(false);
     }
@@ -853,11 +776,12 @@ const Course = () => {
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={apiModules.length > 0 ? apiModules.map(m => m.id) : modules.map(m => m.id)}
+                items={apiModules.map(m => m.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-3">
-                  {(apiModules.length > 0 ? apiModules : modules).map((module, index) => (
+                  {apiModules.length > 0 ? (
+                    apiModules.map((module, index) => (
                     <SortableModule
                       key={module.id}
                       module={module}
@@ -866,7 +790,18 @@ const Course = () => {
                       onDelete={handleDeleteModule}
                       isAdmin={isAdmin}
                     />
-                  ))}
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-400 mb-4">Модули не найдены</p>
+                      {isAdmin && (
+                        <Button onClick={handleAddModule} className="bg-[#00ff00] text-black">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Добавить первый модуль
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </SortableContext>
             </DndContext>

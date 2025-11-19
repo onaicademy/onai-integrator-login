@@ -37,22 +37,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'sonner';
 
-// Mock data - в реальном приложении это будет из API
-const moduleData = {
-  "2": {
-    id: 2,
-    title: "Создание GPT-бота и CRM",
-    description: "Полный цикл создания интеллектуального бота с интеграцией в CRM систему",
-    progress: 60,
-    lessons: [
-      { id: 1, title: "Введение и обзор платформы", duration: "7 мин", status: "completed" },
-      { id: 2, title: "Создание API-ключа OpenAI", duration: "10 мин", status: "completed" },
-      { id: 3, title: "Подключение Telegram-бота", duration: "12 мин", status: "active" },
-      { id: 4, title: "Интеграция с amoCRM через Webhook", duration: "15 мин", status: "locked" },
-      { id: 5, title: "Настройка автопостов и ответов", duration: "9 мин", status: "locked" },
-    ]
-  }
-};
+// ✅ Мок-данные удалены - используем только данные из Supabase API
 
 // 🎯 Sortable Lesson Component для Drag & Drop
 interface SortableLessonProps {
@@ -239,39 +224,107 @@ const Module = () => {
     })
   );
   
-  // Используем moduleId или fallback на "2"
-  const module = moduleData[moduleId as keyof typeof moduleData] || moduleData["2"];
+  // ✅ Состояния для модуля и уроков
+  const [module, setModule] = useState<any>(null);
+  const [moduleError, setModuleError] = useState<string | null>(null);
 
   // 🔍 Отслеживаем изменения lessonDialog
   useEffect(() => {
     console.log('🔄 lessonDialog изменился:', lessonDialog);
   }, [lessonDialog]);
 
-  // Загрузить уроки из API
+  // ✅ Загрузить модуль из API
   useEffect(() => {
-    if (moduleId && isAdmin) {
+    if (moduleId) {
+      loadModuleFromAPI();
+    }
+  }, [moduleId]);
+
+  // ✅ Загрузить уроки из API (для всех пользователей, не только админов)
+  useEffect(() => {
+    if (moduleId) {
       loadLessonsFromAPI();
     }
-  }, [moduleId, isAdmin]);
+  }, [moduleId]);
 
-  const loadLessonsFromAPI = async () => {
+  const loadModuleFromAPI = async () => {
+    if (!moduleId) {
+      setModuleError('ID модуля не указан');
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await api.get(`/api/lessons?module_id=${moduleId}`);
-      if (response?.lessons) {
-        setApiLessons(response.lessons);
-        console.log('✅ Загружено уроков:', response.lessons.length);
+      setModuleError(null);
+      const response = await api.get(`/api/modules/${moduleId}`);
+      if (response?.module) {
+        setModule(response.module);
+        console.log('✅ Модуль загружен:', response.module);
+      } else {
+        setModuleError('Модуль не найден');
       }
-    } catch (error) {
-      console.error('❌ Ошибка загрузки уроков:', error);
+    } catch (error: any) {
+      console.error('❌ Ошибка загрузки модуля:', error);
+      setModuleError(error?.message || 'Не удалось загрузить модуль');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!module) {
-    console.log("Module not found for moduleId:", moduleId);
-    return <div className="text-white p-8">Модуль не найден</div>;
+  const loadLessonsFromAPI = async () => {
+    if (!moduleId) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.get(`/api/lessons?module_id=${moduleId}`);
+      if (response?.lessons) {
+        // ✅ Сортируем уроки по order_index
+        const sortedLessons = [...response.lessons].sort((a, b) => {
+          const orderA = a.order_index ?? a.id ?? 0;
+          const orderB = b.order_index ?? b.id ?? 0;
+          return orderA - orderB;
+        });
+        setApiLessons(sortedLessons);
+        console.log('✅ Загружено уроков:', sortedLessons.length);
+        console.log('📊 Порядок уроков:', sortedLessons.map(l => ({ id: l.id, order_index: l.order_index, title: l.title })));
+      } else {
+        setApiLessons([]);
+        console.log('ℹ️ Уроки не найдены для модуля:', moduleId);
+      }
+    } catch (error: any) {
+      console.error('❌ Ошибка загрузки уроков:', error);
+      setApiLessons([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Обработка состояний загрузки модуля
+  if (loading && !module) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#00ff00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-xl text-white">Загрузка модуля...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (moduleError || !module) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-white mb-4">Модуль не найден</h1>
+          <p className="text-gray-400 mb-6">{moduleError || 'Модуль с указанным ID не существует'}</p>
+          <Button onClick={() => navigate(`/course/${id}`)} className="bg-[#00ff00] text-black">
+            Вернуться к курсу
+          </Button>
+        </div>
+      </div>
+    );
   }
   
   const handleAddLesson = () => {
@@ -435,8 +488,9 @@ const Module = () => {
     }
   };
 
-  const completedLessons = module.lessons.filter(l => l.status === "completed").length;
-  const totalLessons = module.lessons.length;
+  // ✅ Используем apiLessons вместо module.lessons
+  const completedLessons = apiLessons.filter(l => l.status === "completed").length;
+  const totalLessons = apiLessons.length;
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -779,9 +833,10 @@ const Module = () => {
             </DndContext>
           ) : (
             <div className="space-y-3">
-              {module.lessons.map((lesson, index) => {
-              // ✅ FIX: Для уроков из API устанавливаем status = "active" (они всегда доступны)
-              const lessonStatus = lesson.status || 'active';
+              {apiLessons.length > 0 ? (
+                apiLessons.map((lesson, index) => {
+                  // ✅ FIX: Для уроков из API устанавливаем status = "active" (они всегда доступны)
+                  const lessonStatus = lesson.status || 'active';
               
               return (
                 <motion.article
@@ -917,10 +972,21 @@ const Module = () => {
                     </div>
                   </div>
                 </div>
-              </motion.article>
-              );
-            })}
-          </div>
+                </motion.article>
+                );
+              })
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-400 mb-4">Уроки не найдены</p>
+                  {isAdmin && (
+                    <Button onClick={handleAddLesson} className="bg-[#00ff00] text-black">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Добавить первый урок
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </section>
 
