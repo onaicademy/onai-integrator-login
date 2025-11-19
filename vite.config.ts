@@ -14,8 +14,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
-  base: '/', // Важно: указываем корневой путь для правильной работы роутинга
-  server: {
+    base: '/', // Важно: указываем корневой путь для правильной работы роутинга
+    server: {
     host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
     port: 8080,
     strictPort: true, // Не менять порт, если занят
@@ -68,5 +68,6 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env': env,
     },
+  },
   };
 });
