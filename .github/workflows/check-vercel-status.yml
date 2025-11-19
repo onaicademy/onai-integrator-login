@@ -1,0 +1,113 @@
+name: Check Vercel Deployment Status
+
+# Проверяет статус последнего деплоя Vercel
+# Можно запустить вручную для проверки
+
+on:
+  workflow_dispatch:  # Только ручной запуск
+  schedule:
+    # Проверка каждые 5 минут после push (опционально)
+    - cron: '*/5 * * * *'
+
+jobs:
+  check-vercel:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Check Vercel deployment status
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          echo "🔍 Проверка статуса деплоя Vercel..."
+          
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "❌ VERCEL_TOKEN не настроен"
+            echo ""
+            echo "📋 Как настроить:"
+            echo "1. Перейди в Vercel Dashboard → Settings → Tokens"
+            echo "2. Создай новый токен"
+            echo "3. Добавь в GitHub Secrets:"
+            echo "   - VERCEL_TOKEN"
+            echo "   - VERCEL_ORG_ID (из Settings → General)"
+            echo "   - VERCEL_PROJECT_ID (из Project Settings → General)"
+            exit 1
+          fi
+          
+          echo "📡 Получаю информацию о последнем деплое..."
+          
+          # Получаем последний деплой
+          RESPONSE=$(curl -s \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&limit=1")
+          
+          if [ $? -ne 0 ]; then
+            echo "❌ Ошибка при запросе к Vercel API"
+            exit 1
+          fi
+          
+          DEPLOYMENT=$(echo "$RESPONSE" | jq -r '.deployments[0] // empty')
+          
+          if [ -z "$DEPLOYMENT" ] || [ "$DEPLOYMENT" = "null" ]; then
+            echo "⚠️ Деплои не найдены"
+            exit 0
+          fi
+          
+          STATE=$(echo "$DEPLOYMENT" | jq -r '.state // "unknown"')
+          URL=$(echo "$DEPLOYMENT" | jq -r '.url // "unknown"')
+          CREATED=$(echo "$DEPLOYMENT" | jq -r '.createdAt // "unknown"')
+          CREATOR=$(echo "$DEPLOYMENT" | jq -r '.creator.username // "unknown"')
+          TARGET=$(echo "$DEPLOYMENT" | jq -r '.target // "unknown"')
+          
+          echo ""
+          echo "╔════════════════════════════════════════╗"
+          echo "║   📊 СТАТУС VERCEL ДЕПЛОЯ             ║"
+          echo "╚════════════════════════════════════════╝"
+          echo ""
+          echo "📦 Статус: $STATE"
+          echo "🌐 URL: $URL"
+          echo "👤 Создал: $CREATOR"
+          echo "🎯 Target: $TARGET"
+          echo "📅 Создан: $CREATED"
+          echo ""
+          
+          case "$STATE" in
+            "READY")
+              echo "✅ Деплой успешен и готов!"
+              echo "🌐 Production: https://onai.academy"
+              exit 0
+              ;;
+            "BUILDING")
+              echo "⏳ Деплой в процессе сборки..."
+              echo "📊 Следите за прогрессом: https://vercel.com/dashboard"
+              exit 0
+              ;;
+            "QUEUED")
+              echo "⏸️ Деплой в очереди..."
+              echo "📊 Следите за прогрессом: https://vercel.com/dashboard"
+              exit 0
+              ;;
+            "ERROR")
+              echo "❌ Деплой завершился с ошибкой!"
+              echo "📊 Проверьте логи: https://vercel.com/dashboard"
+              exit 1
+              ;;
+            "CANCELED")
+              echo "⚠️ Деплой отменён"
+              echo "📊 Проверьте логи: https://vercel.com/dashboard"
+              exit 1
+              ;;
+            *)
+              echo "ℹ️ Неизвестный статус: $STATE"
+              echo "📊 Проверьте статус: https://vercel.com/dashboard"
+              exit 0
+              ;;
+          esac
+

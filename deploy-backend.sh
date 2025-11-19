@@ -1,45 +1,22 @@
 #!/bin/bash
-
-# 🚀 DEPLOY BACKEND НА DIGITALOCEAN
-# Сервер: 207.154.231.30
-# User: root
-# Путь: /var/www/onai-integrator-login-main/backend
-
-echo "🚀 Starting Backend Deploy..."
+cd /var/www/onai-integrator-login-main/backend
+echo "=== BACKUP GIT STASH ==="
+git stash
 echo ""
-
-ssh root@207.154.231.30 << 'EOF'
-echo "📦 Pulling latest changes from GitHub..."
-cd /var/www/onai-integrator-login-main
+echo "=== GIT PULL ==="
 git pull origin main
-
 echo ""
-echo "📦 Installing dependencies..."
-cd backend
-npm install --production
-
+echo "=== NPM INSTALL ==="
+npm install
 echo ""
-echo "🔨 Building TypeScript..."
+echo "=== BUILD ==="
 npm run build
-
 echo ""
-echo "🔄 Restarting PM2 process..."
-pm2 restart onai-backend
-
+echo "=== PM2 RELOAD ==="
+pm2 reload onai-backend --update-env
 echo ""
-echo "📋 Recent logs:"
-pm2 logs onai-backend --lines 20
-
+echo "=== PM2 STATUS ==="
+pm2 status onai-backend
 echo ""
-echo "✅ Backend deployed!"
-EOF
-
-echo ""
-echo "🔍 Testing API..."
-sleep 3
-curl https://api.onai.academy/api/health
-
-echo ""
-echo ""
-echo "✅ Deploy completed!"
-
+echo "=== CHECK LOGS (last 20 lines) ==="
+pm2 logs onai-backend --lines 20 --nostream
