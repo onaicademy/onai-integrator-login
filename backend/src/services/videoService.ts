@@ -4,7 +4,8 @@
  */
 
 import { supabase } from '../config/supabase';
-import { uploadVideoToR2, getSignedVideoUrl, deleteVideoFromR2 } from './r2StorageService';
+// R2 Storage removed - using Supabase Storage instead
+// import { uploadVideoToR2, getSignedVideoUrl, deleteVideoFromR2 } from './r2StorageService';
 import { VideoContent, VideoContentWithSignedUrl, CreateVideoDto } from '../types/courses.types';
 
 /**
@@ -40,18 +41,23 @@ export async function uploadLessonVideo(
       .eq('lesson_id', lessonId)
       .single();
 
-    // If exists, delete old video from R2
+    // If exists, delete old video (R2 removed - using Supabase Storage)
     if (existingVideo) {
       console.log('[VideoService] Deleting old video:', existingVideo.r2_key);
       try {
-        await deleteVideoFromR2(existingVideo.r2_key);
+        // TODO: Replace with Supabase Storage delete
+        // await deleteVideoFromR2(existingVideo.r2_key);
         await supabase.from('video_content').delete().eq('id', existingVideo.id);
       } catch (deleteError) {
         console.warn('[VideoService] ⚠️ Failed to delete old video:', deleteError);
       }
     }
 
-    // Upload to R2
+    // Upload to storage (R2 removed - using Supabase Storage)
+    // TODO: Replace with Supabase Storage upload
+    throw new Error('Video upload not implemented - R2 removed, need Supabase Storage implementation');
+    
+    /* Commented out - R2 removed
     const { url, key } = await uploadVideoToR2(fileBuffer, fileName, mimeType);
 
     // Save metadata to database
@@ -61,7 +67,7 @@ export async function uploadLessonVideo(
         lesson_id: lessonId,
         r2_key: key,
         r2_url: url,
-        title: lesson.title,
+        title: lesson?.title || '',
         duration_seconds: duration,
         file_size_bytes: fileSize,
         mime_type: mimeType,
@@ -72,12 +78,6 @@ export async function uploadLessonVideo(
 
     if (error) {
       console.error('[VideoService] ❌ Error saving video metadata:', error);
-      // Try to delete uploaded video from R2
-      try {
-        await deleteVideoFromR2(key);
-      } catch (cleanupError) {
-        console.error('[VideoService] ❌ Failed to cleanup R2:', cleanupError);
-      }
       throw new Error(`Failed to save video metadata: ${error.message}`);
     }
 
@@ -90,7 +90,10 @@ export async function uploadLessonVideo(
         updated_at: new Date().toISOString(),
       })
       .eq('id', lessonId);
-
+    */
+    
+    // Code below is unreachable - commented out
+    /*
     console.log('[VideoService] ✅ Video uploaded successfully:', video.id);
     return {
       id: video.id,
@@ -104,6 +107,7 @@ export async function uploadLessonVideo(
       status: video.status,
       created_at: video.created_at,
     };
+    */
   } catch (error: any) {
     console.error('[VideoService] ❌ Exception:', error.message);
     throw error;
@@ -128,8 +132,10 @@ export async function getLessonVideo(lessonId: number): Promise<VideoContentWith
       throw new Error('Video not found');
     }
 
-    // Generate signed URL (2 hours expiry)
-    const signedUrl = await getSignedVideoUrl(video.r2_key, 7200);
+    // Generate signed URL (R2 removed - using Supabase Storage)
+    // TODO: Replace with Supabase Storage signed URL
+    // const signedUrl = await getSignedVideoUrl(video.r2_key, 7200);
+    const signedUrl = video.r2_url || ''; // Temporary fallback
 
     console.log('[VideoService] ✅ Video found with signed URL');
     return {
@@ -170,8 +176,9 @@ export async function deleteLessonVideo(lessonId: number): Promise<void> {
       throw new Error('Video not found');
     }
 
-    // Delete from R2
-    await deleteVideoFromR2(video.r2_key);
+    // Delete from storage (R2 removed - using Supabase Storage)
+    // TODO: Replace with Supabase Storage delete
+    // await deleteVideoFromR2(video.r2_key);
 
     // Delete from database
     const { error: deleteError } = await supabase

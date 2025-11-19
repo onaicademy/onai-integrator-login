@@ -28,19 +28,6 @@ console.log('   - First 20 chars:', openaiKey?.substring(0, 20) || 'EMPTY');
 console.log('   - Last 10 chars:', openaiKey?.substring(openaiKey.length - 10) || 'EMPTY');
 console.log('\n');
 
-// Cloudflare R2
-const r2AccessKey = process.env.R2_ACCESS_KEY_ID;
-const r2SecretKey = process.env.R2_SECRET_ACCESS_KEY;
-console.log('🗄️ CLOUDFLARE R2:');
-console.log('   - R2_ACCESS_KEY_ID exists:', !!r2AccessKey);
-console.log('   - R2_ACCESS_KEY_ID length:', r2AccessKey?.length || 0);
-console.log('   - R2_ACCESS_KEY_ID first 10:', r2AccessKey?.substring(0, 10) || 'EMPTY');
-console.log('   - R2_SECRET_ACCESS_KEY exists:', !!r2SecretKey);
-console.log('   - R2_SECRET_ACCESS_KEY length:', r2SecretKey?.length || 0);
-console.log('   - R2_ENDPOINT:', process.env.R2_ENDPOINT || 'EMPTY');
-console.log('   - R2_BUCKET_NAME:', process.env.R2_BUCKET_NAME || 'EMPTY');
-console.log('   - R2_PUBLIC_URL:', process.env.R2_PUBLIC_URL || 'EMPTY');
-console.log('\n');
 
 // Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -57,11 +44,6 @@ console.log('══════════════════════�
 if (!openaiKey || openaiKey.length < 50) {
   console.error('❌ КРИТИЧНАЯ ОШИБКА: OPENAI_API_KEY не загружен или неправильный!');
   console.error('❌ Backend не сможет работать с OpenAI API!');
-}
-
-if (!r2AccessKey || !r2SecretKey) {
-  console.error('❌ КРИТИЧНАЯ ОШИБКА: R2 credentials не загружены!');
-  console.error('❌ Backend не сможет загружать видео!');
 }
 
 if (!supabaseUrl || !supabaseKey) {
