@@ -327,6 +327,17 @@ const NeuroHub = () => {
     })), []
   );
 
+  // Матричные цифры на фоне
+  const matrixDigits = useMemo(() => 
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: (i * 3.33) % 100,
+      duration: 15 + Math.random() * 10,
+      delay: Math.random() * 5,
+      digit: Math.floor(Math.random() * 2), // 0 или 1
+    })), []
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0a14] to-black flex items-center justify-center">
@@ -360,6 +371,29 @@ const NeuroHub = () => {
         ))}
       </div>
 
+      {/* Матричные цифры */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+        {matrixDigits.map((item) => (
+          <motion.div
+            key={item.id}
+            className="absolute text-[#00ff00] font-mono text-sm"
+            style={{ left: `${item.x}%`, top: '-5%' }}
+            animate={{
+              y: ['0vh', '105vh'],
+              opacity: [0, 0.7, 0.7, 0],
+            }}
+            transition={{
+              duration: item.duration,
+              delay: item.delay,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          >
+            {item.digit}
+          </motion.div>
+        ))}
+      </div>
+
       <div className="relative z-10 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* HEADER */}
@@ -384,15 +418,20 @@ const NeuroHub = () => {
         </motion.div>
 
         {/* БЛОК 1: ПРОГРЕСС/ДАШБОРД (МЕТРИКИ) */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-zinc-900/80 border-2 border-blue-500/30">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-400" />
-                  <span className="text-gray-400 text-sm">Прогресс курса</span>
+                  <motion.div
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <span className="text-3xl">📚</span>
+                  </motion.div>
+                  <span className="text-gray-400 text-xs sm:text-sm">Прогресс курса</span>
                 </div>
-                <span className="text-white font-bold text-2xl">{courseProgress}%</span>
+                <span className="text-white font-bold text-xl sm:text-2xl">{courseProgress}%</span>
               </div>
               <div className="h-3 bg-zinc-800 rounded-full overflow-hidden mb-2">
                 <motion.div
@@ -406,13 +445,21 @@ const NeuroHub = () => {
           </Card>
 
           <Card className="bg-zinc-900/80 border-2 border-orange-500/30">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                  <span className="text-gray-400 text-sm">Streak</span>
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 5, -5, 0]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <span className="text-3xl">🔥</span>
+                  </motion.div>
+                  <span className="text-gray-400 text-xs sm:text-sm">Streak</span>
                 </div>
-                <span className="text-white font-bold text-2xl">{streak}</span>
+                <span className="text-white font-bold text-xl sm:text-2xl">{streak}</span>
               </div>
               <div className="h-3 bg-zinc-800 rounded-full overflow-hidden mb-2">
                 <motion.div
@@ -426,14 +473,19 @@ const NeuroHub = () => {
           </Card>
 
           <Card className="bg-zinc-900/80 border-2 border-[#00ff00]/30">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-[#00ff00]" />
-                  <span className="text-gray-400 text-sm">Уровень</span>
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
+                    <span className="text-3xl">⚡</span>
+                  </motion.div>
+                  <span className="text-gray-400 text-xs sm:text-sm">Уровень</span>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-bold text-2xl">Level {userLevel}</p>
+                  <p className="text-white font-bold text-xl sm:text-2xl">Level {userLevel}</p>
                   <p className="text-xs text-gray-500">{userXP} XP</p>
                 </div>
               </div>
@@ -449,15 +501,32 @@ const NeuroHub = () => {
           </Card>
 
           <Card className="bg-zinc-900/80 border-2 border-yellow-500/30">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-500" />
-                  <span className="text-gray-400 text-sm">Рейтинг</span>
+                  <motion.div
+                    animate={{ 
+                      y: [0, -5, 0],
+                      rotate: [0, 10, -10, 0]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <span className="text-3xl">🏆</span>
+                  </motion.div>
+                  <span className="text-gray-400 text-xs sm:text-sm">Рейтинг</span>
                 </div>
-                <span className="text-white font-bold text-2xl">Топ-25%</span>
+                <span className="text-white font-bold text-lg sm:text-2xl">Топ-25%</span>
               </div>
-              <p className="text-gray-500 text-xs mt-2">🎉 Ты в топе!</p>
+              <p className="text-gray-500 text-xs mt-2">
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="inline-block"
+                >
+                  🎉
+                </motion.span>
+                {" "}Ты в топе!
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -551,26 +620,18 @@ const NeuroHub = () => {
           </Card>
         </motion.div>
 
-        {/* БЛОК 3: МОИ ЦЕЛИ */}
+        {/* БЛОК 3: МОИ ЦЕЛИ (автогенерация) */}
         <motion.div>
           <Card className="bg-zinc-900/80 border-2 border-purple-500/30">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                    <Target className="w-6 h-6 text-purple-500" />
-                    Мои цели
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">Твои личные цели на неделю</CardDescription>
-                </div>
-                <Button
-                  onClick={() => setIsEditingGoals(!isEditingGoals)}
-                  variant="outline"
-                  size="sm"
-                  className="border-purple-500/50 text-purple-400"
-                >
-                  {isEditingGoals ? "Готово" : "Редактировать"}
-                </Button>
+              <div>
+                <CardTitle className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                  <Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+                  Мои цели
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-gray-400">
+                  Цели формируются автоматически на основе твоего прогресса
+                </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
@@ -579,56 +640,43 @@ const NeuroHub = () => {
                   {myGoals.map((goal, index) => (
                     <motion.div
                       key={index}
-                      className="flex items-center gap-3 p-3 bg-zinc-800/50 border border-purple-500/30 rounded-lg group"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center gap-3 p-3 bg-zinc-800/50 border border-purple-500/30 rounded-lg"
                     >
-                      <CheckCircle className="w-5 h-5 text-purple-500" />
-                      <p className="text-white flex-1">{goal}</p>
-                      {isEditingGoals && (
-                        <button onClick={() => setMyGoals(myGoals.filter((_, i) => i !== index))} className="text-red-500">
-                          <X className="w-5 h-5" />
-                        </button>
-                      )}
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                      <p className="text-white flex-1 text-sm sm:text-base">{goal}</p>
+                      <motion.span
+                        animate={{ rotate: [0, 360] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        className="text-xl"
+                      >
+                        🎯
+                      </motion.span>
                     </motion.div>
                   ))}
                 </AnimatePresence>
-                {isEditingGoals && (
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Добавить новую цель..."
-                      value={newGoal}
-                      onChange={(e) => setNewGoal(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && newGoal.trim()) {
-                          setMyGoals([...myGoals, newGoal.trim()]);
-                          setNewGoal("");
-                        }
-                      }}
-                      className="bg-zinc-800 border-purple-500/30 text-white"
-                    />
-                    <Button
-                      onClick={() => {
-                        if (newGoal.trim()) {
-                          setMyGoals([...myGoals, newGoal.trim()]);
-                          setNewGoal("");
-                        }
-                      }}
-                      className="bg-purple-600"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </Button>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
         {/* БЛОК 4: ЧЕЛЛЕНДЖ + СОВЕТЫ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-500/40">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="text-4xl">{todayChallenge.icon}</div>
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="text-3xl sm:text-4xl"
+                >
+                  {todayChallenge.icon}
+                </motion.div>
                 <div>
                   <h3 className="text-white font-bold text-lg">{todayChallenge.title}</h3>
                   <Badge className="bg-yellow-600 text-white text-xs mt-1">+{todayChallenge.xp} XP</Badge>
@@ -658,20 +706,32 @@ const NeuroHub = () => {
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/40">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Lightbulb className="w-8 h-8 text-yellow-400" />
-                <h3 className="text-white font-bold text-lg">Совет дня</h3>
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-3xl sm:text-4xl"
+                >
+                  💡
+                </motion.div>
+                <h3 className="text-white font-bold text-base sm:text-lg">Совет дня</h3>
               </div>
               <p className="text-gray-300 text-sm">{todayTip}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-2 border-cyan-500/40">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="text-4xl">{todayHealthTip.icon}</div>
-                <h3 className="text-white font-bold text-lg">{todayHealthTip.title}</h3>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-3xl sm:text-4xl"
+                >
+                  {todayHealthTip.icon}
+                </motion.div>
+                <h3 className="text-white font-bold text-base sm:text-lg">{todayHealthTip.title}</h3>
               </div>
               <p className="text-gray-300 text-sm">{todayHealthTip.text}</p>
             </CardContent>
@@ -681,51 +741,102 @@ const NeuroHub = () => {
         {/* БЛОК 5: ВСЕ ДОСТИЖЕНИЯ */}
         <Card className="bg-zinc-900/80 border-2 border-yellow-500/30">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-yellow-500" />
+            <CardTitle className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+              <motion.span
+                animate={{ rotate: [0, 10, -10, 0], y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-3xl sm:text-4xl inline-block"
+              >
+                🏆
+              </motion.span>
               Все достижения
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="week" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="week">За неделю</TabsTrigger>
-                <TabsTrigger value="month">За месяц</TabsTrigger>
-                <TabsTrigger value="permanent">Постоянные</TabsTrigger>
+                <TabsTrigger value="week" className="text-xs sm:text-sm">За неделю</TabsTrigger>
+                <TabsTrigger value="month" className="text-xs sm:text-sm">За месяц</TabsTrigger>
+                <TabsTrigger value="permanent" className="text-xs sm:text-sm">Постоянные</TabsTrigger>
               </TabsList>
 
               <TabsContent value="week">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {allAchievements.week.map((ach: any) => (
-                    <div key={ach.id} className="p-4 bg-zinc-800/50 border-2 border-[#00ff00]/40 rounded-xl">
-                      <div className="text-4xl mb-2">{ach.icon}</div>
+                  {allAchievements.week.map((ach: any, idx: number) => (
+                    <motion.div 
+                      key={ach.id} 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-4 bg-zinc-800/50 border-2 border-[#00ff00]/40 rounded-xl hover:border-[#00ff00]/60 transition-all"
+                    >
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
+                        className="text-4xl mb-2"
+                      >
+                        {ach.icon}
+                      </motion.div>
                       <h4 className="text-white font-bold mb-1">{ach.title}</h4>
                       <p className="text-gray-400 text-xs">{ach.description}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </TabsContent>
 
               <TabsContent value="month">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {allAchievements.month.map((ach: any) => (
-                    <div key={ach.id} className="p-4 bg-zinc-800/50 border-2 border-yellow-500/40 rounded-xl">
-                      <div className="text-4xl mb-2">{ach.icon}</div>
+                  {allAchievements.month.map((ach: any, idx: number) => (
+                    <motion.div 
+                      key={ach.id} 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-4 bg-zinc-800/50 border-2 border-yellow-500/40 rounded-xl hover:border-yellow-500/60 transition-all"
+                    >
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
+                        className="text-4xl mb-2"
+                      >
+                        {ach.icon}
+                      </motion.div>
                       <h4 className="text-white font-bold mb-1">{ach.title}</h4>
                       <p className="text-gray-400 text-xs">{ach.description}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </TabsContent>
 
               <TabsContent value="permanent">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {allAchievements.permanent.map((ach: any) => (
-                    <div key={ach.id} className="p-4 bg-zinc-800/50 border-2 border-purple-500/40 rounded-xl">
-                      <div className="text-4xl mb-2">{ach.icon}</div>
+                  {allAchievements.permanent.map((ach: any, idx: number) => (
+                    <motion.div 
+                      key={ach.id} 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-4 bg-zinc-800/50 border-2 border-purple-500/40 rounded-xl hover:border-purple-500/60 transition-all"
+                    >
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
+                        className="text-4xl mb-2"
+                      >
+                        {ach.icon}
+                      </motion.div>
                       <h4 className="text-white font-bold mb-1">{ach.title}</h4>
                       <p className="text-gray-400 text-xs">{ach.description}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </TabsContent>
