@@ -53,7 +53,32 @@ export async function processFile(req: Request, res: Response) {
     if (mimetype === 'application/pdf') {
       console.log('[FileController] 📄 Извлекаем текст из PDF...');
       extractedText = await fileProcessingService.extractTextFromPDF(buffer);
-      console.log(`[FileController] ✅ Извлечено ${extractedText.length} символов из PDF`);
+      
+      // ✅ КРИТИЧНЫЙ ФИКС: Детектируем PDF-скан (пустой текст)
+      if (!extractedText || extractedText.trim().length === 0) {
+        console.warn('[FileController] ⚠️ PDF-СКАН ОБНАРУЖЕН! Текст не извлечён.');
+        
+        // Специальное сообщение для AI, чтобы он корректно ответил пользователю
+        extractedText = `[СИСТЕМНОЕ СООБЩЕНИЕ - PDF-СКАН]
+
+Этот PDF-файл не содержит текстового слоя (это отсканированный документ или изображение в формате PDF).
+
+ВАЖНО: Ответь пользователю следующее сообщение:
+
+"Привет! 👋 
+
+Я обнаружил, что твой PDF — это скан (изображение). К сожалению, я пока не могу извлечь текст из таких файлов напрямую. 📄❌
+
+Но есть простое решение! ✨
+
+Сделай скриншот нужной страницы PDF и отправь мне как обычное изображение (PNG или JPG). Я смогу проанализировать его через Vision API и ответить на все твои вопросы! 🎨👀
+
+Просто открой PDF, сделай скриншот (Win+Shift+S на Windows или Cmd+Shift+4 на Mac) и прикрепи изображение здесь. Готов помочь!"`;
+        
+        console.log('[FileController] ℹ️ AI получит инструкцию для пользователя о PDF-скане');
+      } else {
+        console.log(`[FileController] ✅ Извлечено ${extractedText.length} символов из текстового PDF`);
+      }
     } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       console.log('[FileController] 📄 Извлекаем текст из DOCX...');
       extractedText = await fileProcessingService.extractTextFromDOCX(buffer);

@@ -33,7 +33,10 @@ import {
   ThumbsUp,
   ArrowUp,
   Lightbulb,
-  PartyPopper
+  PartyPopper,
+  FileText,
+  Image as ImageIcon,
+  File
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getStudentDashboard } from "@/lib/dashboard-api";
@@ -803,16 +806,17 @@ const NeuroHub = () => {
           </motion.div>
         )}
 
-        {/* ===== DESKTOP: ЧАТ + ДАШБОРД (50/50) ===== */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+        {/* ===== DESKTOP: ОПТИМИЗИРОВАННЫЙ GRID LAYOUT ===== */}
+        <div className="hidden lg:grid lg:grid-cols-12 gap-6">
           
-          {/* ===== ЧАТ С AI (Левая половина) ===== */}
+          {/* ===== ЧАТ С AI (Левая колонка - 6 колонок, увеличенная высота) ===== */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:col-span-6 lg:row-span-3"
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-[450px] sm:h-[500px] md:h-[550px] lg:h-[600px] flex flex-col relative overflow-hidden">
+            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-full flex flex-col relative overflow-hidden">
               <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff00]/60" />
               <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff00]/60" />
               <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff00]/60" />
@@ -918,20 +922,52 @@ const NeuroHub = () => {
               </ScrollArea>
 
               <CardContent className="relative z-10 border-t border-[#00ff00]/20 pt-4">
+                {/* Прикреплённые файлы */}
                 {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {attachedFiles.map((file, idx) => (
-                      <div key={idx} className="flex items-center gap-1 bg-zinc-800 border border-[#00ff00]/30 rounded-lg px-3 py-1 text-sm">
-                        <Paperclip className="w-3 h-3 text-[#00ff00]" />
-                        <span className="text-white truncate max-w-[80px] sm:max-w-[120px] lg:max-w-[150px]">{file.name}</span>
-                        <button
-                          onClick={() => removeFile(idx)}
-                          className="ml-1 text-gray-400 hover:text-white"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                  <div className="mb-3 p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/30">
+                    <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                      <Paperclip className="w-3 h-3" />
+                      Прикреплено файлов: <span className="text-[#00ff00] font-semibold">{attachedFiles.length}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {attachedFiles.map((file, idx) => {
+                        const isImage = file.type.startsWith('image/');
+                        const isPDF = file.type === 'application/pdf';
+                        const isDoc = file.type.includes('word') || file.type.includes('document');
+                        
+                        return (
+                          <div 
+                            key={idx} 
+                            className="flex items-center gap-2 bg-zinc-800 border border-[#00ff00]/30 rounded-lg px-3 py-2 hover:bg-zinc-700/50 transition-colors"
+                          >
+                            {/* Иконка файла */}
+                            {isImage && <ImageIcon className="w-4 h-4 text-blue-400 shrink-0" />}
+                            {isPDF && <FileText className="w-4 h-4 text-red-400 shrink-0" />}
+                            {isDoc && <FileText className="w-4 h-4 text-blue-500 shrink-0" />}
+                            {!isImage && !isPDF && !isDoc && <File className="w-4 h-4 text-gray-400 shrink-0" />}
+                            
+                            {/* Название файла */}
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-sm text-white truncate max-w-[120px]" title={file.name}>
+                                {file.name}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {(file.size / 1024).toFixed(1)} KB
+                              </span>
+                            </div>
+                            
+                            {/* Кнопка удалить */}
+                            <button
+                              onClick={() => removeFile(idx)}
+                              className="ml-auto text-gray-400 hover:text-red-400 transition-colors shrink-0"
+                              title="Удалить файл"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
@@ -994,22 +1030,24 @@ const NeuroHub = () => {
             </Card>
           </motion.div>
 
-          {/* ===== ДАШБОРД С АНАЛИТИКОЙ (Правая половина) ===== */}
+          {/* ===== КАРТОЧКИ СТАТИСТИКИ (Правая колонка верх - 6 колонок) ===== */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="space-y-6"
+            className="lg:col-span-6"
           >
             {/* ✨ Карточки прогресса с АНИМАЦИЯМИ */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
               
               {/* 📊 Прогресс курса */}
               <motion.div
                 whileHover={{ scale: 1.02, y: -5 }}
                 transition={{ duration: 0.2 }}
+                className="h-full"
+                style={{ minHeight: '180px' }}
               >
-                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00ff00]/5 backdrop-blur-md relative group overflow-hidden">
+                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00ff00]/5 backdrop-blur-md relative group overflow-hidden h-full">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
                     animate={{
@@ -1021,14 +1059,14 @@ const NeuroHub = () => {
                       ease: "linear",
                     }}
                   />
-                  <CardContent className="p-4 relative z-10">
+                  <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="w-5 h-5 text-[#00ff00]" />
                       <p className="text-sm text-gray-400">Прогресс курса</p>
                   </div>
                     <p className="text-3xl font-bold text-white mb-1">{courseProgress}%</p>
                     <p className="text-xs text-gray-500">{completedLessons}/{totalLessons} уроков</p>
-                    <div className="mt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
+                    <div className="mt-auto pt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
                       <motion.div
                         className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
                         initial={{ width: 0 }}
@@ -1044,8 +1082,10 @@ const NeuroHub = () => {
               <motion.div
                 whileHover={{ scale: 1.02, y: -5 }}
                 transition={{ duration: 0.2 }}
+                className="h-full"
+                style={{ minHeight: '180px' }}
               >
-                <Card className="border-orange-500/30 bg-gradient-to-br from-black/50 to-orange-500/5 backdrop-blur-md relative group overflow-hidden">
+                <Card className="border-orange-500/30 bg-gradient-to-br from-black/50 to-orange-500/5 backdrop-blur-md relative group overflow-hidden h-full">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent"
                     animate={{
@@ -1057,7 +1097,7 @@ const NeuroHub = () => {
                       ease: "linear",
                     }}
                   />
-                  <CardContent className="p-4 relative z-10">
+                  <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
                       <Flame className="w-5 h-5 text-orange-500" />
                       <p className="text-sm text-gray-400">Streak</p>
@@ -1065,7 +1105,7 @@ const NeuroHub = () => {
                     <p className="text-3xl font-bold text-white mb-1">{streak}</p>
                     <p className="text-xs text-gray-500">дней подряд</p>
                     {/* Прогресс-бар для streak */}
-                    <div className="mt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
+                    <div className="mt-auto pt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
                       <motion.div
                         className="h-full bg-gradient-to-r from-orange-500 to-red-500"
                         initial={{ width: 0 }}
@@ -1073,20 +1113,6 @@ const NeuroHub = () => {
                         transition={{ duration: 1, delay: 0.7 }}
                       />
                   </div>
-                    {/* Огонь анимация */}
-                  <motion.div
-                      className="text-4xl mt-2 inline-block"
-                    animate={{
-                      scale: [1, 1.2, 1],
-                        rotate: [0, 5, -5, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                    }}
-                  >
-                    🔥
-                  </motion.div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -1095,8 +1121,10 @@ const NeuroHub = () => {
               <motion.div
                 whileHover={{ scale: 1.02, y: -5 }}
                 transition={{ duration: 0.2 }}
+                className="h-full"
+                style={{ minHeight: '180px' }}
               >
-                <Card className="border-yellow-500/30 bg-gradient-to-br from-black/50 to-yellow-500/5 backdrop-blur-md relative group overflow-hidden">
+                <Card className="border-yellow-500/30 bg-gradient-to-br from-black/50 to-yellow-500/5 backdrop-blur-md relative group overflow-hidden h-full">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
                     animate={{
@@ -1108,7 +1136,7 @@ const NeuroHub = () => {
                       ease: "linear",
                     }}
                   />
-                  <CardContent className="p-4 relative z-10">
+                  <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Zap className="w-5 h-5 text-yellow-500" />
@@ -1121,7 +1149,7 @@ const NeuroHub = () => {
                     <p className="text-3xl font-bold text-white mb-1">{userXP} XP</p>
                     <p className="text-xs text-gray-500">До {userLevel + 1} уровня: {xpForNextLevel - (userXP % 100)} XP</p>
                     {/* XP прогресс-бар */}
-                    <div className="mt-3 h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
+                    <div className="mt-auto pt-3 h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
                       <motion.div
                         className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 relative"
                         initial={{ width: 0 }}
@@ -1152,8 +1180,10 @@ const NeuroHub = () => {
               <motion.div
                 whileHover={{ scale: 1.02, y: -5 }}
                 transition={{ duration: 0.2 }}
+                className="h-full"
+                style={{ minHeight: '180px' }}
               >
-                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00cc00]/5 backdrop-blur-md relative group overflow-hidden">
+                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00cc00]/5 backdrop-blur-md relative group overflow-hidden h-full">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00cc00]/10 to-transparent"
                     animate={{
@@ -1165,14 +1195,14 @@ const NeuroHub = () => {
                       ease: "linear",
                     }}
                   />
-                  <CardContent className="p-4 relative z-10">
+                  <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
                       <Trophy className="w-5 h-5 text-[#00ff00]" />
                       <p className="text-sm text-gray-400">Достижения</p>
                   </div>
                     <p className="text-3xl font-bold text-white mb-1">{achievements.length}</p>
                     <p className="text-xs text-gray-500">{achievements.length > 0 ? 'получено' : 'пока нет'}</p>
-                    <div className="flex gap-1 mt-2">
+                    <div className="flex gap-1 mt-auto pt-2">
                       {achievements.slice(0, 3).map((achievement, idx) => (
                         <motion.div 
                           key={achievement.id} 
@@ -1205,233 +1235,98 @@ const NeuroHub = () => {
               </motion.div>
 
             </div>
+          </motion.div>
 
-            {/* ✨ СОВЕТ ДНЯ - виджет с мотивашкой */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md relative overflow-hidden">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-                  animate={{
-                    x: ['-100%', '200%'],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-                <CardContent className="py-4 px-6 relative z-10">
-                  <div className="flex items-start gap-4">
-                    <motion.div
-                      animate={{
-                        rotate: [0, 10, -10, 0],
-                        scale: [1, 1.1, 1],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                      }}
-                    >
-                      <Lightbulb className="w-10 h-10 text-yellow-500" />
-                    </motion.div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-400 mb-1 font-semibold">💡 Совет дня</p>
-                      <p className="text-base text-white leading-relaxed">
-                        {todayTip}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* ✨ ЧЕЛЛЕНДЖ ДНЯ */}
-            {!challengeAccepted && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.42 }}
-              >
-                <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-md relative overflow-hidden">
+          {/* ===== МОИ ЦЕЛИ (Правая колонка - 6 колонок) ===== */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.46 }}
+            className="lg:col-span-6"
+            style={{ minHeight: '350px' }}
+          >
+            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Star className="w-6 h-6 text-[#00ff00]" />
+                    Мои цели
+                  </CardTitle>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingGoals(!isEditingGoals)}
+                    className="text-[#00ff00] hover:bg-[#00ff00]/10"
+                  >
+                    {isEditingGoals ? "Готово" : "Редактировать"}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {myGoals.map((goal, idx) => (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
-                    animate={{
-                      x: ['-100%', '200%'],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                  <CardContent className="py-4 px-6 relative z-10">
-                    <div className="flex items-start gap-4">
-                      <motion.div
-                        className="text-5xl"
-                        animate={{
-                          scale: [1, 1.2, 1],
-                          rotate: [0, 10, -10, 0],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                        }}
-                      >
-                        {todayChallenge.icon}
-                      </motion.div>
-                      <div className="flex-1">
-                        <p className="text-sm text-yellow-400 mb-1 font-bold">🎯 Челлендж дня</p>
-                        <h3 className="text-lg font-bold text-white mb-1">{todayChallenge.title}</h3>
-                        <p className="text-gray-300 text-sm mb-3">{todayChallenge.description}</p>
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                            +{todayChallenge.xp} XP
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4">
+                    key={idx}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 group hover:border-[#00ff00]/40 transition-colors"
+                  >
+                    <CheckCircle className="w-5 h-5 text-[#00ff00] flex-shrink-0" />
+                    <span className="text-white flex-1">{goal}</span>
+                    {isEditingGoals && (
                       <Button
-                        onClick={() => {
-                          setChallengeAccepted(true);
-                          toast({
-                            title: "🎉 Челлендж принят!",
-                            description: `"${todayChallenge.title}" добавлен в твои задачи!`,
-                          });
-                        }}
-                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setMyGoals(myGoals.filter((_, i) => i !== idx))}
+                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300"
                       >
-                        ✅ Принять
+                        <X className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setChallengeAccepted(true)}
-                        className="border-yellow-500/30 hover:bg-yellow-500/10 text-white"
-                      >
-                        Позже
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* ✨ СОВЕТ ПО ЗДОРОВЬЮ */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.44 }}
-            >
-              <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-md relative overflow-hidden">
-                <CardContent className="py-4 px-6 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <motion.div
-                      className="text-4xl"
-                      animate={{
-                        scale: [1, 1.15, 1],
+                    )}
+                  </motion.div>
+                ))}
+                
+                {isEditingGoals && (
+                  <div className="flex gap-2 mt-3">
+                    <Input
+                      value={newGoal}
+                      onChange={(e) => setNewGoal(e.target.value)}
+                      placeholder="Добавить новую цель..."
+                      className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && newGoal.trim()) {
+                          setMyGoals([...myGoals, newGoal.trim()]);
+                          setNewGoal("");
+                        }
                       }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                      }}
-                    >
-                      {todayHealthTip.icon}
-                    </motion.div>
-                    <div className="flex-1">
-                      <p className="text-sm text-blue-400 mb-1 font-semibold">💪 Совет по здоровью</p>
-                      <h4 className="text-base font-bold text-white mb-1">{todayHealthTip.title}</h4>
-                      <p className="text-gray-300 text-sm">{todayHealthTip.text}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* ✨ МОИ ЦЕЛИ - editable виджет */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.46 }}
-            >
-              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Star className="w-6 h-6 text-[#00ff00]" />
-                      Мои цели
-                    </CardTitle>
+                    />
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setIsEditingGoals(!isEditingGoals)}
-                      className="text-[#00ff00] hover:bg-[#00ff00]/10"
+                      size="icon"
+                      onClick={() => {
+                        if (newGoal.trim()) {
+                          setMyGoals([...myGoals, newGoal.trim()]);
+                          setNewGoal("");
+                        }
+                      }}
+                      className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
                     >
-                      {isEditingGoals ? "Готово" : "Редактировать"}
+                      <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {myGoals.map((goal, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 group hover:border-[#00ff00]/40 transition-colors"
-                    >
-                      <CheckCircle className="w-5 h-5 text-[#00ff00] flex-shrink-0" />
-                      <span className="text-white flex-1">{goal}</span>
-                      {isEditingGoals && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setMyGoals(myGoals.filter((_, i) => i !== idx))}
-                          className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </motion.div>
-                  ))}
-                  
-                  {isEditingGoals && (
-                    <div className="flex gap-2 mt-3">
-                      <Input
-                        value={newGoal}
-                        onChange={(e) => setNewGoal(e.target.value)}
-                        placeholder="Добавить новую цель..."
-                        className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && newGoal.trim()) {
-                            setMyGoals([...myGoals, newGoal.trim()]);
-                            setNewGoal("");
-                          }
-                        }}
-                      />
-                      <Button
-                        size="icon"
-                        onClick={() => {
-                          if (newGoal.trim()) {
-                            setMyGoals([...myGoals, newGoal.trim()]);
-                            setNewGoal("");
-                          }
-                        }}
-                        className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            {/* ✨ Текущая миссия / ДЗ */}
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden">
+          {/* ===== ТЕКУЩАЯ МИССИЯ (Правая колонка - 6 колонок) ===== */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.48 }}
+            className="lg:col-span-6"
+            style={{ minHeight: '350px' }}
+          >
+            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
                 animate={{
@@ -1545,8 +1440,162 @@ const NeuroHub = () => {
                 )}
               </CardContent>
             </Card>
-                        </motion.div>
+          </motion.div>
+
         </div>
+
+        {/* ===== ДОПОЛНИТЕЛЬНЫЕ БЛОКИ (ВНЕ GRID) ===== */}
+        
+        {/* ✨ СОВЕТ ДНЯ & ЧЕЛЛЕНДЖ */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+          {/* ===== СОВЕТ ДНЯ ===== */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            style={{ minHeight: '140px' }}
+          >
+            <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md relative overflow-hidden h-full">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                animate={{
+                  x: ['-100%', '200%'],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <CardContent className="py-4 px-6 relative z-10">
+                <div className="flex items-start gap-4">
+                  <motion.div
+                    animate={{
+                      rotate: [0, 10, -10, 0],
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                    }}
+                  >
+                    <Lightbulb className="w-10 h-10 text-yellow-500" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-400 mb-1 font-semibold">💡 Совет дня</p>
+                    <p className="text-base text-white leading-relaxed">
+                      {todayTip}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* ===== СОВЕТ ПО ЗДОРОВЬЮ ===== */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.52 }}
+            style={{ minHeight: '140px' }}
+          >
+            <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-md relative overflow-hidden h-full">
+              <CardContent className="py-4 px-6 relative z-10">
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    className="text-4xl"
+                    animate={{
+                      scale: [1, 1.15, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                  >
+                    {todayHealthTip.icon}
+                  </motion.div>
+                  <div className="flex-1">
+                    <p className="text-sm text-blue-400 mb-1 font-semibold">💪 Совет по здоровью</p>
+                    <h4 className="text-base font-bold text-white mb-1">{todayHealthTip.title}</h4>
+                    <p className="text-gray-300 text-sm">{todayHealthTip.text}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* ✨ ЧЕЛЛЕНДЖ ДНЯ (Полная ширина) */}
+        {!challengeAccepted && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.54 }}
+            className="hidden lg:block"
+          >
+            <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-md relative overflow-hidden">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
+                animate={{
+                  x: ['-100%', '200%'],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <CardContent className="py-4 px-6 relative z-10">
+                <div className="flex items-start gap-4">
+                  <motion.div
+                    className="text-5xl"
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 10, -10, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                  >
+                    {todayChallenge.icon}
+                  </motion.div>
+                  <div className="flex-1">
+                    <p className="text-sm text-yellow-400 mb-1 font-bold">🎯 Челлендж дня</p>
+                    <h3 className="text-lg font-bold text-white mb-1">{todayChallenge.title}</h3>
+                    <p className="text-gray-300 text-sm mb-3">{todayChallenge.description}</p>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                        +{todayChallenge.xp} XP
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    onClick={() => {
+                      setChallengeAccepted(true);
+                      toast({
+                        title: "🎉 Челлендж принят!",
+                        description: `"${todayChallenge.title}" добавлен в твои задачи!`,
+                      });
+                    }}
+                    className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold"
+                  >
+                    ✅ Принять
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setChallengeAccepted(true)}
+                    className="border-yellow-500/30 hover:bg-yellow-500/10 text-white"
+                  >
+                    Позже
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* ===== MOBILE: ТАБЫ ===== */}
         <div className="lg:hidden">
@@ -1623,19 +1672,53 @@ const NeuroHub = () => {
                 </ScrollArea>
 
                 <CardContent className="border-t border-[#00ff00]/20 pt-4">
+                  {/* Прикреплённые файлы (Mobile) */}
                   {attachedFiles.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {attachedFiles.map((file, idx) => (
-                        <div key={idx} className="flex items-center gap-1 bg-zinc-800 border border-[#00ff00]/30 rounded px-2 py-1 text-xs">
-                          <Paperclip className="w-3 h-3 text-[#00ff00]" />
-                          <span className="text-white truncate max-w-[100px]">{file.name}</span>
-                          <button onClick={() => removeFile(idx)} className="text-gray-400">
-                            <X className="w-3 h-3" />
-                          </button>
+                    <div className="mb-3 p-2 bg-zinc-900/50 rounded-lg border border-[#00ff00]/30">
+                      <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                        <Paperclip className="w-3 h-3" />
+                        Файлов: <span className="text-[#00ff00] font-semibold">{attachedFiles.length}</span>
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {attachedFiles.map((file, idx) => {
+                          const isImage = file.type.startsWith('image/');
+                          const isPDF = file.type === 'application/pdf';
+                          const isDoc = file.type.includes('word') || file.type.includes('document');
+                          
+                          return (
+                            <div 
+                              key={idx} 
+                              className="flex items-center gap-2 bg-zinc-800 border border-[#00ff00]/30 rounded-lg px-2 py-1.5"
+                            >
+                              {/* Иконка */}
+                              {isImage && <ImageIcon className="w-3 h-3 text-blue-400 shrink-0" />}
+                              {isPDF && <FileText className="w-3 h-3 text-red-400 shrink-0" />}
+                              {isDoc && <FileText className="w-3 h-3 text-blue-500 shrink-0" />}
+                              {!isImage && !isPDF && !isDoc && <File className="w-3 h-3 text-gray-400 shrink-0" />}
+                              
+                              {/* Название + размер */}
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-xs text-white truncate max-w-[80px]" title={file.name}>
+                                  {file.name}
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  {(file.size / 1024).toFixed(1)} KB
+                                </span>
+                              </div>
+                              
+                              {/* Удалить */}
+                              <button
+                                onClick={() => removeFile(idx)}
+                                className="ml-auto text-gray-400 hover:text-red-400 shrink-0"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
-                      ))}
-                        </div>
-                      )}
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <input
