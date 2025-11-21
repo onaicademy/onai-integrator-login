@@ -62,6 +62,79 @@ type Achievement = {
   category?: string;
 };
 
+// Компонент карточки достижения
+const AchievementCard = ({ achievement, index }: { achievement: Achievement; index: number }) => {
+  const isLocked = achievement.status === "locked";
+  const isCompleted = achievement.status === "completed";
+  const inProgress = achievement.status === "in_progress";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.1, type: "spring" }}
+      whileHover={{ scale: isLocked ? 1 : 1.05, y: isLocked ? 0 : -5 }}
+      className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${
+        isCompleted
+          ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border-[#00ff00]/40"
+          : inProgress
+          ? "bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border-yellow-500/40"
+          : "bg-zinc-900/30 border-zinc-700/50 opacity-60"
+      }`}
+    >
+      {/* Иконка */}
+      <div className={`text-5xl mb-3 ${isLocked ? "grayscale" : ""}`}>
+        {isLocked ? "🔒" : achievement.icon}
+      </div>
+
+      {/* Заголовок */}
+      <h4 className="text-white font-bold text-sm mb-1 line-clamp-2">{achievement.title}</h4>
+      <p className="text-gray-400 text-xs mb-3">{achievement.description}</p>
+
+      {/* Прогресс бар */}
+      {inProgress && achievement.progress !== undefined && (
+        <div className="mb-2">
+          <div className="flex justify-between text-xs text-gray-400 mb-1">
+            <span>Прогресс</span>
+            <span>
+              {achievement.current}/{achievement.target}
+            </span>
+          </div>
+          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${achievement.progress}%` }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="h-full bg-gradient-to-r from-yellow-500 to-orange-500"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Требование для заблокированных */}
+      {isLocked && achievement.requirement && (
+        <div className="mt-2 p-2 bg-zinc-800/50 rounded text-xs text-gray-400 border border-zinc-700/50">
+          💡 {achievement.requirement}
+        </div>
+      )}
+
+      {/* Badge для завершенных */}
+      {isCompleted && (
+        <div className="absolute top-2 right-2">
+          <CheckCircle className="w-6 h-6 text-[#00ff00]" />
+        </div>
+      )}
+
+      {/* Tooltip при hover */}
+      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-zinc-900 border-2 border-[#00ff00]/60 rounded-lg p-2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-20 shadow-xl">
+        <p className="text-xs text-white text-center">
+          {isLocked ? achievement.requirement : isCompleted ? "✅ Завершено!" : `${achievement.progress}% выполнено`}
+        </p>
+      </div>
+    </motion.div>
+  );
+};
+
 const NeuroHub = () => {
   const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -122,24 +195,29 @@ const NeuroHub = () => {
     
     setIsLoadingHistory(true);
     try {
+      // ✅ КРИТИЧЕСКИЙ FIX: Проверяем есть ли активный thread_id
       const threadId = localStorage.getItem('openai_thread_id');
       
+      // Если НЕТ thread_id = это НОВЫЙ ЧАТ! Не грузим старую историю!
       if (!threadId) {
+        console.log('🆕 [loadChatHistory] Новый чат - старая история НЕ загружается');
         setMessages([{
           role: 'assistant',
-          content: `Привет! 👋 Я твой AI-наставник. Готов помочь с обучением и ответить на любые вопросы! 🚀`
+          content: `Привет, ${user?.full_name || user?.email}! 👋 Я твой AI-наставник. Готов помочь с обучением и ответить на любые вопросы! 🚀`
         }]);
         setIsLoadingHistory(false);
         return;
       }
 
+      // Если есть thread_id - загружаем историю
+      console.log('📜 [loadChatHistory] Загружаем историю для thread:', threadId);
       const history = await getChatHistory(user.id);
       if (history && history.length > 0) {
         setMessages(history);
       } else {
         setMessages([{
           role: 'assistant',
-          content: `Привет! 👋 Я твой AI-наставник. Готов помочь!`
+          content: `Привет, ${user?.full_name || user?.email}! 👋 Я твой AI-наставник. Готов помочь с обучением и ответить на любые вопросы! 🚀`
         }]);
       }
     } catch (error) {
@@ -180,7 +258,7 @@ const NeuroHub = () => {
       setMessages([]);
       setMessages([{
         role: 'assistant',
-        content: `Привет снова! 👋 Начнём новую беседу. Чем могу помочь?`
+        content: `Привет снова, ${user?.full_name || user?.email}! 👋 Начнём новую беседу. Чем могу помочь?`
       }]);
       
       toast({
@@ -250,18 +328,34 @@ const NeuroHub = () => {
     }
   };
 
+  // ✨ ДАННЫЕ С ГЕЙМИФИКАЦИЕЙ
   const streak = dashboardData?.user_info?.current_streak || 0;
   const userLevel = dashboardData?.user_info?.level || 1;
   const userXP = dashboardData?.user_info?.xp || 0;
+  
+  // XP для следующего уровня (например, 100 * level)
   const xpForNextLevel = userLevel * 100;
-  const xpProgress = (userXP % 100) / 100 * 100;
-  const todayStats = dashboardData?.today_stats || { lessons_completed: 0, watch_time_minutes: 0, xp_earned: 0 };
+  const xpProgress = (userXP % 100) / 100 * 100; // Прогресс в текущем уровне
+  
   const totalLessonsCompleted = dashboardData?.week_activity?.reduce((sum: number, day: any) => sum + day.lessons_completed, 0) || 0;
   const totalLessons = 40;
   const completedLessons = Math.min(totalLessonsCompleted, totalLessons);
   const courseProgress = Math.round((completedLessons / totalLessons) * 100);
-  const xpToNextLevel = xpForNextLevel - (userXP % 100);
 
+  // ✨ ДОСТИЖЕНИЯ как в Duolingo/Steam
+  const achievements: Achievement[] = dashboardData?.recent_achievements?.map((ach: any) => ({
+    id: ach.id,
+    icon: ach.icon,
+    title: ach.title,
+    description: `+${ach.xp_reward} XP`,
+    isNew: true
+  })) || [
+    { id: "1", icon: "🔥", title: "Стрик 5 дней", description: "Занимайся 5 дней подряд", isNew: true },
+    { id: "2", icon: "⚡", title: "Speedrunner", description: "Пройди урок за 10 минут" },
+    { id: "3", icon: "🎯", title: "Точность", description: "100% выполнение ДЗ" },
+  ];
+  
+  // ✨ ВСЕ ДОСТИЖЕНИЯ ПО КАТЕГОРИЯМ
   const allAchievements = {
     week: [
       { id: "w1", icon: "🔥", title: "Стрик 5 дней", description: "+50 XP", status: "completed" as const, progress: 100, category: "streak" },
@@ -277,44 +371,114 @@ const NeuroHub = () => {
       { id: "p1", icon: "🌟", title: "Первые шаги", description: "+20 XP", status: "completed" as const, progress: 100, category: "milestone" },
       { id: "p2", icon: "🚀", title: "Ракета", description: "+500 XP", status: "in_progress" as const, progress: 40, current: 20, target: 50, requirement: "Пройди 50 уроков", category: "milestone" },
       { id: "p3", icon: "👑", title: "Мастер", description: "+1000 XP", status: "locked" as const, progress: 0, requirement: "Достигни уровня 10", category: "mastery" },
+      { id: "p4", icon: "💎", title: "Легенда", description: "+2000 XP", status: "locked" as const, progress: 0, requirement: "Заверши весь курс на 100%", category: "legend" },
     ],
   };
+  
+  const totalAchievements = [...allAchievements.week, ...allAchievements.month, ...allAchievements.permanent];
+  const completedCount = totalAchievements.filter(a => a.status === "completed").length;
+  const inProgressCount = totalAchievements.filter(a => a.status === "in_progress").length;
+  
+  // ✨ ТОП СОВЕТОВ ПО ПОСЛЕДНИМ ВОПРОСАМ (AI-generated)
+  const topAdvices = [
+    {
+      id: "adv1",
+      title: "Как правильно настроить вебхуки",
+      summary: "Ты часто спрашиваешь про вебхуки. Вот пошаговая инструкция...",
+      details: "1. Открой n8n\n2. Создай новый Workflow\n3. Добавь узел Webhook\n4. Скопируй URL\n5. Настрой триггер в своём сервисе\n6. Протестируй отправку данных\n7. Проверь логи в n8n",
+      actionLink: "/course/1/lesson/3",
+      icon: "🔗",
+      timestamp: "Сегодня в 14:30"
+    },
+    {
+      id: "adv2",
+      title: "Оптимизация работы с API",
+      summary: "Судя по твоим вопросам, тебе нужно понять rate limits...",
+      details: "Rate limits - это ограничения на количество запросов к API:\n\n• OpenAI: 3 запроса/минуту (free tier)\n• Используй кэширование для частых запросов\n• Добавь retry логику с exponential backoff\n• Отслеживай headers: X-RateLimit-Remaining",
+      actionLink: "/course/1/lesson/5",
+      icon: "⚡",
+      timestamp: "Вчера в 18:45"
+    },
+    {
+      id: "adv3",
+      title: "Debugging в n8n",
+      summary: "Ты столкнулся с ошибками. Вот как их отлаживать...",
+      details: "Основные шаги debugging:\n\n1. Включи \"Always Output Data\"\n2. Проверь входные данные каждого узла\n3. Используй узел \"Set\" для промежуточных данных\n4. Смотри Execution Log\n5. Добавь узел \"IF\" для проверки условий\n6. Тестируй по частям, а не весь workflow сразу",
+      actionLink: null,
+      icon: "🐛",
+      timestamp: "2 дня назад"
+    },
+  ];
 
+  // ✨ СОВЕТ ДНЯ (мотивационный)
   const dailyTips = [
     "💡 Учись каждый день по 15 минут — это лучше, чем 2 часа раз в неделю!",
     "🚀 Практикуй полученные знания сразу — создай мини-проект!",
     "🎯 Ставь маленькие цели и празднуй каждую победу!",
+    "⚡ Используй технику Pomodoro: 25 минут учёбы → 5 минут отдыха",
+    "🔥 Твоя регулярность важнее скорости — продолжай в том же духе!"
   ];
   
   const todayTip = dailyTips[new Date().getDate() % dailyTips.length];
   
+  // ✨ ЧЕЛЛЕНДЖ ДНЯ
   const dailyChallenges = [
     { id: 1, title: "Марафонец", description: "Пройди 2 урока сегодня", xp: 50, icon: "🏃" },
     { id: 2, title: "Ранняя пташка", description: "Начни обучение до 10:00", xp: 30, icon: "🌅" },
     { id: 3, title: "Помощник", description: "Помоги другу с заданием", xp: 40, icon: "🤝" },
+    { id: 4, title: "Перфекционист", description: "Сдай ДЗ на 100%", xp: 60, icon: "⭐" },
+    { id: 5, title: "Исследователь", description: "Изучи доп. материалы", xp: 35, icon: "🔍" },
   ];
   
   const todayChallenge = dailyChallenges[new Date().getDate() % dailyChallenges.length];
   
+  // ✨ СОВЕТ ПО ЗДОРОВЬЮ
   const healthTips = [
     { icon: "💧", title: "Пей воду", text: "Выпей стакан воды прямо сейчас!" },
     { icon: "👀", title: "Отдых для глаз", text: "Каждые 20 минут смотри вдаль 20 секунд" },
     { icon: "🧘", title: "Разминка", text: "Встань и потянись — 2 минуты движения" },
+    { icon: "🌬️", title: "Дыши глубже", text: "5 глубоких вдохов для концентрации" },
+    { icon: "🛌", title: "Сон важен", text: "Спи 7-8 часов для лучшего усвоения" },
   ];
   
   const todayHealthTip = healthTips[new Date().getHours() % healthTips.length];
 
+  // ✨ СТАТИСТИКА ДНЯ
+  const todayStats = dashboardData?.today_stats || { lessons_completed: 0, watch_time_minutes: 0, xp_earned: 0 };
+  
+  // Показываем XP popup при получении XP
+  useEffect(() => {
+    if (todayStats.xp_earned > 0 && !showXPPopup) {
+      const timer = setTimeout(() => {
+        setXpAmount(todayStats.xp_earned);
+        setShowXPPopup(true);
+        setTimeout(() => setShowXPPopup(false), 3000);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [todayStats.xp_earned]);
+
   const faqItems = [
     {
       question: "🔗 Как настроить вебхук в n8n?",
-      answer: "Вебхуки настраиваются в узле Webhook. Скопируй URL вебхука из n8n и добавь его в настройки своего сервиса.",
+      answer: "Вебхуки настраиваются в узле Webhook. Скопируй URL вебхука из n8n и добавь его в настройки своего сервиса. Не забудь активировать workflow!",
       lessonLink: "/course/1/lesson/3"
     },
     {
       question: "🔑 Где получить API ключ OpenAI?",
-      answer: "Зайди на platform.openai.com, перейди в раздел API Keys и создай новый ключ.",
+      answer: "Зайди на platform.openai.com, перейди в раздел API Keys и создай новый ключ. Сохрани его в безопасном месте — ключ показывается только один раз!",
       lessonLink: "/course/1/lesson/1"
     },
+    {
+      question: "📊 Как интегрировать бота с CRM?",
+      answer: "Используй API CRM системы или готовые интеграции в n8n. Настрой триггеры для автоматической отправки данных из бота в CRM.",
+      lessonLink: "/course/1/lesson/8"
+    },
+    {
+      question: "🎤 Как добавить голосовые сообщения в бота?",
+      answer: "Используй Speech-to-Text API (например, OpenAI Whisper) для распознавания голоса и Text-to-Speech для генерации голосовых ответов.",
+      lessonLink: "/course/1/lesson/12"
+    }
   ];
 
   const particles = useMemo(() => 
@@ -327,767 +491,1605 @@ const NeuroHub = () => {
     })), []
   );
 
-  // Матричные цифры на фоне
-  const matrixDigits = useMemo(() => 
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      x: (i * 3.33) % 100,
-      duration: 15 + Math.random() * 10,
-      delay: Math.random() * 5,
-      digit: Math.floor(Math.random() * 2), // 0 или 1
-    })), []
-  );
-
-  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0a14] to-black flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#00ff00] animate-spin" />
-      </div>
-    );
-  }
-
-  return (
     <div className="relative overflow-hidden min-h-screen bg-gradient-to-br from-black via-[#0a0a14] to-black">
-      {/* Фон */}
+      {/* ===== КИБЕРПАНК ФОН ===== */}
+      
+      {/* Киберпанк сетка */}
       <div className="absolute inset-0 pointer-events-none opacity-5">
         <div 
           className="w-full h-full"
           style={{
-            backgroundImage: `linear-gradient(to right, #00ff00 1px, transparent 1px), linear-gradient(to bottom, #00ff00 1px, transparent 1px)`,
+            backgroundImage: `
+              linear-gradient(to right, #00ff00 1px, transparent 1px),
+              linear-gradient(to bottom, #00ff00 1px, transparent 1px)
+            `,
             backgroundSize: '40px 40px',
           }}
         />
       </div>
 
+      {/* Зеленые неоновые блобы */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div
+          className="absolute w-96 h-96 rounded-full bg-[#00ff00]/10 blur-3xl"
+          style={{ top: '10%', left: '10%' }}
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute w-96 h-96 rounded-full bg-[#00cc00]/10 blur-3xl"
+          style={{ bottom: '10%', right: '10%' }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
+
+      {/* Летающие частицы */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
             className="absolute w-1 h-1 rounded-full bg-[#00ff00]"
-            style={{ left: `${particle.x}%`, top: `${particle.y}%` }}
-            animate={{ y: ['-10%', '110%'], opacity: [0, 1, 0] }}
-            transition={{ duration: particle.duration, delay: particle.delay, repeat: Infinity, ease: "linear" }}
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+            }}
+            animate={{
+              y: ['-10%', '110%'],
+              opacity: [0, 1, 0],
+            }}
+            transition={{
+              duration: particle.duration,
+              delay: particle.delay,
+              repeat: Infinity,
+              ease: "linear",
+            }}
           />
         ))}
       </div>
 
-      {/* Матричные цифры */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-        {matrixDigits.map((item) => (
+      {/* ===== POP-UP УВЕДОМЛЕНИЯ ===== */}
+      <AnimatePresence>
+        {showXPPopup && (
           <motion.div
-            key={item.id}
-            className="absolute text-[#00ff00] font-mono text-sm"
-            style={{ left: `${item.x}%`, top: '-5%' }}
-            animate={{
-              y: ['0vh', '105vh'],
-              opacity: [0, 0.7, 0.7, 0],
-            }}
-            transition={{
-              duration: item.duration,
-              delay: item.delay,
-              repeat: Infinity,
-              ease: "linear",
-            }}
+            initial={{ opacity: 0, scale: 0.5, y: -50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: -50 }}
+            className="fixed top-20 right-4 z-50"
           >
-            {item.digit}
+            <motion.div
+              className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-black font-bold px-6 py-4 rounded-2xl shadow-2xl shadow-[#00ff00]/50 flex items-center gap-3"
+              animate={{
+                boxShadow: [
+                  '0 0 20px rgba(0,255,0,0.5)',
+                  '0 0 40px rgba(0,255,0,0.8)',
+                  '0 0 20px rgba(0,255,0,0.5)',
+                ],
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+              }}
+            >
+              <motion.div
+                animate={{
+                  rotate: [0, 360],
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{
+                  duration: 0.5,
+                  repeat: Infinity,
+                }}
+              >
+                <Zap className="w-8 h-8" />
+              </motion.div>
+              <div>
+                <p className="text-2xl font-black">+{xpAmount} XP</p>
+                <p className="text-sm opacity-80">Отличная работа!</p>
+              </div>
+            </motion.div>
           </motion.div>
-        ))}
-      </div>
+        )}
+      </AnimatePresence>
 
+      {/* ===== КОНТЕНТ ===== */}
       <div className="relative z-10 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* HEADER */}
-        <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="text-center relative">
+        {/* ===== HEADER ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center relative"
+        >
+          {/* 3D Brain Avatar - Крутящийся объемный мозг */}
           <div className="relative inline-block mb-6">
             <motion.div
               className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mx-auto"
-              animate={{ rotateY: [0, 360] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              style={{ transformStyle: "preserve-3d", perspective: "1000px" }}
+              animate={{
+                rotateY: [0, 360],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              style={{
+                transformStyle: "preserve-3d",
+                perspective: "1000px",
+              }}
             >
+              {/* Внешний светящийся ореол */}
+              <motion.div 
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.1) 50%, transparent 70%)',
+                  filter: 'blur(20px)',
+                }}
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 0.8, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              
+              {/* 3D Кольца вокруг мозга */}
+              <motion.div
+                className="absolute inset-0 border-2 border-[#00ff00]/40 rounded-full"
+                animate={{
+                  rotate: 360,
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+                  scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                }}
+                style={{ 
+                  transform: "rotateX(60deg)",
+                  transformStyle: "preserve-3d",
+                }}
+              />
+              
+              <motion.div
+                className="absolute inset-0 border-2 border-[#00cc00]/30 rounded-full"
+                animate={{
+                  rotate: -360,
+                  scale: [1, 1.15, 1],
+                }}
+                transition={{
+                  rotate: { duration: 5, repeat: Infinity, ease: "linear" },
+                  scale: { duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 },
+                }}
+                style={{ 
+                  transform: "rotateX(-60deg)",
+                  transformStyle: "preserve-3d",
+                }}
+              />
+
+              {/* Основной мозг с градиентом и 3D тенью */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <Brain className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#00ff00]" />
+                <motion.div
+                  className="relative"
+                  animate={{
+                    scale: [1, 1.05, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  style={{
+                    filter: 'drop-shadow(0 0 15px rgba(0,255,0,0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+                  }}
+                >
+                  <Brain className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#00ff00]" />
+                </motion.div>
               </div>
             </motion.div>
           </div>
 
-          <motion.h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-black mb-3 tracking-wider">
-            <span className="text-white" style={{ textShadow: '0 0 20px rgba(0,255,0,0.3)' }}>AI-НАСТАВНИК</span>
+          {/* Заголовок - белый текст с легким зеленым свечением */}
+          <motion.h1 
+            className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-black mb-3 tracking-wider"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <span 
+              className="text-white"
+              style={{
+                textShadow: '0 0 20px rgba(0,255,0,0.3), 0 0 40px rgba(0,255,0,0.15)',
+              }}
+            >
+              AI-НАСТАВНИК
+            </span>
           </motion.h1>
-          <motion.p className="text-gray-400 text-lg mb-2">🤖 Твой персональный помощник в обучении</motion.p>
+
+          {/* Подсветка - сверкающая линия */}
+          <motion.div 
+            className="h-0.5 w-48 mx-auto mb-4 bg-gradient-to-r from-transparent via-[#00ff00] to-transparent rounded-full"
+            animate={{
+              opacity: [0.3, 0.8, 0.3],
+              scaleX: [0.8, 1, 0.8],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
+          <motion.p 
+            className="text-gray-400 text-lg mb-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            🤖 Твой персональный помощник в обучении
+          </motion.p>
+          <motion.p 
+            className="text-gray-600 text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
+            Обновлено 2 часа назад
+          </motion.p>
         </motion.div>
 
-        {/* БЛОК 1: ПРОГРЕСС/ДАШБОРД (МЕТРИКИ) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-zinc-900/80 border-2 border-blue-500/30">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <span className="text-3xl">📚</span>
-                  </motion.div>
-                  <span className="text-gray-400 text-xs sm:text-sm">Прогресс курса</span>
-                </div>
-                <span className="text-white font-bold text-xl sm:text-2xl">{courseProgress}%</span>
-              </div>
-              <div className="h-3 bg-zinc-800 rounded-full overflow-hidden mb-2">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${courseProgress}%` }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                />
-              </div>
-              <p className="text-gray-500 text-xs">{completedLessons} из {totalLessons} уроков</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-zinc-900/80 border-2 border-orange-500/30">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      rotate: [0, 5, -5, 0]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <span className="text-3xl">🔥</span>
-                  </motion.div>
-                  <span className="text-gray-400 text-xs sm:text-sm">Streak</span>
-                </div>
-                <span className="text-white font-bold text-xl sm:text-2xl">{streak}</span>
-              </div>
-              <div className="h-3 bg-zinc-800 rounded-full overflow-hidden mb-2">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((streak / 30) * 100, 100)}%` }}
-                  className="h-full bg-gradient-to-r from-orange-500 to-red-500"
-                />
-              </div>
-              <p className="text-gray-500 text-xs">{streak > 0 ? `Цель — 30 дней 🔥` : 'Начни streak'}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-zinc-900/80 border-2 border-[#00ff00]/30">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  >
-                    <span className="text-3xl">⚡</span>
-                  </motion.div>
-                  <span className="text-gray-400 text-xs sm:text-sm">Уровень</span>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-bold text-xl sm:text-2xl">Level {userLevel}</p>
-                  <p className="text-xs text-gray-500">{userXP} XP</p>
-                </div>
-              </div>
-              <div className="h-3 bg-zinc-800 rounded-full overflow-hidden mb-2">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${xpProgress}%` }}
-                  className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
-                />
-              </div>
-              <p className="text-gray-500 text-xs">До уровня {userLevel + 1}: {xpToNextLevel} XP</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-zinc-900/80 border-2 border-yellow-500/30">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ 
-                      y: [0, -5, 0],
-                      rotate: [0, 10, -10, 0]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <span className="text-3xl">🏆</span>
-                  </motion.div>
-                  <span className="text-gray-400 text-xs sm:text-sm">Рейтинг</span>
-                </div>
-                <span className="text-white font-bold text-lg sm:text-2xl">Топ-25%</span>
-              </div>
-              <p className="text-gray-500 text-xs mt-2">
-                <motion.span
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="inline-block"
-                >
-                  🎉
-                </motion.span>
-                {" "}Ты в топе!
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* БЛОК 2: ДОМАШНЕЕ ЗАДАНИЕ */}
-        <motion.div>
-          <Card className="bg-zinc-900/80 border-2 border-[#00ff00]/30">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-[#00ff00]" />
-                Текущее домашнее задание
-              </CardTitle>
-              <CardDescription className="text-gray-400">
-                AI сгенерировал для тебя персональное задание
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Описание от AI */}
-              <div className="p-4 bg-zinc-800/50 border border-[#00ff00]/20 rounded-lg">
-                <div className="flex items-start gap-3 mb-3">
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Brain className="w-6 h-6 text-[#00ff00] flex-shrink-0" />
-                  </motion.div>
-                  <div className="flex-1">
-                    <h4 className="text-white font-semibold mb-2">Задание от AI-наставника:</h4>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      Создай простого Telegram-бота с использованием n8n. Бот должен уметь принимать текстовые сообщения, 
-                      обрабатывать их через OpenAI и отправлять ответ пользователю. Используй вебхуки для получения сообщений.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Требования */}
-                <div className="mt-3 pt-3 border-t border-zinc-700">
-                  <p className="text-gray-400 text-xs mb-2">📋 Требования:</p>
-                  <ul className="text-gray-300 text-xs space-y-1 ml-4">
-                    <li>• Настроенный вебхук в Telegram</li>
-                    <li>• Интеграция с OpenAI API</li>
-                    <li>• Скриншот рабочего workflow в n8n</li>
-                    <li>• Краткое описание логики работы</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Прогресс выполнения */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-400">Прогресс выполнения</span>
-                  <span className="text-sm font-bold text-[#00ff00]">0%</span>
-                </div>
-                <div className="h-3 bg-zinc-800 rounded-full overflow-hidden relative">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "0%" }}
-                    className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
-                  />
-                  {/* Пульсирующий эффект */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Начни работу и прогресс будет обновляться автоматически</p>
-              </div>
-
-              {/* Кнопка сдать */}
-              <Button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="w-full h-16 bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00cc00] hover:to-[#00aa00] text-black font-bold text-lg shadow-lg shadow-[#00ff00]/50"
-              >
-                <Upload className="w-6 h-6 mr-3" />
-                Сдать домашнее задание
-              </Button>
-
-              {/* Дополнительная информация */}
-              <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-zinc-800">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>Срок сдачи: через 3 дня</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-yellow-500" />
-                  <span className="text-yellow-500">+100 XP за выполнение</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* БЛОК 3: МОИ ЦЕЛИ (автогенерация) */}
-        <motion.div>
-          <Card className="bg-zinc-900/80 border-2 border-purple-500/30">
-            <CardHeader>
-              <div>
-                <CardTitle className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                  <Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
-                  Мои цели
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-gray-400">
-                  Цели формируются автоматически на основе твоего прогресса
-                </CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <AnimatePresence>
-                  {myGoals.map((goal, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center gap-3 p-3 bg-zinc-800/50 border border-purple-500/30 rounded-lg"
-                    >
-                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0" />
-                      <p className="text-white flex-1 text-sm sm:text-base">{goal}</p>
-                      <motion.span
-                        animate={{ rotate: [0, 360] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="text-xl"
-                      >
-                        🎯
-                      </motion.span>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* БЛОК 4: ЧЕЛЛЕНДЖ + СОВЕТЫ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-500/40">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <motion.div
-                  animate={{ 
-                    scale: [1, 1.1, 1],
-                    rotate: [0, 5, -5, 0]
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="text-3xl sm:text-4xl"
-                >
-                  {todayChallenge.icon}
-                </motion.div>
-                <div>
-                  <h3 className="text-white font-bold text-lg">{todayChallenge.title}</h3>
-                  <Badge className="bg-yellow-600 text-white text-xs mt-1">+{todayChallenge.xp} XP</Badge>
-                </div>
-              </div>
-              <p className="text-gray-300 text-sm mb-4">{todayChallenge.description}</p>
-              {!challengeAccepted ? (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      setChallengeAccepted(true);
-                      toast({ title: "🎯 Челлендж принят!", description: "Удачи!" });
-                    }}
-                    className="flex-1 bg-yellow-600 text-white"
-                  >
-                    Принять
-                  </Button>
-                  <Button variant="ghost" className="flex-1 text-gray-400">Позже</Button>
-                </div>
-              ) : (
-                <div className="bg-green-500/20 border border-green-500/40 rounded-lg p-3 text-center">
-                  <CheckCircle className="w-6 h-6 text-green-500 mx-auto mb-1" />
-                  <p className="text-green-400 text-sm font-semibold">Челлендж принят!</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/40">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-3xl sm:text-4xl"
-                >
-                  💡
-                </motion.div>
-                <h3 className="text-white font-bold text-base sm:text-lg">Совет дня</h3>
-              </div>
-              <p className="text-gray-300 text-sm">{todayTip}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-2 border-cyan-500/40">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-3xl sm:text-4xl"
-                >
-                  {todayHealthTip.icon}
-                </motion.div>
-                <h3 className="text-white font-bold text-base sm:text-lg">{todayHealthTip.title}</h3>
-              </div>
-              <p className="text-gray-300 text-sm">{todayHealthTip.text}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* БЛОК 5: ВСЕ ДОСТИЖЕНИЯ */}
-        <Card className="bg-zinc-900/80 border-2 border-yellow-500/30">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-              <motion.span
-                animate={{ rotate: [0, 10, -10, 0], y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-3xl sm:text-4xl inline-block"
-              >
-                🏆
-              </motion.span>
-              Все достижения
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="week" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="week" className="text-xs sm:text-sm">За неделю</TabsTrigger>
-                <TabsTrigger value="month" className="text-xs sm:text-sm">За месяц</TabsTrigger>
-                <TabsTrigger value="permanent" className="text-xs sm:text-sm">Постоянные</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="week">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {allAchievements.week.map((ach: any, idx: number) => (
-                    <motion.div 
-                      key={ach.id} 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="p-4 bg-zinc-800/50 border-2 border-[#00ff00]/40 rounded-xl hover:border-[#00ff00]/60 transition-all"
-                    >
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
-                        className="text-4xl mb-2"
-                      >
-                        {ach.icon}
-                      </motion.div>
-                      <h4 className="text-white font-bold mb-1">{ach.title}</h4>
-                      <p className="text-gray-400 text-xs">{ach.description}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="month">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {allAchievements.month.map((ach: any, idx: number) => (
-                    <motion.div 
-                      key={ach.id} 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="p-4 bg-zinc-800/50 border-2 border-yellow-500/40 rounded-xl hover:border-yellow-500/60 transition-all"
-                    >
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
-                        className="text-4xl mb-2"
-                      >
-                        {ach.icon}
-                      </motion.div>
-                      <h4 className="text-white font-bold mb-1">{ach.title}</h4>
-                      <p className="text-gray-400 text-xs">{ach.description}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="permanent">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {allAchievements.permanent.map((ach: any, idx: number) => (
-                    <motion.div 
-                      key={ach.id} 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="p-4 bg-zinc-800/50 border-2 border-purple-500/40 rounded-xl hover:border-purple-500/60 transition-all"
-                    >
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
-                        className="text-4xl mb-2"
-                      >
-                        {ach.icon}
-                      </motion.div>
-                      <h4 className="text-white font-bold mb-1">{ach.title}</h4>
-                      <p className="text-gray-400 text-xs">{ach.description}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* БЛОК 6: FAQ */}
-        <Card className="bg-zinc-900/80 border-2 border-[#00ff00]/30">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-              <MessageCircle className="w-6 h-6 text-[#00ff00]" />
-              Часто задаваемые вопросы
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              {faqItems.map((item, index) => (
-                <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-left hover:text-[#00ff00]">
-                    <span className="text-white">{item.question}</span>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <p className="text-gray-300 mb-3">{item.answer}</p>
-                    {item.lessonLink && (
-                      <Button variant="outline" size="sm" className="border-[#00ff00]/30 text-[#00ff00]">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Открыть урок
-                      </Button>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-
-        {/* БЛОК 7: ЧАТ С AI */}
-        <div className="hidden md:grid md:grid-cols-1 gap-6">
-          <Card className="bg-zinc-900/80 border-2 border-[#00ff00]/30 backdrop-blur-sm h-full flex flex-col">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Bot className="w-6 h-6 text-[#00ff00]" />
-                  <div>
-                    <CardTitle className="text-xl font-bold text-white">Чат с AI</CardTitle>
-                    <p className="text-xs text-gray-400">Всегда на связи</p>
-                  </div>
-                </div>
-                <Button onClick={handleNewChat} variant="ghost" size="sm" className="text-[#00ff00]">
-                  Новый чат
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="flex-1 flex flex-col p-0">
-              <ScrollArea className="flex-1 px-4 max-h-[500px]">
-                <div className="space-y-4 py-4">
-                  {isLoadingHistory ? (
-                    <div className="flex justify-center items-center h-32">
-                      <Loader2 className="w-8 h-8 text-[#00ff00] animate-spin" />
+        {/* ===== СТАТИСТИКА ДНЯ (краткая сводка) ===== */}
+        {todayStats.xp_earned > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md relative overflow-hidden">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/20 to-transparent"
+                animate={{
+                  x: ['-100%', '200%'],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <CardContent className="py-4 px-6 relative z-10">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <PartyPopper className="w-6 h-6 text-[#00ff00]" />
+                    <div>
+                      <p className="text-sm text-gray-400">Статистика сегодня</p>
+                      <p className="text-lg font-bold text-white">
+                        Streak +1, XP +{todayStats.xp_earned}, {todayStats.lessons_completed} урок{todayStats.lessons_completed > 1 ? 'а' : ''}!
+                      </p>
                     </div>
-                  ) : (
-                    <>
-                      {messages.map((msg, idx) => (
-                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] p-3 rounded-xl ${msg.role === 'user' ? 'bg-[#00ff00] text-black' : 'bg-zinc-800 text-white border border-[#00ff00]/20'}`}>
-                            <div className="text-sm prose prose-invert prose-sm max-w-none">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={messagesEndRef} />
-                    </>
-                  )}
+                  </div>
+                  <motion.div
+                    animate={{
+                      rotate: [0, 10, -10, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                  >
+                    🎉
+                  </motion.div>
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* ===== DESKTOP: ЧАТ + ДАШБОРД (50/50) ===== */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+          
+          {/* ===== ЧАТ С AI (Левая половина) ===== */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-[450px] sm:h-[500px] md:h-[550px] lg:h-[600px] flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff00]/60" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff00]/60" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff00]/60" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ff00]/60" />
+
+              <motion.div
+                className="absolute inset-x-0 h-px bg-[#00ff00]/50"
+                animate={{
+                  top: ['0%', '100%'],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+
+              <CardHeader className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <MessageCircle className="w-6 h-6 text-[#00ff00]" />
+                    Чат с AI
+                  </CardTitle>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleNewChat}
+                    className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                    title="Новый чат"
+                  >
+                    <Plus className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Новый чат</span>
+                  </Button>
+                </div>
+                <CardDescription>Задавай любые вопросы — я здесь, чтобы помочь! 💬</CardDescription>
+              </CardHeader>
+
+              <ScrollArea className="flex-1 px-6 relative z-10">
+                {isLoadingHistory ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-[#00ff00]" />
+                    <span className="ml-2 text-gray-400">Загрузка истории...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-4 pb-4">
+                    {messages.map((msg, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                            msg.role === "assistant"
+                              ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white"
+                              : "bg-zinc-800/80 border border-zinc-700/50 text-white"
+                          }`}
+                        >
+                          {msg.role === "assistant" ? (
+                            <div className="prose prose-sm max-w-none prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2">
+                              <ReactMarkdown 
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  p: ({ children }) => <p className="text-white my-2">{children}</p>,
+                                  ul: ({ children }) => <ul className="text-white my-2 list-disc list-inside">{children}</ul>,
+                                  ol: ({ children }) => <ol className="text-white my-2 list-decimal list-inside">{children}</ol>,
+                                  li: ({ children }) => <li className="text-white">{children}</li>,
+                                  code: ({ children }) => <code className="text-[#00ff00] bg-black/30 px-1 rounded">{children}</code>,
+                                  pre: ({ children }) => <pre className="text-white bg-black/30 p-2 rounded my-2 overflow-x-auto">{children}</pre>,
+                                  strong: ({ children }) => <strong className="text-[#00ff00] font-bold">{children}</strong>,
+                                  em: ({ children }) => <em className="text-white italic">{children}</em>,
+                                }}
+                              >
+                                {msg.content}
+                              </ReactMarkdown>
+                            </div>
+                          ) : (
+                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                          )}
+                        </div>
+                  </motion.div>
+                    ))}
+                    {isSending && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex justify-start"
+                      >
+                        <div className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white rounded-2xl px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-sm">Печатает...</span>
+                  </div>
+                </div>
+                      </motion.div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
               </ScrollArea>
 
-              <div className="p-4 border-t border-zinc-800">
+              <CardContent className="relative z-10 border-t border-[#00ff00]/20 pt-4">
+                {attachedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {attachedFiles.map((file, idx) => (
+                      <div key={idx} className="flex items-center gap-1 bg-zinc-800 border border-[#00ff00]/30 rounded-lg px-3 py-1 text-sm">
+                        <Paperclip className="w-3 h-3 text-[#00ff00]" />
+                        <span className="text-white truncate max-w-[80px] sm:max-w-[120px] lg:max-w-[150px]">{file.name}</span>
+                        <button
+                          onClick={() => removeFile(idx)}
+                          className="ml-1 text-gray-400 hover:text-white"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex gap-2">
-                  <input type="file" ref={fileInputRef} className="hidden" multiple onChange={handleFileUpload} />
-                  <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="icon" className="border-[#00ff00]/30 text-[#00ff00]" disabled={isSending}>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    accept="image/*,.pdf,.doc,.docx,.txt"
+                  />
+
+                <Button
+                    size="icon"
+                  variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isSending}
+                    className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                    title="Прикрепить файл"
+                  >
                     <Paperclip className="w-5 h-5" />
-                  </Button>
+                </Button>
+
                   <Input
-                    placeholder="Задай любой вопрос..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    className="flex-1 bg-zinc-800 border-[#00ff00]/30 text-white"
+                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
+                    placeholder="Напиши сообщение..."
                     disabled={isSending}
+                    className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/50"
+                    data-chat-input
                   />
-                  <Button onClick={handleVoiceInput} variant="outline" size="icon" className="border-[#00ff00]/30 text-[#00ff00]" disabled={isSending}>
+
+                <Button
+                    onClick={handleSendMessage}
+                    size="icon"
+                    disabled={isSending || (!input.trim() && attachedFiles.length === 0)}
+                    className="bg-gradient-to-br from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-white disabled:opacity-50"
+                  >
+                    {isSending ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
+                </Button>
+
+                <Button
+                    size="icon"
+                  variant="outline"
+                    onClick={handleVoiceInput}
+                    disabled={isSending}
+                    className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                    title="Голосовой ввод"
+                  >
                     <Mic className="w-5 h-5" />
-                  </Button>
-                  <Button onClick={handleSendMessage} disabled={isSending || (!input.trim() && attachedFiles.length === 0)} className="bg-[#00ff00] text-black">
-                    {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                  </Button>
+                </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">💬 Задавай любые вопросы — я здесь, чтобы помочь!</p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* ===== ДАШБОРД С АНАЛИТИКОЙ (Правая половина) ===== */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="space-y-6"
+          >
+            {/* ✨ Карточки прогресса с АНИМАЦИЯМИ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              
+              {/* 📊 Прогресс курса */}
+              <motion.div
+                whileHover={{ scale: 1.02, y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00ff00]/5 backdrop-blur-md relative group overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <CardContent className="p-4 relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-5 h-5 text-[#00ff00]" />
+                      <p className="text-sm text-gray-400">Прогресс курса</p>
+                  </div>
+                    <p className="text-3xl font-bold text-white mb-1">{courseProgress}%</p>
+                    <p className="text-xs text-gray-500">{completedLessons}/{totalLessons} уроков</p>
+                    <div className="mt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${courseProgress}%` }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                      />
+                </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* 🔥 Streak с ОГНЕМ и пульсацией */}
+              <motion.div
+                whileHover={{ scale: 1.02, y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="border-orange-500/30 bg-gradient-to-br from-black/50 to-orange-500/5 backdrop-blur-md relative group overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <CardContent className="p-4 relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Flame className="w-5 h-5 text-orange-500" />
+                      <p className="text-sm text-gray-400">Streak</p>
+                    </div>
+                    <p className="text-3xl font-bold text-white mb-1">{streak}</p>
+                    <p className="text-xs text-gray-500">дней подряд</p>
+                    {/* Прогресс-бар для streak */}
+                    <div className="mt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-orange-500 to-red-500"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min((streak / 30) * 100, 100)}%` }}
+                        transition={{ duration: 1, delay: 0.7 }}
+                      />
+                  </div>
+                    {/* Огонь анимация */}
+                  <motion.div
+                      className="text-4xl mt-2 inline-block"
+                    animate={{
+                      scale: [1, 1.2, 1],
+                        rotate: [0, 5, -5, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                  >
+                    🔥
+                  </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* ⚡ XP и УРОВЕНЬ с индикатором */}
+              <motion.div
+                whileHover={{ scale: 1.02, y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="border-yellow-500/30 bg-gradient-to-br from-black/50 to-yellow-500/5 backdrop-blur-md relative group overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <CardContent className="p-4 relative z-10">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-yellow-500" />
+                        <p className="text-sm text-gray-400">Уровень & XP</p>
+                  </div>
+                      <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
+                        Lvl {userLevel}
+                      </Badge>
+                    </div>
+                    <p className="text-3xl font-bold text-white mb-1">{userXP} XP</p>
+                    <p className="text-xs text-gray-500">До {userLevel + 1} уровня: {xpForNextLevel - (userXP % 100)} XP</p>
+                    {/* XP прогресс-бар */}
+                    <div className="mt-3 h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 relative"
+                        initial={{ width: 0 }}
+                        animate={{ 
+                          width: `${xpProgress}%`,
+                        }}
+                        transition={{ duration: 1, delay: 0.9 }}
+                      >
+                        {/* Блеск */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                          animate={{
+                            x: ['-100%', '200%'],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        />
+                      </motion.div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* 🏆 Достижения как в Steam/Duolingo */}
+              <motion.div
+                whileHover={{ scale: 1.02, y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00cc00]/5 backdrop-blur-md relative group overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00cc00]/10 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <CardContent className="p-4 relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Trophy className="w-5 h-5 text-[#00ff00]" />
+                      <p className="text-sm text-gray-400">Достижения</p>
+                  </div>
+                    <p className="text-3xl font-bold text-white mb-1">{achievements.length}</p>
+                    <p className="text-xs text-gray-500">{achievements.length > 0 ? 'получено' : 'пока нет'}</p>
+                    <div className="flex gap-1 mt-2">
+                      {achievements.slice(0, 3).map((achievement, idx) => (
+                        <motion.div 
+                          key={achievement.id} 
+                          className="text-2xl relative"
+                          title={achievement.title}
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ delay: 0.5 + idx * 0.1, type: "spring" }}
+                          whileHover={{ scale: 1.2, rotate: 10 }}
+                        >
+                          {achievement.icon}
+                          {achievement.isNew && (
+                            <motion.div
+                              className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"
+                              animate={{
+                                scale: [1, 1.3, 1],
+                                opacity: [1, 0.7, 1],
+                              }}
+                              transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                              }}
+                            />
+                          )}
+                        </motion.div>
+                      ))}
+                </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+            </div>
+
+            {/* ✨ СОВЕТ ДНЯ - виджет с мотивашкой */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md relative overflow-hidden">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                  animate={{
+                    x: ['-100%', '200%'],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+                <CardContent className="py-4 px-6 relative z-10">
+                  <div className="flex items-start gap-4">
+                    <motion.div
+                      animate={{
+                        rotate: [0, 10, -10, 0],
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                      }}
+                    >
+                      <Lightbulb className="w-10 h-10 text-yellow-500" />
+                    </motion.div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-400 mb-1 font-semibold">💡 Совет дня</p>
+                      <p className="text-base text-white leading-relaxed">
+                        {todayTip}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* ✨ ЧЕЛЛЕНДЖ ДНЯ */}
+            {!challengeAccepted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.42 }}
+              >
+                <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-md relative overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <CardContent className="py-4 px-6 relative z-10">
+                    <div className="flex items-start gap-4">
+                      <motion.div
+                        className="text-5xl"
+                        animate={{
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 10, -10, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                        }}
+                      >
+                        {todayChallenge.icon}
+                      </motion.div>
+                      <div className="flex-1">
+                        <p className="text-sm text-yellow-400 mb-1 font-bold">🎯 Челлендж дня</p>
+                        <h3 className="text-lg font-bold text-white mb-1">{todayChallenge.title}</h3>
+                        <p className="text-gray-300 text-sm mb-3">{todayChallenge.description}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                            +{todayChallenge.xp} XP
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        onClick={() => {
+                          setChallengeAccepted(true);
+                          toast({
+                            title: "🎉 Челлендж принят!",
+                            description: `"${todayChallenge.title}" добавлен в твои задачи!`,
+                          });
+                        }}
+                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold"
+                      >
+                        ✅ Принять
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setChallengeAccepted(true)}
+                        className="border-yellow-500/30 hover:bg-yellow-500/10 text-white"
+                      >
+                        Позже
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* ✨ СОВЕТ ПО ЗДОРОВЬЮ */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.44 }}
+            >
+              <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-md relative overflow-hidden">
+                <CardContent className="py-4 px-6 relative z-10">
+                  <div className="flex items-center gap-4">
+                    <motion.div
+                      className="text-4xl"
+                      animate={{
+                        scale: [1, 1.15, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                      }}
+                    >
+                      {todayHealthTip.icon}
+                    </motion.div>
+                    <div className="flex-1">
+                      <p className="text-sm text-blue-400 mb-1 font-semibold">💪 Совет по здоровью</p>
+                      <h4 className="text-base font-bold text-white mb-1">{todayHealthTip.title}</h4>
+                      <p className="text-gray-300 text-sm">{todayHealthTip.text}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* ✨ МОИ ЦЕЛИ - editable виджет */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.46 }}
+            >
+              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Star className="w-6 h-6 text-[#00ff00]" />
+                      Мои цели
+                    </CardTitle>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setIsEditingGoals(!isEditingGoals)}
+                      className="text-[#00ff00] hover:bg-[#00ff00]/10"
+                    >
+                      {isEditingGoals ? "Готово" : "Редактировать"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {myGoals.map((goal, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 group hover:border-[#00ff00]/40 transition-colors"
+                    >
+                      <CheckCircle className="w-5 h-5 text-[#00ff00] flex-shrink-0" />
+                      <span className="text-white flex-1">{goal}</span>
+                      {isEditingGoals && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setMyGoals(myGoals.filter((_, i) => i !== idx))}
+                          className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </motion.div>
+                  ))}
+                  
+                  {isEditingGoals && (
+                    <div className="flex gap-2 mt-3">
+                      <Input
+                        value={newGoal}
+                        onChange={(e) => setNewGoal(e.target.value)}
+                        placeholder="Добавить новую цель..."
+                        className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newGoal.trim()) {
+                            setMyGoals([...myGoals, newGoal.trim()]);
+                            setNewGoal("");
+                          }
+                        }}
+                      />
+                      <Button
+                        size="icon"
+                        onClick={() => {
+                          if (newGoal.trim()) {
+                            setMyGoals([...myGoals, newGoal.trim()]);
+                            setNewGoal("");
+                          }
+                        }}
+                        className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* ✨ Текущая миссия / ДЗ */}
+            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
+                animate={{
+                  x: ['-100%', '200%'],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Target className="w-6 h-6 text-[#00ff00]" />
+                  {dashboardData?.active_missions?.length > 0 ? 'Активная миссия' : 'Текущее задание'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10 space-y-4">
+                {dashboardData?.active_missions?.length > 0 ? (
+                  dashboardData.active_missions.slice(0, 1).map((mission: any) => (
+          <motion.div
+                      key={mission.id}
+                      initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-white mb-1">
+                            {mission.title}
+                          </h3>
+                          <p className="text-sm text-gray-400">{mission.description}</p>
+                  </div>
+                        <Badge className="bg-[#00ff00]/20 text-[#00ff00] border-[#00ff00]/30">
+                          +{mission.xp_reward} XP
+                        </Badge>
+                </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-400">Прогресс</span>
+                          <span className="text-[#00ff00] font-semibold">
+                            {mission.current_value}/{mission.target_value} ({mission.progress_percent}%)
+                          </span>
+                        </div>
+                        <div className="h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
+                    <motion.div
+                            className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] relative"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${mission.progress_percent}%` }}
+                            transition={{ duration: 1, delay: 0.5 }}
+                          >
+                        <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                              animate={{
+                                x: ['-100%', '200%'],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "linear",
+                              }}
+                            />
+                          </motion.div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-4">
+                        <Button
+                          className="flex-1 bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-black font-bold shadow-lg shadow-[#00ff00]/30"
+                          onClick={() => setIsUploadModalOpen(true)}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Сдать задание
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-white"
+                          onClick={() => {
+                            document.querySelector('[data-chat-input]')?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Задать вопрос
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <motion.div
+                      animate={{
+                        rotate: [0, 10, -10, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                      }}
+                      className="text-6xl mb-3"
+                    >
+                      🎯
+                    </motion.div>
+                    <h3 className="text-lg font-semibold text-white mb-1">
+                      Пока нет активных заданий
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      Продолжай проходить уроки, и новые миссии появятся!
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+                        </motion.div>
         </div>
 
-        {/* МОБИЛЬНАЯ ВЕРСИЯ */}
-        <div className="md:hidden">
+        {/* ===== MOBILE: ТАБЫ ===== */}
+        <div className="lg:hidden">
           <Tabs defaultValue="chat" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="chat">💬 Чат</TabsTrigger>
-              <TabsTrigger value="dashboard">📊 Дашборд</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-[#00ff00]/30">
+              <TabsTrigger 
+                value="chat"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00ff00] data-[state=active]:to-[#00cc00] data-[state=active]:text-white"
+              >
+                💬 Чат
+              </TabsTrigger>
+              <TabsTrigger 
+                value="dashboard"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00ff00] data-[state=active]:to-[#00cc00] data-[state=active]:text-white"
+              >
+                📊 Дашборд
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="chat">
-              <Card className="bg-zinc-900/80 border-2 border-[#00ff00]/30">
-                <CardContent className="p-4">
-                  <ScrollArea className="h-[400px]">
-                    <div className="space-y-4 py-4">
-                      {messages.map((msg, idx) => (
-                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] p-3 rounded-xl ${msg.role === 'user' ? 'bg-[#00ff00] text-black' : 'bg-zinc-800 text-white'}`}>
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+            {/* Чат Tab */}
+            <TabsContent value="chat" className="mt-6">
+              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-[400px] sm:h-[500px] flex flex-col">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-[#00ff00]" />
+                      Чат с AI
+                    </CardTitle>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleNewChat}
+                      className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00] text-xs"
+                      title="Новый чат"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                <ScrollArea className="flex-1 px-4">
+                  {isLoadingHistory ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-[#00ff00]" />
+                    </div>
+                  ) : (
+                    <div className="space-y-4 pb-4">
+                      {messages.map((msg, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                              msg.role === "assistant"
+                                ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white"
+                                : "bg-zinc-800/80 border border-zinc-700/50 text-white"
+                            }`}
+                          >
+                            <p className="text-sm">{msg.content}</p>
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </ScrollArea>
-                  <div className="flex gap-2 mt-4">
+                      {isSending && (
+                        <div className="flex justify-start">
+                          <div className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white rounded-2xl px-4 py-3">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          </div>
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                        </div>
+                  )}
+                </ScrollArea>
+
+                <CardContent className="border-t border-[#00ff00]/20 pt-4">
+                  {attachedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {attachedFiles.map((file, idx) => (
+                        <div key={idx} className="flex items-center gap-1 bg-zinc-800 border border-[#00ff00]/30 rounded px-2 py-1 text-xs">
+                          <Paperclip className="w-3 h-3 text-[#00ff00]" />
+                          <span className="text-white truncate max-w-[100px]">{file.name}</span>
+                          <button onClick={() => removeFile(idx)} className="text-gray-400">
+                            <X className="w-3 h-3" />
+                          </button>
+                      </div>
+                      ))}
+                        </div>
+                      )}
+
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept="image/*,.pdf,.doc,.docx,.txt"
+                    />
+
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isSending}
+                      className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00] shrink-0"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                    </Button>
+
                     <Input
-                      placeholder="Задай вопрос..."
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      className="flex-1 bg-zinc-800 text-white"
+                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                      placeholder="Напиши сообщение..."
+                      disabled={isSending}
+                      className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
                     />
-                    <Button onClick={handleSendMessage} className="bg-[#00ff00] text-black">
-                      <Send className="w-5 h-5" />
+
+                    <Button
+                      onClick={handleSendMessage}
+                      size="icon"
+                      disabled={isSending || (!input.trim() && attachedFiles.length === 0)}
+                      className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-white shrink-0"
+                    >
+                      {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </Button>
+
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={handleVoiceInput}
+                      disabled={isSending}
+                      className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00] shrink-0"
+                    >
+                      <Mic className="w-4 h-4" />
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="dashboard">
-              <div className="space-y-4">
-                {/* Метрики повторяются */}
-                <Card className="bg-zinc-900/80 border-2 border-blue-500/30">
-                  <CardContent className="p-6">
-                    <p className="text-white font-bold">Прогресс: {courseProgress}%</p>
+            {/* Дашборд Tab */}
+            <TabsContent value="dashboard" className="mt-6 space-y-4">
+              {/* Статистика дня на мобилке */}
+              {todayStats.xp_earned > 0 && (
+                <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-gray-400 mb-2">📊 Сегодня</p>
+                    <p className="text-lg font-bold text-white">
+                      +{todayStats.xp_earned} XP, {todayStats.lessons_completed} урок{todayStats.lessons_completed > 1 ? 'а' : ''}!
+                    </p>
                   </CardContent>
                 </Card>
-              </div>
+              )}
+
+              {/* Карточки прогресса вертикально */}
+              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-5 h-5 text-[#00ff00]" />
+                    <p className="text-sm text-gray-400">Прогресс курса</p>
+                  </div>
+                  <p className="text-3xl font-bold text-white mb-1">{courseProgress}%</p>
+                  <div className="mt-3 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]" style={{ width: `${courseProgress}%` }} />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-orange-500/30 bg-black/50 backdrop-blur-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flame className="w-5 h-5 text-orange-500" />
+                    <p className="text-sm text-gray-400">Streak</p>
+                  </div>
+                  <p className="text-3xl font-bold text-white">{streak} дней подряд 🔥</p>
+                </CardContent>
+              </Card>
+
+              {/* Совет дня */}
+              <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md">
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-400 mb-2">💡 Совет дня</p>
+                  <p className="text-white">{todayTip}</p>
+                </CardContent>
+              </Card>
+
+              {/* Текущая миссия */}
+              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+                <CardHeader>
+                  <CardTitle className="text-white text-base">
+                    {dashboardData?.active_missions?.length > 0 ? '🎯 Активная миссия' : 'Текущее задание'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {dashboardData?.active_missions?.length > 0 ? (
+                    dashboardData.active_missions.slice(0, 1).map((mission: any) => (
+                      <div key={mission.id}>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          {mission.title}
+                        </h3>
+                        <p className="text-sm text-gray-400 mb-3">{mission.description}</p>
+                        <div className="flex justify-between text-xs mb-2">
+                          <span className="text-gray-400">Прогресс</span>
+                          <span className="text-[#00ff00]">{mission.current_value}/{mission.target_value}</span>
+                        </div>
+                        <div className="h-2 bg-zinc-800 rounded-full mb-3">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] rounded-full"
+                            style={{ width: `${mission.progress_percent}%` }}
+                          />
+                        </div>
+                        <Button 
+                          className="w-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-white"
+                          onClick={() => toast({
+                            title: "📤 Загрузка задания",
+                            description: "Функция в разработке!",
+                          })}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Сдать задание
+                        </Button>
+                      </div>
+                  ))
+                ) : (
+                    <div className="text-center py-4">
+                      <p className="text-2xl mb-2">🎯</p>
+                      <p className="text-white">Пока нет активных заданий</p>
+                      <p className="text-sm text-gray-400">Продолжай учиться!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             </TabsContent>
           </Tabs>
         </div>
 
-      </div>
-
-      {/* МОДАЛКА ЗАГРУЗКИ ДЗ */}
-      <AnimatePresence>
-        {isUploadModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setIsUploadModalOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-zinc-900 border-2 border-[#00ff00]/40 rounded-2xl p-8 max-w-md w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Upload className="w-6 h-6 text-[#00ff00]" />
-                  Загрузить ДЗ
-                </h2>
-                <button onClick={() => setIsUploadModalOpen(false)} className="text-gray-400">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <div
-                    className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer border-zinc-700 hover:border-[#00ff00]/50"
-                    onClick={() => {
-                      const input = document.createElement("input");
-                      input.type = "file";
-                      input.onchange = (e: any) => {
-                        if (e.target.files?.[0]) {
-                          setUploadFile(e.target.files[0]);
-                        }
-                      };
-                      input.click();
-                    }}
-                  >
-                    {uploadFile ? (
-                      <>
-                        <CheckCircle className="w-12 h-12 text-[#00ff00] mx-auto mb-2" />
-                        <p className="text-white font-semibold">{uploadFile.name}</p>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-12 h-12 text-gray-500 mx-auto mb-2" />
-                        <p className="text-gray-400">Нажми или перетащи файл</p>
-                      </>
-                    )}
+        {/* ===== ВСЕ ДОСТИЖЕНИЯ (Большой блок с категориями) ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
+          <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <Trophy className="w-7 h-7 text-[#00ff00]" />
+                  <div>
+                    <CardTitle className="text-white text-xl">Все достижения</CardTitle>
+                    <CardDescription className="text-gray-400 mt-1">
+                      {completedCount} из {totalAchievements.length} получено • {inProgressCount} в процессе
+                    </CardDescription>
                   </div>
                 </div>
-
-                <Textarea placeholder="Комментарий..." className="bg-zinc-800 text-white min-h-[100px]" />
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      if (uploadFile) {
-                        toast({ title: "🎉 ДЗ отправлено!", description: "Скоро получишь обратную связь" });
-                        setIsUploadModalOpen(false);
-                        setUploadFile(null);
-                      }
-                    }}
-                    className="flex-1 bg-[#00ff00] text-black font-bold"
-                    disabled={!uploadFile}
-                  >
-                    Отправить
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setIsUploadModalOpen(false);
-                      setUploadFile(null);
-                    }}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Отмена
-                  </Button>
+                <div className="flex gap-2">
+                  <Badge className="bg-[#00ff00]/20 text-[#00ff00] border-[#00ff00]/30 px-3 py-1">
+                    ⭐ {completedCount} завершено
+                  </Badge>
+                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 px-3 py-1">
+                    ⏳ {inProgressCount} в работе
+                  </Badge>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="week" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50 border border-[#00ff00]/20 mb-6">
+                  <TabsTrigger value="week" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                    📅 Неделя
+                  </TabsTrigger>
+                  <TabsTrigger value="month" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                    📆 Месяц
+                  </TabsTrigger>
+                  <TabsTrigger value="permanent" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                    ⭐ Постоянные
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Неделя */}
+                <TabsContent value="week">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {allAchievements.week.map((achievement, idx) => (
+                      <AchievementCard key={achievement.id} achievement={achievement} index={idx} />
+                    ))}
+                  </div>
+                </TabsContent>
+
+                {/* Месяц */}
+                <TabsContent value="month">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {allAchievements.month.map((achievement, idx) => (
+                      <AchievementCard key={achievement.id} achievement={achievement} index={idx} />
+                    ))}
+                  </div>
+                </TabsContent>
+
+                {/* Постоянные */}
+                <TabsContent value="permanent">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {allAchievements.permanent.map((achievement, idx) => (
+                      <AchievementCard key={achievement.id} achievement={achievement} index={idx} />
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ===== ТОП СОВЕТОВ ПО ПОСЛЕДНИМ ВОПРОСАМ ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.55 }}
+        >
+          <Card className="border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5 backdrop-blur-md">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-7 h-7 text-purple-400" />
+                <div>
+                  <CardTitle className="text-white text-xl">Топ советов по твоим последним вопросам</CardTitle>
+                  <CardDescription>AI проанализировал твои вопросы и подготовил персональные рекомендации</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full space-y-3">
+                {topAdvices.map((advice, idx) => (
+                  <AccordionItem
+                    key={advice.id}
+                    value={advice.id}
+                    className="border border-purple-500/20 rounded-lg px-4 data-[state=open]:bg-purple-500/10 transition-colors"
+                  >
+                    <AccordionTrigger className="text-white hover:text-purple-400 transition-colors py-4 hover:no-underline">
+                      <div className="flex items-center gap-3 text-left">
+                        <span className="text-3xl">{advice.icon}</span>
+                        <div className="flex-1">
+                          <p className="font-semibold text-base">{advice.title}</p>
+                          <p className="text-xs text-gray-400 mt-1">{advice.timestamp}</p>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-300 pb-4">
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="bg-zinc-900/50 rounded-lg p-4 mb-3">
+                          <p className="text-sm font-medium text-purple-300 mb-2">📝 Краткое резюме:</p>
+                          <p className="text-sm text-gray-300 mb-3">{advice.summary}</p>
+                          
+                          <p className="text-sm font-medium text-purple-300 mb-2">📚 Подробности:</p>
+                          <pre className="text-sm text-gray-300 whitespace-pre-wrap font-sans">{advice.details}</pre>
+                        </div>
+                        
+                        {advice.actionLink && (
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Открыть урок
+                          </Button>
+                        )}
+                      </motion.div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ===== МОДАЛКА ЗАГРУЗКИ ДЗ ===== */}
+        <AnimatePresence>
+          {isUploadModalOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+                onClick={() => setIsUploadModalOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
+              >
+                <Card className="border-[#00ff00]/30 bg-zinc-900 shadow-2xl shadow-[#00ff00]/20">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <Upload className="w-6 h-6 text-[#00ff00]" />
+                        Загрузить домашнее задание
+                      </CardTitle>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setIsUploadModalOpen(false)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <X className="w-5 h-5" />
+                      </Button>
+                    </div>
+                    <CardDescription>Прикрепи файл с выполненным заданием</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div
+                      className="border-2 border-dashed border-[#00ff00]/30 rounded-lg p-8 text-center hover:border-[#00ff00]/60 hover:bg-[#00ff00]/5 transition-colors cursor-pointer"
+                      onClick={() => document.getElementById('upload-input')?.click()}
+                    >
+                      {uploadFile ? (
+                        <div className="space-y-2">
+                          <Paperclip className="w-8 h-8 text-[#00ff00] mx-auto" />
+                          <p className="text-white font-medium">{uploadFile.name}</p>
+                          <p className="text-gray-400 text-sm">{(uploadFile.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Upload className="w-12 h-12 text-gray-400 mx-auto" />
+                          <p className="text-white">Нажми или перетащи файл</p>
+                          <p className="text-gray-400 text-sm">PDF, DOC, ZIP до 10MB</p>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      id="upload-input"
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setUploadFile(file);
+                      }}
+                      accept=".pdf,.doc,.docx,.zip"
+                    />
+                    <Textarea
+                      placeholder="Комментарий к работе (необязательно)..."
+                      className="bg-zinc-800 border-[#00ff00]/30 text-white"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsUploadModalOpen(false);
+                          setUploadFile(null);
+                        }}
+                        className="flex-1 border-gray-600 hover:bg-zinc-800"
+                      >
+                        Отмена
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          toast({
+                            title: "✅ Задание отправлено!",
+                            description: "AI-наставник проверит твою работу в течение 24 часов",
+                          });
+                          setIsUploadModalOpen(false);
+                          setUploadFile(null);
+                        }}
+                        disabled={!uploadFile}
+                        className="flex-1 bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-black font-bold"
+                      >
+                        Отправить
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ===== FAQ с modern-accordion и анимациями ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-[#00ff00]" />
+                Частые вопросы
+              </CardTitle>
+              <CardDescription>Быстрые ответы на популярные вопросы студентов</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full space-y-2">
+                {faqItems.map((item, index) => (
+                  <AccordionItem 
+                    key={index} 
+                    value={`item-${index}`}
+                    className="border border-[#00ff00]/20 rounded-lg px-4 data-[state=open]:bg-[#00ff00]/5 transition-colors"
+                  >
+                    <AccordionTrigger className="text-white hover:text-[#00ff00] transition-colors py-4 hover:no-underline">
+                      <span className="text-left">{item.question}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-400 pb-4">
+            <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <p className="mb-4">{item.answer}</p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-white w-full sm:w-auto"
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.answer);
+                              toast({
+                                title: "✅ Скопировано",
+                                description: "Ответ скопирован в буфер обмена",
+                              });
+                            }}
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Копировать ответ
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-white w-full sm:w-auto"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Открыть урок
+                          </Button>
+              </div>
+                      </motion.div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+      </div>
     </div>
   );
 };
