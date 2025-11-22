@@ -171,6 +171,171 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
         >
           <div className="text-5xl sm:text-6xl">⚡</div>
         </motion.div>
+
+        {/* Claude Logo */}
+        <motion.div
+          className="absolute opacity-20"
+          style={{
+            top: "50%",
+            left: "5%",
+            filter: "blur(1.5px)",
+          }}
+          animate={{
+            y: [0, 25, 0],
+            x: [0, 10, 0],
+            rotate: [0, -5, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2.5,
+          }}
+        >
+          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="5" fill="#CC9B7A"/>
+            <path d="M7 17L12 7L17 17M8.5 14H15.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.div>
+
+        {/* Gemini Logo */}
+        <motion.div
+          className="absolute opacity-20"
+          style={{
+            top: "70%",
+            right: "8%",
+            filter: "blur(1.5px)",
+          }}
+          animate={{
+            y: [0, -20, 0],
+            x: [0, -10, 0],
+            rotate: [0, 10, 0],
+          }}
+          transition={{
+            duration: 6.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 3,
+          }}
+        >
+          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gemini-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#4285F4"/>
+                <stop offset="50%" stopColor="#9B72CB"/>
+                <stop offset="100%" stopColor="#D96570"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#gemini-gradient)"/>
+            <path d="M2 17L12 22L22 17L12 12L2 17Z" fill="url(#gemini-gradient)" opacity="0.7"/>
+            <path d="M2 12V17L12 12V7L2 12Z" fill="url(#gemini-gradient)" opacity="0.5"/>
+            <path d="M22 12V17L12 12V7L22 12Z" fill="url(#gemini-gradient)" opacity="0.5"/>
+          </svg>
+        </motion.div>
+
+        {/* Midjourney Logo */}
+        <motion.div
+          className="absolute opacity-20"
+          style={{
+            top: "30%",
+            right: "5%",
+            filter: "blur(1.5px)",
+          }}
+          animate={{
+            y: [0, 30, 0],
+            x: [0, -20, 0],
+            rotate: [0, -15, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5,
+          }}
+        >
+          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="5" fill="white"/>
+            <path d="M7 6H17M7 12H17M7 18H17" stroke="black" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="3" fill="black"/>
+          </svg>
+        </motion.div>
+
+        {/* Perplexity Logo */}
+        <motion.div
+          className="absolute opacity-20"
+          style={{
+            bottom: "15%",
+            left: "80%",
+            filter: "blur(1.5px)",
+          }}
+          animate={{
+            y: [0, -30, 0],
+            x: [0, 10, 0],
+            rotate: [0, 5, 0],
+          }}
+          transition={{
+            duration: 7.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        >
+          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="perplexity-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#20808D"/>
+                <stop offset="100%" stopColor="#2DCEEF"/>
+              </linearGradient>
+            </defs>
+            <rect width="24" height="24" rx="5" fill="url(#perplexity-gradient)"/>
+            <path d="M8 8L12 16L16 8M10 13H14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.div>
+
+        {/* Дополнительные эмодзи */}
+        <motion.div
+          className="absolute opacity-15"
+          style={{
+            top: "10%",
+            right: "30%",
+            filter: "blur(2px)",
+          }}
+          animate={{
+            y: [0, 15, 0],
+            scale: [1, 1.15, 1],
+            rotate: [0, 5, 0],
+          }}
+          transition={{
+            duration: 5.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 4,
+          }}
+        >
+          <div className="text-4xl sm:text-5xl">🧠</div>
+        </motion.div>
+
+        <motion.div
+          className="absolute opacity-15"
+          style={{
+            bottom: "10%",
+            right: "40%",
+            filter: "blur(2px)",
+          }}
+          animate={{
+            y: [0, -15, 0],
+            scale: [1, 1.15, 1],
+            rotate: [0, -5, 0],
+          }}
+          transition={{
+            duration: 6.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 3.5,
+          }}
+        >
+          <div className="text-4xl sm:text-5xl">✨</div>
+        </motion.div>
       </div>
 
       <div className="container mx-auto max-w-4xl relative z-10">
