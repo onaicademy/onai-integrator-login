@@ -68,7 +68,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
                 <Badge 
                   className="text-sm px-6 py-2.5 bg-[#B1FF32] text-black font-black uppercase tracking-wider"
                   style={{
-                    boxShadow: "0 0 30px rgba(177, 255, 50, 0.6), inset 0 0 10px rgba(0, 0, 0, 0.2)"
+                    boxShadow: "0 0 24px rgba(177, 255, 50, 0.48), inset 0 0 10px rgba(0, 0, 0, 0.2)"
                   }}
                 >
                   <Zap className="w-4 h-4 inline mr-2" />
@@ -85,7 +85,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
                   className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl xl:text-7xl 2xl:text-8xl font-black text-white leading-none tracking-tight"
                   style={{
                     fontFamily: "'Russo One', sans-serif",
-                    textShadow: "0 0 40px rgba(177, 255, 50, 0.3)",
+                    textShadow: "0 0 32px rgba(177, 255, 50, 0.24)",
                   }}
                 >
                   ИНТЕГРАТОРЫ
@@ -108,7 +108,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
                     className="relative text-5xl xs:text-6xl sm:text-7xl md:text-8xl xl:text-9xl font-black text-[#B1FF32]"
                     style={{
                       fontFamily: "'Russo One', sans-serif",
-                      textShadow: "0 0 80px rgba(177, 255, 50, 0.8), 0 0 120px rgba(177, 255, 50, 0.4)",
+                      textShadow: "0 0 64px rgba(177, 255, 50, 0.64), 0 0 96px rgba(177, 255, 50, 0.32)",
                       WebkitTextStroke: "2px rgba(177, 255, 50, 0.3)",
                     }}
                   >
@@ -168,26 +168,21 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
               >
                 {/* 5000₸ - Главная цена для Казахстана */}
                 <Card className="bg-gradient-to-br from-[#0a1f0a] via-black to-[#0a1f0a] border-[#B1FF32] border-2 p-6 hover:border-[#B1FF32] hover:shadow-[0_0_30px_rgba(177,255,50,0.3)] transition-all group relative overflow-hidden">
-                  {/* Badge "🇰🇿" + Скидка */}
-                  <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
-                    <Badge className="bg-[#B1FF32] text-black text-xs font-bold">🇰🇿 KZ</Badge>
-                    <Badge className="bg-red-500 text-white text-xs font-bold">-97% 🔥</Badge>
-                  </div>
-                  
                   <div className="flex flex-col items-start">
                     <span className="text-red-500/80 line-through text-xl font-bold">150,000₸</span>
-                    <div className="flex items-baseline gap-2 mt-2">
+                    <div className="flex items-baseline gap-3 mt-2">
                       <span
                         className="text-5xl xl:text-6xl font-black text-[#B1FF32]"
                         style={{
-                          textShadow: "0 0 40px rgba(177, 255, 50, 0.6)",
+                          textShadow: "0 0 32px rgba(177, 255, 50, 0.48)",
                           fontFamily: "'Russo One', sans-serif",
                         }}
                       >
                         5000₸
                       </span>
-                      <div className="opacity-60 group-hover:opacity-100 transition-opacity">
+                      <div className="flex flex-col items-center opacity-60 group-hover:opacity-100 transition-opacity">
                         <AnimatedArrow className="w-8 h-8" color="#B1FF32" />
+                        <span className="text-xs font-bold text-[#B1FF32] mt-1">97%</span>
                       </div>
                     </div>
                     <p className="text-[#B1FF32]/80 mt-2 text-sm font-medium">
@@ -198,26 +193,26 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
 
                 {/* $10 - Международная цена */}
                 <Card className="bg-gradient-to-br from-black to-[#0a1f0a] border-[#B1FF32] border-2 p-6 hover:border-[#B1FF32] hover:shadow-[0_0_30px_rgba(177,255,50,0.3)] transition-all group relative overflow-hidden">
-                  {/* Badge "WORLD" + Скидка */}
+                  {/* Badge "WORLD" */}
                   <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
                     <Badge className="bg-white text-black text-xs font-bold">🌍 WORLD</Badge>
-                    <Badge className="bg-red-500 text-white text-xs font-bold">-97% 🔥</Badge>
                   </div>
                   
                   <div className="flex flex-col items-start">
                     <span className="text-red-500/80 line-through text-xl font-bold">$300</span>
-                    <div className="flex items-baseline gap-2 mt-2">
+                    <div className="flex items-baseline gap-3 mt-2">
                       <span
                         className="text-5xl xl:text-6xl font-black text-white"
                         style={{
-                          textShadow: "0 0 30px rgba(255, 255, 255, 0.4)",
+                          textShadow: "0 0 24px rgba(255, 255, 255, 0.32)",
                           fontFamily: "'Russo One', sans-serif",
                         }}
                       >
                         $10
                       </span>
-                      <div className="opacity-60 group-hover:opacity-100 transition-opacity">
+                      <div className="flex flex-col items-center opacity-60 group-hover:opacity-100 transition-opacity">
                         <AnimatedArrow className="w-8 h-8" color="white" />
+                        <span className="text-xs font-bold text-white mt-1">97%</span>
                       </div>
                     </div>
                     <p className="text-gray-400 mt-2 text-sm font-medium">
