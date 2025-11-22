@@ -74,6 +74,24 @@ const AIMarathon = () => {
       document.head.appendChild(twitterDescription);
     }
     twitterDescription.setAttribute('content', description);
+    
+    // Update Open Graph image
+    let ogImage = document.querySelector('meta[property="og:image"]');
+    if (!ogImage) {
+      ogImage = document.createElement('meta');
+      ogImage.setAttribute('property', 'og:image');
+      document.head.appendChild(ogImage);
+    }
+    ogImage.setAttribute('content', 'https://onai.academy/og-image.svg');
+    
+    // Update Twitter image
+    let twitterImage = document.querySelector('meta[name="twitter:image"]');
+    if (!twitterImage) {
+      twitterImage = document.createElement('meta');
+      twitterImage.setAttribute('name', 'twitter:image');
+      document.head.appendChild(twitterImage);
+    }
+    twitterImage.setAttribute('content', 'https://onai.academy/og-image.svg');
   }, []);
 
   return (
