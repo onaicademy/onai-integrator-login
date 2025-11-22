@@ -170,8 +170,8 @@ const CasesSection = () => {
   }, [emblaApi, onSelect]);
 
   return (
-    <section ref={sectionRef} className="relative py-12 sm:py-16 md:py-20 px-3 sm:px-4 bg-black overflow-hidden">
-      <div className="container mx-auto max-w-7xl 2xl:max-w-[1920px]">
+    <section ref={sectionRef} className="relative py-12 sm:py-16 md:py-20 bg-black overflow-hidden">
+      <div className="container mx-auto px-3 sm:px-4 max-w-7xl 2xl:max-w-[1920px]">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -187,11 +187,11 @@ const CasesSection = () => {
             className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black mb-4 sm:mb-6 text-white"
             style={{
               fontFamily: "'Russo One', sans-serif",
-              textShadow: "0 0 40px rgba(177, 255, 50, 0.3)",
+              textShadow: "0 0 32px rgba(0, 255, 0, 0.24)",
             }}
             whileHover={{
               scale: 1.05,
-              textShadow: "0 0 60px rgba(177, 255, 50, 0.5)",
+              textShadow: "0 0 48px rgba(0, 255, 0, 0.4)",
               transition: { duration: 0.3 },
             }}
           >
@@ -207,7 +207,7 @@ const CasesSection = () => {
             Реальные результаты реальных людей
           </motion.p>
           <motion.div
-            className="w-16 sm:w-20 md:w-24 h-1 bg-[#B1FF32] mx-auto"
+            className="w-16 sm:w-20 md:w-24 h-1 bg-[#00ff00] mx-auto"
             initial={{ width: 0 }}
             animate={sectionInView ? { width: "auto" } : {}}
             transition={{ delay: 0.3, duration: 0.8 }}
@@ -288,10 +288,10 @@ const CasesSection = () => {
                           transition={{ duration: 0.3, delay: 0.1 }}
                         >
                           <span
-                            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#B1FF32]"
+                            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#00ff00]"
                             style={{
                               fontFamily: "'Russo One', sans-serif",
-                              textShadow: "0 0 20px rgba(177, 255, 50, 0.6)",
+                              textShadow: "0 0 16px rgba(0, 255, 0, 0.48)",
                             }}
                           >
                             {caseItem.earnings}
@@ -320,7 +320,7 @@ const CasesSection = () => {
                       {/* Active indicator */}
                       {isActive && (
                         <motion.div
-                          className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#B1FF32] via-[#B1FF32] to-transparent"
+                          className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#00ff00] via-[#00ff00] to-transparent"
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: 1 }}
                           transition={{ duration: 0.5 }}
@@ -340,7 +340,7 @@ const CasesSection = () => {
           <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-0 right-0 justify-between px-4 pointer-events-none z-20">
             <motion.button
               onClick={scrollPrev}
-              className="w-14 h-14 rounded-full bg-[#B1FF32]/20 backdrop-blur-xl border-2 border-[#B1FF32]/50 flex items-center justify-center text-[#B1FF32] hover:bg-[#B1FF32]/40 transition-all pointer-events-auto"
+              className="w-14 h-14 rounded-full bg-[#00ff00]/20 backdrop-blur-xl border-2 border-[#00ff00]/50 flex items-center justify-center text-[#00ff00] hover:bg-[#00ff00]/40 transition-all pointer-events-auto"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={{
@@ -351,7 +351,7 @@ const CasesSection = () => {
             </motion.button>
             <motion.button
               onClick={scrollNext}
-              className="w-14 h-14 rounded-full bg-[#B1FF32]/20 backdrop-blur-xl border-2 border-[#B1FF32]/50 flex items-center justify-center text-[#B1FF32] hover:bg-[#B1FF32]/40 transition-all pointer-events-auto"
+              className="w-14 h-14 rounded-full bg-[#00ff00]/20 backdrop-blur-xl border-2 border-[#00ff00]/50 flex items-center justify-center text-[#00ff00] hover:bg-[#00ff00]/40 transition-all pointer-events-auto"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={{
@@ -396,7 +396,7 @@ const CasesSection = () => {
               👉
             </motion.div>
             <motion.div
-              className="w-24 h-1 bg-gradient-to-r from-[#B1FF32] to-transparent rounded-full"
+              className="w-24 h-1 bg-gradient-to-r from-[#00ff00] to-transparent rounded-full"
               style={{
                 boxShadow: "0 0 15px rgba(177, 255, 50, 0.8)",
               }}
@@ -418,7 +418,7 @@ const CasesSection = () => {
                 key={index}
                 className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
                   index === selectedIndex
-                    ? "bg-[#B1FF32] w-8 sm:w-12"
+                    ? "bg-[#00ff00] w-8 sm:w-12"
                     : "bg-gray-600 w-2 sm:w-3"
                 }`}
                 onClick={() => emblaApi?.scrollTo(index)}

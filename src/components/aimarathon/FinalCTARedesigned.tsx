@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, Users, Clock, Gift } from "lucide-react";
+import { Zap, Users, Clock, Gift, Bomb } from "lucide-react";
 import { useAlmatyTimer } from "@/hooks/useAlmatyTimer";
 import { useSpotsCounter } from "@/hooks/useSpotsCounter";
 
@@ -21,8 +21,8 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
     <section ref={ref} className="relative py-16 sm:py-20 px-4 bg-gradient-to-b from-black via-[#0a1f0a]/20 to-black overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#B1FF32]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#B1FF32]/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#00ff00]/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#00ff00]/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Летающие логотипы */}
@@ -338,33 +338,130 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
         </motion.div>
       </div>
 
-      <div className="container mx-auto max-w-4xl relative z-10">
-        <div className="relative bg-gradient-to-br from-[#0F0F0F] to-[#0a1f0a] border-2 border-[#B1FF32]/40 rounded-3xl p-6 sm:p-8 md:p-12 overflow-hidden">
-          {/* Glow Effect */}
+      <div className="container mx-auto px-3 sm:px-4 max-w-7xl 2xl:max-w-[1920px] relative z-10">
+        <div className="relative bg-gradient-to-br from-[#0F0F0F] to-[#0a1f0a] border-2 border-[#00ff00]/40 rounded-3xl p-6 sm:p-8 md:p-12 overflow-hidden">
+          {/* Glow Effect - УМЕНЬШЕНО */}
           <div 
-            className="absolute inset-0 opacity-50"
+            className="absolute inset-0 opacity-30"
             style={{
-              background: "radial-gradient(circle at 50% 0%, rgba(177, 255, 50, 0.15), transparent 60%)",
+              background: "radial-gradient(circle at 50% 0%, rgba(0, 255, 0, 0.08), transparent 60%)",
             }}
           />
 
           {/* Content */}
           <div className="relative z-10 space-y-6 sm:space-y-8">
-            {/* Icon Badge */}
+            {/* Icon Badge - БОМБА С ТАЙМЕРОМ */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={isInView ? { scale: 1, rotate: 0 } : {}}
               transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
               className="flex justify-center"
             >
-              <div 
-                className="w-16 h-16 sm:w-20 sm:h-20 bg-[#B1FF32] rounded-full flex items-center justify-center"
-                style={{
-                  boxShadow: "0 0 40px rgba(177, 255, 50, 0.5)",
+              <motion.div 
+                className="w-16 h-16 sm:w-20 sm:h-20 bg-[#00ff00] rounded-full flex items-center justify-center relative"
+                animate={{
+                  boxShadow: [
+                    "0 0 20px rgba(0, 255, 0, 0.3)",
+                    "0 0 35px rgba(0, 255, 0, 0.4)",
+                    "0 0 20px rgba(0, 255, 0, 0.3)"
+                  ],
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
                 }}
               >
-                <Zap className="w-8 h-8 sm:w-10 sm:h-10 text-black" />
-              </div>
+                <motion.div
+                  animate={{
+                    rotate: [0, -10, 10, -10, 10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatDelay: 1
+                  }}
+                >
+                  <Bomb className="w-8 h-8 sm:w-10 sm:h-10 text-black" />
+                </motion.div>
+                
+                {/* Искры от фитиля */}
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={`spark-${i}`}
+                    className="absolute -top-2 left-1/2 w-1 h-1 bg-red-500 rounded-full"
+                    initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                    animate={{
+                      opacity: [0, 1, 0],
+                      scale: [0, 1.5, 0],
+                      x: [0, (Math.random() - 0.5) * 20],
+                      y: [0, -15 - Math.random() * 10]
+                    }}
+                    transition={{
+                      duration: 0.8,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                      ease: "easeOut"
+                    }}
+                  />
+                ))}
+                
+                {/* ЭФФЕКТ ВЗРЫВА - еле заметный */}
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 border-[#00ff00]"
+                  initial={{ scale: 1, opacity: 0 }}
+                  animate={{
+                    scale: [1, 2.5, 2.5, 1],
+                    opacity: [0, 0, 0.2, 0]
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                    ease: "easeOut"
+                  }}
+                />
+                
+                {/* ПОДАРКИ ВЫЛЕТАЮТ ИЗ ВЗРЫВА - очень тонко */}
+                {[...Array(6)].map((_, i) => {
+                  const angle = (i * 360) / 6;
+                  const rad = (angle * Math.PI) / 180;
+                  const distance = 60;
+                  
+                  return (
+                    <motion.div
+                      key={`gift-${i}`}
+                      className="absolute"
+                      style={{
+                        left: '50%',
+                        top: '50%',
+                        marginLeft: '-8px',
+                        marginTop: '-8px'
+                      }}
+                      initial={{ x: 0, y: 0, opacity: 0, scale: 0, rotate: 0 }}
+                      animate={{
+                        x: [0, 0, Math.cos(rad) * distance, 0],
+                        y: [0, 0, Math.sin(rad) * distance, 0],
+                        opacity: [0, 0, 0.15, 0],
+                        scale: [0, 0, 0.8, 0],
+                        rotate: [0, 0, 360, 360]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        repeatDelay: 3,
+                        delay: 1.5,
+                        ease: "easeOut",
+                        times: [0, 0.4, 0.7, 1]
+                      }}
+                    >
+                      <Gift className="w-4 h-4 text-[#00ff00]" />
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
             </motion.div>
 
             {/* Title */}
@@ -378,13 +475,13 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3"
                 style={{
                   fontFamily: "'Russo One', sans-serif",
-                  textShadow: "0 0 30px rgba(177, 255, 50, 0.3)",
+                  textShadow: "0 0 12px rgba(0, 255, 0, 0.16)",
                 }}
               >
                 Последний шанс
               </h2>
               <p className="text-lg sm:text-xl text-gray-400">
-                попасть в <span className="text-[#B1FF32] font-bold">3-й поток</span>
+                попасть в <span className="text-[#00ff00] font-bold">3-й поток</span>
               </p>
             </motion.div>
 
@@ -402,16 +499,16 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
               
               <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto">
                 {/* Hours */}
-                <div className="bg-black/60 border-2 border-[#B1FF32]/30 rounded-2xl p-3 sm:p-4 hover:border-[#B1FF32] transition-colors">
+                <div className="bg-black/60 border-2 border-[#00ff00]/30 rounded-2xl p-3 sm:p-4 hover:border-[#00ff00] transition-colors">
                   <motion.div 
                     key={timeLeft.hours}
                     initial={{ scale: 1.2, opacity: 0.5 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#B1FF32] text-center"
+                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00ff00] text-center"
                     style={{
                       fontFamily: "'Orbitron', sans-serif",
-                      textShadow: "0 0 20px rgba(177, 255, 50, 0.5)",
+                      textShadow: "0 0 8px rgba(0, 255, 0, 0.2)",
                     }}
                   >
                     {formatTime(timeLeft.hours)}
@@ -422,16 +519,16 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
                 </div>
 
                 {/* Minutes */}
-                <div className="bg-black/60 border-2 border-[#B1FF32]/30 rounded-2xl p-3 sm:p-4 hover:border-[#B1FF32] transition-colors">
+                <div className="bg-black/60 border-2 border-[#00ff00]/30 rounded-2xl p-3 sm:p-4 hover:border-[#00ff00] transition-colors">
                   <motion.div 
                     key={timeLeft.minutes}
                     initial={{ scale: 1.2, opacity: 0.5 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#B1FF32] text-center"
+                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00ff00] text-center"
                     style={{
                       fontFamily: "'Orbitron', sans-serif",
-                      textShadow: "0 0 20px rgba(177, 255, 50, 0.5)",
+                      textShadow: "0 0 8px rgba(0, 255, 0, 0.2)",
                     }}
                   >
                     {formatTime(timeLeft.minutes)}
@@ -442,16 +539,16 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
                 </div>
 
                 {/* Seconds */}
-                <div className="bg-black/60 border-2 border-[#B1FF32]/30 rounded-2xl p-3 sm:p-4 hover:border-[#B1FF32] transition-colors">
+                <div className="bg-black/60 border-2 border-[#00ff00]/30 rounded-2xl p-3 sm:p-4 hover:border-[#00ff00] transition-colors">
                   <motion.div 
                     key={timeLeft.seconds}
                     initial={{ scale: 1.2, opacity: 0.5 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#B1FF32] text-center"
+                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00ff00] text-center"
                     style={{
                       fontFamily: "'Orbitron', sans-serif",
-                      textShadow: "0 0 20px rgba(177, 255, 50, 0.5)",
+                      textShadow: "0 0 8px rgba(0, 255, 0, 0.2)",
                     }}
                   >
                     {formatTime(timeLeft.seconds)}
@@ -483,7 +580,7 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
                     ease: "easeInOut",
                   }}
                 >
-                  <Gift className="w-12 h-12 text-[#B1FF32]" />
+                  <Gift className="w-12 h-12 text-[#00ff00]" />
                 </motion.div>
               </div>
 
@@ -500,27 +597,27 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
                     delay: 1,
                   }}
                 >
-                  <Gift className="w-12 h-12 text-[#B1FF32]" />
+                  <Gift className="w-12 h-12 text-[#00ff00]" />
                 </motion.div>
               </div>
 
-              <div className="inline-block bg-black/40 border border-[#B1FF32]/30 rounded-2xl px-6 sm:px-8 py-4 relative">
+              <div className="inline-block bg-black/40 border border-[#00ff00]/30 rounded-2xl px-6 sm:px-8 py-4 relative">
                 <div className="flex items-baseline gap-3 sm:gap-4 justify-center flex-wrap">
                   <span 
-                    className="text-4xl sm:text-5xl md:text-6xl font-black text-[#B1FF32]"
+                    className="text-4xl sm:text-5xl md:text-6xl font-black text-[#00ff00]"
                     style={{
                       fontFamily: "'Russo One', sans-serif",
-                      textShadow: "0 0 30px rgba(177, 255, 50, 0.6)",
+                      textShadow: "0 0 24px rgba(0, 255, 0, 0.48)",
                     }}
                   >
                     $10
                   </span>
                   <span className="text-2xl sm:text-3xl text-gray-400">или</span>
                   <span 
-                    className="text-4xl sm:text-5xl md:text-6xl font-black text-[#B1FF32]"
+                    className="text-4xl sm:text-5xl md:text-6xl font-black text-[#00ff00]"
                     style={{
                       fontFamily: "'Russo One', sans-serif",
-                      textShadow: "0 0 30px rgba(177, 255, 50, 0.6)",
+                      textShadow: "0 0 24px rgba(0, 255, 0, 0.48)",
                     }}
                   >
                     5000₸
@@ -537,13 +634,13 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
               className="grid grid-cols-2 gap-4 max-w-md mx-auto"
             >
               {/* Spots Left */}
-              <div className="bg-black/40 border border-[#B1FF32]/20 rounded-xl p-4 text-center">
+              <div className="bg-black/40 border border-[#00ff00]/20 rounded-xl p-4 text-center">
                 <motion.div 
                   key={spotsLeft}
-                  initial={{ scale: 1.3, color: "#B1FF32" }}
-                  animate={{ scale: 1, color: "#B1FF32" }}
+                  initial={{ scale: 1.3, color: "#00ff00" }}
+                  animate={{ scale: 1, color: "#00ff00" }}
                   transition={{ duration: 0.5 }}
-                  className="text-2xl sm:text-3xl font-black text-[#B1FF32]"
+                  className="text-2xl sm:text-3xl font-black text-[#00ff00]"
                 >
                   {spotsLeft}
                 </motion.div>
@@ -551,13 +648,13 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
               </div>
 
               {/* Enrolled Today */}
-              <div className="bg-black/40 border border-[#B1FF32]/20 rounded-xl p-4 text-center">
+              <div className="bg-black/40 border border-[#00ff00]/20 rounded-xl p-4 text-center">
                 <motion.div 
                   key={enrolledToday}
-                  initial={{ scale: 1.3, color: "#B1FF32" }}
-                  animate={{ scale: 1, color: "#B1FF32" }}
+                  initial={{ scale: 1.3, color: "#00ff00" }}
+                  animate={{ scale: 1, color: "#00ff00" }}
                   transition={{ duration: 0.5 }}
-                  className="text-2xl sm:text-3xl font-black text-[#B1FF32]"
+                  className="text-2xl sm:text-3xl font-black text-[#00ff00]"
                 >
                   {enrolledToday}
                 </motion.div>
@@ -573,9 +670,9 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
             >
               <Button
                 onClick={onOpenModal}
-                className="w-full py-6 sm:py-8 text-lg sm:text-xl md:text-2xl font-black bg-[#B1FF32] hover:bg-[#9FE62C] text-black transition-all duration-300 rounded-2xl group relative overflow-hidden"
+                className="w-full py-6 sm:py-8 text-lg sm:text-xl md:text-2xl font-black bg-[#00ff00] hover:bg-[#9FE62C] text-black transition-all duration-300 rounded-2xl group relative overflow-hidden"
                 style={{
-                  boxShadow: "0 0 40px rgba(177, 255, 50, 0.4)",
+                  boxShadow: "0 0 32px rgba(0, 255, 0, 0.32)",
                   fontFamily: "'Russo One', sans-serif",
                 }}
               >
@@ -601,7 +698,7 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
               transition={{ delay: 1.2, duration: 0.5 }}
               className="flex items-center justify-center gap-2 text-sm text-gray-500"
             >
-              <Users className="w-4 h-4 text-[#B1FF32]" />
+              <Users className="w-4 h-4 text-[#00ff00]" />
               <span>Присоединяйтесь к {enrolledToday} участникам</span>
             </motion.div>
           </div>

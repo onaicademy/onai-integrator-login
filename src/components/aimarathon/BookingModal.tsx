@@ -89,7 +89,7 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#0F0F0F] border border-[#B1FF32]/30 max-w-lg overflow-hidden mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[#0F0F0F] border border-[#00ff00]/30 max-w-lg overflow-hidden mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
         <AnimatePresence mode="wait">
           {!isSuccess ? (
             <motion.div
@@ -137,11 +137,11 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
                   {[...Array(12)].map((_, i) => (
                     <motion.div
                       key={i}
-                      className="absolute w-1.5 h-1.5 bg-[#B1FF32] rounded-full"
+                      className="absolute w-1.5 h-1.5 bg-[#00ff00] rounded-full"
                       style={{
                         top: "50%",
                         left: "50%",
-                        boxShadow: "0 0 8px #B1FF32, 0 0 12px #B1FF32",
+                        boxShadow: "0 0 8px #00ff00, 0 0 12px #00ff00",
                       }}
                       animate={{
                         x: [0, Math.cos((i * 2 * Math.PI) / 12) * 100],
@@ -162,7 +162,7 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
                   {[60, 80, 100].map((radius, idx) => (
                     <motion.div
                       key={`ring-${idx}`}
-                      className="absolute top-1/2 left-1/2 border border-[#B1FF32]/20 rounded-full"
+                      className="absolute top-1/2 left-1/2 border border-[#00ff00]/20 rounded-full"
                       style={{
                         width: `${radius}px`,
                         height: `${radius}px`,
@@ -198,12 +198,12 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
                     htmlFor="name" 
                     className="text-gray-400 text-sm font-medium"
                   >
-                    Ваше имя <span className="text-[#B1FF32]">*</span>
+                    Ваше имя <span className="text-[#00ff00]">*</span>
                   </Label>
                   <Input
                     id="name"
                     placeholder="Ваше имя"
-                    className="bg-[#1B1B1B] border-[#B1FF32]/20 focus:border-[#B1FF32] text-white text-base sm:text-lg py-5 sm:py-6"
+                    className="bg-[#1B1B1B] border-[#00ff00]/20 focus:border-[#00ff00] text-white text-base sm:text-lg py-5 sm:py-6"
                     {...register("name")}
                   />
                   {errors.name && (
@@ -217,12 +217,12 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
                     htmlFor="phone" 
                     className="text-gray-400 text-sm font-medium"
                   >
-                    Номер телефона <span className="text-[#B1FF32]">*</span>
+                    Номер телефона <span className="text-[#00ff00]">*</span>
                   </Label>
                   <Input
                     id="phone"
                     placeholder="+7 (777) 777-77-77"
-                    className="bg-[#1B1B1B] border-[#B1FF32]/20 focus:border-[#B1FF32] text-white text-base sm:text-lg py-5 sm:py-6"
+                    className="bg-[#1B1B1B] border-[#00ff00]/20 focus:border-[#00ff00] text-white text-base sm:text-lg py-5 sm:py-6"
                     {...register("phone")}
                   />
                   {errors.phone && (
@@ -234,7 +234,7 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full text-lg sm:text-xl py-6 sm:py-7 bg-[#B1FF32] hover:bg-[#B1FF32]/90 text-black font-bold shadow-lg hover:shadow-[#B1FF32]/50 transition-all duration-300"
+                  className="w-full text-lg sm:text-xl py-6 sm:py-7 bg-[#00ff00] hover:bg-[#00ff00]/90 text-black font-bold shadow-lg hover:shadow-[#00ff00]/50 transition-all duration-300"
                 >
                   {isLoading ? (
                     <>
@@ -261,7 +261,7 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               >
-                <CheckCircle2 className="w-24 h-24 text-[#B1FF32] mx-auto mb-6" />
+                <CheckCircle2 className="w-24 h-24 text-[#00ff00] mx-auto mb-6" />
               </motion.div>
               
               <h3 className="text-3xl font-bold text-white mb-4">

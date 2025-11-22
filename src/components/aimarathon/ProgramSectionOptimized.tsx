@@ -14,8 +14,8 @@ const programData = [
       { icon: "🎪", text: "Выбор ниши" },
       { icon: "🛠️", text: "Первые AI инструменты" }
     ],
-    color: "#B1FF32",
-    gradient: "from-[#B1FF32]/20 to-[#B1FF32]/5"
+    color: "#00ff00",
+    gradient: "from-[#00ff00]/20 to-[#00ff00]/5"
   },
   {
     day: "ДЕНЬ 2",
@@ -81,7 +81,7 @@ const ProgramSectionOptimized = () => {
         className="absolute inset-0 pointer-events-none opacity-30"
         style={{ y }}
       >
-        <div className="absolute top-10 left-10 w-96 h-96 bg-[#B1FF32]/10 rounded-full blur-3xl" />
+        <div className="absolute top-10 left-10 w-96 h-96 bg-[#00ff00]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
       </motion.div>
 
@@ -110,7 +110,7 @@ const ProgramSectionOptimized = () => {
         </motion.div>
       ))}
 
-      <div className="container mx-auto relative z-10 max-w-7xl">
+      <div className="container mx-auto px-3 sm:px-4 relative z-10 max-w-7xl 2xl:max-w-[1920px]">
         {/* Заголовок - простая анимация */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -122,12 +122,12 @@ const ProgramSectionOptimized = () => {
             className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 text-white"
             style={{
               fontFamily: "'Russo One', sans-serif",
-              textShadow: "0 0 40px rgba(177, 255, 50, 0.3)",
+              textShadow: "0 0 32px rgba(0, 255, 0, 0.24)",
             }}
           >
             3 ДНЯ ОБУЧЕНИЯ
             <br />
-            <span className="text-[#B1FF32] mt-2 inline-block">
+            <span className="text-[#00ff00] mt-2 inline-block">
               С ДОМАШНИМИ ЗАДАНИЯМИ
             </span>
           </h2>
@@ -186,7 +186,7 @@ const ProgramSectionOptimized = () => {
                 }}
                 className="md:scale-100"
               >
-                <Card className={`relative bg-gradient-to-br ${item.gradient} backdrop-blur-xl border-2 border-[#B1FF32]/20 p-6 h-full hover:border-[#B1FF32]/60 transition-colors duration-300 overflow-hidden group`}>
+                <Card className={`relative bg-gradient-to-br ${item.gradient} backdrop-blur-xl border-2 border-[#00ff00]/20 p-6 h-full hover:border-[#00ff00]/60 transition-colors duration-300 overflow-hidden group`}>
                   {/* Glow эффект при hover */}
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -241,7 +241,7 @@ const ProgramSectionOptimized = () => {
                       className="text-3xl font-black mb-4 relative z-10"
                       style={{
                         color: item.color,
-                        textShadow: `0 0 20px ${item.color}80`,
+                        textShadow: `0 0 16px ${item.color}66`,
                         fontFamily: "'Russo One', sans-serif",
                       }}
                     >

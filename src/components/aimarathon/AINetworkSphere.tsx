@@ -74,7 +74,7 @@ const AINetworkSphere = () => {
           return (
             <motion.div
               key={i}
-              className="absolute text-[#B1FF32] font-mono text-xs xl:text-sm opacity-60"
+              className="absolute text-[#00ff00] font-mono text-xs xl:text-sm opacity-60"
               style={{
                 left: "50%",
                 top: "50%",
@@ -115,7 +115,7 @@ const AINetworkSphere = () => {
             <motion.div
               className="absolute inset-0 rounded-full"
               style={{
-                background: "#B1FF32",
+                background: "#00ff00",
                 filter: "blur(20px)",
                 width: "80px",
                 height: "80px",
@@ -136,7 +136,7 @@ const AINetworkSphere = () => {
 
             {/* AI текст в центре */}
             <motion.div
-              className="relative text-3xl xs:text-4xl sm:text-5xl md:text-6xl xl:text-8xl font-black text-[#B1FF32]"
+              className="relative text-3xl xs:text-4xl sm:text-5xl md:text-6xl xl:text-8xl font-black text-[#00ff00]"
               style={{
                 textShadow:
                   "0 0 20px rgba(177, 255, 50, 0.8), 0 0 40px rgba(177, 255, 50, 0.4)",
@@ -167,7 +167,7 @@ const AINetworkSphere = () => {
           return (
             <motion.div
               key={`particle-${i}`}
-              className="absolute w-2 h-2 bg-[#B1FF32] rounded-full"
+              className="absolute w-2 h-2 bg-[#00ff00] rounded-full"
               style={{
                 left: "50%",
                 top: "50%",
@@ -217,7 +217,7 @@ const AINetworkSphere = () => {
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="#B1FF32"
+              stroke="#00ff00"
               strokeWidth="1"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: [0, 1, 0], opacity: [0, 0.4, 0] }}

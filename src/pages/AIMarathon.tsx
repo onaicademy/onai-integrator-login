@@ -35,7 +35,7 @@ const AIMarathon = () => {
     <div className="relative bg-black text-white overflow-x-hidden">
       {/* Progress Bar - minimal */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-[#B1FF32] z-50"
+        className="fixed top-0 left-0 right-0 h-1 bg-[#00ff00] z-50"
         style={{ width: progressWidth, transformOrigin: "0%" }}
       />
       

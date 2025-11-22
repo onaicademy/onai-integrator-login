@@ -5,13 +5,13 @@ import { Separator } from "@/components/ui/separator";
 
 const Footer = () => {
   return (
-    <footer className="relative bg-black border-t border-[#B1FF32]/10">
-      <div className="container mx-auto px-4 py-16">
+    <footer className="relative bg-black border-t border-[#00ff00]/10">
+      <div className="container mx-auto px-3 sm:px-4 py-16 max-w-7xl 2xl:max-w-[1920px]">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Column 1: Logo + Info */}
           <div className="space-y-4">
-            <div className="flex items-center">
-              <OnAILogo className="h-10 sm:h-12 w-auto" variant="full" />
+            <div className="flex items-center mb-2">
+              <OnAILogo className="h-8 sm:h-10 md:h-11 w-auto" variant="full" />
             </div>
             <p className="text-gray-500 leading-relaxed">
               Обучаем зарабатывать на AI технологиях
@@ -26,17 +26,17 @@ const Footer = () => {
             <h3 className="text-xl font-bold text-white mb-6">Информация</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-500 hover:text-[#B1FF32] transition-colors duration-200">
+                <a href="#" className="text-gray-500 hover:text-[#00ff00] transition-colors duration-200">
                   Публичная оферта
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-500 hover:text-[#B1FF32] transition-colors duration-200">
+                <a href="#" className="text-gray-500 hover:text-[#00ff00] transition-colors duration-200">
                   Политика конфиденциальности
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-500 hover:text-[#B1FF32] transition-colors duration-200">
+                <a href="#" className="text-gray-500 hover:text-[#00ff00] transition-colors duration-200">
                   FAQ
                 </a>
               </li>
@@ -50,7 +50,7 @@ const Footer = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="w-12 h-12 rounded-lg border-[#B1FF32]/30 text-[#B1FF32] hover:bg-[#B1FF32] hover:text-black transition-all duration-300"
+                className="w-12 h-12 rounded-lg border-[#00ff00]/30 text-[#00ff00] hover:bg-[#00ff00] hover:text-black transition-all duration-300"
                 asChild
               >
                 <a href="https://instagram.com/onai.academy" target="_blank" rel="noopener noreferrer">
@@ -61,7 +61,7 @@ const Footer = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="w-12 h-12 rounded-lg border-[#B1FF32]/30 text-[#B1FF32] hover:bg-[#B1FF32] hover:text-black transition-all duration-300"
+                className="w-12 h-12 rounded-lg border-[#00ff00]/30 text-[#00ff00] hover:bg-[#00ff00] hover:text-black transition-all duration-300"
                 asChild
               >
                 <a href="https://t.me/onaiacademy" target="_blank" rel="noopener noreferrer">
@@ -72,7 +72,7 @@ const Footer = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="w-12 h-12 rounded-lg border-[#B1FF32]/30 text-[#B1FF32] hover:bg-[#B1FF32] hover:text-black transition-all duration-300"
+                className="w-12 h-12 rounded-lg border-[#00ff00]/30 text-[#00ff00] hover:bg-[#00ff00] hover:text-black transition-all duration-300"
                 asChild
               >
                 <a href="https://wa.me/77777777777" target="_blank" rel="noopener noreferrer">
@@ -83,14 +83,14 @@ const Footer = () => {
             
             <div className="mt-6">
               <p className="text-sm text-gray-600 mb-2">Email:</p>
-              <a href="mailto:info@onaiacademy.kz" className="text-[#B1FF32] hover:text-[#B1FF32]/80 transition-colors">
+              <a href="mailto:info@onaiacademy.kz" className="text-[#00ff00] hover:text-[#00ff00]/80 transition-colors">
                 info@onaiacademy.kz
               </a>
             </div>
           </div>
         </div>
 
-        <Separator className="bg-[#B1FF32]/10 mb-8" />
+        <Separator className="bg-[#00ff00]/10 mb-8" />
 
         {/* Bottom Bar */}
         <div className="text-center text-sm text-gray-600">

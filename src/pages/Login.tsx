@@ -232,9 +232,37 @@ export default function Login() {
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Хедер */}
         <header className="flex items-center justify-between px-4 sm:px-8 py-6 flex-shrink-0">
-          <div className="flex items-center gap-4 sm:gap-12">
-            {/* ЛОГОТИП ONAI ACADEMY */}
-            <OnAILogo variant="full" className="h-10 sm:h-12 w-auto text-white" />
+          <div className="flex items-center gap-4 sm:gap-12 relative">
+            {/* АНИМАЦИЯ ЗЕЛЕНЫХ PARTICLES ВОКРУГ ЛОГОТИПА */}
+            <div className="absolute inset-0 pointer-events-none -left-8 -right-8">
+              {[...Array(12)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                  animate={{
+                    x: [0, Math.random() * 40 - 20, 0],
+                    y: [0, Math.random() * 40 - 20, 0],
+                    opacity: [0.2, 0.8, 0.2],
+                    scale: [1, 1.8, 1],
+                  }}
+                  transition={{
+                    duration: 2 + Math.random() * 2,
+                    repeat: Infinity,
+                    delay: Math.random() * 2,
+                    ease: 'easeInOut',
+                  }}
+                />
+              ))}
+            </div>
+            
+            {/* ЛОГОТИП ONAI ACADEMY с анимацией */}
+            <div className="relative z-10">
+              <OnAILogo variant="full" className="h-10 sm:h-12 w-auto text-white" />
+            </div>
           </div>
           
           <div className="flex items-center gap-4">

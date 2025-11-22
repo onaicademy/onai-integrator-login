@@ -32,7 +32,6 @@ const studentMenuItems: MenuItem[] = [
   { title: "Достижения", url: "/achievements", icon: Award },
   { title: "Сообщения", url: "/messages", icon: MessageSquare },
   { title: "Админ панель", url: "/admin", icon: LayoutDashboard },
-  { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
 const adminMenuItems: MenuItem[] = [
@@ -79,14 +78,43 @@ export function AppSidebar({ role }: AppSidebarProps) {
     <Sidebar collapsible="icon" className="border-r border-gray-800 bg-[#18181b]">
       <SidebarHeader className="border-b border-gray-800 px-3 sm:px-4 py-3 sm:py-4 bg-[#18181b]">
         <div className={cn(
-          "flex items-center transition-all duration-300",
+          "flex items-center transition-all duration-300 relative",
           isCollapsed ? "justify-center p-1" : "justify-start p-2 pl-1"
         )}>
-          {isCollapsed ? (
-            <OnAILogo variant="icon" className="w-10 h-10 text-[#00ff00]" />
-          ) : (
-            <OnAILogo variant="full" className="h-8 w-auto text-white" />
-          )}
+          {/* АНИМАЦИЯ ЗЕЛЕНЫХ PARTICLES ВОКРУГ ЛОГОТИПА */}
+          <div className="absolute inset-0 pointer-events-none -left-4 -right-4 overflow-visible">
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  x: [0, Math.random() * 30 - 15, 0],
+                  y: [0, Math.random() * 30 - 15, 0],
+                  opacity: [0.2, 0.7, 0.2],
+                  scale: [1, 1.6, 1],
+                }}
+                transition={{
+                  duration: 1.8 + Math.random() * 1.5,
+                  repeat: Infinity,
+                  delay: Math.random() * 1.5,
+                  ease: 'easeInOut',
+                }}
+              />
+            ))}
+          </div>
+          
+          {/* ЛОГОТИП с Z-INDEX */}
+          <div className="relative z-10">
+            {isCollapsed ? (
+              <OnAILogo variant="icon" className="w-10 h-10 text-[#00ff00]" />
+            ) : (
+              <OnAILogo variant="full" className="h-8 w-auto text-white" />
+            )}
+          </div>
         </div>
       </SidebarHeader>
 

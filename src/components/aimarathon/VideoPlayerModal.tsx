@@ -120,7 +120,7 @@ const VideoPlayerModal = ({ isOpen, onClose, videoUrl }: VideoPlayerModalProps) 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-7xl w-[95vw] h-[95vh] p-0 bg-black border-2 border-[#B1FF32]/30 overflow-hidden"
+        className="max-w-7xl w-[95vw] h-[95vh] p-0 bg-black border-2 border-[#00ff00]/30 overflow-hidden"
         onMouseMove={handleMouseMove}
       >
         <div className="relative w-full h-full flex items-center justify-center bg-black">
@@ -143,7 +143,7 @@ const VideoPlayerModal = ({ isOpen, onClose, videoUrl }: VideoPlayerModalProps) 
                 onClick={togglePlay}
               >
                 <motion.div
-                  className="w-24 h-24 rounded-full bg-[#B1FF32] flex items-center justify-center"
+                  className="w-24 h-24 rounded-full bg-[#00ff00] flex items-center justify-center"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -170,9 +170,9 @@ const VideoPlayerModal = ({ isOpen, onClose, videoUrl }: VideoPlayerModalProps) 
                     max={duration || 100}
                     value={currentTime}
                     onChange={handleSeek}
-                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#B1FF32]"
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#00ff00]"
                     style={{
-                      background: `linear-gradient(to right, #B1FF32 0%, #B1FF32 ${(currentTime / duration) * 100}%, #374151 ${(currentTime / duration) * 100}%, #374151 100%)`
+                      background: `linear-gradient(to right, #00ff00 0%, #00ff00 ${(currentTime / duration) * 100}%, #374151 ${(currentTime / duration) * 100}%, #374151 100%)`
                     }}
                   />
                   <div className="flex justify-between text-xs text-gray-400 mt-1">
@@ -187,7 +187,7 @@ const VideoPlayerModal = ({ isOpen, onClose, videoUrl }: VideoPlayerModalProps) 
                     {/* Play/Pause Button */}
                     <button
                       onClick={togglePlay}
-                      className="w-10 h-10 rounded-full bg-[#B1FF32] hover:bg-[#B1FF32]/90 flex items-center justify-center transition-colors"
+                      className="w-10 h-10 rounded-full bg-[#00ff00] hover:bg-[#00ff00]/90 flex items-center justify-center transition-colors"
                     >
                       {isPlaying ? (
                         <Pause className="w-5 h-5 text-black" />
@@ -199,7 +199,7 @@ const VideoPlayerModal = ({ isOpen, onClose, videoUrl }: VideoPlayerModalProps) 
                     {/* Speed Control */}
                     <button
                       onClick={changePlaybackRate}
-                      className="px-3 py-1 rounded-lg bg-black/60 hover:bg-black/80 text-white text-sm font-semibold border border-[#B1FF32]/30 hover:border-[#B1FF32] transition-colors"
+                      className="px-3 py-1 rounded-lg bg-black/60 hover:bg-black/80 text-white text-sm font-semibold border border-[#00ff00]/30 hover:border-[#00ff00] transition-colors"
                     >
                       {playbackRate}x
                     </button>
@@ -209,19 +209,19 @@ const VideoPlayerModal = ({ isOpen, onClose, videoUrl }: VideoPlayerModalProps) 
                     {/* Fullscreen Button */}
                     <button
                       onClick={toggleFullscreen}
-                      className="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 flex items-center justify-center border border-[#B1FF32]/30 hover:border-[#B1FF32] transition-colors"
+                      className="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 flex items-center justify-center border border-[#00ff00]/30 hover:border-[#00ff00] transition-colors"
                     >
                       {isFullscreen ? (
-                        <Minimize className="w-5 h-5 text-[#B1FF32]" />
+                        <Minimize className="w-5 h-5 text-[#00ff00]" />
                       ) : (
-                        <Maximize className="w-5 h-5 text-[#B1FF32]" />
+                        <Maximize className="w-5 h-5 text-[#00ff00]" />
                       )}
                     </button>
 
                     {/* Close Button */}
                     <button
                       onClick={handleClose}
-                      className="w-10 h-10 rounded-lg bg-black/60 hover:bg-red-500 flex items-center justify-center border border-[#B1FF32]/30 hover:border-red-500 transition-colors"
+                      className="w-10 h-10 rounded-lg bg-black/60 hover:bg-red-500 flex items-center justify-center border border-[#00ff00]/30 hover:border-red-500 transition-colors"
                     >
                       <X className="w-5 h-5 text-white" />
                     </button>
