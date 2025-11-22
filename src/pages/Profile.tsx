@@ -1,16 +1,35 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, Mail, Key, Camera, Save, LogOut } from "lucide-react";
 import { CourseModules } from "@/components/profile/v2/CourseModules";
-import { AchievementsGrid } from "@/components/profile/v2/AchievementsGrid";
-import { AIAssistantPanel } from "@/components/profile/v2/AIAssistantPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserProfile } from "@/lib/profile-api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
   const { user } = useAuth();
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Форма настроек
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Загрузка профиля
   useEffect(() => {
@@ -25,6 +44,12 @@ const Profile = () => {
         console.log('📊 Загружаем профиль для:', user.id);
         const data = await getUserProfile(user.id);
         setProfileData(data);
+        
+        // Заполняем форму настроек
+        setFullName(data?.profile?.full_name || '');
+        setEmail(data?.profile?.email || '');
+        setAvatarUrl(data?.profile?.avatar_url || '');
+        
         console.log('✅ Профиль загружен:', data);
       } catch (err: any) {
         console.error('❌ Ошибка загрузки профиля:', err);
@@ -42,6 +67,343 @@ const Profile = () => {
   
   // Получаем первую букву имени для аватара
   const avatarLetter = profileData?.profile?.full_name?.charAt(0).toUpperCase() || 'U';
+
+  // Проверка наличия изменений
+  const hasProfileChanges = 
+    fullName.trim() !== (profileData?.profile?.full_name || '') || 
+    email.trim() !== (profileData?.profile?.email || '');
+
+  // Проверка совпадения паролей
+  const passwordsMatch = newPassword && confirmPassword && newPassword === confirmPassword;
+  const canChangePassword = newPassword.length >= 6 && passwordsMatch;
+
+  // ===== ФУНКЦИИ НАСТРОЕК =====
+
+  // Загрузить аватар
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "❌ Ошибка",
+        description: "Файл слишком большой (макс 2MB)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProfileLoading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      await Promise.all([
+        supabase.auth.updateUser({ data: { avatar_url: publicUrl } }),
+        supabase.from("profiles").update({ avatar_url: publicUrl, updated_at: new Date().toISOString() }).eq("id", user.id),
+        supabase.from("student_profiles").update({ avatar_url: publicUrl, updated_at: new Date().toISOString() }).eq("id", user.id)
+      ]);
+
+      setAvatarUrl(publicUrl);
+      toast({ title: "✅ Аватар обновлён", description: "Новое фото профиля установлено" });
+      
+      // Обновляем профиль
+      const data = await getUserProfile(user.id);
+      setProfileData(data);
+    } catch (error: any) {
+      toast({ title: "❌ Ошибка", description: error.message || "Не удалось загрузить аватар", variant: "destructive" });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Обновить профиль
+  const handleUpdateProfile = async () => {
+    if (!user?.id) return;
+    
+    // Валидация
+    const trimmedEmail = email.trim();
+    const trimmedName = fullName.trim();
+
+    // Проверка имени
+    if (!trimmedName || trimmedName.length < 2) {
+      toast({
+        title: "❌ Ошибка валидации",
+        description: "Имя должно содержать минимум 2 символа",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Проверка email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      toast({
+        title: "❌ Ошибка валидации",
+        description: "Введите корректный email адрес",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Проверка на изменения
+    const hasChanges = 
+      trimmedName !== profileData?.profile?.full_name || 
+      trimmedEmail !== profileData?.profile?.email;
+
+    if (!hasChanges) {
+      toast({
+        title: "ℹ️ Нет изменений",
+        description: "Вы не внесли никаких изменений",
+      });
+      return;
+    }
+
+    setProfileLoading(true);
+    try {
+      console.log('📝 [handleUpdateProfile] Начинаем обновление профиля:', { name: trimmedName, email: trimmedEmail });
+
+      // Проверяем активную сессию
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('❌ [handleUpdateProfile] Ошибка получения сессии:', sessionError);
+        throw new Error('Не удалось получить текущую сессию. Попробуйте перелогиниться.');
+      }
+      
+      if (!sessionData.session) {
+        console.error('❌ [handleUpdateProfile] Сессия не активна!');
+        throw new Error('Сессия не активна. Пожалуйста, войдите в систему заново.');
+      }
+      
+      console.log('✅ [handleUpdateProfile] Сессия активна, пользователь:', sessionData.session.user.email);
+
+      // Определяем, что изменилось
+      const nameChanged = trimmedName !== profileData?.profile?.full_name;
+      const emailChanged = trimmedEmail !== profileData?.profile?.email;
+
+      console.log('🔍 [handleUpdateProfile] Что изменилось:', { nameChanged, emailChanged });
+
+      // Обновляем в 3 местах: auth.users, profiles, student_profiles
+      const updatePromises: Promise<any>[] = [];
+
+      // Auth update - только если что-то изменилось
+      if (nameChanged || emailChanged) {
+        const authUpdate: any = {};
+        if (emailChanged) authUpdate.email = trimmedEmail;
+        if (nameChanged) authUpdate.data = { full_name: trimmedName };
+        
+        console.log('🔐 [handleUpdateProfile] Обновляем auth.users:', authUpdate);
+        updatePromises.push(supabase.auth.updateUser(authUpdate));
+      }
+
+      // Profiles update
+      if (nameChanged || emailChanged) {
+        const profileUpdate: any = { updated_at: new Date().toISOString() };
+        if (nameChanged) profileUpdate.full_name = trimmedName;
+        if (emailChanged) profileUpdate.email = trimmedEmail;
+        
+        console.log('📊 [handleUpdateProfile] Обновляем profiles:', profileUpdate);
+        updatePromises.push(
+          supabase.from("profiles").update(profileUpdate).eq("id", user.id)
+        );
+      }
+
+      // Student profiles update
+      if (nameChanged || emailChanged) {
+        const studentUpdate: any = { updated_at: new Date().toISOString() };
+        if (nameChanged) studentUpdate.full_name = trimmedName;
+        if (emailChanged) studentUpdate.email = trimmedEmail;
+        
+        console.log('🎓 [handleUpdateProfile] Обновляем student_profiles:', studentUpdate);
+        updatePromises.push(
+          supabase.from("student_profiles").update(studentUpdate).eq("id", user.id)
+        );
+      }
+
+      // Выполняем все обновления параллельно
+      console.log('⏳ [handleUpdateProfile] Выполняем обновления...');
+      const results = await Promise.all(updatePromises);
+      console.log('✅ [handleUpdateProfile] Обновления выполнены, проверяем результаты...');
+
+      // Проверяем ошибки
+      let authResult = null;
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        
+        // Если это результат от auth.updateUser (у него структура {data, error})
+        if (result.data && result.data.user) {
+          authResult = result;
+          console.log('🔐 [handleUpdateProfile] Auth обновлен:', result.data.user.email);
+        }
+        
+        if (result.error && result.error.code !== "PGRST116") {
+          console.error(`❌ [handleUpdateProfile] Ошибка в обновлении ${i}:`, result.error);
+          throw result.error;
+        }
+      }
+      
+      console.log('✅ [handleUpdateProfile] Все обновления успешны!');
+
+      console.log('✅ Профиль успешно обновлен');
+
+      // Перезагружаем данные профиля
+      const data = await getUserProfile(user.id);
+      setProfileData(data);
+      
+      // Обновляем локальные state
+      setFullName(data?.profile?.full_name || '');
+      setEmail(data?.profile?.email || '');
+
+      toast({ 
+        title: "✅ Профиль обновлён", 
+        description: "Изменения успешно сохранены" 
+      });
+    } catch (error: any) {
+      console.error('❌ Ошибка обновления профиля:', error);
+      toast({ 
+        title: "❌ Ошибка", 
+        description: error.message || "Не удалось обновить профиль", 
+        variant: "destructive" 
+      });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Сменить пароль
+  const handleChangePassword = async () => {
+    // Валидация: пустые поля
+    if (!newPassword || !confirmPassword) {
+      toast({ 
+        title: "❌ Ошибка валидации", 
+        description: "Заполните оба поля пароля", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    // Валидация: минимальная длина
+    if (newPassword.length < 6) {
+      toast({ 
+        title: "❌ Ошибка валидации", 
+        description: "Пароль должен содержать минимум 6 символов", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    // Валидация: совпадение паролей
+    if (newPassword !== confirmPassword) {
+      toast({ 
+        title: "❌ Ошибка валидации", 
+        description: "Пароли не совпадают", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    // Дополнительная валидация: сложность пароля
+    const hasUpperCase = /[A-Z]/.test(newPassword);
+    const hasLowerCase = /[a-z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+    
+    if (newPassword.length >= 8 && (!hasUpperCase || !hasLowerCase || !hasNumber)) {
+      toast({ 
+        title: "⚠️ Слабый пароль", 
+        description: "Рекомендуем использовать заглавные буквы, строчные буквы и цифры",
+      });
+    }
+
+    setPasswordLoading(true);
+    try {
+      console.log('🔐 [handleChangePassword] Начинаем смену пароля...');
+      
+      // Проверяем активную сессию
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('❌ [handleChangePassword] Ошибка получения сессии:', sessionError);
+        throw new Error('Не удалось получить текущую сессию. Попробуйте перелогиниться.');
+      }
+      
+      if (!sessionData.session) {
+        console.error('❌ [handleChangePassword] Сессия не активна!');
+        throw new Error('Сессия не активна. Пожалуйста, войдите в систему заново.');
+      }
+      
+      console.log('✅ [handleChangePassword] Сессия активна, пользователь:', sessionData.session.user.email);
+      console.log('🔄 [handleChangePassword] Вызываем supabase.auth.updateUser()...');
+
+      const { data: updateData, error: updateError } = await supabase.auth.updateUser({ 
+        password: newPassword 
+      });
+      
+      if (updateError) {
+        console.error('❌ [handleChangePassword] Ошибка updateUser:', updateError);
+        throw updateError;
+      }
+      
+      console.log('✅ [handleChangePassword] updateUser успешен, данные:', updateData);
+
+      // Очищаем поля после успешной смены
+      setNewPassword("");
+      setConfirmPassword("");
+
+      console.log('✅ [handleChangePassword] Пароль успешно изменен!');
+
+      toast({ 
+        title: "✅ Пароль изменён", 
+        description: "Новый пароль успешно установлен" 
+      });
+    } catch (error: any) {
+      console.error('❌ Ошибка смены пароля:', error);
+      toast({ 
+        title: "❌ Ошибка", 
+        description: error.message || "Не удалось изменить пароль", 
+        variant: "destructive" 
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  // Выход из аккаунта
+  const handleLogout = async () => {
+    setProfileLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      console.log('👋 Пользователь вышел из системы');
+      sessionStorage.clear();
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("sb-") || key === "supabase.auth.token")
+        .forEach((key) => localStorage.removeItem(key));
+      queryClient.clear();
+
+      toast({ title: "👋 До свидания!", description: "Вы успешно вышли из аккаунта" });
+      navigate("/login", { replace: true });
+    } catch (error: any) {
+      toast({ title: "❌ Ошибка", description: error.message || "Не удалось выйти из аккаунта", variant: "destructive" });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Получить инициалы
+  const getInitials = (name: string) => {
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  };
 
   // Индикатор загрузки
   if (isLoading) {
@@ -192,9 +554,9 @@ const Profile = () => {
                 <div className="w-px bg-gray-800" />
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                    {profileData?.profile?.current_streak || 0}
+                    {profileData?.stats?.total_modules_completed || 0}
                   </div>
-                  <div className="text-xs text-gray-400">Дней</div>
+                  <div className="text-xs text-gray-400">Модулей</div>
                 </div>
               </motion.div>
             </div>
@@ -224,15 +586,15 @@ const Profile = () => {
                 color: "yellow" 
               },
               { 
-                label: "Стрик", 
-                value: `${profileData?.profile?.current_streak || 0} ${(profileData?.profile?.current_streak || 0) === 1 ? 'день' : 'дней'}`, 
-                icon: "🔥", 
-                color: "orange" 
-              },
-              { 
                 label: "Модули", 
                 value: `${profileData?.stats?.total_modules_completed || 0}`, 
                 icon: "📚", 
+                color: "blue" 
+              },
+              { 
+                label: "Курсы", 
+                value: `${profileData?.stats?.total_courses_enrolled || 0}`, 
+                icon: "🎓", 
                 color: "green" 
               }
             ].map((stat, index) => (
@@ -264,23 +626,229 @@ const Profile = () => {
             <CourseModules />
           </motion.div>
 
-          {/* Achievements */}
+          {/* НАСТРОЙКИ ПРОФИЛЯ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             className="mb-8"
           >
-            <AchievementsGrid />
-          </motion.div>
+            <h2 className="text-2xl font-bold text-white mb-6">Настройки профиля</h2>
+            
+            <div className="space-y-6">
+              {/* Аватар */}
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-[#00ff00]" />
+                    Аватар
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-6">
+                    <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                      <Avatar className="w-24 h-24 border-4 border-[#00ff00]/30">
+                        {avatarUrl ? <AvatarImage src={avatarUrl} alt="Avatar" /> : null}
+                        <AvatarFallback className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 text-2xl font-bold text-white">
+                          {fullName ? getInitials(fullName) : avatarLetter}
+                        </AvatarFallback>
+                      </Avatar>
+                    </motion.div>
+                    <div>
+                      <p className="text-sm text-gray-400 mb-3">Загрузите свой аватар (макс 2MB)</p>
+                      <div>
+                        <Input
+                          id="avatar-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                          className="hidden"
+                          disabled={profileLoading}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() => document.getElementById("avatar-upload")?.click()}
+                          disabled={profileLoading}
+                          className="bg-transparent border-[#00ff00] text-[#00ff00] hover:bg-[#00ff00]/10"
+                        >
+                          <Camera className="w-4 h-4 mr-2" />
+                          {profileLoading ? "Загрузка..." : "Загрузить фото"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* AI Assistant */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <AIAssistantPanel />
+              {/* Основная информация */}
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <User className="w-5 h-5 text-[#00ff00]" />
+                    Основная информация
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="fullName" className="text-white">Полное имя</Label>
+                    <Input
+                      id="fullName"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Иван Иванов"
+                      disabled={isLoading}
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email" className="text-white">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      disabled={isLoading}
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleUpdateProfile} 
+                    disabled={profileLoading || isLoading || !hasProfileChanges}
+                    className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {profileLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Сохранение...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {hasProfileChanges ? 'Сохранить изменения' : 'Нет изменений'}
+                      </>
+                    )}
+                  </Button>
+                  {hasProfileChanges && !profileLoading && (
+                    <p className="text-xs text-[#00ff00] mt-2">
+                      ✓ Обнаружены изменения - нажмите для сохранения
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Смена пароля */}
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Key className="w-5 h-5 text-[#00ff00]" />
+                    Смена пароля
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="newPassword" className="text-white">Новый пароль</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Минимум 6 символов"
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword" className="text-white">Подтвердите пароль</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Повторите пароль"
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleChangePassword} 
+                    disabled={passwordLoading || !canChangePassword}
+                    className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {passwordLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Изменение...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="w-4 h-4 mr-2" />
+                        Изменить пароль
+                      </>
+                    )}
+                  </Button>
+                  {/* Визуальная индикация */}
+                  {newPassword && confirmPassword && (
+                    <div className="mt-2">
+                      {passwordsMatch ? (
+                        <p className="text-xs text-[#00ff00]">✓ Пароли совпадают</p>
+                      ) : (
+                        <p className="text-xs text-red-500">✗ Пароли не совпадают</p>
+                      )}
+                    </div>
+                  )}
+                  {newPassword && newPassword.length < 6 && (
+                    <p className="text-xs text-orange-500 mt-2">⚠ Минимум 6 символов</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Выход из аккаунта */}
+              <Card className="bg-[#1a1a24] border-red-900/30 hover:border-red-500/50 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-red-500 flex items-center gap-2">
+                    <LogOut className="w-5 h-5" />
+                    Выход из аккаунта
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Выйти из вашего аккаунта на этом устройстве
+                  </p>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleLogout} 
+                    disabled={profileLoading}
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                  >
+                    {profileLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Выход...
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Выйти
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Уведомления */}
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-[#00ff00]" />
+                    Уведомления
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-400">
+                    Настройки уведомлений будут добавлены позже
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </motion.div>
         </div>
 

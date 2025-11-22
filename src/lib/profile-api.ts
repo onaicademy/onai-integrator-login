@@ -42,7 +42,7 @@ export async function getUserProfile(userId: string): Promise<ProfileResponse> {
   try {
     console.log('📊 [ProfileAPI] Запрос профиля для:', userId);
     
-    const response = await api.get(`/users/${userId}/profile`);
+    const response = await api.get(`/api/users/${userId}/profile`);
 
     if (!response.success) {
       throw new Error(response.error || 'Failed to fetch profile');

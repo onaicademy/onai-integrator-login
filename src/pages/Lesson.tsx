@@ -85,6 +85,31 @@ const Lesson = () => {
     }
   }, [lessonId, allLessons]);
 
+  // 🎬 Cleanup: Завершаем видео-сессию при закрытии страницы
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Используем navigator.sendBeacon для отправки данных при закрытии
+      if (sessionId && user?.id && lessonId) {
+        navigator.sendBeacon(
+          `${window.location.origin}/api/analytics/video-session/end`,
+          JSON.stringify({
+            user_id: user.id,
+            lesson_id: parseInt(lessonId),
+            session_id: sessionId,
+          })
+        );
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // При размонтировании компонента тоже завершаем сессию
+      endVideoSession();
+    };
+  }, [sessionId, user?.id, lessonId]);
+
   // ✅ Загрузить все уроки модуля для навигации
   const loadAllLessons = async () => {
     if (!moduleId) return;
@@ -201,6 +226,26 @@ const Lesson = () => {
     }
   };
 
+  // 🎬 Завершение видео-сессии (агрегация метрик для AI Mentor)
+  const endVideoSession = async () => {
+    if (!sessionId || !user?.id || !lessonId) {
+      console.log('ℹ️ Пропускаем завершение сессии - нет данных');
+      return;
+    }
+    
+    try {
+      console.log('🎬 Завершаем видео-сессию:', { sessionId, lessonId });
+      await api.post('/api/analytics/video-session/end', {
+        user_id: user.id,
+        lesson_id: parseInt(lessonId),
+        session_id: sessionId,
+      });
+      console.log('✅ Видео-сессия завершена, метрики отправлены в AI Mentor');
+    } catch (error) {
+      console.error('❌ Ошибка завершения видео-сессии:', error);
+    }
+  };
+
   // Play/Pause
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -307,6 +352,9 @@ const Lesson = () => {
   const handleComplete = async () => {
     try {
       console.log('✅ Завершение урока:', lessonId);
+      
+      // 🎬 Сначала завершаем видео-сессию (отправляем метрики)
+      await endVideoSession();
       
       const response = await api.post(`/api/lessons/${lessonId}/complete`);
       

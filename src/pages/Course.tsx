@@ -111,14 +111,16 @@ function SortableModule({ module, index, onModuleClick, onDelete, isAdmin }: Sor
                 return '0 мин';
               })()
             }}
+            isLocked={module.isLocked || false}
             onClick={() => {
               console.log('🖱️ ModuleCard onClick:', { 
                 moduleId: module.id, 
                 moduleTitle: module.title, 
                 order_index: module.order_index,
-                lessonsCount: module.lessons?.length || 0
+                lessonsCount: module.lessons?.length || 0,
+                isLocked: module.isLocked
               });
-              onModuleClick(module.id);
+              onModuleClick(module.id, module.isLocked);
             }}
           />
         </div>
@@ -258,6 +260,47 @@ const Course = () => {
         });
         console.log('✅ Порядок модулей корректен:', isOrderCorrect ? 'ДА' : 'НЕТ');
         
+        // 🔒 БЛОКИРОВКА МОДУЛЕЙ: Определяем статус для студентов
+        if (!isAdmin && user?.id) {
+          console.log('🔒 Применяем блокировку модулей для студента');
+          
+          // Находим индекс первого незавершенного модуля
+          let firstUncompletedIndex = -1;
+          for (let i = 0; i < sortedModules.length; i++) {
+            const progress = sortedModules[i].progress || 0;
+            if (progress < 100) {
+              firstUncompletedIndex = i;
+              break;
+            }
+          }
+          
+          // Если все модули завершены, открываем последний
+          if (firstUncompletedIndex === -1) {
+            firstUncompletedIndex = sortedModules.length - 1;
+          }
+          
+          // Помечаем модули как заблокированные
+          sortedModules.forEach((module, index) => {
+            if (index > firstUncompletedIndex) {
+              module.isLocked = true;
+            } else {
+              module.isLocked = false;
+            }
+          });
+          
+          console.log('🔒 Статус блокировки:', sortedModules.map(m => ({
+            id: m.id,
+            title: m.title,
+            progress: m.progress || 0,
+            isLocked: m.isLocked
+          })));
+        } else {
+          // Для админов все модули разблокированы
+          sortedModules.forEach(module => {
+            module.isLocked = false;
+          });
+        }
+        
         setApiModules(sortedModules);
         console.log('✅ Загружено модулей:', sortedModules.length);
         console.log('✅ apiModules установлен:', sortedModules.length, 'модулей');
@@ -279,11 +322,21 @@ const Course = () => {
     }
   };
 
-  const handleModuleClick = (moduleId: number) => {
+  const handleModuleClick = (moduleId: number, isLocked: boolean = false) => {
     console.log('🖱️ ===== КЛИК НА МОДУЛЬ =====');
     console.log('📌 Course ID:', id);
     console.log('📌 Module ID:', moduleId);
     console.log('📌 Module ID type:', typeof moduleId);
+    console.log('📌 Is Locked:', isLocked);
+    
+    // 🔒 Блокировка: Не открываем заблокированные модули
+    if (isLocked) {
+      console.warn('🔒 Модуль заблокирован - завершите предыдущий модуль');
+      toast.error('Сначала завершите предыдущий модуль', {
+        description: 'Модули открываются последовательно после прохождения предыдущих',
+      });
+      return;
+    }
     
     if (!id) {
       console.error('❌ Cannot navigate: id is undefined');

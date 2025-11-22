@@ -86,7 +86,18 @@ export async function getUserProfile(userId: string): Promise<{ profile: UserPro
 
     const totalModulesCompleted = modulesStats?.filter(m => m.is_completed).length || 0;
 
-    // 4. Получаем количество достижений
+    // 4. Получаем количество назначенных курсов
+    const { count: coursesCount, error: coursesError } = await supabase
+      .from('user_courses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_active', true);
+
+    if (coursesError) {
+      console.warn('⚠️ Ошибка получения курсов:', coursesError);
+    }
+
+    // 5. Получаем количество достижений
     const { count: achievementsCount, error: achievementsError } = await supabase
       .from('user_achievements')
       .select('*', { count: 'exact', head: true })
@@ -96,7 +107,7 @@ export async function getUserProfile(userId: string): Promise<{ profile: UserPro
       console.warn('⚠️ Ошибка получения достижений:', achievementsError);
     }
 
-    // 5. Получаем активные цели
+    // 6. Получаем активные цели
     const { count: goalsCount, error: goalsError } = await supabase
       .from('user_goals')
       .select('*', { count: 'exact', head: true })
@@ -107,7 +118,7 @@ export async function getUserProfile(userId: string): Promise<{ profile: UserPro
       console.warn('⚠️ Ошибка получения целей:', goalsError);
     }
 
-    // 6. Получаем активные миссии
+    // 7. Получаем активные миссии
     const { count: missionsCount, error: missionsError } = await supabase
       .from('user_missions')
       .select('*', { count: 'exact', head: true })
@@ -121,7 +132,7 @@ export async function getUserProfile(userId: string): Promise<{ profile: UserPro
     const stats: ProfileStats = {
       total_lessons_completed: totalLessonsCompleted,
       total_modules_completed: totalModulesCompleted,
-      total_courses_enrolled: 0, // TODO: Добавить когда будет таблица enrollments
+      total_courses_enrolled: coursesCount || 0,
       total_watch_time_hours: Math.round(totalWatchTimeSeconds / 3600 * 10) / 10,
       avg_video_progress: Math.round(avgVideoProgress),
       achievements_unlocked: achievementsCount || 0,

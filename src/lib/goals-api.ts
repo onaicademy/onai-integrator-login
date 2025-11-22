@@ -1,60 +1,150 @@
-/**
- * Goals API Client
- * Клиент для работы с Backend API недельных целей
- */
-
 import { api } from '../utils/apiClient';
 
-interface WeeklyGoal {
+export interface Goal {
   id: string;
-  goal_type: string;
-  target_value: number;
-  current_value: number;
-  week_start_date: string;
-  week_end_date: string;
-  is_completed: boolean;
-  completed_at: string | null;
-  progress_percent: number;
-  days_remaining: number;
+  user_id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'done';
+  due_date?: string;
+  priority?: 'low' | 'medium' | 'high';
+  category?: string;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
+  ai_analyzed?: boolean;
+  ai_feedback?: any;
 }
 
-/**
- * Получить недельные цели студента
- */
-export async function getWeeklyGoals(userId: string): Promise<WeeklyGoal[]> {
+export interface GoalStatistics {
+  total_goals: number;
+  completed_goals: number;
+  in_progress_goals: number;
+  overdue_goals: number;
+  completion_rate: number;
+  goals_this_week: number;
+  productivity_score: number;
+}
+
+export interface WeeklyReport {
+  id: string;
+  user_id: string;
+  week_start: string;
+  week_end: string;
+  goals_created: number;
+  goals_completed: number;
+  goals_in_progress: number;
+  goals_overdue: number;
+  xp_earned: number;
+  achievements_unlocked: any[];
+  ai_productivity_score: number;
+  ai_feedback?: string;
+  ai_recommendations?: any;
+  created_at: string;
+  processed_at?: string;
+}
+
+export async function getUserGoals(userId: string): Promise<Goal[]> {
   try {
-    console.log('🎯 [GoalsAPI] Запрос недельных целей для:', userId);
-    
-    const response = await api.get(`/goals/weekly/${userId}`);
-
-    if (!response.success) {
-      throw new Error(response.error || 'Failed to fetch goals');
-    }
-
-    console.log('✅ [GoalsAPI] Цели получены:', response.data.length);
-    return response.data;
-  } catch (error) {
-    console.error('❌ [GoalsAPI] Ошибка:', error);
+    console.log('📋 [GoalsAPI] Загрузка целей для пользователя:', userId);
+    const response = await api.get(`/api/goals?userId=${userId}`);
+    console.log('✅ [GoalsAPI] Цели загружены:', response?.goals?.length || 0);
+    return response?.goals || [];
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка загрузки целей:', error);
     throw error;
   }
 }
 
-/**
- * Обновить прогресс цели (вызывается при завершении урока)
- */
-export async function updateGoalProgress(
-  userId: string,
-  goalType: string,
-  incrementValue: number = 1
-): Promise<void> {
+export async function getGoal(id: string): Promise<Goal> {
   try {
-    console.log('🎯 [GoalsAPI] Обновление цели:', goalType);
-    
-    await api.post('/goals/update-progress', { userId, goalType, incrementValue });
-
-    console.log('✅ [GoalsAPI] Прогресс цели обновлён');
-  } catch (error) {
-    console.error('❌ [GoalsAPI] Ошибка обновления:', error);
+    const response = await api.get(`/api/goals/${id}`);
+    return response?.goal;
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка получения цели:', error);
+    throw error;
   }
 }
 
+export async function createGoal(goal: Partial<Goal>): Promise<Goal> {
+  try {
+    console.log('➕ [GoalsAPI] Создание цели:', goal.title);
+    const response = await api.post('/api/goals', goal);
+    console.log('✅ [GoalsAPI] Цель создана:', response?.goal?.id);
+    return response?.goal;
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка создания цели:', error);
+    throw error;
+  }
+}
+
+export async function updateGoal(id: string, updates: Partial<Goal>): Promise<Goal> {
+  try {
+    console.log('🔄 [GoalsAPI] Обновление цели:', id);
+    const response = await api.put(`/api/goals/${id}`, updates);
+    console.log('✅ [GoalsAPI] Цель обновлена:', id);
+    return response?.goal;
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка обновления цели:', error);
+    throw error;
+  }
+}
+
+export async function deleteGoal(id: string): Promise<void> {
+  try {
+    console.log('🗑️ [GoalsAPI] Удаление цели:', id);
+    await api.delete(`/api/goals/${id}`);
+    console.log('✅ [GoalsAPI] Цель удалена:', id);
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка удаления цели:', error);
+    throw error;
+  }
+}
+
+export async function completeGoal(id: string): Promise<Goal> {
+  try {
+    console.log('✅ [GoalsAPI] Выполнение цели:', id);
+    const response = await api.post(`/api/goals/${id}/complete`, {});
+    console.log('🎉 [GoalsAPI] Цель выполнена! +XP');
+    return response?.goal;
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка выполнения цели:', error);
+    throw error;
+  }
+}
+
+export async function uncompleteGoal(id: string): Promise<Goal> {
+  try {
+    console.log('↩️ [GoalsAPI] Отмена выполнения цели:', id);
+    const response = await api.post(`/api/goals/${id}/uncomplete`, {});
+    console.log('✅ [GoalsAPI] Выполнение цели отменено');
+    return response?.goal;
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка отмены выполнения:', error);
+    throw error;
+  }
+}
+
+export async function getGoalStatistics(userId: string): Promise<GoalStatistics> {
+  try {
+    console.log('📊 [GoalsAPI] Загрузка статистики для пользователя:', userId);
+    const response = await api.get(`/api/goals/statistics/${userId}`);
+    console.log('✅ [GoalsAPI] Статистика загружена');
+    return response?.statistics;
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка загрузки статистики:', error);
+    throw error;
+  }
+}
+
+export async function getWeeklyReports(userId: string): Promise<WeeklyReport[]> {
+  try {
+    console.log('📅 [GoalsAPI] Загрузка еженедельных отчетов:', userId);
+    const response = await api.get(`/api/goals/report/${userId}`);
+    console.log('✅ [GoalsAPI] Отчеты загружены:', response?.reports?.length || 0);
+    return response?.reports || [];
+  } catch (error: any) {
+    console.error('❌ [GoalsAPI] Ошибка загрузки отчетов:', error);
+    throw error;
+  }
+}

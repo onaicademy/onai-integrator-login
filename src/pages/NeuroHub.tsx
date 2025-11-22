@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { GoalsTodoSystemDB } from "@/components/goals/GoalsTodoSystemDB";
 import { 
   Brain, 
   Send, 
@@ -163,58 +164,94 @@ const NeuroHub = () => {
   const [xpAmount, setXpAmount] = useState(0);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
 
+  // ⚡ ОПТИМИЗАЦИЯ: Параллельная загрузка всех данных
   useEffect(() => {
-    async function loadDashboard() {
+    async function loadAllData() {
       if (!user?.id) {
         setIsLoading(false);
         return;
       }
 
+      console.log('⚡ [NeuroHub] Начинаем параллельную загрузку данных...');
+      const startTime = performance.now();
+
       try {
-        const data = await getStudentDashboard(user.id);
-        setDashboardData(data);
+        // 🚀 Загружаем dashboard и chat history параллельно
+        const [dashboardResult, chatHistoryResult] = await Promise.allSettled([
+          getStudentDashboard(user.id),
+          loadChatHistoryData(user.id)
+        ]);
+
+        // Обрабатываем результат dashboard
+        if (dashboardResult.status === 'fulfilled') {
+          setDashboardData(dashboardResult.value);
+          console.log('✅ Dashboard загружен');
+        } else {
+          console.error('❌ Ошибка загрузки dashboard:', dashboardResult.reason);
+        }
+
+        // Обрабатываем результат chat history
+        if (chatHistoryResult.status === 'fulfilled') {
+          if (chatHistoryResult.value && chatHistoryResult.value.length > 0) {
+            setMessages(chatHistoryResult.value);
+            console.log('✅ История чата загружена');
+          } else {
+            // Приветственное сообщение
+            setMessages([{
+              role: 'assistant',
+              content: `Привет, ${user?.full_name || user?.email}! 👋 Я твой AI-наставник. Готов помочь с обучением и ответить на любые вопросы! 🚀`
+            }]);
+          }
+        } else {
+          console.error('❌ Ошибка загрузки истории чата:', chatHistoryResult.reason);
+          // Приветственное сообщение при ошибке
+          setMessages([{
+            role: 'assistant',
+            content: `Привет! 👋 Я твой AI-наставник. Готов помочь!`
+          }]);
+        }
+
+        const endTime = performance.now();
+        console.log(`⚡ [NeuroHub] Все данные загружены за ${Math.round(endTime - startTime)}ms`);
       } catch (err) {
-        console.error('Ошибка загрузки dashboard:', err);
+        console.error('❌ Критическая ошибка загрузки данных:', err);
       } finally {
         setIsLoading(false);
+        setIsLoadingHistory(false);
       }
     }
 
-    loadDashboard();
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (user?.id) {
-      loadChatHistory();
-    }
-  }, [user?.id]);
+    loadAllData();
+  }, [user?.id, user?.full_name, user?.email]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ⚡ Функция загрузки истории чата (для параллельной загрузки)
+  const loadChatHistoryData = async (userId: string) => {
+    // ✅ КРИТИЧЕСКИЙ FIX: Проверяем есть ли активный thread_id
+    const threadId = localStorage.getItem('openai_thread_id');
+    
+    // Если НЕТ thread_id = это НОВЫЙ ЧАТ! Возвращаем пустой массив
+    if (!threadId) {
+      console.log('🆕 [loadChatHistoryData] Новый чат - старая история НЕ загружается');
+      return [];
+    }
+
+    // Если есть thread_id - загружаем историю
+    console.log('📜 [loadChatHistoryData] Загружаем историю для thread:', threadId);
+    const history = await getChatHistory(userId);
+    return history || [];
+  };
+
+  // Функция для перезагрузки истории чата (например, при создании нового чата)
   const loadChatHistory = async () => {
     if (!user?.id) return;
     
     setIsLoadingHistory(true);
     try {
-      // ✅ КРИТИЧЕСКИЙ FIX: Проверяем есть ли активный thread_id
-      const threadId = localStorage.getItem('openai_thread_id');
-      
-      // Если НЕТ thread_id = это НОВЫЙ ЧАТ! Не грузим старую историю!
-      if (!threadId) {
-        console.log('🆕 [loadChatHistory] Новый чат - старая история НЕ загружается');
-        setMessages([{
-          role: 'assistant',
-          content: `Привет, ${user?.full_name || user?.email}! 👋 Я твой AI-наставник. Готов помочь с обучением и ответить на любые вопросы! 🚀`
-        }]);
-        setIsLoadingHistory(false);
-        return;
-      }
-
-      // Если есть thread_id - загружаем историю
-      console.log('📜 [loadChatHistory] Загружаем историю для thread:', threadId);
-      const history = await getChatHistory(user.id);
+      const history = await loadChatHistoryData(user.id);
       if (history && history.length > 0) {
         setMessages(history);
       } else {
@@ -1245,77 +1282,7 @@ const NeuroHub = () => {
             className="lg:col-span-6"
             style={{ minHeight: '350px' }}
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Star className="w-6 h-6 text-[#00ff00]" />
-                    Мои цели
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsEditingGoals(!isEditingGoals)}
-                    className="text-[#00ff00] hover:bg-[#00ff00]/10"
-                  >
-                    {isEditingGoals ? "Готово" : "Редактировать"}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {myGoals.map((goal, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 group hover:border-[#00ff00]/40 transition-colors"
-                  >
-                    <CheckCircle className="w-5 h-5 text-[#00ff00] flex-shrink-0" />
-                    <span className="text-white flex-1">{goal}</span>
-                    {isEditingGoals && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setMyGoals(myGoals.filter((_, i) => i !== idx))}
-                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </motion.div>
-                ))}
-                
-                {isEditingGoals && (
-                  <div className="flex gap-2 mt-3">
-                    <Input
-                      value={newGoal}
-                      onChange={(e) => setNewGoal(e.target.value)}
-                      placeholder="Добавить новую цель..."
-                      className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && newGoal.trim()) {
-                          setMyGoals([...myGoals, newGoal.trim()]);
-                          setNewGoal("");
-                        }
-                      }}
-                    />
-                    <Button
-                      size="icon"
-                      onClick={() => {
-                        if (newGoal.trim()) {
-                          setMyGoals([...myGoals, newGoal.trim()]);
-                          setNewGoal("");
-                        }
-                      }}
-                      className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <GoalsTodoSystemDB />
           </motion.div>
 
           {/* ===== ТЕКУЩАЯ МИССИЯ (Правая колонка - 6 колонок) ===== */}

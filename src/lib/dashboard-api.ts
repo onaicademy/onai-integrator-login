@@ -55,7 +55,7 @@ export async function getStudentDashboard(userId: string): Promise<DashboardData
   try {
     console.log('📊 [DashboardAPI] Запрос dashboard для:', userId);
     
-    const response = await api.get(`/analytics/student/${userId}/dashboard`);
+    const response = await api.get(`/api/analytics/student/${userId}/dashboard`);
 
     if (!response.success) {
       throw new Error(response.error || 'Failed to fetch dashboard');

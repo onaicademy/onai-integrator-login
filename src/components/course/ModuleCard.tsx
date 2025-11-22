@@ -19,6 +19,7 @@ interface ModuleCardProps {
     total_hours: number;
     formatted_duration: string;
   };
+  isLocked?: boolean;
   onClick?: () => void;
 }
 
@@ -33,6 +34,7 @@ export const ModuleCard = ({
   lessons,
   duration,
   stats,
+  isLocked = false,
   onClick 
 }: ModuleCardProps) => {
   const isCompleted = progress === 100;
@@ -47,11 +49,15 @@ export const ModuleCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
-      whileHover={{ x: 4, borderColor: "rgba(0, 255, 0, 0.4)" }}
-      onClick={onClick}
-      className="relative bg-[#0a0a0f] border border-gray-800/50 rounded-2xl overflow-hidden group cursor-pointer hover:shadow-lg hover:shadow-[#00ff00]/10 transition-all duration-300"
+      whileHover={!isLocked ? { x: 4, borderColor: "rgba(0, 255, 0, 0.4)" } : {}}
+      onClick={isLocked ? undefined : onClick}
+      className={`relative bg-[#0a0a0f] border rounded-2xl overflow-hidden group transition-all duration-300 ${
+        isLocked
+          ? 'border-gray-800/30 opacity-50 cursor-not-allowed'
+          : 'border-gray-800/50 cursor-pointer hover:shadow-lg hover:shadow-[#00ff00]/10'
+      }`}
       role="article"
-      aria-label={`Модуль ${id}: ${title}, прогресс ${progress}%`}
+      aria-label={`Модуль ${id}: ${title}, прогресс ${progress}%${isLocked ? ' (Заблокирован)' : ''}`}
     >
       {/* Horizontal Layout */}
       <div className="flex items-center gap-4 p-5 sm:p-6">
@@ -131,16 +137,19 @@ export const ModuleCard = ({
         <div className="flex-shrink-0">
           <Button 
             size="sm"
+            disabled={isLocked}
             className={`${
-              isCompleted 
-                ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
-                : isStarted 
-                  ? "bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/30 hover:bg-[#00ff00]/20" 
-                  : "bg-[#00ff00] text-black hover:bg-[#00cc00]"
+              isLocked
+                ? "bg-gray-800/50 text-gray-500 cursor-not-allowed"
+                : isCompleted 
+                  ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
+                  : isStarted 
+                    ? "bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/30 hover:bg-[#00ff00]/20" 
+                    : "bg-[#00ff00] text-black hover:bg-[#00cc00]"
             } font-semibold rounded-xl px-4 py-2 text-xs sm:text-sm transition-all`}
-            aria-label={`${isCompleted ? 'Повторить' : isStarted ? 'Продолжить' : 'Начать'} модуль: ${title}`}
+            aria-label={`${isLocked ? 'Заблокирован' : isCompleted ? 'Повторить' : isStarted ? 'Продолжить' : 'Начать'} модуль: ${title}`}
           >
-            {isCompleted ? "Повторить" : isStarted ? "Продолжить" : "Начать"}
+            {isLocked ? "🔒 Заблокирован" : isCompleted ? "Повторить" : isStarted ? "Продолжить" : "Начать"}
           </Button>
         </div>
       </div>

@@ -26,8 +26,8 @@ import TokenUsage from "./pages/admin/TokenUsage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StudentsActivity from "./pages/admin/StudentsActivity";
 import AIAnalytics from "./pages/admin/AIAnalytics";
-import ProfileSettings from "./pages/ProfileSettings";
 import Messages from "./pages/Messages";
+import AIMarathon from "./pages/AIMarathon";
 // 🔥 БЕЗОПАСНОСТЬ: TestQuery удалён - не должен быть доступен в production
 // import TestQuery from "./pages/TestQuery";
 import { FloatingAIButton } from "./components/FloatingAIButton";
@@ -45,6 +45,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/access-denied" element={<AccessDenied />} />
+      <Route path="/aimarathon" element={<AIMarathon />} />
       
       {/* Welcome - требует авторизацию, но доступна для новых пользователей */}
       <Route path="/welcome" element={
@@ -122,12 +123,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Настройки и чат (требуют авторизацию) */}
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <MainLayout><ProfileSettings /></MainLayout>
-        </ProtectedRoute>
-      } />
+      {/* Чат (требует авторизацию) */}
       <Route path="/messages" element={
         <ProtectedRoute>
           <MainLayout><Messages /></MainLayout>
@@ -146,6 +142,10 @@ const AppRoutes = () => {
 // 🔥 ИСПРАВЛЕНИЕ: AppContent с тремя состояниями (Loading → Login → Dashboard)
 const AppContent = () => {
   const { isInitialized, isLoading } = useAuth();
+  const location = useLocation();
+  
+  // Don't show FloatingAIButton on public landing pages
+  const isPublicLanding = location.pathname === '/aimarathon';
 
   // СОСТОЯНИЕ 1: LOADING - НЕ РЕНДЕРИМ НИЧЕГО пока AuthContext не инициализирован!
   if (!isInitialized || isLoading) {
@@ -165,7 +165,7 @@ const AppContent = () => {
   return (
     <>
       <AppRoutes />
-      <FloatingAIButton />
+      {!isPublicLanding && <FloatingAIButton />}
     </>
   );
 };

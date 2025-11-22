@@ -620,3 +620,5 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 **Автор:** AI Assistant + Human Developer  
 **Версия:** 1.0
 
+
+

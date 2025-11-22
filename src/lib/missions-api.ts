@@ -28,7 +28,7 @@ export async function getUserMissions(userId: string): Promise<Mission[]> {
   try {
     console.log('🎯 [MissionsAPI] Запрос миссий для:', userId);
     
-    const response = await api.get(`/missions/${userId}`);
+    const response = await api.get(`/api/missions/${userId}`);
 
     if (!response.success) {
       throw new Error(response.error || 'Failed to fetch missions');
@@ -53,7 +53,7 @@ export async function updateMissionProgress(
   try {
     console.log('🎯 [MissionsAPI] Обновление миссии:', missionType);
     
-    await api.post('/missions/update-progress', { userId, missionType, incrementValue });
+    await api.post('/api/missions/update-progress', { userId, missionType, incrementValue });
 
     console.log('✅ [MissionsAPI] Прогресс миссии обновлён');
   } catch (error) {

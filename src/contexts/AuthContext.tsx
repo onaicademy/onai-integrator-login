@@ -2,8 +2,17 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
+// ✅ Расширенный тип User с данными из profiles
+interface ExtendedUser extends User {
+  full_name?: string;
+  avatar_url?: string;
+  level?: number;
+  xp?: number;
+  current_streak?: number;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: ExtendedUser | null;
   session: Session | null;
   userRole: 'admin' | 'student' | 'curator' | 'tech_support' | null;
   isInitialized: boolean;
@@ -13,11 +22,65 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 📋 Загрузить данные профиля из profiles (С КЭШЕМ И TTL!)
+  const loadUserProfile = async (userId: string, forceRefresh = false): Promise<ExtendedUser | null> => {
+    try {
+      const cacheKey = `profile_${userId}`;
+      const cacheTimeKey = `profile_${userId}_time`;
+      const CACHE_TTL = 5 * 60 * 1000; // 5 минут
+
+      // ⚡ Проверяем кэш (если не принудительное обновление)
+      if (!forceRefresh) {
+        const cached = sessionStorage.getItem(cacheKey);
+        const cacheTime = sessionStorage.getItem(cacheTimeKey);
+        
+        if (cached && cacheTime) {
+          const age = Date.now() - parseInt(cacheTime);
+          if (age < CACHE_TTL) {
+            const profile = JSON.parse(cached);
+            console.log(`⚡ Профиль из кэша (${Math.round(age / 1000)}s):`, profile.full_name);
+            return profile;
+          } else {
+            console.log('🔄 Кэш устарел, обновляем...');
+          }
+        }
+      }
+
+      // 📡 Загружаем из БД
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url, level, xp, current_streak, longest_streak')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.warn('⚠️ Не удалось загрузить профиль:', error);
+        return null;
+      }
+
+      // ⚡ Сохраняем в кэш с временной меткой
+      sessionStorage.setItem(cacheKey, JSON.stringify(profile));
+      sessionStorage.setItem(cacheTimeKey, Date.now().toString());
+      console.log('✅ Профиль загружен и закэширован:', profile.full_name);
+      return profile;
+    } catch (error) {
+      console.error('❌ Ошибка загрузки профиля:', error);
+      return null;
+    }
+  };
+
+  // 🗑️ Очистить кэш профиля (для обновлений)
+  const clearProfileCache = (userId: string) => {
+    sessionStorage.removeItem(`profile_${userId}`);
+    sessionStorage.removeItem(`profile_${userId}_time`);
+    console.log('🗑️ Кэш профиля очищен');
+  };
 
   // 🔑 Извлечь роль из session
   const extractRole = (session: Session | null): string | null => {
@@ -47,12 +110,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 🔄 Обновить состояние из сессии
-  const updateAuthState = (session: Session | null) => {
+  const updateAuthState = async (session: Session | null) => {
     if (session) {
       console.log('✅ Сессия активна:', session.user.email);
       
       setSession(session);
-      setUser(session.user);
+      
+      // 📋 Загружаем данные профиля
+      const profile = await loadUserProfile(session.user.id);
+      const extendedUser: ExtendedUser = {
+        ...session.user,
+        ...profile,
+      };
+      
+      setUser(extendedUser);
+      console.log('👤 Пользователь:', extendedUser.full_name || extendedUser.email);
       
       const role = extractRole(session);
       console.log('👤 Роль пользователя:', role || 'НЕ ОПРЕДЕЛЕНА');
@@ -121,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('ℹ️ Это нормально для первого визита (не залогинены)');
         }
         
-        updateAuthState(initialSession);
+        await updateAuthState(initialSession);
         
       } catch (error: any) {
         if (!isMounted) return;
@@ -131,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // 🔥 КРИТИЧНО: ВСЕГДА вызываем updateAuthState(null) при ошибке!
         // Иначе session/user останутся undefined → бесконечная загрузка!
         console.log('🔧 Устанавливаем session = null из-за ошибки');
-        updateAuthState(null);
+        await updateAuthState(null);
         
         // 🔥 ИСПРАВЛЕНИЕ: Если таймаут - пробуем использовать fallback из localStorage
         if (error.message === 'getSession timeout') {
@@ -170,7 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN') {
           console.log('✅ SIGNED_IN:', newSession?.user.email);
-          updateAuthState(newSession);
+          updateAuthState(newSession); // ✅ В обработчике событий не нужен await
         } else if (event === 'SIGNED_OUT') {
           console.log('🚪 SIGNED_OUT');
           updateAuthState(null);
