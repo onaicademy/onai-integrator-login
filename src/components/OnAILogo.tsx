@@ -29,13 +29,18 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
         xmlns="http://www.w3.org/2000/svg"
         className={className}
       >
-        {/* Toggle button - рамка (всегда белая изначально) */}
+        {/* Toggle button - рамка (белая → зеленая) */}
         <motion.path 
           d="M542.885 252.305H316.889C242.085 252.305 181.292 314.133 181.292 390.211C181.292 466.288 242.085 528.116 316.889 528.116H542.885C617.689 528.116 678.482 466.288 678.482 390.211C678.482 314.133 617.689 252.305 542.885 252.305ZM542.885 482.148H316.889C266.945 482.148 226.491 441.006 226.491 390.211C226.491 339.415 266.945 298.274 316.889 298.274H542.885C592.829 298.274 633.283 339.415 633.283 390.211C633.283 441.006 592.829 482.148 542.885 482.148Z"
-          fill="white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ opacity: { duration: 0.6, ease: "easeOut" } }}
+          initial={{ fill: "white", opacity: 0 }}
+          animate={{ 
+            fill: mounted ? "#B1FF32" : "white",
+            opacity: 1
+          }}
+          transition={{ 
+            fill: { delay: 1.0, duration: 0.8, ease: [0.42, 0, 0.58, 1] },
+            opacity: { duration: 0.6, ease: "easeOut" }
+          }}
         />
         
         {/* Заливка внутри toggle (эффект iPhone - заполнение зеленым) */}
@@ -141,13 +146,18 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
         transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
       />
       
-      {/* Toggle button О - рамка (всегда белая изначально) */}
+      {/* Toggle button О - рамка (белая → зеленая) */}
       <motion.path 
         d="M542.885 252.305H316.889C242.085 252.305 181.292 314.133 181.292 390.211C181.292 466.288 242.085 528.116 316.889 528.116H542.885C617.689 528.116 678.482 466.288 678.482 390.211C678.482 314.133 617.689 252.305 542.885 252.305ZM542.885 482.148H316.889C266.945 482.148 226.491 441.006 226.491 390.211C226.491 339.415 266.945 298.274 316.889 298.274H542.885C592.829 298.274 633.283 339.415 633.283 390.211C633.283 441.006 592.829 482.148 542.885 482.148Z"
-        fill="white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ opacity: { duration: 0.6, ease: "easeOut" } }}
+        initial={{ fill: "white", opacity: 0 }}
+        animate={{ 
+          fill: mounted ? "#B1FF32" : "white",
+          opacity: 1
+        }}
+        transition={{ 
+          fill: { delay: 1.0, duration: 0.8, ease: [0.42, 0, 0.58, 1] },
+          opacity: { duration: 0.6, ease: "easeOut" }
+        }}
       />
       
       {/* Заливка внутри toggle (эффект iPhone - заполнение зеленым) */}
