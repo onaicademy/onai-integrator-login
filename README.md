@@ -275,7 +275,7 @@ Proprietary - onAI Academy © 2025
 
 ## ✨ Acknowledgments
 
-- Built with [Lovable](https://lovable.dev)
+- Built by onAI Academy Team
 - UI Components by [shadcn/ui](https://ui.shadcn.com)
 - Backend by [Supabase](https://supabase.com)
 - Deployed on DigitalOcean
