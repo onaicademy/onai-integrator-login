@@ -14,8 +14,8 @@ const programData = [
       { icon: "🎪", text: "Выбор ниши" },
       { icon: "🛠️", text: "Первые AI инструменты" }
     ],
-    color: "#00ff00",
-    gradient: "from-[#00ff00]/20 to-[#00ff00]/5"
+    color: "#b2ff2e",
+    gradient: "from-[#b2ff2e]/20 to-[#b2ff2e]/5"
   },
   {
     day: "ДЕНЬ 2",
@@ -94,7 +94,7 @@ const ProgramSection = () => {
         className="absolute inset-0 pointer-events-none"
         style={{ y }}
       >
-        <div className="absolute top-10 left-10 w-96 h-96 bg-[#00ff00]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-10 left-10 w-96 h-96 bg-[#b2ff2e]/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </motion.div>
 
@@ -144,7 +144,7 @@ const ProgramSection = () => {
               3 ДНЯ ОБУЧЕНИЯ
             </span>
             <br />
-            <span className="text-[#00ff00] inline-block mt-2">
+            <span className="text-[#b2ff2e] inline-block mt-2">
               С ДОМАШНИМИ ЗАДАНИЯМИ
             </span>
           </motion.h2>
@@ -204,7 +204,7 @@ const ProgramSection = () => {
                     transformStyle: "preserve-3d",
                   }}
                 >
-                  <Card className={`relative bg-gradient-to-br ${item.gradient} backdrop-blur-xl border-2 border-[#00ff00]/20 p-6 h-full hover:border-[#00ff00]/60 transition-all overflow-hidden group`}>
+                  <Card className={`relative bg-gradient-to-br ${item.gradient} backdrop-blur-xl border-2 border-[#b2ff2e]/20 p-6 h-full hover:border-[#b2ff2e]/60 transition-all overflow-hidden group`}>
                     {/* Glow effect on hover */}
                     <motion.div
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"

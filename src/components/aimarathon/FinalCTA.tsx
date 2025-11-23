@@ -33,7 +33,7 @@ const FinalCTA = ({ onOpenModal }: FinalCTAProps) => {
           }}
         >
           <motion.div 
-            className="w-24 h-24 rounded-full bg-[#00ff00] flex items-center justify-center"
+            className="w-24 h-24 rounded-full bg-[#b2ff2e] flex items-center justify-center"
             whileHover={{ scale: 1.1, rotate: 10 }}
             transition={{ type: "spring", stiffness: 300 }}
             style={{
@@ -65,28 +65,28 @@ const FinalCTA = ({ onOpenModal }: FinalCTAProps) => {
           
           <div className="flex items-center justify-center gap-4 md:gap-8">
             {/* Hours */}
-            <div className="bg-[#0F0F0F] border border-[#00ff00]/30 rounded-lg p-6 md:p-8 min-w-[100px] md:min-w-[140px]">
-              <div className="text-5xl md:text-7xl font-bold text-[#00ff00]">
+            <div className="bg-[#0F0F0F] border border-[#b2ff2e]/30 rounded-lg p-6 md:p-8 min-w-[100px] md:min-w-[140px]">
+              <div className="text-5xl md:text-7xl font-bold text-[#b2ff2e]">
                 {formatTime(timeLeft.hours)}
               </div>
               <div className="text-sm md:text-base text-gray-600 mt-2">ЧАСОВ</div>
             </div>
 
-            <span className="text-4xl md:text-6xl text-[#00ff00]">:</span>
+            <span className="text-4xl md:text-6xl text-[#b2ff2e]">:</span>
 
             {/* Minutes */}
-            <div className="bg-[#0F0F0F] border border-[#00ff00]/30 rounded-lg p-6 md:p-8 min-w-[100px] md:min-w-[140px]">
-              <div className="text-5xl md:text-7xl font-bold text-[#00ff00]">
+            <div className="bg-[#0F0F0F] border border-[#b2ff2e]/30 rounded-lg p-6 md:p-8 min-w-[100px] md:min-w-[140px]">
+              <div className="text-5xl md:text-7xl font-bold text-[#b2ff2e]">
                 {formatTime(timeLeft.minutes)}
               </div>
               <div className="text-sm md:text-base text-gray-600 mt-2">МИНУТ</div>
             </div>
 
-            <span className="text-4xl md:text-6xl text-[#00ff00]">:</span>
+            <span className="text-4xl md:text-6xl text-[#b2ff2e]">:</span>
 
             {/* Seconds */}
-            <div className="bg-[#0F0F0F] border border-[#00ff00]/30 rounded-lg p-6 md:p-8 min-w-[100px] md:min-w-[140px]">
-              <div className="text-5xl md:text-7xl font-bold text-[#00ff00]">
+            <div className="bg-[#0F0F0F] border border-[#b2ff2e]/30 rounded-lg p-6 md:p-8 min-w-[100px] md:min-w-[140px]">
+              <div className="text-5xl md:text-7xl font-bold text-[#b2ff2e]">
                 {formatTime(timeLeft.seconds)}
               </div>
               <div className="text-sm md:text-base text-gray-600 mt-2">СЕКУНД</div>
@@ -101,7 +101,7 @@ const FinalCTA = ({ onOpenModal }: FinalCTAProps) => {
           transition={{ delay: 0.6, duration: 0.6 }}
           className="mb-10"
         >
-          <p className="text-6xl md:text-8xl font-bold text-[#00ff00]">
+          <p className="text-6xl md:text-8xl font-bold text-[#b2ff2e]">
             $10 (5000₸)
           </p>
         </motion.div>
@@ -121,7 +121,7 @@ const FinalCTA = ({ onOpenModal }: FinalCTAProps) => {
             <Button
               onClick={onOpenModal}
               size="lg"
-              className="text-2xl px-16 py-10 bg-[#00ff00] hover:bg-[#00ff00] text-black font-bold relative overflow-hidden group"
+              className="text-2xl px-16 py-10 bg-[#b2ff2e] hover:bg-[#b2ff2e] text-black font-bold relative overflow-hidden group"
               style={{
                 boxShadow: "0 0 40px rgba(177, 255, 50, 0.4)",
               }}
@@ -145,14 +145,14 @@ const FinalCTA = ({ onOpenModal }: FinalCTAProps) => {
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ delay: 1.2 }}
         >
-          <Users className="w-6 h-6 text-[#00ff00]" />
+          <Users className="w-6 h-6 text-[#b2ff2e]" />
           <p className="text-base sm:text-lg text-gray-500">
             <motion.span 
               key={enrolledToday}
-              initial={{ scale: 1.5, color: "#00ff00" }}
-              animate={{ scale: 1, color: "#00ff00" }}
+              initial={{ scale: 1.5, color: "#b2ff2e" }}
+              animate={{ scale: 1, color: "#b2ff2e" }}
               transition={{ duration: 0.5 }}
-              className="text-[#00ff00] font-bold text-xl sm:text-2xl"
+              className="text-[#b2ff2e] font-bold text-xl sm:text-2xl"
             >
               {enrolledToday}
             </motion.span>

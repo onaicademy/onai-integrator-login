@@ -111,7 +111,7 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
   return (
     <motion.div
       ref={containerRef}
-      className={`relative group bg-black rounded-xl overflow-hidden border-2 border-[#00ff00]/30 hover:border-[#00ff00] transition-all duration-300 ${className}`}
+      className={`relative group bg-black rounded-xl overflow-hidden border-2 border-[#b2ff2e]/30 hover:border-[#b2ff2e] transition-all duration-300 ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.6 }}
@@ -144,7 +144,7 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
             onClick={togglePlay}
           >
             <motion.div
-              className="w-20 h-20 sm:w-24 sm:h-24 bg-[#00ff00] rounded-full flex items-center justify-center"
+              className="w-20 h-20 sm:w-24 sm:h-24 bg-[#b2ff2e] rounded-full flex items-center justify-center"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               style={{
@@ -174,9 +174,9 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                 max={duration || 0}
                 value={currentTime}
                 onChange={handleSeek}
-                className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#00ff00]"
+                className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#b2ff2e]"
                 style={{
-                  background: `linear-gradient(to right, #00ff00 0%, #00ff00 ${(currentTime / duration) * 100}%, #374151 ${(currentTime / duration) * 100}%, #374151 100%)`,
+                  background: `linear-gradient(to right, #b2ff2e 0%, #b2ff2e ${(currentTime / duration) * 100}%, #374151 ${(currentTime / duration) * 100}%, #374151 100%)`,
                 }}
               />
             </div>
@@ -189,7 +189,7 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:text-[#00ff00] hover:bg-[#00ff00]/10 h-8 w-8 sm:h-10 sm:w-10"
+                  className="text-white hover:text-[#b2ff2e] hover:bg-[#b2ff2e]/10 h-8 w-8 sm:h-10 sm:w-10"
                   onClick={togglePlay}
                 >
                   {isPlaying ? (
@@ -203,7 +203,7 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:text-[#00ff00] hover:bg-[#00ff00]/10 h-8 w-8 sm:h-10 sm:w-10"
+                  className="text-white hover:text-[#b2ff2e] hover:bg-[#b2ff2e]/10 h-8 w-8 sm:h-10 sm:w-10"
                   onClick={toggleMute}
                 >
                   {isMuted ? (
@@ -233,17 +233,17 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-white hover:text-[#00ff00] hover:bg-[#00ff00]/10 h-8 w-8 sm:h-10 sm:w-10"
+                      className="text-white hover:text-[#b2ff2e] hover:bg-[#b2ff2e]/10 h-8 w-8 sm:h-10 sm:w-10"
                     >
                       <Settings className="w-5 h-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
-                    className="bg-[#0F0F0F] border-[#00ff00]/30 text-white"
+                    className="bg-[#0F0F0F] border-[#b2ff2e]/30 text-white"
                     align="end"
                   >
                     <DropdownMenuLabel 
-                      className="text-[#00ff00] font-light"
+                      className="text-[#b2ff2e] font-light"
                       style={{ fontFamily: "'Rajdhani', sans-serif" }}
                     >
                       Скорость воспроизведения
@@ -252,22 +252,22 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                       <DropdownMenuItem
                         key={speed}
                         onClick={() => setPlaybackSpeed(speed)}
-                        className="hover:bg-[#00ff00]/10 hover:text-[#00ff00] cursor-pointer"
+                        className="hover:bg-[#b2ff2e]/10 hover:text-[#b2ff2e] cursor-pointer"
                         style={{ fontFamily: "'Rajdhani', sans-serif" }}
                       >
                         <span className="flex items-center justify-between w-full">
                           {speed}x
                           {playbackSpeed === speed && (
-                            <Check className="w-4 h-4 ml-2 text-[#00ff00]" />
+                            <Check className="w-4 h-4 ml-2 text-[#b2ff2e]" />
                           )}
                         </span>
                       </DropdownMenuItem>
                     ))}
                     
-                    <DropdownMenuSeparator className="bg-[#00ff00]/20" />
+                    <DropdownMenuSeparator className="bg-[#b2ff2e]/20" />
                     
                     <DropdownMenuLabel 
-                      className="text-[#00ff00] font-light"
+                      className="text-[#b2ff2e] font-light"
                       style={{ fontFamily: "'Rajdhani', sans-serif" }}
                     >
                       Качество
@@ -276,13 +276,13 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                       <DropdownMenuItem
                         key={q.value}
                         onClick={() => setQuality(q.value)}
-                        className="hover:bg-[#00ff00]/10 hover:text-[#00ff00] cursor-pointer"
+                        className="hover:bg-[#b2ff2e]/10 hover:text-[#b2ff2e] cursor-pointer"
                         style={{ fontFamily: "'Rajdhani', sans-serif" }}
                       >
                         <span className="flex items-center justify-between w-full">
                           {q.label}
                           {quality === q.value && (
-                            <Check className="w-4 h-4 ml-2 text-[#00ff00]" />
+                            <Check className="w-4 h-4 ml-2 text-[#b2ff2e]" />
                           )}
                         </span>
                       </DropdownMenuItem>
@@ -294,7 +294,7 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:text-[#00ff00] hover:bg-[#00ff00]/10 h-8 w-8 sm:h-10 sm:w-10"
+                  className="text-white hover:text-[#b2ff2e] hover:bg-[#b2ff2e]/10 h-8 w-8 sm:h-10 sm:w-10"
                   onClick={toggleFullscreen}
                 >
                   <Maximize className="w-5 h-5" />
@@ -307,7 +307,7 @@ const WelcomeVideoPlayer = ({ className = "" }: WelcomeVideoPlayerProps) => {
 
       {/* Neon Glow Effect */}
       <div 
-        className="absolute -inset-1 bg-gradient-to-r from-[#00ff00]/20 via-[#00ff00]/10 to-[#00ff00]/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+        className="absolute -inset-1 bg-gradient-to-r from-[#b2ff2e]/20 via-[#b2ff2e]/10 to-[#b2ff2e]/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
       />
     </motion.div>
   );

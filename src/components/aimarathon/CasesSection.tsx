@@ -9,126 +9,126 @@ const casesData = [
     id: 1,
     earnings: "1,500,000₸",
     duration: "19 марта 2025",
-    project: "Оплата за услуги консультационные в области технологий",
+    project: "Консультация по AI-интеграции для бизнеса",
     image: "/images/cases/case1.png",
   },
   {
     id: 2,
     earnings: "250,000₸",
     duration: "04 марта 2025",
-    project: "Оплата за профессиональные, научные и технические услуги",
+    project: "Продажа WhatsApp бота для автоматизации продаж",
     image: "/images/cases/case2.png",
   },
   {
     id: 3,
     earnings: "300,000₸",
     duration: "3 мин назад",
-    project: "Kaspi Gold - Пополнение",
+    project: "Оплата за внедрение GPT-ассистента",
     image: "/images/cases/case3.png",
   },
   {
     id: 4,
     earnings: "250,000₸",
-    duration: "Переписка",
-    project: "Обсуждение проекта",
+    duration: "Переговоры",
+    project: "Договор на автоматизацию бизнеса через Make",
     image: "/images/cases/case4.png",
   },
   {
     id: 5,
     earnings: "150,000₸",
     duration: "04 марта 2025",
-    project: "За профессиональные, научные и технические услуги. Настройка Whatsapp чатбота",
+    project: "Настройка Telegram бота для клиента",
     image: "/images/cases/case5.png",
   },
   {
     id: 6,
     earnings: "100,000₸",
     duration: "17 февраля 2025",
-    project: "Настройка Whatsapp чатбота на базе модуля. Платежи за профессиональные услуги",
+    project: "Создание AI-чатбота для поддержки клиентов",
     image: "/images/cases/case6.png",
   },
   {
     id: 7,
     earnings: "100,000₸",
     duration: "05 марта 2025",
-    project: "Счет на оплату. Платежи за профессиональные, научные и технические услуги",
+    project: "Внедрение n8n для автоматизации процессов",
     image: "/images/cases/case7.png",
   },
   {
     id: 8,
     earnings: "550,000₸",
     duration: "Переговоры",
-    project: "Договорился на 550k",
+    project: "Договорился на комплексную AI-интеграцию",
     image: "/images/cases/case8.png",
   },
   {
     id: 9,
     earnings: "150,000₸",
     duration: "Оплата за бота",
-    project: "По 120тыс в мес. Бот после подключения и теста 150 000 оплатят",
+    project: "Продажа Instagram бота с ежемесячной поддержкой",
     image: "/images/cases/case9.png",
   },
   {
     id: 10,
     earnings: "200,000₸",
     duration: "Удаленная оплата",
-    project: "Сегодня закрыл своего первого клиента",
+    project: "Первый клиент на консультацию по ChatGPT",
     image: "/images/cases/case10.png",
   },
   {
     id: 11,
     earnings: "400,000₸",
     duration: "Договор на бота",
-    project: "Еду подписывать документы на бота 400 тыс закрываю",
+    project: "Подписание контракта на GPT-бота для компании",
     image: "/images/cases/case11.png",
   },
   {
     id: 12,
     earnings: "400,000₸",
     duration: "06 декабря 2024",
-    project: "Пополнения. Первая победа по продаже ассистента",
+    project: "Первая победа — продажа AI-ассистента",
     image: "/images/cases/case12.png",
   },
   {
     id: 13,
     earnings: "350,000₸",
     duration: "Продажа бота",
-    project: "Продал бота своему клиенту и будет удобно вести бизнес",
+    project: "Внедрение чат-бота для автоматизации бизнеса",
     image: "/images/cases/case13.png",
   },
   {
     id: 14,
     earnings: "500,000₸",
     duration: "Проект",
-    project: "Крупный проект",
+    project: "Крупный проект по AI-интеграции",
     image: "/images/cases/case14.jpg",
   },
   {
     id: 15,
     earnings: "300,000₸",
     duration: "Разработка",
-    project: "Техническая разработка",
+    project: "Разработка кастомного AI-решения",
     image: "/images/cases/case15.png",
   },
   {
     id: 16,
     earnings: "150,000₸",
     duration: "За бота для клиники",
-    project: "Салам всем, клиента закрываем я чето сюда ниче не отправил",
+    project: "Внедрение бота для медицинской клиники",
     image: "/images/cases/case16.png",
   },
   {
     id: 17,
     earnings: "100,000₸",
     duration: "Предоплата",
-    project: "Пока только пред.оплата на 100k. Пополнение: 100 000 ₸",
+    project: "Предоплата за создание Telegram бота",
     image: "/images/cases/case17.jpg",
   },
   {
     id: 18,
     earnings: "378,000₸",
     duration: "Продажа бота",
-    project: "Продал бота для мебельной компании, а в следующем месяце подключим анализ звонков",
+    project: "WhatsApp бот для мебельной компании + анализ звонков",
     image: "/images/cases/case18.png",
   },
 ];
@@ -170,8 +170,38 @@ const CasesSection = () => {
   }, [emblaApi, onSelect]);
 
   return (
-    <section ref={sectionRef} className="relative py-12 sm:py-16 md:py-20 bg-black overflow-hidden">
-      <div className="container mx-auto px-3 sm:px-4 max-w-7xl 2xl:max-w-[1920px]">
+    <section 
+      ref={sectionRef} 
+      className="relative pt-12 sm:pt-16 md:pt-20 lg:pt-24 pb-16 sm:pb-20 md:pb-24 lg:pb-28 px-4 overflow-hidden"
+      style={{ 
+        background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 30%, #151515 60%, #0f0f0f 90%, #0a0a0a 100%)" 
+      }}
+    >
+      {/* Премиальный графитовый фон */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div 
+          className="absolute top-1/3 left-0 right-0 h-2/3"
+          style={{
+            background: "radial-gradient(ellipse 1200px 600px at 50% 30%, rgba(178, 255, 46, 0.10) 0%, rgba(178, 255, 46, 0.05) 40%, rgba(178, 255, 46, 0.02) 70%, transparent 100%)",
+          }}
+        />
+        <div 
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 255, 255, 0.08) 1px, rgba(255, 255, 255, 0.08) 2px, transparent 2px, transparent 12px)",
+          }}
+        />
+        <div 
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise8'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise8)' opacity='0.6'/%3E%3C/svg%3E')",
+            backgroundSize: "180px 180px",
+            mixBlendMode: "soft-light",
+          }}
+        />
+      </div>
+
+      <div className="container mx-auto px-3 sm:px-4 max-w-7xl 2xl:max-w-[1920px] relative z-10">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -184,37 +214,20 @@ const CasesSection = () => {
           className="text-center mb-10 sm:mb-12 md:mb-16"
         >
           <motion.h2
-            className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black mb-4 sm:mb-6 text-white"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-3"
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              textShadow: "0 0 32px rgba(0, 255, 0, 0.24)",
-            }}
-            whileHover={{
-              scale: 1.05,
-              textShadow: "0 0 48px rgba(0, 255, 0, 0.4)",
-              transition: { duration: 0.3 },
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 900,
+              letterSpacing: "-2px",
+              background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 50%, #b2ff2e 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 0 30px rgba(178, 255, 46, 0.15))",
             }}
           >
-            Часть наших кейсов
+            ЧАСТЬ НАШИХ КЕЙСОВ
           </motion.h2>
-          <motion.p
-            className="text-base sm:text-lg md:text-xl text-gray-400 mb-4 sm:mb-6"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
-            initial={{ opacity: 0 }}
-            animate={sectionInView ? { opacity: 1 } : {}}
-            transition={{ delay: 0.2, duration: 0.8 }}
-          >
-            Реальные результаты реальных людей
-          </motion.p>
-          <motion.div
-            className="w-16 sm:w-20 md:w-24 h-1 bg-[#00ff00] mx-auto"
-            initial={{ width: 0 }}
-            animate={sectionInView ? { width: "auto" } : {}}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            style={{
-              boxShadow: "0 0 20px rgba(177, 255, 50, 0.6)",
-            }}
-          />
         </motion.div>
 
         {/* Carousel */}
@@ -271,6 +284,7 @@ const CasesSection = () => {
                               ? "brightness(1.05) contrast(1.05)"
                               : "brightness(0.7) contrast(0.9)",
                           }}
+                          loading="lazy"
                         />
                         {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
@@ -288,10 +302,10 @@ const CasesSection = () => {
                           transition={{ duration: 0.3, delay: 0.1 }}
                         >
                           <span
-                            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#00ff00]"
+                            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#b2ff2e]"
                             style={{
                               fontFamily: "'Russo One', sans-serif",
-                              textShadow: "0 0 16px rgba(0, 255, 0, 0.48)",
+                              textShadow: "0 0 16px rgba(178, 255, 46, 0.48)",
                             }}
                           >
                             {caseItem.earnings}
@@ -320,7 +334,7 @@ const CasesSection = () => {
                       {/* Active indicator */}
                       {isActive && (
                         <motion.div
-                          className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#00ff00] via-[#00ff00] to-transparent"
+                          className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#b2ff2e] via-[#b2ff2e] to-transparent"
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: 1 }}
                           transition={{ duration: 0.5 }}
@@ -340,7 +354,7 @@ const CasesSection = () => {
           <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-0 right-0 justify-between px-4 pointer-events-none z-20">
             <motion.button
               onClick={scrollPrev}
-              className="w-14 h-14 rounded-full bg-[#00ff00]/20 backdrop-blur-xl border-2 border-[#00ff00]/50 flex items-center justify-center text-[#00ff00] hover:bg-[#00ff00]/40 transition-all pointer-events-auto"
+              className="w-14 h-14 rounded-full bg-[#b2ff2e]/20 backdrop-blur-xl border-2 border-[#b2ff2e]/50 flex items-center justify-center text-[#b2ff2e] hover:bg-[#b2ff2e]/40 transition-all pointer-events-auto"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={{
@@ -351,7 +365,7 @@ const CasesSection = () => {
             </motion.button>
             <motion.button
               onClick={scrollNext}
-              className="w-14 h-14 rounded-full bg-[#00ff00]/20 backdrop-blur-xl border-2 border-[#00ff00]/50 flex items-center justify-center text-[#00ff00] hover:bg-[#00ff00]/40 transition-all pointer-events-auto"
+              className="w-14 h-14 rounded-full bg-[#b2ff2e]/20 backdrop-blur-xl border-2 border-[#b2ff2e]/50 flex items-center justify-center text-[#b2ff2e] hover:bg-[#b2ff2e]/40 transition-all pointer-events-auto"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={{
@@ -362,55 +376,6 @@ const CasesSection = () => {
             </motion.button>
           </div>
 
-          {/* Swipe Hint (Mobile) */}
-          <motion.div
-            className="md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 pointer-events-none z-20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={
-              sectionInView
-                ? {
-                    opacity: [0, 1, 1, 0],
-                    y: [20, 0, 0, -10],
-                    x: [0, 30, 30, 60],
-                  }
-                : {}
-            }
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              repeatDelay: 2,
-              ease: "easeInOut",
-            }}
-          >
-            <motion.div
-              className="text-5xl"
-              animate={{
-                x: [0, 20, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              👉
-            </motion.div>
-            <motion.div
-              className="w-24 h-1 bg-gradient-to-r from-[#00ff00] to-transparent rounded-full"
-              style={{
-                boxShadow: "0 0 15px rgba(177, 255, 50, 0.8)",
-              }}
-              animate={{
-                scaleX: [0, 1, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
-
           {/* Dots Indicators */}
           <div className="flex justify-center mt-8 sm:mt-10 gap-2 sm:gap-3">
             {casesData.map((_, index) => (
@@ -418,7 +383,7 @@ const CasesSection = () => {
                 key={index}
                 className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
                   index === selectedIndex
-                    ? "bg-[#00ff00] w-8 sm:w-12"
+                    ? "bg-[#b2ff2e] w-8 sm:w-12"
                     : "bg-gray-600 w-2 sm:w-3"
                 }`}
                 onClick={() => emblaApi?.scrollTo(index)}

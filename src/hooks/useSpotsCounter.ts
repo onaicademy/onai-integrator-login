@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 
 const INITIAL_SPOTS = 47;
-const FINAL_SPOTS = 17;
-const COUNTDOWN_DURATION = 120000; // 2 минуты в миллисекундах
+const FINAL_SPOTS = 7;
+const COUNTDOWN_DURATION = 240000; // 4 минуты в миллисекундах
 const STORAGE_KEY = "aimarathon_spots_start";
 
 export const useSpotsCounter = () => {

@@ -36,7 +36,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
           d="M361.592 0H135.597C60.7927 0 0 61.8276 0 137.905C0 213.983 60.7927 275.811 135.597 275.811H361.592C436.396 275.811 497.189 213.983 497.189 137.905C497.189 61.8276 436.396 0 361.592 0ZM361.592 229.842H135.597C85.6521 229.842 45.199 188.701 45.199 137.905C45.199 87.1103 85.6521 45.9685 135.597 45.9685H361.592C411.537 45.9685 451.99 87.1103 451.99 137.905C451.99 188.701 411.537 229.842 361.592 229.842Z"
           initial={{ fill: "#ffffff" }}
           animate={{
-            fill: isOn ? "#00ff00" : "#ffffff",
+            fill: isOn ? "#b2ff2e" : "#ffffff",
           }}
           transition={{
             duration: 1.2,
@@ -49,11 +49,11 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
           initial={{ cx: 135.597 }}
           animate={{
             cx: isOn ? 361.592 : 135.597,
-            fill: isOn ? "#00ff00" : "#ffffff",
+            fill: isOn ? "#b2ff2e" : "#ffffff",
           }}
           cy="137.905"
           r="60"
-          stroke={isOn ? "#00ff00" : "#cccccc"}
+          stroke={isOn ? "#b2ff2e" : "#cccccc"}
           strokeWidth="3"
           transition={{
             duration: 1.2,
@@ -61,7 +61,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
           }}
         />
 
-        {/* Свечение при включении - iPhone style pulse */}
+        {/* Свечение при включении - iPhone style pulse (БЕЗ постоянного свечения) */}
         {isOn && (
           <>
             {/* Первая волна пульсации */}
@@ -69,7 +69,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
               cx="361.592"
               cy="137.905"
               r="100"
-              fill="#00ff00"
+              fill="#b2ff2e"
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{
                 opacity: [0.8, 0],
@@ -88,7 +88,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
               cx="361.592"
               cy="137.905"
               r="100"
-              fill="#00ff00"
+              fill="#b2ff2e"
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{
                 opacity: [0.6, 0],
@@ -101,18 +101,6 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
                 times: [0, 1]
               }}
               style={{ filter: 'blur(35px)' }}
-            />
-            
-            {/* Постоянное свечение кнопки */}
-            <motion.circle
-              cx="361.592"
-              cy="137.905"
-              r="70"
-              fill="#00ff00"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
-              style={{ filter: 'blur(20px)' }}
             />
           </>
         )}
@@ -135,7 +123,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
         d="M542.885 252.305H316.89C242.085 252.305 181.292 314.133 181.292 390.211C181.292 466.288 242.085 528.116 316.89 528.116H542.885C617.689 528.116 678.482 466.288 678.482 390.211C678.482 314.133 617.689 252.305 542.885 252.305ZM542.885 482.148H316.89C266.945 482.148 226.491 441.006 226.491 390.211C226.491 339.415 266.945 298.274 316.89 298.274H542.885C592.829 298.274 633.283 339.415 633.283 390.211C633.283 441.006 592.829 482.148 542.885 482.148Z"
         initial={{ fill: "#ffffff" }}
         animate={{
-          fill: isOn ? "#00ff00" : "#ffffff",
+          fill: isOn ? "#b2ff2e" : "#ffffff",
         }}
         transition={{
           duration: 1.2,
@@ -148,11 +136,11 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
         initial={{ cx: 316.89 }}
         animate={{
           cx: isOn ? 542.885 : 316.89,
-          fill: isOn ? "#00ff00" : "#ffffff",
+          fill: isOn ? "#b2ff2e" : "#ffffff",
         }}
         cy="390.211"
         r="60"
-        stroke={isOn ? "#00ff00" : "#cccccc"}
+        stroke={isOn ? "#b2ff2e" : "#cccccc"}
         strokeWidth="5"
         transition={{
           duration: 1.2,
@@ -160,7 +148,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
         }}
       />
 
-      {/* Свечение при включении - iPhone style pulse */}
+      {/* Свечение при включении - iPhone style pulse (БЕЗ постоянного свечения) */}
       {isOn && (
         <>
           {/* Первая волна пульсации */}
@@ -168,7 +156,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
             cx="542.885"
             cy="390.211"
             r="150"
-            fill="#00ff00"
+            fill="#b2ff2e"
             initial={{ opacity: 0, scale: 0.3 }}
             animate={{
               opacity: [0.8, 0],
@@ -187,7 +175,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
             cx="542.885"
             cy="390.211"
             r="150"
-            fill="#00ff00"
+            fill="#b2ff2e"
             initial={{ opacity: 0, scale: 0.3 }}
             animate={{
               opacity: [0.6, 0],
@@ -201,18 +189,6 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
             }}
             style={{ filter: 'blur(45px)' }}
           />
-          
-          {/* Постоянное свечение кнопки */}
-          <motion.circle
-            cx="542.885"
-            cy="390.211"
-            r="100"
-            fill="#00ff00"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            style={{ filter: 'blur(25px)' }}
-          />
         </>
       )}
 
@@ -221,7 +197,7 @@ export function OnAILogo({ className = "", variant = 'full' }: OnAILogoProps) {
         d="M958.148 241.667C1000.74 241.667 1033.64 255.344 1056.84 282.7C1080.38 310.055 1092.15 354.897 1092.15 417.226V534.092H972.691V418.784C972.691 396.969 971.479 379.136 969.056 365.285C966.632 351.434 960.745 339.834 951.396 330.485C942.046 321.136 927.503 316.461 907.766 316.461C886.989 316.461 871.58 320.963 861.539 329.966C851.497 338.622 845.091 349.876 842.32 363.727C839.55 377.578 838.165 395.757 838.165 418.265V534.092H718.702V251.016H838.165V286.336C864.482 256.556 904.476 241.667 958.148 241.667Z"
         initial={{ fill: "#ffffff" }}
         animate={{
-          fill: isOn ? "#00ff00" : "#ffffff",
+          fill: isOn ? "#b2ff2e" : "#ffffff",
         }}
         transition={{
           duration: 1.2,

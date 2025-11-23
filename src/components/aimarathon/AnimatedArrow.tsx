@@ -7,7 +7,7 @@ interface AnimatedArrowProps {
 
 const AnimatedArrow = ({ 
   className = "w-12 h-12", 
-  color = "#00ff00" 
+  color = "#b2ff2e" 
 }: AnimatedArrowProps) => {
   return (
     <motion.svg

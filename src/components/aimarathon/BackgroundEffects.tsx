@@ -14,7 +14,7 @@ const BackgroundEffects = () => {
               <path
                 d="M 60 0 L 0 0 0 60"
                 fill="none"
-                stroke="#00ff00"
+                stroke="#b2ff2e"
                 strokeWidth="0.5"
               />
             </pattern>

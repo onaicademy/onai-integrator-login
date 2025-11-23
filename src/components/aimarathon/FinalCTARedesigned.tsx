@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, Users, Clock, Gift, Bomb } from "lucide-react";
+import { Users, Clock } from "lucide-react";
 import { useAlmatyTimer } from "@/hooks/useAlmatyTimer";
 import { useSpotsCounter } from "@/hooks/useSpotsCounter";
 
@@ -18,695 +18,408 @@ const FinalCTARedesigned = ({ onOpenModal }: FinalCTAProps) => {
   const formatTime = (num: number) => String(num).padStart(2, '0');
 
   return (
-    <section ref={ref} className="relative py-16 sm:py-20 px-4 bg-gradient-to-b from-black via-[#0a1f0a]/20 to-black overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#00ff00]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#00ff00]/10 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
-      {/* Летающие логотипы */}
+    <section 
+      ref={ref} 
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{ 
+        background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 30%, #151515 50%, #0f0f0f 80%, #050505 100%)",
+      }}
+    >
+      {/* Графитовый фон как в Hero */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* ChatGPT Logo */}
-        <motion.div
-          className="absolute opacity-20"
+        {/* Центральное зеленое свечение */}
+        <div 
+          className="absolute inset-0"
           style={{
-            top: "15%",
-            left: "10%",
-            filter: "blur(1.5px)",
+            background: "radial-gradient(ellipse 1000px 800px at 50% 50%, rgba(178, 255, 46, 0.15) 0%, rgba(178, 255, 46, 0.08) 35%, transparent 70%)",
           }}
-          animate={{
-            y: [0, -30, 0],
-            x: [0, 20, 0],
-            rotate: [0, 10, 0],
+        />
+        
+        {/* Графитовые линии */}
+        <div 
+          className="absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 255, 255, 0.06) 1px, rgba(255, 255, 255, 0.06) 2px, transparent 2px, transparent 8px)",
           }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
+        />
+        
+        {/* Зернистость */}
+        <div 
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noisefinal'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noisefinal)' opacity='0.5'/%3E%3C/svg%3E')",
+            backgroundSize: "150px 150px",
+            mixBlendMode: "soft-light",
           }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M37.5324 16.8707C37.9808 15.5241 38.1363 14.0974 37.9886 12.6859C37.8409 11.2744 37.3934 9.91076 36.676 8.68622C35.6126 6.83404 33.9882 5.3676 32.0373 4.4985C30.0864 3.62941 27.9098 3.40259 25.8215 3.85078C24.8796 2.7893 23.7219 1.94125 22.4257 1.36341C21.1295 0.785575 19.7249 0.491269 18.3058 0.500197C16.1708 0.495044 14.0893 1.16803 12.3614 2.42214C10.6335 3.67624 9.34853 5.44666 8.6917 7.47815C7.30085 7.76286 5.98686 8.3414 4.8377 9.17505C3.68854 10.0087 2.73073 11.0782 2.02839 12.312C0.956464 14.1591 0.498905 16.2988 0.721698 18.4228C0.944492 20.5467 1.83612 22.5449 3.268 24.1293C2.81966 25.4759 2.66413 26.9026 2.81182 28.3141C2.95951 29.7256 3.40701 31.0892 4.12437 32.3138C5.18791 34.1659 6.8123 35.6322 8.76321 36.5013C10.7141 37.3704 12.8907 37.5973 14.9789 37.1492C15.9208 38.2107 17.0786 39.0587 18.3747 39.6366C19.6709 40.2144 21.0755 40.5087 22.4946 40.4998C24.6307 40.5054 26.7133 39.8321 28.4418 38.5772C30.1704 37.3223 31.4556 35.5506 32.1119 33.5179C33.5027 33.2332 34.8167 32.6547 35.9659 31.821C37.115 30.9874 38.0728 29.9178 38.7752 28.684C39.8458 26.8371 40.3023 24.6979 40.0789 22.5748C39.8556 20.4517 38.9639 18.4544 37.5324 16.8707ZM22.4978 37.8849C20.7443 37.8874 19.0459 37.2733 17.6994 36.1501C17.7601 36.117 17.8666 36.0586 17.936 36.0161L25.9004 31.4156C26.1003 31.3019 26.2663 31.137 26.3813 30.9378C26.4964 30.7386 26.5563 30.5124 26.5549 30.2825V19.0542L29.9213 20.998C29.9389 21.0068 29.9541 21.0198 29.9656 21.0359C29.977 21.052 29.9842 21.0707 29.9867 21.0902V30.3889C29.9842 32.375 29.1946 34.2791 27.7909 35.6841C26.3872 37.0892 24.4838 37.8806 22.4978 37.8849ZM6.39227 31.0064C5.51397 29.4888 5.19742 27.7107 5.49804 25.9832C5.55718 26.0187 5.66048 26.0818 5.73461 26.1244L13.699 30.7248C13.8975 30.8408 14.1233 30.902 14.3532 30.902C14.583 30.902 14.8088 30.8408 15.0073 30.7248L24.731 25.1103V28.9979C24.7321 29.0177 24.7283 29.0376 24.7199 29.0556C24.7115 29.0736 24.6988 29.0893 24.6829 29.1012L16.6317 33.7497C14.9096 34.7416 12.8643 35.0097 10.9447 34.4954C9.02506 33.9811 7.38785 32.7263 6.39227 31.0064ZM4.29707 13.6194C5.17156 12.0998 6.55279 10.9364 8.19885 10.3327C8.19885 10.4013 8.19491 10.5228 8.19491 10.6071V19.808C8.19351 20.0378 8.25334 20.2638 8.36823 20.4629C8.48312 20.6619 8.64893 20.8267 8.84863 20.9404L18.5723 26.5542L15.206 28.4979C15.1894 28.5089 15.1703 28.5155 15.1505 28.5173C15.1307 28.5191 15.1107 28.516 15.0924 28.5082L7.04046 23.8557C5.32135 22.8601 4.06716 21.2235 3.55289 19.3046C3.03862 17.3858 3.30624 15.3413 4.29707 13.6194ZM31.955 20.0556L22.2312 14.4411L25.5976 12.4981C25.6142 12.4872 25.6333 12.4805 25.6531 12.4787C25.6729 12.4769 25.6928 12.4801 25.7111 12.4879L33.7631 17.1364C34.9967 17.849 36.0017 18.8982 36.6606 20.1613C37.3194 21.4244 37.6047 22.849 37.4832 24.2684C37.3617 25.6878 36.8382 27.0432 35.9743 28.1759C35.1103 29.3086 33.9415 30.1717 32.6047 30.6641C32.6047 30.5947 32.6047 30.4733 32.6047 30.3889V21.188C32.6066 20.9586 32.5474 20.7328 32.4332 20.5338C32.319 20.3348 32.154 20.1698 31.955 20.0556ZM35.3055 15.0128C35.2464 14.9765 35.1431 14.9142 35.069 14.8717L27.1045 10.2712C26.906 10.1554 26.6803 10.0943 26.4504 10.0943C26.2206 10.0943 25.9948 10.1554 25.7963 10.2712L16.0726 15.8858V11.9982C16.0715 11.9783 16.0753 11.9585 16.0837 11.9405C16.0921 11.9225 16.1048 11.9068 16.1207 11.8949L24.1719 7.25025C25.4053 6.53903 26.8158 6.19376 28.2383 6.25482C29.6608 6.31589 31.0364 6.78077 32.2044 7.59508C33.3723 8.40939 34.2842 9.53945 34.8334 10.8531C35.3826 12.1667 35.5464 13.6095 35.3055 15.0128ZM14.2424 21.9419L10.8752 19.9981C10.8576 19.9893 10.8423 19.9763 10.8309 19.9602C10.8195 19.9441 10.8122 19.9254 10.8098 19.9058V10.6071C10.8107 9.18295 11.2173 7.78848 11.9819 6.58696C12.7466 5.38544 13.8377 4.42659 15.1275 3.82264C16.4173 3.21869 17.8524 2.99464 19.2649 3.1767C20.6775 3.35876 22.0089 3.93941 23.1034 4.85067C23.0427 4.88379 22.937 4.94215 22.8668 4.98473L14.9024 9.58517C14.7025 9.69878 14.5366 9.86356 14.4215 10.0626C14.3065 10.2616 14.2466 10.4877 14.2479 10.7175L14.2424 21.9419ZM16.071 17.9991L20.4018 15.4978L24.7325 17.9975V22.9985L20.4018 25.4983L16.071 22.9985V17.9991Z" fill="#10A37F"/>
-          </svg>
-        </motion.div>
+        />
 
-        {/* Make Logo */}
-        <motion.div
-          className="absolute opacity-20"
-          style={{
-            top: "60%",
-            right: "15%",
-            filter: "blur(1.5px)",
-          }}
-          animate={{
-            y: [0, 30, 0],
-            x: [0, -15, 0],
-            rotate: [0, -10, 0],
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="make-gradient-0" x1="1.5" y1="19.5" x2="12" y2="0" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#F0F"/>
-                <stop offset=".17" stopColor="#E90CF9"/>
-                <stop offset=".54" stopColor="#C023ED"/>
-                <stop offset=".73" stopColor="#B02DE9"/>
-                <stop offset="1" stopColor="#B02DE9"/>
-              </linearGradient>
-              <linearGradient id="make-gradient-1" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#B02DE9"/>
-                <stop offset=".02" stopColor="#B02DE9"/>
-                <stop offset=".8" stopColor="#6D00CC"/>
-                <stop offset="1" stopColor="#6D00CC"/>
-              </linearGradient>
-              <linearGradient id="make-gradient-2" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#F0F"/>
-                <stop offset=".02" stopColor="#F0F"/>
-                <stop offset=".09" stopColor="#E90CF9"/>
-                <stop offset=".23" stopColor="#C023ED"/>
-                <stop offset=".3" stopColor="#B02DE9"/>
-                <stop offset=".42" stopColor="#A42BE3"/>
-                <stop offset=".63" stopColor="#8626D5"/>
-                <stop offset=".85" stopColor="#6021C3"/>
-                <stop offset="1" stopColor="#6021C3"/>
-              </linearGradient>
-            </defs>
-            <path d="M6.989 4.036L.062 17.818a.577.577 0 00.257.774l3.733 1.876a.577.577 0 00.775-.256L11.753 6.43a.577.577 0 00-.257-.775L7.763 3.78a.575.575 0 00-.774.257z" fill="url(#make-gradient-0)"/>
-            <path d="M19.245 3.832h4.179c.318 0 .577.26.577.577v15.425a.578.578 0 01-.577.578h-4.179a.578.578 0 01-.577-.578V4.41c0-.318.259-.577.577-.577z" fill="url(#make-gradient-1)"/>
-            <path d="M12.815 4.085L9.85 19.108a.576.576 0 00.453.677l4.095.826c.314.063.62-.14.681-.454l2.964-15.022a.577.577 0 00-.453-.677l-4.096-.827a.577.577 0 00-.68.454z" fill="url(#make-gradient-2)"/>
-          </svg>
-        </motion.div>
-
-        {/* n8n Logo */}
-        <motion.div
-          className="absolute opacity-20"
-          style={{
-            top: "40%",
-            left: "80%",
-            filter: "blur(1.5px)",
-          }}
-          animate={{
-            y: [0, -25, 0],
-            x: [0, 15, 0],
-            rotate: [0, 15, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#EA4B71" d="m239,83c-11.183,0 -20.58,-7.649 -23.244,-18l-27.508,0c-5.866,0 -10.872,4.241 -11.836,10.027l-0.987,5.919c-0.936,5.619 -3.779,10.509 -7.799,14.054c4.02,3.545 6.863,8.435 7.799,14.054l0.987,5.919c0.964,5.786 5.97,10.027 11.836,10.027l3.508,0c2.664,-10.351 12.061,-18 23.244,-18c13.255,0 24,10.745 24,24c0,13.255 -10.745,24 -24,24c-11.183,0 -20.58,-7.649 -23.244,-18l-3.508,0c-11.732,0 -21.744,-8.482 -23.673,-20.054l-0.987,-5.919c-0.964,-5.786 -5.97,-10.027 -11.836,-10.027l-9.508,0c-2.664,10.351 -12.061,18 -23.244,18c-11.183,0 -20.58,-7.649 -23.244,-18l-13.512,0c-2.664,10.351 -12.061,18 -23.244,18c-13.2548,0 -24,-10.745 -24,-24c0,-13.255 10.7452,-24 24,-24c11.183,0 20.58,7.649 23.244,18l13.512,0c2.664,-10.351 12.061,-18 23.244,-18c11.183,0 20.58,7.649 23.244,18l9.508,0c5.866,0 10.872,-4.241 11.836,-10.027l0.987,-5.919c1.929,-11.572 11.941,-20.054 23.673,-20.054l27.508,0c2.664,-10.351 12.061,-18 23.244,-18c13.255,0 24,10.745 24,24c0,13.255 -10.745,24 -24,24zm0,-12c6.627,0 12,-5.373 12,-12c0,-6.627 -5.373,-12 -12,-12c-6.627,0 -12,5.373 -12,12c0,6.627 5.373,12 12,12zm-180,36c6.627,0 12,-5.373 12,-12c0,-6.627 -5.373,-12 -12,-12c-6.6274,0 -12,5.373 -12,12c0,6.627 5.3726,12 12,12zm72,-12c0,6.627 -5.373,12 -12,12c-6.627,0 -12,-5.373 -12,-12c0,-6.627 5.373,-12 12,-12c6.627,0 12,5.373 12,12zm96,36c0,6.627 -5.373,12 -12,12c-6.627,0 -12,-5.373 -12,-12c0,-6.627 5.373,-12 12,-12c6.627,0 12,5.373 12,12z"/>
-          </svg>
-        </motion.div>
-
-        {/* Дополнительный AI символ */}
-        <motion.div
-          className="absolute opacity-15"
-          style={{
-            top: "25%",
-            right: "25%",
-            filter: "blur(2px)",
-          }}
-          animate={{
-            y: [0, 20, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5,
-          }}
-        >
-          <div className="text-5xl sm:text-6xl">🤖</div>
-        </motion.div>
-
-        <motion.div
-          className="absolute opacity-15"
-          style={{
-            bottom: "20%",
-            left: "20%",
-            filter: "blur(2px)",
-          }}
-          animate={{
-            y: [0, -20, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
-        >
-          <div className="text-5xl sm:text-6xl">⚡</div>
-        </motion.div>
-
-        {/* Claude Logo */}
-        <motion.div
-          className="absolute opacity-20"
-          style={{
-            top: "50%",
-            left: "5%",
-            filter: "blur(1.5px)",
-          }}
-          animate={{
-            y: [0, 25, 0],
-            x: [0, 10, 0],
-            rotate: [0, -5, 0],
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2.5,
-          }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="24" height="24" rx="5" fill="#CC9B7A"/>
-            <path d="M7 17L12 7L17 17M8.5 14H15.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </motion.div>
-
-        {/* Gemini Logo */}
-        <motion.div
-          className="absolute opacity-20"
-          style={{
-            top: "70%",
-            right: "8%",
-            filter: "blur(1.5px)",
-          }}
-          animate={{
-            y: [0, -20, 0],
-            x: [0, -10, 0],
-            rotate: [0, 10, 0],
-          }}
-          transition={{
-            duration: 6.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 3,
-          }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="gemini-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#4285F4"/>
-                <stop offset="50%" stopColor="#9B72CB"/>
-                <stop offset="100%" stopColor="#D96570"/>
-              </linearGradient>
-            </defs>
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#gemini-gradient)"/>
-            <path d="M2 17L12 22L22 17L12 12L2 17Z" fill="url(#gemini-gradient)" opacity="0.7"/>
-            <path d="M2 12V17L12 12V7L2 12Z" fill="url(#gemini-gradient)" opacity="0.5"/>
-            <path d="M22 12V17L12 12V7L22 12Z" fill="url(#gemini-gradient)" opacity="0.5"/>
-          </svg>
-        </motion.div>
-
-        {/* Midjourney Logo */}
-        <motion.div
-          className="absolute opacity-20"
-          style={{
-            top: "30%",
-            right: "5%",
-            filter: "blur(1.5px)",
-          }}
-          animate={{
-            y: [0, 30, 0],
-            x: [0, -20, 0],
-            rotate: [0, -15, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5,
-          }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="24" height="24" rx="5" fill="white"/>
-            <path d="M7 6H17M7 12H17M7 18H17" stroke="black" strokeWidth="2" strokeLinecap="round"/>
-            <circle cx="12" cy="12" r="3" fill="black"/>
-          </svg>
-        </motion.div>
-
-        {/* Perplexity Logo */}
-        <motion.div
-          className="absolute opacity-20"
-          style={{
-            bottom: "15%",
-            left: "80%",
-            filter: "blur(1.5px)",
-          }}
-          animate={{
-            y: [0, -30, 0],
-            x: [0, 10, 0],
-            rotate: [0, 5, 0],
-          }}
-          transition={{
-            duration: 7.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        >
-          <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="perplexity-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#20808D"/>
-                <stop offset="100%" stopColor="#2DCEEF"/>
-              </linearGradient>
-            </defs>
-            <rect width="24" height="24" rx="5" fill="url(#perplexity-gradient)"/>
-            <path d="M8 8L12 16L16 8M10 13H14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </motion.div>
-
-        {/* Дополнительные эмодзи */}
-        <motion.div
-          className="absolute opacity-15"
-          style={{
-            top: "10%",
-            right: "30%",
-            filter: "blur(2px)",
-          }}
-          animate={{
-            y: [0, 15, 0],
-            scale: [1, 1.15, 1],
-            rotate: [0, 5, 0],
-          }}
-          transition={{
-            duration: 5.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 4,
-          }}
-        >
-          <div className="text-4xl sm:text-5xl">🧠</div>
-        </motion.div>
-
-        <motion.div
-          className="absolute opacity-15"
-          style={{
-            bottom: "10%",
-            right: "40%",
-            filter: "blur(2px)",
-          }}
-          animate={{
-            y: [0, -15, 0],
-            scale: [1, 1.15, 1],
-            rotate: [0, -5, 0],
-          }}
-          transition={{
-            duration: 6.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 3.5,
-          }}
-        >
-          <div className="text-4xl sm:text-5xl">✨</div>
-        </motion.div>
+        {/* 3D плавающие геометрические фигуры - псевдо-3D */}
+        {[
+          { shape: "cube", x: "15%", y: "20%", size: 80 },
+          { shape: "pyramid", x: "85%", y: "30%", size: 100 },
+          { shape: "sphere", x: "10%", y: "70%", size: 70 },
+          { shape: "octahedron", x: "90%", y: "75%", size: 90 },
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={{
+              left: item.x,
+              top: item.y,
+              transformStyle: "preserve-3d",
+            }}
+            animate={{
+              y: [0, -25, 0],
+              rotateX: [0, 360],
+              rotateY: [0, 360],
+              rotateZ: [0, 360],
+            }}
+            transition={{
+              duration: 10 + i * 2,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          >
+            {item.shape === "cube" && (
+              <svg width={item.size} height={item.size} viewBox="0 0 100 100" fill="none">
+                <path d="M50 10 L80 25 L80 55 L50 70 L20 55 L20 25 Z" stroke="#b2ff2e" strokeWidth="1" fill="#b2ff2e" opacity="0.05"/>
+                <path d="M50 10 L50 40 L20 55 L20 25 Z" fill="#b2ff2e" opacity="0.08"/>
+                <path d="M50 10 L80 25 L50 40 Z" fill="#b2ff2e" opacity="0.12"/>
+                <path d="M50 40 L80 55 L80 25 L50 40" fill="#b2ff2e" opacity="0.10"/>
+              </svg>
+            )}
+            {item.shape === "pyramid" && (
+              <svg width={item.size} height={item.size} viewBox="0 0 100 100" fill="none">
+                <path d="M50 15 L85 75 L15 75 Z" stroke="#b2ff2e" strokeWidth="1" fill="#b2ff2e" opacity="0.06"/>
+                <path d="M50 15 L85 75 L50 55 Z" fill="#b2ff2e" opacity="0.10"/>
+                <path d="M50 15 L15 75 L50 55 Z" fill="#b2ff2e" opacity="0.08"/>
+              </svg>
+            )}
+            {item.shape === "sphere" && (
+              <svg width={item.size} height={item.size} viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="35" stroke="#b2ff2e" strokeWidth="1" fill="#b2ff2e" opacity="0.05"/>
+                <ellipse cx="50" cy="50" rx="35" ry="15" stroke="#b2ff2e" strokeWidth="1" fill="none" opacity="0.15"/>
+                <ellipse cx="50" cy="50" rx="15" ry="35" stroke="#b2ff2e" strokeWidth="1" fill="none" opacity="0.15"/>
+              </svg>
+            )}
+            {item.shape === "octahedron" && (
+              <svg width={item.size} height={item.size} viewBox="0 0 100 100" fill="none">
+                <path d="M50 10 L80 50 L50 90 L20 50 Z" stroke="#b2ff2e" strokeWidth="1" fill="#b2ff2e" opacity="0.05"/>
+                <path d="M50 10 L80 50 L50 50 Z" fill="#b2ff2e" opacity="0.12"/>
+                <path d="M50 50 L80 50 L50 90 Z" fill="#b2ff2e" opacity="0.08"/>
+                <path d="M50 10 L20 50 L50 50 Z" fill="#b2ff2e" opacity="0.10"/>
+              </svg>
+            )}
+          </motion.div>
+        ))}
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 max-w-7xl 2xl:max-w-[1920px] relative z-10">
-        <div className="relative bg-gradient-to-br from-[#0F0F0F] to-[#0a1f0a] border-2 border-[#00ff00]/40 rounded-3xl p-6 sm:p-8 md:p-12 overflow-hidden">
-          {/* Glow Effect - УМЕНЬШЕНО */}
-          <div 
-            className="absolute inset-0 opacity-30"
+      {/* Main Content */}
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 relative z-10 max-w-6xl py-12 sm:py-16">
+        
+        {/* Заголовок - драматичный */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-10 sm:mb-14 md:mb-16"
+        >
+          <h2 
+            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black uppercase leading-none mb-4"
             style={{
-              background: "radial-gradient(circle at 50% 0%, rgba(0, 255, 0, 0.08), transparent 60%)",
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              background: "linear-gradient(135deg, #e8e8e8 0%, #ffffff 50%, #b2ff2e 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 0 40px rgba(178, 255, 46, 0.2))",
             }}
-          />
+          >
+            ПОСЛЕДНИЙ
+            <br />
+            ШАНС
+          </h2>
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-400" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+            попасть в <span className="text-[#b2ff2e] font-bold">3-й поток</span>
+          </p>
+        </motion.div>
 
-          {/* Content */}
-          <div className="relative z-10 space-y-6 sm:space-y-8">
-            {/* Icon Badge - БОМБА С ТАЙМЕРОМ */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={isInView ? { scale: 1, rotate: 0 } : {}}
-              transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
-              className="flex justify-center"
-            >
-              <motion.div 
-                className="w-16 h-16 sm:w-20 sm:h-20 bg-[#00ff00] rounded-full flex items-center justify-center relative"
-                animate={{
-                  boxShadow: [
-                    "0 0 20px rgba(0, 255, 0, 0.3)",
-                    "0 0 35px rgba(0, 255, 0, 0.4)",
-                    "0 0 20px rgba(0, 255, 0, 0.3)"
-                  ],
-                  scale: [1, 1.05, 1]
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              >
-                <motion.div
-                  animate={{
-                    rotate: [0, -10, 10, -10, 10, 0],
-                    scale: [1, 1.1, 1]
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    repeatDelay: 1
-                  }}
-                >
-                  <Bomb className="w-8 h-8 sm:w-10 sm:h-10 text-black" />
-                </motion.div>
-                
-                {/* Искры от фитиля */}
-                {[...Array(3)].map((_, i) => (
-                  <motion.div
-                    key={`spark-${i}`}
-                    className="absolute -top-2 left-1/2 w-1 h-1 bg-red-500 rounded-full"
-                    initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                    animate={{
-                      opacity: [0, 1, 0],
-                      scale: [0, 1.5, 0],
-                      x: [0, (Math.random() - 0.5) * 20],
-                      y: [0, -15 - Math.random() * 10]
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                      ease: "easeOut"
-                    }}
-                  />
-                ))}
-                
-                {/* ЭФФЕКТ ВЗРЫВА - еле заметный */}
-                <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-[#00ff00]"
-                  initial={{ scale: 1, opacity: 0 }}
-                  animate={{
-                    scale: [1, 2.5, 2.5, 1],
-                    opacity: [0, 0, 0.2, 0]
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    repeatDelay: 3,
-                    ease: "easeOut"
-                  }}
-                />
-                
-                {/* ПОДАРКИ ВЫЛЕТАЮТ ИЗ ВЗРЫВА - очень тонко */}
-                {[...Array(6)].map((_, i) => {
-                  const angle = (i * 360) / 6;
-                  const rad = (angle * Math.PI) / 180;
-                  const distance = 60;
-                  
-                  return (
-                    <motion.div
-                      key={`gift-${i}`}
-                      className="absolute"
+        {/* Премиальная центральная карточка */}
+        <motion.div
+          initial={{ opacity: 0, y: 50, scale: 0.95 }}
+          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <div 
+            className="relative bg-gradient-to-br from-[#1f1f1f] via-[#151515] to-[#0a0a0a] rounded-3xl overflow-hidden border border-white/10"
+            style={{
+              boxShadow: `
+                0 60px 120px rgba(0, 0, 0, 0.6),
+                0 30px 60px rgba(0, 0, 0, 0.4),
+                inset 0 3px 0 rgba(255, 255, 255, 0.05),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.6),
+                0 0 120px rgba(178, 255, 46, 0.12)
+              `,
+            }}
+          >
+            {/* Светящаяся линия сверху */}
+            <div 
+              className="absolute top-0 left-0 right-0 h-1"
+              style={{
+                background: "linear-gradient(90deg, transparent 0%, #b2ff2e 20%, #b2ff2e 80%, transparent 100%)",
+                boxShadow: "0 0 30px rgba(178, 255, 46, 0.8), 0 5px 20px rgba(178, 255, 46, 0.4)",
+              }}
+            />
+
+            <div className="p-8 sm:p-10 md:p-14 lg:p-16 space-y-8 sm:space-y-10">
+              
+              {/* Timer - премиум блоки */}
+              <div>
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <Clock className="w-5 h-5 text-[#b2ff2e]" />
+                  <span className="text-sm uppercase tracking-widest text-gray-500" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    До закрытия набора
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-3xl mx-auto">
+                  {[
+                    { value: timeLeft.hours, label: "ЧАСОВ" },
+                    { value: timeLeft.minutes, label: "МИНУТ" },
+                    { value: timeLeft.seconds, label: "СЕКУНД" },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="relative bg-black/60 rounded-2xl p-4 sm:p-5 md:p-6 border-2 border-[#b2ff2e]/25"
                       style={{
-                        left: '50%',
-                        top: '50%',
-                        marginLeft: '-8px',
-                        marginTop: '-8px'
-                      }}
-                      initial={{ x: 0, y: 0, opacity: 0, scale: 0, rotate: 0 }}
-                      animate={{
-                        x: [0, 0, Math.cos(rad) * distance, 0],
-                        y: [0, 0, Math.sin(rad) * distance, 0],
-                        opacity: [0, 0, 0.15, 0],
-                        scale: [0, 0, 0.8, 0],
-                        rotate: [0, 0, 360, 360]
-                      }}
-                      transition={{
-                        duration: 4,
-                        repeat: Infinity,
-                        repeatDelay: 3,
-                        delay: 1.5,
-                        ease: "easeOut",
-                        times: [0, 0.4, 0.7, 1]
+                        boxShadow: `
+                          inset 0 2px 0 rgba(178, 255, 46, 0.1),
+                          inset 0 -2px 0 rgba(0, 0, 0, 0.8),
+                          0 10px 30px rgba(0, 0, 0, 0.5)
+                        `,
                       }}
                     >
-                      <Gift className="w-4 h-4 text-[#00ff00]" />
+                      <motion.div
+                        key={item.value}
+                        initial={{ scale: 1.3, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-center leading-none mb-2"
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                          color: "#ffffff",
+                          textShadow: "0 0 40px rgba(178, 255, 46, 0.3), 0 5px 15px rgba(0, 0, 0, 0.8)",
+                        }}
+                      >
+                        {formatTime(item.value)}
+                      </motion.div>
+                      <div 
+                        className="text-xs sm:text-sm font-bold text-gray-500 text-center uppercase tracking-wider"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {item.label}
+                      </div>
+
+                      {/* Тонкая зеленая подсветка снизу */}
+                      <div 
+                        className="absolute bottom-0 left-1/4 right-1/4 h-px bg-[#b2ff2e]/40"
+                        style={{
+                          boxShadow: "0 0 10px rgba(178, 255, 46, 0.5)",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Цена - ЭКСКЛЮЗИВНЫЙ блок */}
+              <div className="relative">
+                <div 
+                  className="relative bg-gradient-to-br from-black/80 to-black/40 rounded-2xl border-2 border-[#b2ff2e]/40 p-6 sm:p-8 md:p-10 overflow-hidden"
+                  style={{
+                    boxShadow: `
+                      0 30px 80px rgba(0, 0, 0, 0.6),
+                      inset 0 2px 0 rgba(178, 255, 46, 0.15),
+                      inset 0 -2px 0 rgba(0, 0, 0, 0.8),
+                      0 0 100px rgba(178, 255, 46, 0.2)
+                    `,
+                  }}
+                >
+                  {/* Декоративные углы */}
+                  <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-[#b2ff2e]/60 rounded-tl-2xl" />
+                  <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-[#b2ff2e]/60 rounded-br-2xl" />
+                  
+                  <div className="relative z-10 text-center">
+                    <p className="text-sm sm:text-base text-gray-500 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      Эксклюзивная цена
+                    </p>
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
+                      <span 
+                        className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white"
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                          textShadow: "0 5px 20px rgba(0, 0, 0, 0.5)",
+                        }}
+                      >
+                        $10
+                      </span>
+                      <div 
+                        className="text-3xl sm:text-4xl font-light text-gray-500"
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                        }}
+                      >
+                        /
+                      </div>
+                      <span 
+                        className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white"
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                          textShadow: "0 5px 20px rgba(0, 0, 0, 0.5)",
+                        }}
+                      >
+                        5000₸
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Статистика - горизонтальная линия */}
+              <div className="flex items-stretch justify-center gap-1">
+                {/* Осталось мест */}
+                <div 
+                  className="flex-1 max-w-xs relative bg-gradient-to-br from-black/70 to-black/30 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-[#b2ff2e]/20"
+                  style={{
+                    boxShadow: "inset 0 1px 0 rgba(178, 255, 46, 0.1), 0 5px 20px rgba(0, 0, 0, 0.4)",
+                  }}
+                >
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-[#b2ff2e]/5 rounded-full blur-2xl" />
+                  <div className="relative z-10 text-center">
+                    <p className="text-xs uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      Осталось
+                    </p>
+                    <motion.div 
+                      key={spotsLeft}
+                      initial={{ scale: 1.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-5xl sm:text-6xl md:text-7xl font-black text-[#b2ff2e] mb-1"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif",
+                        textShadow: "0 0 30px rgba(178, 255, 46, 0.5)",
+                      }}
+                    >
+                      {spotsLeft}
                     </motion.div>
-                  );
-                })}
-              </motion.div>
-            </motion.div>
-
-            {/* Title */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-center"
-            >
-              <h2 
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3"
-                style={{
-                  fontFamily: "'Russo One', sans-serif",
-                  textShadow: "0 0 12px rgba(0, 255, 0, 0.16)",
-                }}
-              >
-                Последний шанс
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-400">
-                попасть в <span className="text-[#00ff00] font-bold">3-й поток</span>
-              </p>
-            </motion.div>
-
-            {/* Timer */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="space-y-3"
-            >
-              <div className="flex items-center justify-center gap-2 text-gray-500">
-                <Clock className="w-4 h-4" />
-                <span className="text-sm">До закрытия набора</span>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto">
-                {/* Hours */}
-                <div className="bg-black/60 border-2 border-[#00ff00]/30 rounded-2xl p-3 sm:p-4 hover:border-[#00ff00] transition-colors">
-                  <motion.div 
-                    key={timeLeft.hours}
-                    initial={{ scale: 1.2, opacity: 0.5 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00ff00] text-center"
-                    style={{
-                      fontFamily: "'Orbitron', sans-serif",
-                      textShadow: "0 0 8px rgba(0, 255, 0, 0.2)",
-                    }}
-                  >
-                    {formatTime(timeLeft.hours)}
-                  </motion.div>
-                  <div className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 text-center font-medium">
-                    ЧАСОВ
+                    <p className="text-sm text-gray-400" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+                      мест
+                    </p>
                   </div>
                 </div>
 
-                {/* Minutes */}
-                <div className="bg-black/60 border-2 border-[#00ff00]/30 rounded-2xl p-3 sm:p-4 hover:border-[#00ff00] transition-colors">
-                  <motion.div 
-                    key={timeLeft.minutes}
-                    initial={{ scale: 1.2, opacity: 0.5 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00ff00] text-center"
-                    style={{
-                      fontFamily: "'Orbitron', sans-serif",
-                      textShadow: "0 0 8px rgba(0, 255, 0, 0.2)",
-                    }}
-                  >
-                    {formatTime(timeLeft.minutes)}
-                  </motion.div>
-                  <div className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 text-center font-medium">
-                    МИНУТ
-                  </div>
-                </div>
+                {/* Вертикальный разделитель */}
+                <div className="w-px bg-gradient-to-b from-transparent via-[#b2ff2e]/30 to-transparent my-4" />
 
-                {/* Seconds */}
-                <div className="bg-black/60 border-2 border-[#00ff00]/30 rounded-2xl p-3 sm:p-4 hover:border-[#00ff00] transition-colors">
-                  <motion.div 
-                    key={timeLeft.seconds}
-                    initial={{ scale: 1.2, opacity: 0.5 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00ff00] text-center"
-                    style={{
-                      fontFamily: "'Orbitron', sans-serif",
-                      textShadow: "0 0 8px rgba(0, 255, 0, 0.2)",
-                    }}
-                  >
-                    {formatTime(timeLeft.seconds)}
-                  </motion.div>
-                  <div className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 text-center font-medium">
-                    СЕКУНД
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Price с подарками */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="text-center relative"
-            >
-              {/* Подарки слева и справа */}
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 hidden sm:block">
-                <motion.div
-                  animate={{
-                    y: [0, -10, 0],
-                    rotate: [-10, 10, -10],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
+                {/* Записались сегодня */}
+                <div 
+                  className="flex-1 max-w-xs relative bg-gradient-to-br from-black/70 to-black/30 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-[#b2ff2e]/20"
+                  style={{
+                    boxShadow: "inset 0 1px 0 rgba(178, 255, 46, 0.1), 0 5px 20px rgba(0, 0, 0, 0.4)",
                   }}
                 >
-                  <Gift className="w-12 h-12 text-[#00ff00]" />
-                </motion.div>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-[#b2ff2e]/5 rounded-full blur-2xl" />
+                  <div className="relative z-10 text-center">
+                    <p className="text-xs uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      Сегодня
+                    </p>
+                    <motion.div 
+                      key={enrolledToday}
+                      initial={{ scale: 1.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-5xl sm:text-6xl md:text-7xl font-black text-white mb-1"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif",
+                        textShadow: "0 5px 20px rgba(0, 0, 0, 0.5)",
+                      }}
+                    >
+                      {enrolledToday}
+                    </motion.div>
+                    <p className="text-sm text-gray-400" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+                      записались
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 hidden sm:block">
-                <motion.div
-                  animate={{
-                    y: [0, -10, 0],
-                    rotate: [10, -10, 10],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1,
+              {/* Массивная CTA кнопка */}
+              <div>
+                <Button
+                  onClick={onOpenModal}
+                  className="w-full py-8 sm:py-10 md:py-12 lg:py-14 text-xl sm:text-2xl md:text-3xl font-black text-black transition-all duration-300 rounded-2xl group relative overflow-hidden"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F0F0F0 100%)",
+                    fontFamily: "'Inter', sans-serif",
+                    border: "none",
+                    letterSpacing: "0.03em",
                   }}
                 >
-                  <Gift className="w-12 h-12 text-[#00ff00]" />
-                </motion.div>
-              </div>
-
-              <div className="inline-block bg-black/40 border border-[#00ff00]/30 rounded-2xl px-6 sm:px-8 py-4 relative">
-                <div className="flex items-baseline gap-3 sm:gap-4 justify-center flex-wrap">
-                  <span 
-                    className="text-4xl sm:text-5xl md:text-6xl font-black text-[#00ff00]"
-                    style={{
-                      fontFamily: "'Russo One', sans-serif",
-                      textShadow: "0 0 24px rgba(0, 255, 0, 0.48)",
-                    }}
-                  >
-                    $10
+                  <span className="relative z-10 uppercase tracking-wider">
+                    Забронировать место
                   </span>
-                  <span className="text-2xl sm:text-3xl text-gray-400">или</span>
-                  <span 
-                    className="text-4xl sm:text-5xl md:text-6xl font-black text-[#00ff00]"
+                  {/* Animated shine */}
+                  <motion.div
+                    className="absolute inset-0"
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
-                      textShadow: "0 0 24px rgba(0, 255, 0, 0.48)",
+                      background: "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%)",
                     }}
-                  >
-                    5000₸
-                  </span>
+                    animate={{
+                      x: ["-100%", "200%"],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      ease: "linear",
+                    }}
+                  />
+                </Button>
+              </div>
+
+              {/* Social Proof */}
+              <div className="flex items-center justify-center gap-3 text-sm sm:text-base text-gray-500" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+                <div className="flex -space-x-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="w-10 h-10 rounded-full border-2 border-black bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center"
+                    >
+                      <Users className="w-4 h-4 text-gray-500" />
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </motion.div>
-
-            {/* Stats Row */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="grid grid-cols-2 gap-4 max-w-md mx-auto"
-            >
-              {/* Spots Left */}
-              <div className="bg-black/40 border border-[#00ff00]/20 rounded-xl p-4 text-center">
-                <motion.div 
-                  key={spotsLeft}
-                  initial={{ scale: 1.3, color: "#00ff00" }}
-                  animate={{ scale: 1, color: "#00ff00" }}
-                  transition={{ duration: 0.5 }}
-                  className="text-2xl sm:text-3xl font-black text-[#00ff00]"
-                >
-                  {spotsLeft}
-                </motion.div>
-                <div className="text-xs sm:text-sm text-gray-500 mt-1">мест осталось</div>
-              </div>
-
-              {/* Enrolled Today */}
-              <div className="bg-black/40 border border-[#00ff00]/20 rounded-xl p-4 text-center">
-                <motion.div 
-                  key={enrolledToday}
-                  initial={{ scale: 1.3, color: "#00ff00" }}
-                  animate={{ scale: 1, color: "#00ff00" }}
-                  transition={{ duration: 0.5 }}
-                  className="text-2xl sm:text-3xl font-black text-[#00ff00]"
-                >
-                  {enrolledToday}
-                </motion.div>
-                <div className="text-xs sm:text-sm text-gray-500 mt-1">записались сегодня</div>
-              </div>
-            </motion.div>
-
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 1, duration: 0.5 }}
-            >
-              <Button
-                onClick={onOpenModal}
-                className="w-full py-6 sm:py-8 text-lg sm:text-xl md:text-2xl font-black bg-[#00ff00] hover:bg-[#9FE62C] text-black transition-all duration-300 rounded-2xl group relative overflow-hidden"
-                style={{
-                  boxShadow: "0 0 32px rgba(0, 255, 0, 0.32)",
-                  fontFamily: "'Russo One', sans-serif",
-                }}
-              >
-                <span className="relative z-10 flex items-center justify-center gap-3">
-                  <Zap className="w-6 h-6" />
-                  Забронировать место
-                  <Zap className="w-6 h-6" />
+                <span>
+                  Присоединяйтесь к <span className="text-white font-semibold">{enrolledToday}</span> участникам
                 </span>
-                {/* Shine effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  initial={{ x: "-100%" }}
-                  whileHover={{ x: "100%" }}
-                  transition={{ duration: 0.6 }}
-                />
-              </Button>
-            </motion.div>
+              </div>
+            </div>
 
-            {/* Social Proof */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ delay: 1.2, duration: 0.5 }}
-              className="flex items-center justify-center gap-2 text-sm text-gray-500"
-            >
-              <Users className="w-4 h-4 text-[#00ff00]" />
-              <span>Присоединяйтесь к {enrolledToday} участникам</span>
-            </motion.div>
+            {/* Графитовая текстура поверх */}
+            <div 
+              className="absolute inset-0 pointer-events-none opacity-[0.02]"
+              style={{
+                backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.1) 2px, rgba(255, 255, 255, 0.1) 4px)",
+              }}
+            />
           </div>
-        </div>
+        </motion.div>
+
       </div>
     </section>
   );
 };
 
 export default FinalCTARedesigned;
-
