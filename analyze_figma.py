@@ -4,7 +4,7 @@ import json
 # Fetch Figma design
 response = requests.get(
     'https://api.figma.com/v1/files/hRsVtVQjYfVDCRNvu3QApw/nodes?ids=3-12456',
-    headers={'X-Figma-Token': 'figd_7brI3A-MpA-NDl829-WwA4J2OTMNZwSUsrbVi1lT'}
+    headers={'X-Figma-Token': 'FIGMA_TOKEN_HIDDEN'}
 )
 
 data = response.json()

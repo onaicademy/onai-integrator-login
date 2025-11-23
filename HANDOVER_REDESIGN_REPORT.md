@@ -40,7 +40,7 @@
      ```
 
 3. ✅ **Импорт дизайна из Figma**
-   - Использован Figma API с токеном: `figd_7brI3A-MpA-NDl829-WwA4J2OTMNZwSUsrbVi1lT`
+   - Использован Figma API с токеном: `FIGMA_TOKEN_HIDDEN`
    - Файл Figma: `hRsVtVQjYfVDCRNvu3QApw`
    - Node ID: `3:12456`
    - Создан скрипт анализа: `analyze_figma.py`
