@@ -300,9 +300,27 @@ router.get('/student/:userId/dashboard', async (req: Request, res: Response) => 
 // POST /api/analytics/video-session/end - завершение сессии просмотра видео + агрегация метрик
 router.post('/video-session/end', async (req: Request, res: Response) => {
   try {
-    const { user_id, lesson_id, session_id } = req.body;
+    const { 
+      user_id, 
+      lesson_id, 
+      video_id,
+      session_id, 
+      seeks_count,      // ✅ AI MENTOR: Получаем из Frontend
+      pauses_count,     // ✅ AI MENTOR: Получаем из Frontend
+      max_second_reached, // ✅ AI MENTOR: Получаем из Frontend
+      duration_seconds,
+      playback_speed
+    } = req.body;
     
-    console.log('🎬 [Video Session] Завершение сессии:', { user_id, lesson_id, session_id });
+    console.log('🎬 [Video Session] Завершение сессии:', { 
+      user_id, 
+      lesson_id, 
+      video_id,
+      session_id,
+      seeks_count,
+      pauses_count,
+      max_second_reached
+    });
 
     if (!user_id || !lesson_id || !session_id) {
       return res.status(400).json({
@@ -310,86 +328,88 @@ router.post('/video-session/end', async (req: Request, res: Response) => {
       });
     }
 
-    // 1. Получаем все события сессии из video_analytics
-    const { data: events, error: eventsError } = await adminSupabase
-      .from('video_analytics')
-      .select('*')
-      .eq('session_id', session_id)
-      .eq('lesson_id', lesson_id)
-      .order('created_at', { ascending: true });
+    // ✅ AI MENTOR: Используем метрики ИЗ FRONTEND (более точные!)
+    // Если Frontend не передал метрики, пытаемся рассчитать из событий (fallback)
+    
+    let finalSeeksCount = seeks_count || 0;
+    let finalPausesCount = pauses_count || 0;
+    let finalMaxSecond = max_second_reached || 0;
+    let finalDuration = duration_seconds || 0;
+    let session_start = new Date();
+    let session_end = new Date();
 
-    if (eventsError) {
-      console.error('❌ Ошибка получения событий:', eventsError);
-      throw eventsError;
-    }
-
-    if (!events || events.length === 0) {
-      console.log('ℹ️ Нет событий для сессии, пропускаем');
-      return res.json({ success: true, message: 'No events found' });
-    }
-
-    console.log(`📊 Найдено событий: ${events.length}`);
-
-    // 2. Агрегируем метрики
-    let seeks_count = 0;
-    let pauses_count = 0;
-    let max_second_reached = 0;
-    let last_position = 0;
-
-    for (const event of events) {
-      if (event.event_type === 'pause') {
-        pauses_count++;
-      }
+    // Fallback: Если Frontend НЕ передал метрики, рассчитываем из video_analytics
+    if (!seeks_count && !pauses_count) {
+      console.log('ℹ️ Метрики не переданы Frontend, рассчитываем из событий...');
       
-      // Seek = резкое изменение позиции (больше 5 секунд)
-      if (event.position_seconds !== undefined && event.position_seconds !== null) {
-        const positionDiff = Math.abs(event.position_seconds - last_position);
-        if (positionDiff > 5 && last_position > 0) {
-          seeks_count++;
-          console.log(`⏩ Seek обнаружен: ${last_position}s → ${event.position_seconds}s (diff: ${positionDiff}s)`);
+      const { data: events, error: eventsError } = await adminSupabase
+        .from('video_analytics')
+        .select('*')
+        .eq('session_id', session_id)
+        .eq('lesson_id', lesson_id)
+        .order('created_at', { ascending: true });
+
+      if (!eventsError && events && events.length > 0) {
+        console.log(`📊 Найдено событий: ${events.length}`);
+        
+        let last_position = 0;
+        for (const event of events) {
+          if (event.event_type === 'pause') {
+            finalPausesCount++;
+          }
+          
+          if (event.position_seconds !== undefined && event.position_seconds !== null) {
+            const positionDiff = Math.abs(event.position_seconds - last_position);
+            if (positionDiff > 5 && last_position > 0) {
+              finalSeeksCount++;
+            }
+            last_position = event.position_seconds;
+            finalMaxSecond = Math.max(finalMaxSecond, event.position_seconds);
+          }
         }
-        last_position = event.position_seconds;
-        max_second_reached = Math.max(max_second_reached, event.position_seconds);
+
+        session_start = new Date(events[0].created_at);
+        session_end = new Date(events[events.length - 1].created_at);
+        finalDuration = Math.round((session_end.getTime() - session_start.getTime()) / 1000);
       }
+    } else {
+      console.log('✅ Метрики получены из Frontend!');
     }
 
-    const session_start = events[0].created_at;
-    const session_end = events[events.length - 1].created_at;
-    const duration_seconds = Math.round(
-      (new Date(session_end).getTime() - new Date(session_start).getTime()) / 1000
-    );
-
-    console.log(`📊 Агрегированные метрики:
-      - seeks_count: ${seeks_count}
-      - pauses_count: ${pauses_count}
-      - max_second_reached: ${max_second_reached}s
-      - duration_seconds: ${duration_seconds}s
+    console.log(`📊 Финальные метрики для AI Mentor:
+      - seeks_count: ${finalSeeksCount}
+      - pauses_count: ${finalPausesCount}
+      - max_second_reached: ${finalMaxSecond}s
+      - duration_seconds: ${finalDuration}s
     `);
 
-    // 3. Получаем video_id из video_content
-    const { data: videoData } = await adminSupabase
-      .from('video_content')
-      .select('id')
-      .eq('lesson_id', lesson_id)
-      .single();
+    // Получаем video_id если не передан
+    let finalVideoId = video_id;
+    if (!finalVideoId) {
+      const { data: videoData } = await adminSupabase
+        .from('video_content')
+        .select('id')
+        .eq('lesson_id', lesson_id)
+        .single();
+      finalVideoId = videoData?.id || null;
+    }
 
-    const video_id = videoData?.id || null;
-    console.log(`🎥 video_id: ${video_id || 'null (видео не найдено)'}`);
+    console.log(`🎥 video_id: ${finalVideoId || 'null (видео не найдено)'}`);
 
-    // 4. Создаем/обновляем запись в video_watch_sessions
+    // ✅ AI MENTOR: Создаем запись в video_watch_sessions с РЕАЛЬНЫМИ метриками
     const sessionInsertData = {
       user_id,
       lesson_id: parseInt(lesson_id),
-      video_id,
+      video_id: finalVideoId,
       session_start,
       session_end,
-      duration_seconds,
+      duration_seconds: finalDuration || 0,
       start_second: 0,
-      end_second: max_second_reached,
-      max_second_reached,
-      pauses_count,
-      seeks_count,
-      playback_speed: 1.0,
+      end_second: finalMaxSecond || 0,
+      max_second_reached: finalMaxSecond || 0,
+      pauses_count: finalPausesCount,   // ✅ КРИТИЧНО для AI Mentor!
+      seeks_count: finalSeeksCount,     // ✅ КРИТИЧНО для AI Mentor! Триггер срабатывает при >= 5
+      playback_speed: playback_speed || 1.0,
       engagement_score: null,
       is_fully_watched: false,
     };

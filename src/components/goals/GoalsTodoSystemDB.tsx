@@ -10,6 +10,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Star,
   Plus,
@@ -21,7 +26,10 @@ import {
   Maximize2,
   Loader2,
   Check,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import {
   DndContext,
   closestCenter,
@@ -32,6 +40,7 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -41,10 +50,33 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserGoals, createGoal, updateGoal, deleteGoal, completeGoal, Goal } from '@/lib/goals-api';
+import { getUserGoals, createGoal, updateGoal, deleteGoal, completeGoal, Goal, CompleteGoalResponse } from '@/lib/goals-api';
 import { toast } from 'sonner';
+import { TaskEditModal } from './TaskEditModal';
 
-function SortableTask({ task, isCompact, onDelete, onComplete }: any) {
+// ⏰ Time picker options (every 30 minutes) - same as TaskEditModal
+const TIME_OPTIONS = [
+  '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', 
+  '03:00', '03:30', '04:00', '04:30', '05:00', '05:30',
+  '06:00', '06:30', '07:00', '07:30', '08:00', '08:30',
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
+  '21:00', '21:30', '22:00', '22:30', '23:00', '23:30'
+];
+
+// ===== DroppableColumn component =====
+function DroppableColumn({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+  const { setNodeRef } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={className}>
+      {children}
+    </div>
+  );
+}
+
+function SortableTask({ task, isCompact, onDelete, onComplete, onMoveNext, onEdit }: any) {
   const {
     attributes,
     listeners,
@@ -69,51 +101,69 @@ function SortableTask({ task, isCompact, onDelete, onComplete }: any) {
 
   const statusConfig = {
     todo: { icon: Circle, color: 'text-gray-400', bg: 'bg-zinc-900/70', border: 'border-gray-600', glow: '' },
-    in_progress: { icon: Clock, color: 'text-[#00ff00]', bg: 'bg-[#00ff00]/10', border: 'border-[#00ff00]/40', glow: 'shadow-[0_0_15px_rgba(0,255,0,0.15)]' },
+    in_progress: { icon: Clock, color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/40', glow: 'shadow-[0_0_15px_rgba(249,115,22,0.15)]' },
     done: { icon: CheckCircle, color: 'text-[#00ff00]', bg: 'bg-[#00ff00]/15', border: 'border-[#00ff00]/60', glow: 'shadow-[0_0_20px_rgba(0,255,0,0.2)]' },
   };
 
-  const config = statusConfig[task.status as keyof typeof statusConfig];
+  // ✅ Защита от undefined: используем 'todo' как default
+  const config = statusConfig[task?.status as keyof typeof statusConfig] || statusConfig.todo;
   const Icon = config.icon;
 
   return (
-    <motion.div
+    <div
       ref={setNodeRef}
       style={style}
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.02 }}
+      onClick={() => onEdit && onEdit(task)}
       className={`
         group p-3 rounded-lg border-2 ${config.border} ${config.bg} ${config.glow}
-        hover:border-[#00ff00]/60 transition-all duration-200
-        ${isDragging ? 'shadow-2xl shadow-[#00ff00]/40 z-50 scale-105 rotate-2' : ''}
+        hover:border-[#00ff00]/60 transition-all duration-200 cursor-pointer
+        ${isDragging ? 'shadow-2xl shadow-[#00ff00]/40 z-50' : ''}
         ${isCompact ? 'flex items-center gap-3' : ''}
         backdrop-blur-sm
       `}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
-          className="flex-shrink-0 cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 cursor-grab active:cursor-grabbing relative"
           {...attributes}
           {...listeners}
         >
           <GripVertical
-            className={`w-4 h-4 text-gray-600 transition-all duration-200 ${
-              isDragging ? 'opacity-100 text-[#00ff00]' : 'opacity-0 group-hover:opacity-100'
+            className={`w-5 h-5 transition-all duration-300 ${
+              isDragging 
+                ? 'text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.8)] scale-110' 
+                : 'text-gray-400 group-hover:text-[#00ff00] group-hover:drop-shadow-[0_0_6px_rgba(0,255,0,0.5)]'
             }`}
+            strokeWidth={2.5}
           />
+          {/* Digital elite dot indicators */}
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-0.5 pointer-events-none ${
+            isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
+          }`}>
+            <div className="w-0.5 h-0.5 bg-[#00ff00] rounded-full shadow-[0_0_3px_rgba(0,255,0,0.8)]" />
+            <div className="w-0.5 h-0.5 bg-[#00ff00] rounded-full shadow-[0_0_3px_rgba(0,255,0,0.8)]" />
+            <div className="w-0.5 h-0.5 bg-[#00ff00] rounded-full shadow-[0_0_3px_rgba(0,255,0,0.8)]" />
+          </div>
         </div>
-        <Icon className={`w-5 h-5 ${config.color} flex-shrink-0 ${task.status === 'in_progress' ? 'animate-pulse' : ''}`} />
-        <span className={`text-white flex-1 truncate ${task.status === 'done' ? 'line-through opacity-60' : ''}`}>
-          {task.title}
-        </span>
-        {task.due_date && (
-          <span className="text-xs text-gray-400 flex-shrink-0 bg-black/30 px-2 py-1 rounded">
-            📅 {new Date(task.due_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
-          </span>
-        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <Icon className={`w-5 h-5 ${config.color} flex-shrink-0 ${task.status === 'in_progress' ? 'animate-pulse' : ''}`} />
+            <span className={`text-white flex-1 truncate ${task.status === 'done' ? 'line-through opacity-60' : ''}`}>
+              {task.title}
+            </span>
+            {task.due_date && (
+              <span className="text-xs text-gray-400 flex-shrink-0 bg-black/30 px-2 py-1 rounded">
+                📅 {new Date(task.due_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                {' '}🕐 {new Date(task.due_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
+          {task.description && (
+            <p className="text-xs text-gray-500 mt-1 ml-7 truncate">
+              {task.description}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -123,9 +173,15 @@ function SortableTask({ task, isCompact, onDelete, onComplete }: any) {
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
-              onComplete(task.id, e);
+              // todo → in_progress → done
+              if (task.status === 'in_progress') {
+                onComplete(task.id, e);
+              } else {
+                onMoveNext(task.id);
+              }
             }}
             className="h-7 w-7 p-0 text-[#00ff00] hover:bg-[#00ff00]/20 hover:scale-110 transition-all"
+            title={task.status === 'todo' ? 'Начать работу' : 'Завершить'}
           >
             <Check className="w-4 h-4" />
           </Button>
@@ -142,7 +198,7 @@ function SortableTask({ task, isCompact, onDelete, onComplete }: any) {
           <X className="w-4 h-4" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -154,6 +210,14 @@ export function GoalsTodoSystemDB() {
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [activeTask, setActiveTask] = useState<Goal | null>(null);
   const [xpAnimation, setXpAnimation] = useState<{ x: number; y: number; amount: number } | null>(null);
+  
+  // 📅 Для календаря и времени
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [dueTime, setDueTime] = useState<string>('12:00');
+  // ❌ Telegram настройки убраны из формы создания - теперь только в TaskEditModal!
+  const [editingTask, setEditingTask] = useState<Goal | null>(null); // For edit modal
+  
+  // ❌ Telegram настройки убраны из формы создания - теперь только в TaskEditModal!
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -191,13 +255,29 @@ export function GoalsTodoSystemDB() {
     if (!newGoalTitle.trim() || !user?.id) return;
 
     try {
+      // Объединяем дату и время
+      let finalDueDate = undefined;
+      if (dueDate && dueTime) {
+        const [hours, minutes] = dueTime.split(':');
+        const combinedDate = new Date(dueDate);
+        combinedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        finalDueDate = combinedDate.toISOString();
+      }
+
       const newGoal = await createGoal({
         user_id: user.id,
         title: newGoalTitle,
         status: 'todo',
+        due_date: finalDueDate,
+        // ❌ Telegram настройки не передаются при создании (будут в TaskEditModal)
       });
+      
       setGoals([newGoal, ...goals]);
       setNewGoalTitle('');
+      setDueDate(undefined);
+      setDueTime('12:00');
+      // ❌ Telegram настройки убраны (теперь только в TaskEditModal)
+      
       toast.success('Цель создана!');
     } catch (error) {
       console.error('Ошибка создания цели:', error);
@@ -216,22 +296,48 @@ export function GoalsTodoSystemDB() {
     }
   }
 
+  async function moveGoalToNext(id: string) {
+    try {
+      const goal = goals.find(g => g.id === id);
+      if (!goal) return;
+
+      const nextStatus = goal.status === 'todo' ? 'in_progress' : 'done';
+      
+      if (nextStatus === 'done') {
+        await completeGoalById(id);
+      } else {
+        const updatedGoal = await updateGoal(id, { status: nextStatus });
+        setGoals(goals.map(g => g.id === id ? updatedGoal : g));
+        toast.success(nextStatus === 'in_progress' ? '⚡ В работе!' : 'Статус обновлен');
+      }
+    } catch (error) {
+      console.error('Ошибка обновления статуса:', error);
+      toast.error('Не удалось обновить статус');
+    }
+  }
+
   async function completeGoalById(id: string, event?: React.MouseEvent) {
     try {
-      const updatedGoal = await completeGoal(id);
-      setGoals(goals.map(g => g.id === id ? updatedGoal : g));
+      const response = await completeGoal(id);
+      setGoals(goals.map(g => g.id === id ? response.goal : g));
       
-      if (event) {
+      // Показываем XP анимацию ТОЛЬКО если это первое использование Kanban
+      if (response.is_first_use_bonus && event) {
         const rect = (event.target as HTMLElement).getBoundingClientRect();
         setXpAnimation({
           x: rect.left + rect.width / 2,
           y: rect.top,
-          amount: 20
+          amount: response.xp_awarded
         });
         setTimeout(() => setXpAnimation(null), 2000);
       }
       
-      toast.success('🎉 Цель выполнена! +20 XP');
+      // Показываем разные сообщения
+      if (response.is_first_use_bonus) {
+        toast.success(`🎉 Первая цель выполнена! Бонус: +${response.xp_awarded} XP за использование Kanban!`);
+      } else {
+        toast.success('✅ Цель выполнена!');
+      }
     } catch (error) {
       console.error('Ошибка выполнения цели:', error);
       toast.error('Не удалось выполнить цель');
@@ -245,9 +351,13 @@ export function GoalsTodoSystemDB() {
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    console.log('🎯 handleDragEnd:', { activeId: active.id, overId: over?.id, overData: over?.data });
     setActiveTask(null);
 
-    if (!over) return;
+    if (!over) {
+      console.warn('❌ over is null - не удалось определить целевую колонку');
+      return;
+    }
 
     const activeId = active.id as string;
     const activeGoal = goals.find(g => g.id === activeId);
@@ -267,16 +377,23 @@ export function GoalsTodoSystemDB() {
 
     if (activeGoal.status === newStatus) return;
 
+    // 🚀 OPTIMISTIC UPDATE: Мгновенное обновление UI перед API запросом
+    const previousGoals = [...goals]; // Сохраняем для rollback
+    const optimisticGoal = { ...activeGoal, status: newStatus };
+    setGoals(goals.map(g => g.id === activeId ? optimisticGoal : g));
+
     try {
       if (newStatus === 'done') {
         await completeGoalById(activeId);
+        // toast уже показан в completeGoalById
       } else {
-        const updatedGoal = await updateGoal(activeId, { status: newStatus });
-        setGoals(goals.map(g => g.id === activeId ? updatedGoal : g));
-        toast.success('Статус обновлен');
+        await updateGoal(activeId, { status: newStatus });
+        toast.success(newStatus === 'in_progress' ? '⚡ В работе!' : '📝 Запланировано');
       }
     } catch (error) {
+      // ⏪ ROLLBACK: Возвращаем предыдущее состояние при ошибке
       console.error('Ошибка обновления статуса:', error);
+      setGoals(previousGoals);
       toast.error('Не удалось обновить статус');
     }
   }
@@ -335,6 +452,8 @@ export function GoalsTodoSystemDB() {
                     isCompact={true}
                     onDelete={deleteGoalById}
                     onComplete={(id: string, e: React.MouseEvent) => completeGoalById(id, e)}
+                    onMoveNext={moveGoalToNext}
+                    onEdit={(task: Goal) => setEditingTask(task)}
                   />
                 ))}
               </SortableContext>
@@ -367,7 +486,7 @@ export function GoalsTodoSystemDB() {
               {activeTask ? (
                 <div className="p-3 rounded-lg border border-[#00ff00]/50 bg-zinc-900 shadow-2xl shadow-[#00ff00]/30">
                   <div className="flex items-center gap-3">
-                    <GripVertical className="w-4 h-4 text-gray-500" />
+                    <GripVertical className="w-5 h-5 text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.8)]" strokeWidth={2.5} />
                     <p className="text-white">{activeTask.title}</p>
                   </div>
                 </div>
@@ -414,11 +533,11 @@ export function GoalsTodoSystemDB() {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-3 h-3 text-[#00ff00]" />
-                    <span><b>Завершено</b> - готово! +XP</span>
+                    <span><b>Завершено</b> - готово! ✅</span>
                   </div>
                 </div>
                 <p className="mt-2 text-xs text-gray-500">
-                  💡 <b>Как пользоваться:</b> Перетаскивай задачи между колонками или нажми галочку для завершения. За каждую выполненную цель получаешь <span className="text-[#00ff00]">+20 XP</span>!
+                  💡 <b>Как пользоваться:</b> Перетаскивай задачи между колонками или нажми галочку для завершения. За первое использование Kanban получишь <span className="text-[#00ff00]">+20 XP</span>!
                 </p>
               </div>
             </DialogTitle>
@@ -431,21 +550,113 @@ export function GoalsTodoSystemDB() {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-2 mb-6">
-                <Input
-                  value={newGoalTitle}
-                  onChange={(e) => setNewGoalTitle(e.target.value)}
-                  placeholder="Добавить новую цель..."
-                  className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
-                  onKeyPress={(e) => e.key === 'Enter' && addGoal()}
-                />
-                <Button
-                  size="icon"
-                  onClick={addGoal}
-                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+              <div className="mb-6 space-y-3 p-4 rounded-lg bg-zinc-900/30 border border-[#00ff00]/20">
+                <div className="flex gap-2">
+                  <Input
+                    value={newGoalTitle}
+                    onChange={(e) => setNewGoalTitle(e.target.value)}
+                    placeholder="Название цели..."
+                    className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                    onKeyPress={(e) => e.key === 'Enter' && addGoal()}
+                  />
+                  <Button
+                    size="icon"
+                    onClick={addGoal}
+                    className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex gap-3 items-center flex-wrap">
+                  {/* Календарь - PREMIUM STYLE */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`text-sm h-9 ${
+                          dueDate 
+                            ? 'text-white bg-zinc-900 border-[#00ff00]/50' 
+                            : 'text-gray-400 bg-zinc-900/50 border-zinc-800 hover:border-[#00ff00]/30'
+                        } transition-all`}
+                      >
+                        <CalendarIcon className="w-4 h-4 mr-2" />
+                        {dueDate ? format(dueDate, 'dd.MM.yyyy', { locale: ru }) : 'Дата'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-auto p-3 bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-2xl shadow-[#00ff00]/10 pointer-events-auto" 
+                      style={{ zIndex: 150000, pointerEvents: 'auto' }}
+                      sideOffset={8}
+                      align="start"
+                      avoidCollisions={false}
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={dueDate}
+                        onSelect={(date) => {
+                          setDueDate(date);
+                          toast.success(`📅 Дата: ${date ? format(date, 'd MMMM', { locale: ru }) : ''}`, { duration: 1500 });
+                        }}
+                        locale={ru}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        className="rounded-lg border-0 pointer-events-auto"
+                        style={{ pointerEvents: 'auto' }}
+                        classNames={{
+                          months: "space-y-4",
+                          month: "space-y-4",
+                          caption: "flex justify-center pt-1 relative items-center text-[#00ff00]",
+                          caption_label: "text-sm font-medium",
+                          nav: "space-x-1 flex items-center",
+                          nav_button: "h-7 w-7 bg-transparent hover:bg-zinc-800 rounded-md transition-colors",
+                          nav_button_previous: "absolute left-1",
+                          nav_button_next: "absolute right-1",
+                          table: "w-full border-collapse space-y-1",
+                          head_row: "flex",
+                          head_cell: "text-gray-500 rounded-md w-9 font-normal text-[0.8rem]",
+                          row: "flex w-full mt-2",
+                          cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                          day: "h-9 w-9 p-0 font-normal hover:bg-zinc-800 hover:text-[#00ff00] rounded-md transition-all",
+                          day_selected: "bg-[#00ff00] text-black hover:bg-[#00ff00] hover:text-black font-bold",
+                          day_today: "bg-cyan-500 text-black font-bold",
+                          day_outside: "text-gray-600 opacity-50",
+                          day_disabled: "text-gray-700 opacity-30",
+                          day_range_middle: "aria-selected:bg-zinc-800 aria-selected:text-white",
+                          day_hidden: "invisible",
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Time picker - PREMIUM SELECT */}
+                  <Select 
+                    value={dueTime} 
+                    onValueChange={(value) => {
+                      setDueTime(value);
+                      toast.success(`🕐 Время: ${value}`, { duration: 1000 });
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-9 text-sm bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00ff00]/50 transition-all">
+                      <Clock className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="12:00" />
+                    </SelectTrigger>
+                    <SelectContent 
+                      className="bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-xl max-h-[200px]"
+                      style={{ zIndex: 150001 }}
+                    >
+                      {TIME_OPTIONS.map((time) => (
+                        <SelectItem 
+                          key={time} 
+                          value={time} 
+                          className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors"
+                        >
+                          {time}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                </div>
               </div>
 
               <div className="block lg:hidden">
@@ -474,7 +685,9 @@ export function GoalsTodoSystemDB() {
                             task={goal}
                             isCompact={false}
                             onDelete={deleteGoalById}
-                            onComplete={completeGoalById}
+                            onComplete={(id: string, e: React.MouseEvent) => completeGoalById(id, e)}
+                            onMoveNext={moveGoalToNext}
+                            onEdit={(task: Goal) => setEditingTask(task)}
                           />
                         ))}
                       </SortableContext>
@@ -501,11 +714,11 @@ export function GoalsTodoSystemDB() {
                     in_progress: { 
                       title: 'В работе', 
                       icon: Clock, 
-                      color: 'text-[#00ff00]', 
-                      border: 'border-[#00ff00]/30', 
-                      bg: 'bg-gradient-to-b from-[#00ff00]/10 to-[#00ff00]/5',
-                      headerBg: 'bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10',
-                      emoji: '⚡'
+                      color: 'text-orange-500', 
+                      border: 'border-orange-500/30', 
+                      bg: 'bg-gradient-to-b from-orange-500/10 to-orange-500/5',
+                      headerBg: 'bg-gradient-to-r from-orange-500/20 to-orange-500/10',
+                      emoji: '🔥'
                     },
                     done: { 
                       title: 'Завершено', 
@@ -539,7 +752,7 @@ export function GoalsTodoSystemDB() {
                           </span>
                         </h3>
                       </div>
-                      <div
+                      <DroppableColumn
                         id={status}
                         className={`min-h-[450px] p-4 rounded-xl border-2 border-dashed ${config.border} ${config.bg} space-y-3 backdrop-blur-sm transition-all duration-300 hover:border-[#00ff00]/50`}
                       >
@@ -557,7 +770,9 @@ export function GoalsTodoSystemDB() {
                                   task={goal}
                                   isCompact={false}
                                   onDelete={deleteGoalById}
-                                  onComplete={completeGoalById}
+                                  onComplete={(id: string, e: React.MouseEvent) => completeGoalById(id, e)}
+                                  onMoveNext={moveGoalToNext}
+                                  onEdit={(task: Goal) => setEditingTask(task)}
                                 />
                               </motion.div>
                             ))}
@@ -573,7 +788,7 @@ export function GoalsTodoSystemDB() {
                             <p className="text-sm">Нет задач</p>
                           </motion.div>
                         )}
-                      </div>
+                      </DroppableColumn>
                     </motion.div>
                   );
                 })}
@@ -583,7 +798,7 @@ export function GoalsTodoSystemDB() {
                 {activeTask ? (
                   <div className="p-3 rounded-lg border border-[#00ff00]/50 bg-zinc-900 shadow-2xl shadow-[#00ff00]/30">
                     <div className="flex items-center gap-3">
-                      <GripVertical className="w-4 h-4 text-gray-500" />
+                      <GripVertical className="w-5 h-5 text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.8)]" strokeWidth={2.5} />
                       <p className="text-white">{activeTask.title}</p>
                     </div>
                   </div>
@@ -593,6 +808,31 @@ export function GoalsTodoSystemDB() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Task Edit Modal */}
+      {editingTask && (
+        <TaskEditModal
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          task={editingTask}
+          onUpdate={async (taskId, updates) => {
+            // 🔑 ИСПРАВЛЕНИЕ: Сохраняем результат updateGoal
+            const updatedTask = await updateGoal(taskId, updates);
+            
+            // Обновляем goals массив
+            setGoals(goals.map(g => g.id === taskId ? updatedTask : g));
+            
+            // ✅ ВАЖНО: Обновляем editingTask чтобы modal получил свежие данные!
+            setEditingTask(updatedTask);
+            
+            console.log('✅ Task updated and editingTask synced:', updatedTask);
+          }}
+          onDelete={async (taskId) => {
+            await deleteGoalById(taskId);
+            setEditingTask(null);
+          }}
+        />
+      )}
     </>
   );
 }

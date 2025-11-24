@@ -61,8 +61,11 @@ const Lesson = () => {
   const [showControls, setShowControls] = useState(true);
   const [videoQuality, setVideoQuality] = useState<'auto' | '1080p' | '720p' | '480p' | '360p'>('auto');
   
-  // Session ID для аналитики
+  // 📊 AI MENTOR TRACKING: Session ID и метрики для детекции проблем
   const [sessionId] = useState(() => Math.random().toString(36).substring(7));
+  const [seeksCount, setSeeksCount] = useState(0);  // ✅ Счетчик перемоток
+  const [pausesCount, setPausesCount] = useState(0); // ✅ Счетчик пауз
+  const [maxSecondReached, setMaxSecondReached] = useState(0); // ✅ Максимальная секунда просмотра
 
   useEffect(() => {
     if (moduleId) {
@@ -72,6 +75,16 @@ const Lesson = () => {
 
   useEffect(() => {
     if (lessonId) {
+      // ✅ Завершаем предыдущую сессию перед загрузкой нового урока
+      if (video?.id && sessionId) {
+        console.log('🎬 Смена урока - завершаем предыдущую сессию');
+        endVideoSession();
+      }
+      
+      // ✅ Сбрасываем метрики при смене урока
+      setSeeksCount(0);
+      setPausesCount(0);
+      setMaxSecondReached(0);
       loadLessonData(); // ✅ Загружаем данные урока при смене lessonId
     }
   }, [lessonId]);
@@ -85,19 +98,69 @@ const Lesson = () => {
     }
   }, [lessonId, allLessons]);
 
+  // ✅ FIX: Используем ref для хранения актуальных метрик (избегаем stale closure)
+  const metricsRef = useRef({ seeksCount: 0, pausesCount: 0, maxSecondReached: 0, currentTime: 0, playbackRate: 1 });
+  
+  // Обновляем ref при изменении метрик
+  useEffect(() => {
+    metricsRef.current = { seeksCount, pausesCount, maxSecondReached, currentTime, playbackRate };
+  }, [seeksCount, pausesCount, maxSecondReached, currentTime, playbackRate]);
+
+  // ✅ FIX: Завершаем видео-сессию при размонтировании (переход на другую страницу)
+  useEffect(() => {
+    return () => {
+      // При уходе со страницы - отправляем метрики
+      if (video?.id && sessionId && user?.id && lessonId) {
+        const metrics = metricsRef.current;
+        console.log('🚪 Unmount - завершаем видео-сессию');
+        console.log('📊 Метрики на момент unmount:', metrics);
+        
+        const payload = {
+          user_id: user.id,
+          lesson_id: parseInt(lessonId),
+          video_id: video.id,
+          session_id: sessionId,
+          seeks_count: metrics.seeksCount,
+          pauses_count: metrics.pausesCount,
+          max_second_reached: Math.floor(metrics.maxSecondReached),
+          duration_seconds: Math.floor(metrics.currentTime),
+          playback_speed: metrics.playbackRate,
+        };
+        
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        // ✅ FIX: Отправляем на Backend (port 3000), а не на Frontend (8080)!
+        navigator.sendBeacon('http://localhost:3000/api/analytics/video-session/end', blob);
+      }
+    };
+  }, [video?.id, sessionId, user?.id, lessonId]); // ✅ Только стабильные зависимости!
+
   // 🎬 Cleanup: Завершаем видео-сессию при закрытии страницы
   useEffect(() => {
     const handleBeforeUnload = () => {
       // Используем navigator.sendBeacon для отправки данных при закрытии
-      if (sessionId && user?.id && lessonId) {
-        navigator.sendBeacon(
-          `${window.location.origin}/api/analytics/video-session/end`,
-          JSON.stringify({
-            user_id: user.id,
-            lesson_id: parseInt(lessonId),
-            session_id: sessionId,
-          })
-        );
+      // ⚠️ Только если есть видео (урок может быть текстовым)
+      if (sessionId && user?.id && lessonId && video?.id) {
+        const metrics = metricsRef.current;
+        
+        // ✅ AI MENTOR: Отправляем ПОЛНЫЕ метрики через sendBeacon
+        const payload = {
+          user_id: user.id,
+          lesson_id: parseInt(lessonId),
+          video_id: video.id,              // ✅ UUID из video_content
+          session_id: sessionId,
+          seeks_count: metrics.seeksCount,         // ✅ Критично для AI Mentor!
+          pauses_count: metrics.pausesCount,       // ✅ Критично для AI Mentor!
+          max_second_reached: Math.floor(metrics.maxSecondReached),
+          duration_seconds: Math.floor(metrics.currentTime),
+          playback_speed: metrics.playbackRate,
+        };
+        
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        
+        // ✅ FIX: Отправляем на Backend (port 3000)!
+        navigator.sendBeacon('http://localhost:3000/api/analytics/video-session/end', blob);
+        
+        console.log('📡 sendBeacon (beforeunload): Метрики отправлены', payload);
       }
     };
 
@@ -105,10 +168,8 @@ const Lesson = () => {
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      // При размонтировании компонента тоже завершаем сессию
-      endVideoSession();
     };
-  }, [sessionId, user?.id, lessonId]);
+  }, [sessionId, user?.id, lessonId, video?.id]); // ✅ Только стабильные зависимости!
 
   // ✅ Загрузить все уроки модуля для навигации
   const loadAllLessons = async () => {
@@ -233,14 +294,46 @@ const Lesson = () => {
       return;
     }
     
+    // ⚠️ Если нет видео - пропускаем (урок может быть текстовым)
+    if (!video?.id) {
+      console.log('ℹ️ Урок без видео, пропускаем video-session');
+      return;
+    }
+    
     try {
-      console.log('🎬 Завершаем видео-сессию:', { sessionId, lessonId });
-      await api.post('/api/analytics/video-session/end', {
+      console.log('🎬 Завершаем видео-сессию:', { 
+        sessionId, 
+        lessonId,
+        videoId: video.id, // ✅ UUID видео
+        seeksCount, 
+        pausesCount, 
+        maxSecondReached 
+      });
+      
+      // ✅ AI MENTOR: Отправляем полные метрики для детекции проблем
+      const payload = {
         user_id: user.id,
         lesson_id: parseInt(lessonId),
+        video_id: video.id,              // ✅ UUID из video_content
         session_id: sessionId,
-      });
+        seeks_count: seeksCount,         // ✅ Количество перемоток
+        pauses_count: pausesCount,       // ✅ Количество пауз
+        max_second_reached: Math.floor(maxSecondReached), // ✅ Максимальная позиция
+        duration_seconds: Math.floor(currentTime), // ✅ Время просмотра
+        playback_speed: playbackRate,    // ✅ Скорость воспроизведения
+      };
+      
+      console.log('📤 Отправляем payload:', payload);
+      
+      await api.post('/api/analytics/video-session/end', payload);
+      
       console.log('✅ Видео-сессия завершена, метрики отправлены в AI Mentor');
+      console.log('📊 Метрики:', { seeksCount, pausesCount, maxSecondReached });
+      
+      // ✅ Если seeks_count >= 5, AI Mentor создаст задачу через триггер!
+      if (seeksCount >= 5) {
+        console.log('⚠️ AI MENTOR: Обнаружена проблема с видео (много перемоток)!');
+      }
     } catch (error) {
       console.error('❌ Ошибка завершения видео-сессии:', error);
     }
@@ -254,6 +347,8 @@ const Lesson = () => {
       videoRef.current.pause();
       trackEvent('pause');
       setPlaying(false);
+      // ✅ AI MENTOR: Увеличиваем счетчик пауз
+      setPausesCount(prev => prev + 1);
     } else {
       videoRef.current.play();
       trackEvent('play');
@@ -266,6 +361,11 @@ const Lesson = () => {
     if (!videoRef.current) return;
     const time = videoRef.current.currentTime;
     setCurrentTime(time);
+    
+    // ✅ AI MENTOR: Отслеживаем максимальную секунду просмотра
+    if (time > maxSecondReached) {
+      setMaxSecondReached(time);
+    }
     
     // Трекинг каждые 10 секунд
     if (Math.floor(time) % 10 === 0 && Math.floor(time) !== Math.floor(currentTime)) {
@@ -297,6 +397,26 @@ const Lesson = () => {
     trackEvent('playback_rate_change', { playback_rate: rate });
   };
 
+  // ✅ Изменение качества видео
+  const changeVideoQuality = (quality: typeof videoQuality) => {
+    setVideoQuality(quality);
+    trackEvent('quality_change', { quality });
+    console.log('🎬 Качество видео изменено:', quality);
+    
+    // ⚠️ NOTE: Для реальной работы нужны разные URL качеств от Cloudflare R2
+    // Пример: video_720p.mp4, video_1080p.mp4
+    // Сейчас только логируем изменение для аналитики
+    
+    // TODO: Когда будут разные качества:
+    // const qualityUrl = getVideoUrlByQuality(video.id, quality);
+    // if (videoRef.current) {
+    //   const currentTime = videoRef.current.currentTime;
+    //   videoRef.current.src = qualityUrl;
+    //   videoRef.current.currentTime = currentTime;
+    //   videoRef.current.play();
+    // }
+  };
+
   // Изменение громкости
   const changeVolume = (vol: number) => {
     if (!videoRef.current) return;
@@ -312,24 +432,70 @@ const Lesson = () => {
     trackEvent('mute', { muted: !muted });
   };
 
-  // Fullscreen
-  const toggleFullscreen = async () => {
-    if (!videoContainerRef.current) {
-      console.error('❌ videoContainerRef не найден');
+  // 🎬 CINEMA MODE FULLSCREEN (как на GetCourse)
+  const toggleFullscreen = () => {
+    if (!videoRef.current) {
+      console.error('❌ videoRef не найден');
       return;
     }
     
+    const videoElement = videoRef.current as any;
+    const doc = document as any;
+    
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        console.log('✅ Вышли из полноэкранного режима');
+      // Проверяем текущее состояние fullscreen
+      const isFullscreen = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      
+      if (isFullscreen) {
+        // Выход из fullscreen
+        if (doc.exitFullscreen) {
+          doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          doc.msExitFullscreen();
+        }
+        console.log('✅ Вышли из cinema mode');
+        trackEvent('exit_fullscreen');
       } else {
-        await videoContainerRef.current.requestFullscreen();
-        console.log('✅ Вошли в полноэкранный режим');
+        // ✅ Вход в CINEMA MODE - разворачиваем ТОЛЬКО ВИДЕО!
+        if (videoElement.requestFullscreen) {
+          videoElement.requestFullscreen().catch((err: any) => {
+            console.error('❌ requestFullscreen failed:', err);
+          });
+        } else if (videoElement.webkitEnterFullscreen) {
+          // iOS Safari - специальный метод для видео
+          videoElement.webkitEnterFullscreen();
+        } else if (videoElement.webkitRequestFullscreen) {
+          // Safari desktop
+          videoElement.webkitRequestFullscreen();
+        } else if (videoElement.mozRequestFullScreen) {
+          // Firefox
+          videoElement.mozRequestFullScreen();
+        } else if (videoElement.msRequestFullscreen) {
+          // IE/Edge legacy
+          videoElement.msRequestFullscreen();
+        } else {
+          console.error('❌ Fullscreen API не поддерживается');
+          alert('Ваш браузер не поддерживает полноэкранный режим');
+          return;
+        }
+        console.log('✅ Cinema mode активирован (только видео)');
+        trackEvent('fullscreen');
       }
-      trackEvent('fullscreen_toggle');
-    } catch (error) {
-      console.error('❌ Ошибка переключения fullscreen:', error);
+    } catch (error: any) {
+      console.error('❌ Ошибка cinema mode:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message
+      });
     }
   };
 
@@ -339,6 +505,8 @@ const Lesson = () => {
     videoRef.current.currentTime = time;
     setCurrentTime(time);
     trackEvent('seek', { seek_to_seconds: time });
+    // ✅ AI MENTOR: Увеличиваем счетчик перемоток
+    setSeeksCount(prev => prev + 1);
   };
 
   // Форматирование времени
@@ -512,7 +680,8 @@ const Lesson = () => {
             </linearGradient>
           </defs>
           
-          {Array.from({ length: 15 }).map((_, i) => {
+          {/* Линии - ОТКЛЮЧЕНЫ при видео для производительности */}
+          {!playing && Array.from({ length: 10 }).map((_, i) => {
             const x1 = Math.random() * 100;
             const y1 = Math.random() * 100;
             const x2 = Math.random() * 100;
@@ -538,19 +707,21 @@ const Lesson = () => {
                   ease: "easeInOut",
                   delay: Math.random() * 3,
                 }}
+                style={{ willChange: 'opacity' }} // ✅ GPU оптимизация
               />
             );
           })}
         </svg>
         
-        {/* Data Particles */}
-        {Array.from({ length: 20 }).map((_, i) => (
+        {/* Data Particles - ОТКЛЮЧЕНЫ при воспроизведении видео для производительности */}
+        {!playing && Array.from({ length: 15 }).map((_, i) => (
           <motion.div
             key={`particle-${i}`}
             className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
+              willChange: 'transform, opacity', // ✅ GPU оптимизация
             }}
             animate={{
               y: [0, -100, -200, -300],
@@ -567,9 +738,9 @@ const Lesson = () => {
         ))}
       </div>
 
-      {/* Shooting Stars / Comets */}
+      {/* Shooting Stars / Comets - ОТКЛЮЧЕНЫ при видео для производительности */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {Array.from({ length: 5 }).map((_, i) => {
+        {!playing && Array.from({ length: 3 }).map((_, i) => {
           const startX = Math.random() * 100;
           const startY = Math.random() * 80;
           const angle = 30 + Math.random() * 40;
@@ -807,24 +978,6 @@ const Lesson = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {/* Video Quality */}
-                          <select
-                            value={videoQuality}
-                            onChange={(e) => {
-                              const quality = e.target.value as typeof videoQuality;
-                              setVideoQuality(quality);
-                              console.log('✅ Качество видео изменено:', quality);
-                            }}
-                            className="bg-black/50 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-[#00ff00] outline-none cursor-pointer"
-                            title="Качество видео"
-                          >
-                            <option value="auto">Авто</option>
-                            <option value="1080p">1080p</option>
-                            <option value="720p">720p</option>
-                            <option value="480p">480p</option>
-                            <option value="360p">360p</option>
-                          </select>
-                          
                           {/* Playback Speed */}
                           <select
                             value={playbackRate}

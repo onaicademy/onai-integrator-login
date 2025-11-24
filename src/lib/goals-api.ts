@@ -14,6 +14,8 @@ export interface Goal {
   completed_at?: string;
   ai_analyzed?: boolean;
   ai_feedback?: any;
+  telegram_reminder?: boolean;
+  reminder_before?: 30 | 60;
 }
 
 export interface GoalStatistics {
@@ -101,12 +103,28 @@ export async function deleteGoal(id: string): Promise<void> {
   }
 }
 
-export async function completeGoal(id: string): Promise<Goal> {
+export interface CompleteGoalResponse {
+  goal: Goal;
+  xp_awarded: number;
+  is_first_use_bonus: boolean;
+}
+
+export async function completeGoal(id: string): Promise<CompleteGoalResponse> {
   try {
     console.log('✅ [GoalsAPI] Выполнение цели:', id);
     const response = await api.post(`/api/goals/${id}/complete`, {});
-    console.log('🎉 [GoalsAPI] Цель выполнена! +XP');
-    return response?.goal;
+    
+    if (response.is_first_use_bonus) {
+      console.log('🎉 [GoalsAPI] ПЕРВОЕ использование Kanban! +' + response.xp_awarded + ' XP');
+    } else {
+      console.log('✅ [GoalsAPI] Цель выполнена');
+    }
+    
+    return {
+      goal: response.goal,
+      xp_awarded: response.xp_awarded || 0,
+      is_first_use_bonus: response.is_first_use_bonus || false
+    };
   } catch (error: any) {
     console.error('❌ [GoalsAPI] Ошибка выполнения цели:', error);
     throw error;

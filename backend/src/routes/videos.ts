@@ -97,19 +97,50 @@ router.get('/lesson/:lessonId', async (req, res) => {
   try {
     const { lessonId } = req.params;
 
-    const { data: lesson, error } = await adminSupabase
+    console.log(`🎬 [Videos] Запрос видео для урока: ${lessonId}`);
+
+    // ✅ ПРАВИЛЬНАЯ ЛОГИКА: Получаем видео из video_content (с UUID!)
+    const { data: videoContent, error: videoError } = await adminSupabase
+      .from('video_content')
+      .select('*')
+      .eq('lesson_id', parseInt(lessonId))
+      .single();
+
+    // Если есть video_content - используем его (НОВАЯ ЛОГИКА)
+    if (videoContent && !videoError) {
+      console.log(`✅ Видео найдено в video_content: ${videoContent.id}`);
+      res.json({ 
+        video: {
+          id: videoContent.id,              // ✅ UUID из video_content!
+          lesson_id: parseInt(lessonId),    // ✅ lesson_id отдельно
+          video_url: videoContent.public_url,
+          duration_seconds: videoContent.duration_seconds,
+          filename: videoContent.filename,
+        }
+      });
+      return;
+    }
+
+    // Fallback: Старая логика (video_url в lessons) - для обратной совместимости
+    console.log('ℹ️ video_content не найден, проверяем lessons.video_url (старая логика)...');
+    
+    const { data: lesson, error: lessonError } = await adminSupabase
       .from('lessons')
       .select('id, title, video_url')
       .eq('id', parseInt(lessonId))
       .single();
 
-    if (error || !lesson || !lesson.video_url) {
+    if (lessonError || !lesson || !lesson.video_url) {
+      console.log('❌ Видео не найдено ни в video_content, ни в lessons');
       return res.status(404).json({ error: 'Видео не найдено' });
     }
 
+    console.log(`⚠️ Используем старую логику (lessons.video_url)`);
+    
+    // ⚠️ Для старых записей используем NULL как video_id (таблица разрешает nullable)
     res.json({ 
       video: {
-        id: lesson.id,
+        id: null,                         // ⚠️ NULL потому что нет video_content
         lesson_id: lesson.id,
         video_url: lesson.video_url
       }

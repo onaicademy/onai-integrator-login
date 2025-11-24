@@ -49,8 +49,10 @@ import remarkGfm from 'remark-gfm';
 import {
   sendMessageToAI,
   getChatHistory,
+  transcribeAudioToText,
   type ChatMessage,
 } from "@/lib/openai-assistant";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 
 type Achievement = {
   id: string;
@@ -163,6 +165,15 @@ const NeuroHub = () => {
   const [showXPPopup, setShowXPPopup] = useState(false);
   const [xpAmount, setXpAmount] = useState(0);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
+
+  // 🎤 Голосовой ввод
+  const {
+    isRecording,
+    startRecording,
+    stopRecording,
+    duration: recordingDuration,
+    error: recordingError
+  } = useVoiceRecording();
 
   // ⚡ ОПТИМИЗАЦИЯ: Параллельная загрузка всех данных
   useEffect(() => {
@@ -281,10 +292,73 @@ const NeuroHub = () => {
   };
 
   const handleVoiceInput = async () => {
-    toast({
-      title: "🎤 Голосовой ввод",
-      description: "Функция в разработке. Скоро будет доступна!",
-    });
+    try {
+      if (isRecording) {
+        // Останавливаем запись
+        const audioBlob = await stopRecording();
+        
+        if (!audioBlob) {
+          toast({
+            title: "❌ Ошибка записи",
+            description: "Не удалось записать аудио. Попробуйте ещё раз.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "🔄 Распознаём речь...",
+          description: "Отправляем аудио в Whisper API",
+        });
+
+        // Транскрибируем аудио
+        const transcribedText = await transcribeAudioToText(audioBlob, user?.id);
+        
+        if (transcribedText && transcribedText.trim()) {
+          // Вставляем распознанный текст в поле ввода
+          setInput(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
+          
+          toast({
+            title: "✅ Речь распознана!",
+            description: `"${transcribedText.substring(0, 50)}${transcribedText.length > 50 ? '...' : ''}"`,
+          });
+        } else {
+          toast({
+            title: "⚠️ Речь не распознана",
+            description: "Попробуйте говорить громче и чётче",
+            variant: "destructive",
+          });
+        }
+      } else {
+        // Начинаем запись
+        await startRecording();
+        
+        toast({
+          title: "🎙️ Запись началась",
+          description: "Говорите в микрофон. Нажмите ещё раз чтобы остановить.",
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Ошибка голосового ввода:', error);
+      
+      let errorMessage = "Не удалось записать голос";
+      
+      if (error.message === "PERMISSION_DENIED") {
+        errorMessage = "Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.";
+      } else if (error.message === "DEVICE_NOT_FOUND") {
+        errorMessage = "Микрофон не найден. Подключите микрофон и попробуйте снова.";
+      } else if (error.message === "DEVICE_IN_USE") {
+        errorMessage = "Микрофон занят другим приложением.";
+      } else if (error.message === "HTTPS_REQUIRED") {
+        errorMessage = "Для работы микрофона требуется HTTPS соединение.";
+      }
+      
+      toast({
+        title: "❌ Ошибка микрофона",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleNewChat = async () => {
@@ -1057,10 +1131,14 @@ const NeuroHub = () => {
                   variant="outline"
                     onClick={handleVoiceInput}
                     disabled={isSending}
-                    className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
-                    title="Голосовой ввод"
+                    className={`${
+                      isRecording 
+                        ? "border-red-500 bg-red-500/20 hover:bg-red-500/30 text-red-500 animate-pulse" 
+                        : "border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                    }`}
+                    title={isRecording ? `🔴 Запись... (${recordingDuration}с)` : "🎤 Голосовой ввод"}
                   >
-                    <Mic className="w-5 h-5" />
+                    <Mic className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
                 </Button>
                 </div>
               </CardContent>
@@ -1730,9 +1808,14 @@ const NeuroHub = () => {
                       variant="outline"
                       onClick={handleVoiceInput}
                       disabled={isSending}
-                      className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00] shrink-0"
+                      className={`shrink-0 ${
+                        isRecording 
+                          ? "border-red-500 bg-red-500/20 hover:bg-red-500/30 text-red-500 animate-pulse" 
+                          : "border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00]"
+                      }`}
+                      title={isRecording ? `🔴 Запись... (${recordingDuration}с)` : "🎤 Голосовой ввод"}
                     >
-                      <Mic className="w-4 h-4" />
+                      <Mic className={`w-4 h-4 ${isRecording ? 'animate-pulse' : ''}`} />
                     </Button>
                   </div>
                 </CardContent>

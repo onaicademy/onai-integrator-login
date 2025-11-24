@@ -70,6 +70,7 @@ import lessonsRouter from './routes/lessons';
 import videosRouter from './routes/videos';
 import materialsRouter from './routes/materials';
 import { errorHandler } from './middleware/errorHandler';
+import { startReminderScheduler } from './services/reminderScheduler';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -238,6 +239,9 @@ const server = app.listen(PORT, () => {
   console.log(`Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log('🛡️ Обработчики критических ошибок активированы');
+  
+  // Start reminder scheduler
+  startReminderScheduler();
 });
 
 // Graceful shutdown для сервера (SIGTERM)

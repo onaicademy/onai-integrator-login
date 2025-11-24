@@ -179,6 +179,28 @@ export async function saveCuratorMessagePair(
       openai_run_id: options?.openai_run_id,
     });
 
+    // ✅ AI MENTOR: Логируем вопрос в student_questions_log
+    try {
+      await supabase.from('student_questions_log').insert({
+        user_id: userId,
+        question_text: userMessage,
+        question_category: null, // TODO: Можно добавить автоопределение категории
+        asked_at_lesson_id: null, // TODO: Можно передавать lesson_id из контекста
+        asked_at_course_id: null,
+        ai_response: aiMessage,
+        ai_model_used: options?.model_used || 'gpt-4o',
+        response_time_ms: options?.response_time_ms,
+        openai_thread_id: thread.openai_thread_id,
+        openai_message_id: options?.openai_message_id,
+        student_rating: null,
+        is_helpful: null,
+      });
+      console.log('✅ Вопрос залогирован в student_questions_log');
+    } catch (logError: any) {
+      console.error('⚠️ Не удалось залогировать вопрос:', logError.message);
+      // Не блокируем основной процесс
+    }
+
     console.log(`✅ Message pair saved successfully`);
 
     return { userMsg, aiMsg, threadId: thread.id };
