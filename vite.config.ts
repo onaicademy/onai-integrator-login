@@ -19,6 +19,18 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
       port: 8080,
       strictPort: true, // Не менять порт, если занят
+      // ✅ ФИКС: HMR конфигурация для Windows
+      watch: {
+        usePolling: true,  // Используй polling вместо file watcher
+        interval: 100,     // Проверяй каждые 100ms
+        ignored: ['!**/src/**/*.{js,ts,jsx,tsx,css}'],
+      },
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 8080,
+        timeout: 60000,
+      },
       // Включаем HTTPS если есть сертификаты
       ...(useHttps && {
         https: {
@@ -44,6 +56,15 @@ export default defineConfig(({ mode }) => {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  // ✅ CSS конфигурация
+  css: {
+    postcss: './postcss.config.js',
+  },
+  // ✅ ВАЖНО: Дисейбл кэш зависимостей
+  optimizeDeps: {
+    exclude: ['tailwindcss'],
+    force: true,
   },
   build: {
     minify: 'esbuild', // Используем esbuild (быстрее, встроен в Vite)

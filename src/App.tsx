@@ -29,7 +29,6 @@ import AIAnalytics from "./pages/admin/AIAnalytics";
 import Messages from "./pages/Messages";
 // 🔥 БЕЗОПАСНОСТЬ: TestQuery удалён - не должен быть доступен в production
 // import TestQuery from "./pages/TestQuery";
-import { FloatingAIButton } from "./components/FloatingAIButton";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -159,7 +158,6 @@ const AppContent = () => {
   return (
     <>
       <AppRoutes />
-      <FloatingAIButton />
     </>
   );
 };

@@ -288,3 +288,6 @@ curl "https://api.telegram.org/botYOUR_TOKEN/getWebhookInfo"
 
 **🚀 ВСЁ ГОТОВО К ЗАПУСКУ!** Следуй инструкциям выше шаг за шагом.
 
+
+
+

@@ -4,8 +4,15 @@ import tailwindcssTypography from "@tailwindcss/typography";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+  ],
   prefix: "",
+  // ✅ ФИКС: Явно указываем JIT mode
+  mode: 'jit' as const,
   theme: {
   	container: {
   		center: true,
@@ -31,6 +38,9 @@ export default {
   			]
   		},
   		colors: {
+  			// ✅ ФИКС: Премиум цвета
+  			'brand-green': '#b2ff2e',
+  			'brand-dark': '#0a0a0a',
   			border: 'hsl(var(--border))',
   			neon: {
   				DEFAULT: 'hsl(var(--neon))',

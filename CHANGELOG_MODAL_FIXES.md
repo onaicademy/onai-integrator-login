@@ -280,3 +280,6 @@ http://localhost:8080/neurohub
 
 **Протестируй:** http://localhost:8080/neurohub → Канбан → Кликни на задачу!
 
+
+
+

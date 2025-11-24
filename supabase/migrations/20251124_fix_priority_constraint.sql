@@ -18,3 +18,6 @@ WHERE priority IS NULL;
 
 COMMENT ON CONSTRAINT goals_priority_check ON public.goals IS 'Allowed values: none, low, medium, high, urgent';
 
+
+
+

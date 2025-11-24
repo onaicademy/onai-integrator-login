@@ -54,3 +54,6 @@ WHERE table_name = 'users'
     AND column_name LIKE 'telegram%'
 ORDER BY ordinal_position;
 
+
+
+

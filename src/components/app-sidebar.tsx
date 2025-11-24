@@ -1,4 +1,4 @@
-import { Home, GraduationCap, Award, Bot, MessageSquare, Settings, LayoutDashboard, Users, Puzzle, UserCog, Gauge } from "lucide-react";
+import { Home, GraduationCap, Award, Bot, MessageSquare, Settings, LayoutDashboard, Users, Puzzle, UserCog, Gauge, Sparkles } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { OnAILogo } from "@/components/OnAILogo";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 type UserRole = "admin" | "student";
 
@@ -30,7 +30,7 @@ const studentMenuItems: MenuItem[] = [
   { title: "NeuroHUB", url: "/neurohub", icon: Gauge },
   { title: "Мой профиль", url: "/profile", icon: GraduationCap },
   { title: "Достижения", url: "/achievements", icon: Award },
-  { title: "Сообщения", url: "/messages", icon: MessageSquare },
+  { title: "onAIgram", url: "/messages", icon: MessageSquare },
   { title: "Админ панель", url: "/admin", icon: LayoutDashboard },
 ];
 
@@ -75,134 +75,334 @@ export function AppSidebar({ role }: AppSidebarProps) {
   console.log('✅ Показываем пунктов:', menuItems.length, 'для роли:', role);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-800 bg-[#18181b] z-0">
-      <SidebarHeader className="border-b border-gray-800 px-3 sm:px-4 py-3 sm:py-4 bg-[#18181b]">
+    <Sidebar 
+      collapsible="offcanvas" 
+      className="border-r-2 border-[#b2ff2e]/20"
+      style={{
+        background: `
+          linear-gradient(
+            135deg,
+            rgba(5, 5, 5, 0.98) 0%,
+            rgba(20, 20, 20, 0.95) 25%,
+            rgba(178, 255, 46, 0.03) 50%,
+            rgba(15, 15, 15, 0.97) 75%,
+            rgba(0, 0, 0, 0.98) 100%
+          )
+        `,
+        backdropFilter: 'blur(40px) saturate(200%)',
+        boxShadow: `
+          inset 2px 0 0 rgba(178, 255, 46, 0.15),
+          inset 0 0 60px rgba(178, 255, 46, 0.04),
+          8px 0 60px rgba(0, 0, 0, 0.8),
+          0 0 100px rgba(178, 255, 46, 0.02)
+        `,
+      }}
+    >
+      {/* ФОНОВАЯ АНИМАЦИЯ */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-0 left-0 w-full h-full"
+          style={{
+            background: 'radial-gradient(circle at 50% 50%, rgba(178, 255, 46, 0.08), transparent 70%)',
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
+      <SidebarHeader className="border-b-2 border-[#b2ff2e]/20 px-4 sm:px-6 py-4 sm:py-6 relative overflow-hidden">
+        {/* Светящийся фон хедера */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-br from-[#b2ff2e]/10 via-transparent to-[#00ff00]/5"
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
         <div className={cn(
-          "flex items-center transition-all duration-300 relative",
-          isCollapsed ? "justify-center p-1" : "justify-start p-2 pl-1"
+          "flex items-center transition-all duration-500 relative z-10",
+          isCollapsed ? "justify-center" : "justify-start gap-3"
         )}>
-          {/* АНИМАЦИЯ ЗЕЛЕНЫХ PARTICLES ВОКРУГ ЛОГОТИПА */}
-          <div className="absolute inset-0 pointer-events-none -left-4 -right-4 overflow-visible">
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  x: [0, Math.random() * 30 - 15, 0],
-                  y: [0, Math.random() * 30 - 15, 0],
-                  opacity: [0.2, 0.7, 0.2],
-                  scale: [1, 1.6, 1],
-                }}
-                transition={{
-                  duration: 1.8 + Math.random() * 1.5,
-                  repeat: Infinity,
-                  delay: Math.random() * 1.5,
-                  ease: 'easeInOut',
-                }}
-              />
-            ))}
-          </div>
-          
-          {/* ЛОГОТИП с Z-INDEX */}
-          <div className="relative z-10">
+          {/* ЛОГОТИП */}
+          <motion.div 
+            className="relative"
+            whileHover={{ scale: 1.05, rotate: [0, -5, 5, 0] }}
+            transition={{ duration: 0.3 }}
+          >
             {isCollapsed ? (
-              <OnAILogo variant="icon" className="w-10 h-10 text-[#00ff00]" />
+              <div className="relative">
+                <OnAILogo variant="icon" className="w-12 h-12 text-[#b2ff2e] drop-shadow-[0_0_10px_rgba(178,255,46,0.5)]" />
+                {/* Пульсирующий эффект */}
+                <motion.div
+                  className="absolute inset-0 rounded-full bg-[#b2ff2e]/30"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 0, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeOut"
+                  }}
+                />
+              </div>
             ) : (
-              <OnAILogo variant="full" className="h-8 w-auto text-white" />
+              <OnAILogo variant="full" className="h-10 w-auto text-white drop-shadow-[0_0_20px_rgba(178,255,46,0.3)]" />
             )}
-          </div>
+          </motion.div>
+
         </div>
+
+        {/* ПРЕМИУМ: Анимированная линия под логотипом */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[2px]"
+          style={{
+            background: 'linear-gradient(90deg, transparent, #b2ff2e, transparent)',
+          }}
+          animate={{
+            opacity: [0.5, 1, 0.5],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
       </SidebarHeader>
 
-      <SidebarContent className="px-2 sm:px-3">
+      <SidebarContent className="px-3 sm:px-4 relative">
         <SidebarGroup>
-          <SidebarGroupLabel className={cn(
-            "px-2 text-sm sm:text-base text-[#00ff00] transition-all duration-300 uppercase tracking-wider font-bold",
-            isCollapsed && "opacity-0"
-          )}>
-            Навигация
+          <SidebarGroupLabel 
+            className={cn(
+              "px-3 mb-3 text-xs font-bold uppercase tracking-[0.25em] transition-all duration-300",
+              "bg-gradient-to-r from-[#b2ff2e] to-[#00ff00] bg-clip-text text-transparent",
+              "drop-shadow-[0_0_8px_rgba(178,255,46,0.3)]",
+              isCollapsed && "opacity-0"
+            )}
+            style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}
+          >
+            🎯 НАВИГАЦИЯ
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      className={({ isActive }) =>
-                        cn(
-                          "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 overflow-hidden",
-                          "hover:scale-[1.02] active:scale-[0.98]",
-                          "text-white hover:text-[#00ff00]",
-                          isActive && "bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10 shadow-lg shadow-[#00ff00]/20"
-                        )
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          {/* Фон для активной кнопки */}
-                          {isActive && (
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-[#00ff00]/20 to-[#00ff00]/10"
-                              animate={{
-                                opacity: [0.8, 1, 0.8],
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                              }}
-                            />
+            <SidebarMenu className="space-y-1.5">
+              <AnimatePresence mode="popLayout">
+                {menuItems.map((item, index) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild tooltip={item.title}>
+                        <NavLink
+                          to={item.url}
+                          end={item.url === "/"}
+                          className={({ isActive }) =>
+                            cn(
+                              "group relative flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all duration-300 overflow-hidden",
+                              "hover:scale-[1.03] active:scale-[0.97]",
+                              "border-2 border-transparent",
+                              isActive 
+                                ? "bg-gradient-to-r from-[#b2ff2e]/25 via-[#00ff00]/20 to-[#b2ff2e]/15 border-[#b2ff2e]/40 shadow-[0_0_20px_rgba(178,255,46,0.25),inset_0_0_20px_rgba(178,255,46,0.1)]"
+                                : "hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e]/20 hover:shadow-[0_0_15px_rgba(178,255,46,0.15)]"
+                            )
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {/* Анимированный фон для активной кнопки */}
+                              {isActive && (
+                                <>
+                                  <motion.div
+                                    className="absolute inset-0 bg-gradient-to-r from-[#b2ff2e]/30 via-[#00ff00]/20 to-transparent"
+                                    animate={{
+                                      x: ['-100%', '200%'],
+                                    }}
+                                    transition={{
+                                      duration: 3,
+                                      repeat: Infinity,
+                                      ease: "linear"
+                                    }}
+                                  />
+                                  <motion.div
+                                    className="absolute inset-0 bg-[#b2ff2e]/10"
+                                    animate={{
+                                      opacity: [0.5, 0.8, 0.5],
+                                    }}
+                                    transition={{
+                                      duration: 2,
+                                      repeat: Infinity,
+                                      ease: "easeInOut"
+                                    }}
+                                  />
+                                </>
+                              )}
+                              
+                              {/* Иконка с эффектом */}
+                              <motion.div
+                                whileHover={{ 
+                                  rotate: [0, -8, 8, -8, 0],
+                                  scale: 1.15,
+                                }}
+                                whileTap={{ scale: 0.85 }}
+                                transition={{ duration: 0.4 }}
+                                className="relative z-10 flex-shrink-0"
+                              >
+                                <div className="relative">
+                                  <item.icon 
+                                    className={cn(
+                                      "w-6 h-6 transition-all duration-300",
+                                      isActive 
+                                        ? "text-[#b2ff2e] drop-shadow-[0_0_8px_rgba(178,255,46,0.8)]" 
+                                        : "text-gray-400 group-hover:text-[#b2ff2e]"
+                                    )}
+                                    strokeWidth={2.5}
+                                  />
+                                  {/* Пульсирующий эффект вокруг иконки */}
+                                  {isActive && (
+                                    <motion.div
+                                      className="absolute inset-0 rounded-full bg-[#b2ff2e]/30 blur-sm"
+                                      animate={{
+                                        scale: [1, 1.4, 1],
+                                        opacity: [0.5, 0, 0.5],
+                                      }}
+                                      transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "easeOut"
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              </motion.div>
+                              
+                              {/* Текст - ФУТУРИСТИЧНЫЙ ШРИФТ Space Grotesk */}
+                              {!isCollapsed && (
+                                <motion.span 
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className={cn(
+                                    "relative z-10 text-[15px] font-medium tracking-wide truncate transition-all duration-300",
+                                    isActive 
+                                      ? "text-white drop-shadow-[0_0_10px_rgba(178,255,46,0.4)]" 
+                                      : "text-gray-300 group-hover:text-white"
+                                  )}
+                                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                                >
+                                  {item.title}
+                                </motion.span>
+                              )}
+                              
+                              {/* Индикатор активности - ТОЛЩЕ */}
+                              {isActive && (
+                                <motion.div
+                                  initial={{ width: 0, opacity: 0 }}
+                                  animate={{ width: "4px", opacity: 1 }}
+                                  className="absolute right-0 top-1/2 -translate-y-1/2 h-10 bg-gradient-to-b from-[#b2ff2e] to-[#00ff00] rounded-l-full"
+                                  style={{
+                                    boxShadow: '0 0 15px rgba(178, 255, 46, 0.8), 0 0 30px rgba(178, 255, 46, 0.4)'
+                                  }}
+                                />
+                              )}
+
+                              {/* Hover glow effect */}
+                              <motion.div
+                                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                style={{
+                                  background: 'radial-gradient(circle at center, rgba(178, 255, 46, 0.15), transparent 70%)',
+                                }}
+                              />
+                            </>
                           )}
-                          
-                          {/* Иконка с эффектом */}
-                          <motion.div
-                            whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            transition={{ duration: 0.3 }}
-                            className="relative z-10"
-                          >
-                            <item.icon className="w-5 h-5 flex-shrink-0 transition-colors duration-300" />
-                          </motion.div>
-                          
-                          {/* Текст */}
-                          {!isCollapsed && (
-                            <span className="relative z-10 font-medium transition-colors duration-300 truncate">
-                              {item.title}
-                            </span>
-                          )}
-                          
-                          {/* Индикатор активности */}
-                          {isActive && (
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: "3px" }}
-                              className="absolute right-0 top-1/2 -translate-y-1/2 h-8 bg-[#00ff00] rounded-l-full shadow-[0_0_10px_rgba(0,255,0,0.5)]"
-                            />
-                          )}
-                        </>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-800 bg-black/30">
-        <div className={cn(
-          "text-xs text-gray-600 transition-opacity",
-          isCollapsed && "opacity-0"
-        )}>
-          <p className="leading-relaxed">© 2025 onAI Academy</p>
+      <SidebarFooter className="px-4 sm:px-6 py-4 sm:py-5 border-t-2 border-[#b2ff2e]/20 relative overflow-hidden">
+        {/* ПРЕМИУМ: Анимированный фон футера */}
+        <motion.div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(180deg, rgba(178, 255, 46, 0.05), rgba(178, 255, 46, 0.15))',
+          }}
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
+        {/* Светящиеся частицы */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-[#b2ff2e] rounded-full"
+              initial={{ 
+                x: Math.random() * 100 + '%', 
+                y: '100%',
+                opacity: 0 
+              }}
+              animate={{
+                y: '-100%',
+                opacity: [0, 1, 0],
+              }}
+              transition={{
+                duration: 3 + i,
+                repeat: Infinity,
+                delay: i * 0.8,
+                ease: "linear"
+              }}
+            />
+          ))}
         </div>
+        
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="relative z-10 space-y-2"
+            >
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#b2ff2e]/10 border border-[#b2ff2e]/20">
+                <div className="w-2 h-2 rounded-full bg-[#b2ff2e] animate-pulse" />
+                <span className="text-xs font-bold text-[#b2ff2e]">СИСТЕМА АКТИВНА</span>
+              </div>
+              
+              <p className="text-[11px] font-semibold text-gray-400 px-3">
+                © 2025 onAI Academy
+              </p>
+              <p className="text-[10px] font-medium text-gray-500 px-3">
+                Premium Learning Platform
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </SidebarFooter>
     </Sidebar>
   );

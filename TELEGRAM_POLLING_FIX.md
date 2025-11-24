@@ -125,3 +125,6 @@ GET http://localhost:3000/api/telegram/status/:userId
 
 **✅ ПОСЛЕ ЭТОГО ФИКСА TELEGRAM БОТ РАБОТАЕТ НА LOCALHOST!** 🎉
 
+
+
+

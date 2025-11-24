@@ -16,3 +16,6 @@ COMMENT ON COLUMN public.goals.priority IS 'Task priority: none, low, medium, hi
 COMMENT ON COLUMN public.goals.description IS 'Detailed task description';
 COMMENT ON COLUMN public.goals.reminder_before IS 'Minutes before due_date to send reminder (default: 30)';
 
+
+
+

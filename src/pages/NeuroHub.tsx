@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { GoalsTodoSystemDB } from "@/components/goals/GoalsTodoSystemDB";
+import RobotHead from "@/components/RobotHead";
 import { 
   Brain, 
   Send, 
@@ -53,6 +54,35 @@ import {
   type ChatMessage,
 } from "@/lib/openai-assistant";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
+import { MatrixRainBackground } from '@/components/backgrounds/MatrixRainBackground';
+import { 
+  Robot, 
+  Lightning, 
+  Trophy as TrophyIcon, 
+  Lightbulb as LightbulbIcon, 
+  ChatCircleDots, 
+  ChartBar, 
+  Target as TargetIcon,
+  Fire,
+  Rocket,
+  Crown,
+  Star as StarIcon,
+  CheckCircle as CheckCircleIcon,
+  Heart,
+  Eye,
+  HandPalm,
+  Wind,
+  Bed,
+  Drop,
+  Atom,
+  Sparkle,
+  MagicWand,
+  GitBranch,
+  Flask,
+  Waveform,
+  Cube,
+  GameController
+} from '@phosphor-icons/react';
 
 type Achievement = {
   id: string;
@@ -82,15 +112,31 @@ const AchievementCard = ({ achievement, index }: { achievement: Achievement; ind
       whileHover={{ scale: isLocked ? 1 : 1.05, y: isLocked ? 0 : -5 }}
       className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${
         isCompleted
-          ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border-[#00ff00]/40"
+          ? "bg-gradient-to-br from-[#b2ff2e]/20 to-[#8fcc00]/10 border-[#b2ff2e]/40"
           : inProgress
           ? "bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border-yellow-500/40"
           : "bg-zinc-900/30 border-zinc-700/50 opacity-60"
       }`}
     >
-      {/* Иконка */}
-      <div className={`text-5xl mb-3 ${isLocked ? "grayscale" : ""}`}>
-        {isLocked ? "🔒" : achievement.icon}
+      {/* Иконка - ПРЕМИУМ 3D */}
+      <div className={`mb-3 ${isLocked ? "grayscale opacity-50" : ""}`}>
+        {isLocked ? (
+          <motion.div
+            animate={{ rotate: [0, -5, 5, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-gray-500">
+              <path d="M12 2C9.24 2 7 4.24 7 7V10H6C4.9 10 4 10.9 4 12V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V12C20 10.9 19.1 10 18 10H17V7C17 4.24 14.76 2 12 2ZM12 4C13.66 4 15 5.34 15 7V10H9V7C9 5.34 10.34 4 12 4Z" fill="currentColor"/>
+            </svg>
+          </motion.div>
+        ) : (
+          <motion.div
+            whileHover={{ scale: 1.2, rotate: 10 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <StarIcon size={48} weight="duotone" className="text-[#b2ff2e] drop-shadow-[0_0_10px_rgba(178,255,46,0.5)]" />
+          </motion.div>
+        )}
       </div>
 
       {/* Заголовок */}
@@ -127,12 +173,12 @@ const AchievementCard = ({ achievement, index }: { achievement: Achievement; ind
       {/* Badge для завершенных */}
       {isCompleted && (
         <div className="absolute top-2 right-2">
-          <CheckCircle className="w-6 h-6 text-[#00ff00]" />
+          <CheckCircle className="w-6 h-6 text-[#b2ff2e]" />
         </div>
       )}
 
       {/* Tooltip при hover */}
-      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-zinc-900 border-2 border-[#00ff00]/60 rounded-lg p-2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-20 shadow-xl">
+      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-zinc-900 border-2 border-[#b2ff2e]/60 rounded-lg p-2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-20 shadow-xl">
         <p className="text-xs text-white text-center">
           {isLocked ? achievement.requirement : isCompleted ? "✅ Завершено!" : `${achievement.progress}% выполнено`}
         </p>
@@ -464,28 +510,28 @@ const NeuroHub = () => {
     description: `+${ach.xp_reward} XP`,
     isNew: true
   })) || [
-    { id: "1", icon: "🔥", title: "Стрик 5 дней", description: "Занимайся 5 дней подряд", isNew: true },
-    { id: "2", icon: "⚡", title: "Speedrunner", description: "Пройди урок за 10 минут" },
-    { id: "3", icon: "🎯", title: "Точность", description: "100% выполнение ДЗ" },
+    { id: "1", icon: <Flame weight="fill" className="w-6 h-6 text-orange-500" />, title: "Стрик 5 дней", description: "Занимайся 5 дней подряд", isNew: true },
+    { id: "2", icon: <Lightning weight="fill" className="w-6 h-6 text-yellow-400" />, title: "Speedrunner", description: "Пройди урок за 10 минут" },
+    { id: "3", icon: <Target weight="fill" className="w-6 h-6 text-blue-400" />, title: "Точность", description: "100% выполнение ДЗ" },
   ];
   
   // ✨ ВСЕ ДОСТИЖЕНИЯ ПО КАТЕГОРИЯМ
   const allAchievements = {
     week: [
-      { id: "w1", icon: "🔥", title: "Стрик 5 дней", description: "+50 XP", status: "completed" as const, progress: 100, category: "streak" },
-      { id: "w2", icon: "📚", title: "3 урока за неделю", description: "+30 XP", status: "in_progress" as const, progress: 66, current: 2, target: 3, category: "lessons" },
-      { id: "w3", icon: "⚡", title: "Speedrunner", description: "+40 XP", status: "completed" as const, progress: 100, category: "speed" },
+      { id: "w1", icon: <Flame weight="fill" className="w-6 h-6 text-orange-500" />, title: "Стрик 5 дней", description: "+50 XP", status: "completed" as const, progress: 100, category: "streak" },
+      { id: "w2", icon: <BookOpen weight="fill" className="w-6 h-6 text-blue-400" />, title: "3 урока за неделю", description: "+30 XP", status: "in_progress" as const, progress: 66, current: 2, target: 3, category: "lessons" },
+      { id: "w3", icon: <Lightning weight="fill" className="w-6 h-6 text-yellow-400" />, title: "Speedrunner", description: "+40 XP", status: "completed" as const, progress: 100, category: "speed" },
     ],
     month: [
-      { id: "m1", icon: "🏆", title: "10 уроков в месяц", description: "+100 XP", status: "in_progress" as const, progress: 70, current: 7, target: 10, category: "lessons" },
-      { id: "m2", icon: "🎯", title: "Все ДЗ сданы", description: "+150 XP", status: "in_progress" as const, progress: 85, current: 17, target: 20, category: "homework" },
-      { id: "m3", icon: "💯", title: "Идеальный месяц", description: "+200 XP", status: "locked" as const, progress: 0, requirement: "Сдай все ДЗ на 100%", category: "perfection" },
+      { id: "m1", icon: <TrophyIcon weight="fill" className="w-6 h-6 text-yellow-500" />, title: "10 уроков в месяц", description: "+100 XP", status: "in_progress" as const, progress: 70, current: 7, target: 10, category: "lessons" },
+      { id: "m2", icon: <Target weight="fill" className="w-6 h-6 text-blue-400" />, title: "Все ДЗ сданы", description: "+150 XP", status: "in_progress" as const, progress: 85, current: 17, target: 20, category: "homework" },
+      { id: "m3", icon: <CheckCircle weight="fill" className="w-6 h-6 text-green-400" />, title: "Идеальный месяц", description: "+200 XP", status: "locked" as const, progress: 0, requirement: "Сдай все ДЗ на 100%", category: "perfection" },
     ],
     permanent: [
-      { id: "p1", icon: "🌟", title: "Первые шаги", description: "+20 XP", status: "completed" as const, progress: 100, category: "milestone" },
-      { id: "p2", icon: "🚀", title: "Ракета", description: "+500 XP", status: "in_progress" as const, progress: 40, current: 20, target: 50, requirement: "Пройди 50 уроков", category: "milestone" },
-      { id: "p3", icon: "👑", title: "Мастер", description: "+1000 XP", status: "locked" as const, progress: 0, requirement: "Достигни уровня 10", category: "mastery" },
-      { id: "p4", icon: "💎", title: "Легенда", description: "+2000 XP", status: "locked" as const, progress: 0, requirement: "Заверши весь курс на 100%", category: "legend" },
+      { id: "p1", icon: <Star weight="fill" className="w-6 h-6 text-yellow-400" />, title: "Первые шаги", description: "+20 XP", status: "completed" as const, progress: 100, category: "milestone" },
+      { id: "p2", icon: <Rocket weight="fill" className="w-6 h-6 text-purple-400" />, title: "Ракета", description: "+500 XP", status: "in_progress" as const, progress: 40, current: 20, target: 50, requirement: "Пройди 50 уроков", category: "milestone" },
+      { id: "p3", icon: <Crown weight="fill" className="w-6 h-6 text-yellow-500" />, title: "Мастер", description: "+1000 XP", status: "locked" as const, progress: 0, requirement: "Достигни уровня 10", category: "mastery" },
+      { id: "p4", icon: <Star weight="fill" className="w-6 h-6 text-cyan-400" />, title: "Легенда", description: "+2000 XP", status: "locked" as const, progress: 0, requirement: "Заверши весь курс на 100%", category: "legend" },
     ],
   };
   
@@ -493,7 +539,7 @@ const NeuroHub = () => {
   const completedCount = totalAchievements.filter(a => a.status === "completed").length;
   const inProgressCount = totalAchievements.filter(a => a.status === "in_progress").length;
   
-  // ✨ ТОП СОВЕТОВ ПО ПОСЛЕДНИМ ВОПРОСАМ (AI-generated)
+  // ✨ ТОП СОВЕТОВ ПО ПОСЛЕДНИМ ВОПРОСАМ (AI-generated) - ПРЕМИУМ ИКОНКИ
   const topAdvices = [
     {
       id: "adv1",
@@ -501,7 +547,8 @@ const NeuroHub = () => {
       summary: "Ты часто спрашиваешь про вебхуки. Вот пошаговая инструкция...",
       details: "1. Открой n8n\n2. Создай новый Workflow\n3. Добавь узел Webhook\n4. Скопируй URL\n5. Настрой триггер в своём сервисе\n6. Протестируй отправку данных\n7. Проверь логи в n8n",
       actionLink: "/course/1/lesson/3",
-      icon: "🔗",
+      icon: GitBranch,
+      color: "#3b82f6",
       timestamp: "Сегодня в 14:30"
     },
     {
@@ -510,7 +557,8 @@ const NeuroHub = () => {
       summary: "Судя по твоим вопросам, тебе нужно понять rate limits...",
       details: "Rate limits - это ограничения на количество запросов к API:\n\n• OpenAI: 3 запроса/минуту (free tier)\n• Используй кэширование для частых запросов\n• Добавь retry логику с exponential backoff\n• Отслеживай headers: X-RateLimit-Remaining",
       actionLink: "/course/1/lesson/5",
-      icon: "⚡",
+      icon: Lightning,
+      color: "#eab308",
       timestamp: "Вчера в 18:45"
     },
     {
@@ -519,40 +567,41 @@ const NeuroHub = () => {
       summary: "Ты столкнулся с ошибками. Вот как их отлаживать...",
       details: "Основные шаги debugging:\n\n1. Включи \"Always Output Data\"\n2. Проверь входные данные каждого узла\n3. Используй узел \"Set\" для промежуточных данных\n4. Смотри Execution Log\n5. Добавь узел \"IF\" для проверки условий\n6. Тестируй по частям, а не весь workflow сразу",
       actionLink: null,
-      icon: "🐛",
+      icon: MagicWand,
+      color: "#8b5cf6",
       timestamp: "2 дня назад"
     },
   ];
 
   // ✨ СОВЕТ ДНЯ (мотивационный)
   const dailyTips = [
-    "💡 Учись каждый день по 15 минут — это лучше, чем 2 часа раз в неделю!",
-    "🚀 Практикуй полученные знания сразу — создай мини-проект!",
-    "🎯 Ставь маленькие цели и празднуй каждую победу!",
-    "⚡ Используй технику Pomodoro: 25 минут учёбы → 5 минут отдыха",
-    "🔥 Твоя регулярность важнее скорости — продолжай в том же духе!"
+    "Учись каждый день по 15 минут — это лучше, чем 2 часа раз в неделю!",
+    "Практикуй полученные знания сразу — создай мини-проект!",
+    "Ставь маленькие цели и празднуй каждую победу!",
+    "Используй технику Pomodoro: 25 минут учёбы → 5 минут отдыха",
+    "Твоя регулярность важнее скорости — продолжай в том же духе!"
   ];
   
   const todayTip = dailyTips[new Date().getDate() % dailyTips.length];
   
-  // ✨ ЧЕЛЛЕНДЖ ДНЯ
+  // ✨ ЧЕЛЛЕНДЖ ДНЯ - ПРЕМИУМ ИКОНКИ
   const dailyChallenges = [
-    { id: 1, title: "Марафонец", description: "Пройди 2 урока сегодня", xp: 50, icon: "🏃" },
-    { id: 2, title: "Ранняя пташка", description: "Начни обучение до 10:00", xp: 30, icon: "🌅" },
-    { id: 3, title: "Помощник", description: "Помоги другу с заданием", xp: 40, icon: "🤝" },
-    { id: 4, title: "Перфекционист", description: "Сдай ДЗ на 100%", xp: 60, icon: "⭐" },
-    { id: 5, title: "Исследователь", description: "Изучи доп. материалы", xp: 35, icon: "🔍" },
+    { id: 1, title: "Марафонец", description: "Пройди 2 урока сегодня", xp: 50, icon: Rocket, color: "#f59e0b" },
+    { id: 2, title: "Ранняя пташка", description: "Начни обучение до 10:00", xp: 30, icon: Lightning, color: "#3b82f6" },
+    { id: 3, title: "Помощник", description: "Помоги другу с заданием", xp: 40, icon: Heart, color: "#ef4444" },
+    { id: 4, title: "Перфекционист", description: "Сдай ДЗ на 100%", xp: 60, icon: Crown, color: "#eab308" },
+    { id: 5, title: "Исследователь", description: "Изучи доп. материалы", xp: 35, icon: Flask, color: "#8b5cf6" },
   ];
   
   const todayChallenge = dailyChallenges[new Date().getDate() % dailyChallenges.length];
   
-  // ✨ СОВЕТ ПО ЗДОРОВЬЮ
+  // ✨ СОВЕТ ПО ЗДОРОВЬЮ - ПРЕМИУМ ИКОНКИ
   const healthTips = [
-    { icon: "💧", title: "Пей воду", text: "Выпей стакан воды прямо сейчас!" },
-    { icon: "👀", title: "Отдых для глаз", text: "Каждые 20 минут смотри вдаль 20 секунд" },
-    { icon: "🧘", title: "Разминка", text: "Встань и потянись — 2 минуты движения" },
-    { icon: "🌬️", title: "Дыши глубже", text: "5 глубоких вдохов для концентрации" },
-    { icon: "🛌", title: "Сон важен", text: "Спи 7-8 часов для лучшего усвоения" },
+    { icon: Drop, title: "Пей воду", text: "Выпей стакан воды прямо сейчас!", color: "#3b82f6" },
+    { icon: Eye, title: "Отдых для глаз", text: "Каждые 20 минут смотри вдаль 20 секунд", color: "#8b5cf6" },
+    { icon: HandPalm, title: "Разминка", text: "Встань и потянись — 2 минуты движения", color: "#f59e0b" },
+    { icon: Wind, title: "Дыши глубже", text: "5 глубоких вдохов для концентрации", color: "#10b981" },
+    { icon: Bed, title: "Сон важен", text: "Спи 7-8 часов для лучшего усвоения", color: "#6366f1" },
   ];
   
   const todayHealthTip = healthTips[new Date().getHours() % healthTips.length];
@@ -574,24 +623,32 @@ const NeuroHub = () => {
 
   const faqItems = [
     {
-      question: "🔗 Как настроить вебхук в n8n?",
+      question: "Как настроить вебхук в n8n?",
       answer: "Вебхуки настраиваются в узле Webhook. Скопируй URL вебхука из n8n и добавь его в настройки своего сервиса. Не забудь активировать workflow!",
-      lessonLink: "/course/1/lesson/3"
+      lessonLink: "/course/1/lesson/3",
+      icon: GitBranch,
+      color: "#3b82f6"
     },
     {
-      question: "🔑 Где получить API ключ OpenAI?",
+      question: "Где получить API ключ OpenAI?",
       answer: "Зайди на platform.openai.com, перейди в раздел API Keys и создай новый ключ. Сохрани его в безопасном месте — ключ показывается только один раз!",
-      lessonLink: "/course/1/lesson/1"
+      lessonLink: "/course/1/lesson/1",
+      icon: Atom,
+      color: "#10b981"
     },
     {
-      question: "📊 Как интегрировать бота с CRM?",
+      question: "Как интегрировать бота с CRM?",
       answer: "Используй API CRM системы или готовые интеграции в n8n. Настрой триггеры для автоматической отправки данных из бота в CRM.",
-      lessonLink: "/course/1/lesson/8"
+      lessonLink: "/course/1/lesson/8",
+      icon: Cube,
+      color: "#8b5cf6"
     },
     {
-      question: "🎤 Как добавить голосовые сообщения в бота?",
+      question: "Как добавить голосовые сообщения в бота?",
       answer: "Используй Speech-to-Text API (например, OpenAI Whisper) для распознавания голоса и Text-to-Speech для генерации голосовых ответов.",
-      lessonLink: "/course/1/lesson/12"
+      lessonLink: "/course/1/lesson/12",
+      icon: GameController,
+      color: "#f59e0b"
     }
   ];
 
@@ -606,76 +663,9 @@ const NeuroHub = () => {
   );
 
     return (
-    <div className="relative overflow-hidden min-h-screen bg-gradient-to-br from-black via-[#0a0a14] to-black">
-      {/* ===== КИБЕРПАНК ФОН ===== */}
-      
-      {/* Киберпанк сетка */}
-      <div className="absolute inset-0 pointer-events-none opacity-5">
-        <div 
-          className="w-full h-full"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, #00ff00 1px, transparent 1px),
-              linear-gradient(to bottom, #00ff00 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
-
-      {/* Зеленые неоновые блобы */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div
-          className="absolute w-96 h-96 rounded-full bg-[#00ff00]/10 blur-3xl"
-          style={{ top: '10%', left: '10%' }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute w-96 h-96 rounded-full bg-[#00cc00]/10 blur-3xl"
-          style={{ bottom: '10%', right: '10%' }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.2, 0.3, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
-      {/* Летающие частицы */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {particles.map((particle) => (
-          <motion.div
-            key={particle.id}
-            className="absolute w-1 h-1 rounded-full bg-[#00ff00]"
-            style={{
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-            }}
-            animate={{
-              y: ['-10%', '110%'],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: particle.duration,
-              delay: particle.delay,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        ))}
-      </div>
+    <div className="relative overflow-hidden min-h-screen">
+      {/* 🎨 ПРЕМИУМ: Matrix Rain - падающие 0 и 1 (СЛАБО 20%) */}
+      <MatrixRainBackground opacity={0.2} />
 
       {/* ===== POP-UP УВЕДОМЛЕНИЯ ===== */}
       <AnimatePresence>
@@ -687,7 +677,7 @@ const NeuroHub = () => {
             className="fixed top-20 right-4 z-50"
           >
             <motion.div
-              className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-black font-bold px-6 py-4 rounded-2xl shadow-2xl shadow-[#00ff00]/50 flex items-center gap-3"
+              className="bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] text-black font-bold px-6 py-4 rounded-2xl shadow-2xl shadow-[#00ff00]/50 flex items-center gap-3"
               animate={{
                 boxShadow: [
                   '0 0 20px rgba(0,255,0,0.5)',
@@ -721,152 +711,77 @@ const NeuroHub = () => {
         )}
       </AnimatePresence>
 
+      {/* Темный оверлей для контраста - ПОЛНОСТЬЮ ПОКРЫВАЕТ ЭКРАН */}
+      <div className="fixed inset-0 bg-black/40 pointer-events-none z-0" />
+
       {/* ===== КОНТЕНТ ===== */}
       <div className="relative z-10 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* ===== HEADER ===== */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
+        {/* ===== 3D РОБОТ ГОЛОВА ===== */}
+        {/* ВРЕМЕННО ОТКЛЮЧЕНО: 3D модель не загружается (404) */}
+        {/* <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="text-center relative"
+          className="flex justify-center mb-6 relative z-10"
         >
-          {/* 3D Brain Avatar - Крутящийся объемный мозг */}
-          <div className="relative inline-block mb-6">
-            <motion.div
-              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mx-auto"
-              animate={{
-                rotateY: [0, 360],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
-            >
-              {/* Внешний светящийся ореол */}
-              <motion.div 
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.1) 50%, transparent 70%)',
-                  filter: 'blur(20px)',
-                }}
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              
-              {/* 3D Кольца вокруг мозга */}
-              <motion.div
-                className="absolute inset-0 border-2 border-[#00ff00]/40 rounded-full"
-                animate={{
-                  rotate: 360,
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{
-                  rotate: { duration: 4, repeat: Infinity, ease: "linear" },
-                  scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                }}
-                style={{ 
-                  transform: "rotateX(60deg)",
-                  transformStyle: "preserve-3d",
-                }}
-              />
-              
-              <motion.div
-                className="absolute inset-0 border-2 border-[#00cc00]/30 rounded-full"
-                animate={{
-                  rotate: -360,
-                  scale: [1, 1.15, 1],
-                }}
-                transition={{
-                  rotate: { duration: 5, repeat: Infinity, ease: "linear" },
-                  scale: { duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 },
-                }}
-                style={{ 
-                  transform: "rotateX(-60deg)",
-                  transformStyle: "preserve-3d",
-                }}
-              />
-
-              {/* Основной мозг с градиентом и 3D тенью */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  className="relative"
-                  animate={{
-                    scale: [1, 1.05, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  style={{
-                    filter: 'drop-shadow(0 0 15px rgba(0,255,0,0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
-                  }}
-                >
-                  <Brain className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#00ff00]" />
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Заголовок - белый текст с легким зеленым свечением */}
-          <motion.h1 
-            className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-black mb-3 tracking-wider"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <span 
-              className="text-white"
-              style={{
-                textShadow: '0 0 20px rgba(0,255,0,0.3), 0 0 40px rgba(0,255,0,0.15)',
-              }}
-            >
-              AI-НАСТАВНИК
-            </span>
-          </motion.h1>
-
-          {/* Подсветка - сверкающая линия */}
-          <motion.div 
-            className="h-0.5 w-48 mx-auto mb-4 bg-gradient-to-r from-transparent via-[#00ff00] to-transparent rounded-full"
-            animate={{
-              opacity: [0.3, 0.8, 0.3],
-              scaleX: [0.8, 1, 0.8],
+          <RobotHead 
+            avatarId="67ebd62a688cd661ebe09988"
+            style={{
+              maxWidth: '400px',
+              height: '400px',
             }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
+            className="shadow-2xl shadow-[#b2ff2e]/30"
+          />
+        </motion.div> */}
+
+        {/* ===== AI-НАСТАВНИК HEADER - АДАПТИВНЫЙ ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-6 sm:mb-8 relative z-10 px-2"
+        >
+          <motion.h1 
+            className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 tracking-wider text-white inline-block"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            style={{ 
+              fontFamily: "'Montserrat', sans-serif",
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              fontWeight: 900,
+            }}
+          >
+            AI-НАСТАВНИК
+          </motion.h1>
+          
+          {/* Тонкая линия под заголовком - по ширине текста */}
+          <motion.div 
+            className="h-[1px] mx-auto mb-3 sm:mb-4 bg-gradient-to-r from-transparent via-[#b2ff2e] to-transparent rounded-full"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+            style={{ 
+              width: '60%',
+              maxWidth: '400px',
+              boxShadow: '0 0 8px rgba(178, 255, 46, 0.3)',
             }}
           />
-
+          
+          <div className="flex items-center justify-center gap-2 text-gray-400 text-xs sm:text-sm md:text-base px-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <Robot size={20} weight="duotone" className="text-[#b2ff2e] drop-shadow-[0_0_8px_rgba(178,255,46,0.5)]" />
+            <span>Твой персональный помощник в обучении</span>
+          </div>
           <motion.p 
-            className="text-gray-400 text-lg mb-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            className="text-gray-600 text-[10px] xs:text-xs sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-2" 
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 3, repeat: Infinity }}
           >
-            🤖 Твой персональный помощник в обучении
-          </motion.p>
-          <motion.p 
-            className="text-gray-600 text-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-          >
-            Обновлено 2 часа назад
+            <Waveform size={12} weight="duotone" className="text-[#b2ff2e]" />
+            <span>Система активна • Обновлено 2 часа назад</span>
           </motion.p>
         </motion.div>
 
@@ -877,7 +792,7 @@ const NeuroHub = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md relative overflow-hidden">
+            <Card className="glass-card border-[#b2ff2e]/20 relative overflow-hidden">
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/20 to-transparent"
                 animate={{
@@ -892,7 +807,12 @@ const NeuroHub = () => {
               <CardContent className="py-4 px-6 relative z-10">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-3">
-                    <PartyPopper className="w-6 h-6 text-[#00ff00]" />
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Sparkle size={28} weight="duotone" className="text-[#b2ff2e] drop-shadow-[0_0_10px_rgba(178,255,46,0.8)]" />
+                    </motion.div>
                     <div>
                       <p className="text-sm text-gray-400">Статистика сегодня</p>
                       <p className="text-lg font-bold text-white">
@@ -903,13 +823,14 @@ const NeuroHub = () => {
                   <motion.div
                     animate={{
                       rotate: [0, 10, -10, 0],
+                      scale: [1, 1.2, 1],
                     }}
                     transition={{
                       duration: 2,
                       repeat: Infinity,
                     }}
                   >
-                    🎉
+                    <TrophyIcon size={32} weight="duotone" className="text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.6)]" />
                   </motion.div>
                 </div>
               </CardContent>
@@ -920,21 +841,21 @@ const NeuroHub = () => {
         {/* ===== DESKTOP: ОПТИМИЗИРОВАННЫЙ GRID LAYOUT ===== */}
         <div className="hidden lg:grid lg:grid-cols-12 gap-6">
           
-          {/* ===== ЧАТ С AI (Левая колонка - 6 колонок, увеличенная высота) ===== */}
+          {/* ===== ЧАТ С AI (Левая колонка - 6 колонок, ФИКСИРОВАННАЯ ВЫСОТА) ===== */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-6 lg:row-span-3"
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-full flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff00]/60" />
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff00]/60" />
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff00]/60" />
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ff00]/60" />
+            <Card className="glass-card border-[#b2ff2e]/20 h-[600px] max-h-[600px] flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#b2ff2e]/60" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#b2ff2e]/60" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#b2ff2e]/60" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#b2ff2e]/60" />
 
               <motion.div
-                className="absolute inset-x-0 h-px bg-[#00ff00]/50"
+                className="absolute inset-x-0 h-px bg-[#b2ff2e]/50"
                 animate={{
                   top: ['0%', '100%'],
                   opacity: [0, 1, 0],
@@ -949,27 +870,30 @@ const NeuroHub = () => {
               <CardHeader className="relative z-10">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white flex items-center gap-2">
-                    <MessageCircle className="w-6 h-6 text-[#00ff00]" />
+                    <MessageCircle className="w-6 h-6 text-[#b2ff2e]" />
                     Чат с AI
                   </CardTitle>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleNewChat}
-                    className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                    className="border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e] text-[#b2ff2e]"
                     title="Новый чат"
                   >
                     <Plus className="w-4 h-4 sm:mr-1" />
                     <span className="hidden sm:inline">Новый чат</span>
                   </Button>
                 </div>
-                <CardDescription>Задавай любые вопросы — я здесь, чтобы помочь! 💬</CardDescription>
+                <CardDescription className="flex items-center gap-2 text-sm text-gray-400">
+                  <ChatCircleDots size={16} weight="duotone" className="text-[#b2ff2e]" />
+                  <span>Задавай любые вопросы — я здесь, чтобы помочь!</span>
+                </CardDescription>
               </CardHeader>
 
-              <ScrollArea className="flex-1 px-6 relative z-10">
+              <ScrollArea className="flex-1 px-6 relative z-10 max-h-[400px] overflow-y-auto">
                 {isLoadingHistory ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-[#00ff00]" />
+                    <Loader2 className="w-6 h-6 animate-spin text-[#b2ff2e]" />
                     <span className="ml-2 text-gray-400">Загрузка истории...</span>
                   </div>
                 ) : (
@@ -985,7 +909,7 @@ const NeuroHub = () => {
                         <div
                           className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                             msg.role === "assistant"
-                              ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white"
+                              ? "bg-gradient-to-br from-[#b2ff2e]/20 to-[#8fcc00]/20 border border-[#b2ff2e]/30 text-white"
                               : "bg-zinc-800/80 border border-zinc-700/50 text-white"
                           }`}
                         >
@@ -998,9 +922,9 @@ const NeuroHub = () => {
                                   ul: ({ children }) => <ul className="text-white my-2 list-disc list-inside">{children}</ul>,
                                   ol: ({ children }) => <ol className="text-white my-2 list-decimal list-inside">{children}</ol>,
                                   li: ({ children }) => <li className="text-white">{children}</li>,
-                                  code: ({ children }) => <code className="text-[#00ff00] bg-black/30 px-1 rounded">{children}</code>,
+                                  code: ({ children }) => <code className="text-[#b2ff2e] bg-black/30 px-1 rounded">{children}</code>,
                                   pre: ({ children }) => <pre className="text-white bg-black/30 p-2 rounded my-2 overflow-x-auto">{children}</pre>,
-                                  strong: ({ children }) => <strong className="text-[#00ff00] font-bold">{children}</strong>,
+                                  strong: ({ children }) => <strong className="text-[#b2ff2e] font-bold">{children}</strong>,
                                   em: ({ children }) => <em className="text-white italic">{children}</em>,
                                 }}
                               >
@@ -1019,7 +943,7 @@ const NeuroHub = () => {
                         animate={{ opacity: 1 }}
                         className="flex justify-start"
                       >
-                        <div className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white rounded-2xl px-4 py-3">
+                        <div className="bg-gradient-to-br from-[#b2ff2e]/20 to-[#8fcc00]/20 border border-[#b2ff2e]/30 text-white rounded-2xl px-4 py-3">
                           <div className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-sm">Печатает...</span>
@@ -1032,13 +956,13 @@ const NeuroHub = () => {
                 )}
               </ScrollArea>
 
-              <CardContent className="relative z-10 border-t border-[#00ff00]/20 pt-4">
+              <CardContent className="relative z-10 border-t border-[#b2ff2e]/20 pt-4">
                 {/* Прикреплённые файлы */}
                 {attachedFiles.length > 0 && (
-                  <div className="mb-3 p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/30">
+                  <div className="mb-3 p-3 bg-zinc-900/50 rounded-lg border border-[#b2ff2e]/30">
                     <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
                       <Paperclip className="w-3 h-3" />
-                      Прикреплено файлов: <span className="text-[#00ff00] font-semibold">{attachedFiles.length}</span>
+                      Прикреплено файлов: <span className="text-[#b2ff2e] font-semibold">{attachedFiles.length}</span>
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {attachedFiles.map((file, idx) => {
@@ -1049,7 +973,7 @@ const NeuroHub = () => {
                         return (
                           <div 
                             key={idx} 
-                            className="flex items-center gap-2 bg-zinc-800 border border-[#00ff00]/30 rounded-lg px-3 py-2 hover:bg-zinc-700/50 transition-colors"
+                            className="flex items-center gap-2 bg-zinc-800 border border-[#b2ff2e]/30 rounded-lg px-3 py-2 hover:bg-zinc-700/50 transition-colors"
                           >
                             {/* Иконка файла */}
                             {isImage && <ImageIcon className="w-4 h-4 text-blue-400 shrink-0" />}
@@ -1097,7 +1021,7 @@ const NeuroHub = () => {
                   variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isSending}
-                    className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                    className="border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e] text-[#b2ff2e]"
                     title="Прикрепить файл"
                   >
                     <Paperclip className="w-5 h-5" />
@@ -1109,7 +1033,7 @@ const NeuroHub = () => {
                     onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                     placeholder="Напиши сообщение..."
                     disabled={isSending}
-                    className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/50"
+                    className="flex-1 bg-zinc-900/50 border-[#b2ff2e]/30 text-white placeholder:text-gray-500 focus:border-[#b2ff2e] focus:ring-[#00ff00]/50"
                     data-chat-input
                   />
 
@@ -1117,7 +1041,7 @@ const NeuroHub = () => {
                     onClick={handleSendMessage}
                     size="icon"
                     disabled={isSending || (!input.trim() && attachedFiles.length === 0)}
-                    className="bg-gradient-to-br from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-white disabled:opacity-50"
+                    className="bg-gradient-to-br from-[#b2ff2e] to-[#8fcc00] hover:from-[#b2ff2e] hover:to-[#8fcc00] text-white disabled:opacity-50"
                   >
                     {isSending ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -1134,7 +1058,7 @@ const NeuroHub = () => {
                     className={`${
                       isRecording 
                         ? "border-red-500 bg-red-500/20 hover:bg-red-500/30 text-red-500 animate-pulse" 
-                        : "border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-[#00ff00]"
+                        : "border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e] text-[#b2ff2e]"
                     }`}
                     title={isRecording ? `🔴 Запись... (${recordingDuration}с)` : "🎤 Голосовой ввод"}
                   >
@@ -1155,14 +1079,14 @@ const NeuroHub = () => {
             {/* ✨ Карточки прогресса с АНИМАЦИЯМИ */}
             <div className="grid grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
               
-              {/* 📊 Прогресс курса */}
+              {/* Прогресс курса */}
               <motion.div
                 whileHover={{ scale: 1.02, y: -5 }}
                 transition={{ duration: 0.2 }}
                 className="h-full"
                 style={{ minHeight: '180px' }}
               >
-                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00ff00]/5 backdrop-blur-md relative group overflow-hidden h-full">
+                <Card className="glass-card border-[#b2ff2e]/20 relative group overflow-hidden h-full">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
                     animate={{
@@ -1176,14 +1100,14 @@ const NeuroHub = () => {
                   />
                   <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-5 h-5 text-[#00ff00]" />
+                      <TrendingUp className="w-5 h-5 text-[#b2ff2e]" />
                       <p className="text-sm text-gray-400">Прогресс курса</p>
                   </div>
                     <p className="text-3xl font-bold text-white mb-1">{courseProgress}%</p>
                     <p className="text-xs text-gray-500">{completedLessons}/{totalLessons} уроков</p>
                     <div className="mt-auto pt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+                        className="h-full bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00]"
                         initial={{ width: 0 }}
                         animate={{ width: `${courseProgress}%` }}
                         transition={{ duration: 1, delay: 0.5 }}
@@ -1193,7 +1117,7 @@ const NeuroHub = () => {
                 </Card>
               </motion.div>
 
-              {/* 🔥 Streak с ОГНЕМ и пульсацией */}
+              {/* Streak с анимацией */}
               <motion.div
                 whileHover={{ scale: 1.02, y: -5 }}
                 transition={{ duration: 0.2 }}
@@ -1298,7 +1222,7 @@ const NeuroHub = () => {
                 className="h-full"
                 style={{ minHeight: '180px' }}
               >
-                <Card className="border-[#00ff00]/30 bg-gradient-to-br from-black/50 to-[#00cc00]/5 backdrop-blur-md relative group overflow-hidden h-full">
+                <Card className="glass-card border-[#b2ff2e]/20 relative group overflow-hidden h-full">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00cc00]/10 to-transparent"
                     animate={{
@@ -1312,7 +1236,7 @@ const NeuroHub = () => {
                   />
                   <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
-                      <Trophy className="w-5 h-5 text-[#00ff00]" />
+                      <Trophy className="w-5 h-5 text-[#b2ff2e]" />
                       <p className="text-sm text-gray-400">Достижения</p>
                   </div>
                     <p className="text-3xl font-bold text-white mb-1">{achievements.length}</p>
@@ -1371,7 +1295,7 @@ const NeuroHub = () => {
             className="lg:col-span-6"
             style={{ minHeight: '350px' }}
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
+            <Card className="glass-card border-[#b2ff2e]/20 relative overflow-hidden h-full">
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
                 animate={{
@@ -1386,7 +1310,7 @@ const NeuroHub = () => {
               
               <CardHeader className="relative z-10">
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Target className="w-6 h-6 text-[#00ff00]" />
+                  <Target className="w-6 h-6 text-[#b2ff2e]" />
                   {dashboardData?.active_missions?.length > 0 ? 'Активная миссия' : 'Текущее задание'}
                 </CardTitle>
               </CardHeader>
@@ -1406,7 +1330,7 @@ const NeuroHub = () => {
                           </h3>
                           <p className="text-sm text-gray-400">{mission.description}</p>
                   </div>
-                        <Badge className="bg-[#00ff00]/20 text-[#00ff00] border-[#00ff00]/30">
+                        <Badge className="bg-[#b2ff2e]/20 text-[#b2ff2e] border-[#b2ff2e]/30">
                           +{mission.xp_reward} XP
                         </Badge>
                 </div>
@@ -1414,13 +1338,13 @@ const NeuroHub = () => {
                       <div>
                         <div className="flex justify-between text-sm mb-2">
                           <span className="text-gray-400">Прогресс</span>
-                          <span className="text-[#00ff00] font-semibold">
+                          <span className="text-[#b2ff2e] font-semibold">
                             {mission.current_value}/{mission.target_value} ({mission.progress_percent}%)
                           </span>
                         </div>
                         <div className="h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
                     <motion.div
-                            className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] relative"
+                            className="h-full bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] relative"
                             initial={{ width: 0 }}
                             animate={{ width: `${mission.progress_percent}%` }}
                             transition={{ duration: 1, delay: 0.5 }}
@@ -1442,7 +1366,7 @@ const NeuroHub = () => {
 
                       <div className="flex gap-2 mt-4">
                         <Button
-                          className="flex-1 bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-black font-bold shadow-lg shadow-[#00ff00]/30"
+                          className="flex-1 bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] hover:from-[#b2ff2e] hover:to-[#8fcc00] text-black font-bold shadow-lg shadow-[#00ff00]/30"
                           onClick={() => setIsUploadModalOpen(true)}
                         >
                           <Upload className="w-4 h-4 mr-2" />
@@ -1450,7 +1374,7 @@ const NeuroHub = () => {
                         </Button>
                         <Button
                           variant="outline"
-                          className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-white"
+                          className="border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e] text-white"
                           onClick={() => {
                             document.querySelector('[data-chat-input]')?.scrollIntoView({ behavior: 'smooth' });
                           }}
@@ -1466,14 +1390,15 @@ const NeuroHub = () => {
                     <motion.div
                       animate={{
                         rotate: [0, 10, -10, 0],
+                        scale: [1, 1.1, 1],
                       }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
                       }}
-                      className="text-6xl mb-3"
+                      className="mb-3 flex justify-center"
                     >
-                      🎯
+                      <TargetIcon size={64} weight="duotone" className="text-[#b2ff2e] drop-shadow-[0_0_20px_rgba(178,255,46,0.6)]" />
                     </motion.div>
                     <h3 className="text-lg font-semibold text-white mb-1">
                       Пока нет активных заданий
@@ -1500,7 +1425,7 @@ const NeuroHub = () => {
             transition={{ duration: 0.5, delay: 0.5 }}
             style={{ minHeight: '140px' }}
           >
-            <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md relative overflow-hidden h-full">
+            <Card className="glass-card border-[#b2ff2e]/20 relative overflow-hidden h-full">
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
                 animate={{
@@ -1527,7 +1452,10 @@ const NeuroHub = () => {
                     <Lightbulb className="w-10 h-10 text-yellow-500" />
                   </motion.div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-400 mb-1 font-semibold">💡 Совет дня</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-1 font-semibold">
+                      <LightbulbIcon size={16} weight="duotone" className="text-[#b2ff2e]" />
+                      <span>Совет дня</span>
+                    </div>
                     <p className="text-base text-white leading-relaxed">
                       {todayTip}
                     </p>
@@ -1548,7 +1476,6 @@ const NeuroHub = () => {
               <CardContent className="py-4 px-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <motion.div
-                    className="text-4xl"
                     animate={{
                       scale: [1, 1.15, 1],
                     }}
@@ -1557,10 +1484,17 @@ const NeuroHub = () => {
                       repeat: Infinity,
                     }}
                   >
-                    {todayHealthTip.icon}
+                    <todayHealthTip.icon 
+                      size={40} 
+                      weight="duotone" 
+                      style={{ color: todayHealthTip.color, filter: `drop-shadow(0 0 10px ${todayHealthTip.color}80)` }}
+                    />
                   </motion.div>
                   <div className="flex-1">
-                    <p className="text-sm text-blue-400 mb-1 font-semibold">💪 Совет по здоровью</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Heart size={16} weight="duotone" className="text-red-400" />
+                      <p className="text-sm text-blue-400 font-semibold">Совет по здоровью</p>
+                    </div>
                     <h4 className="text-base font-bold text-white mb-1">{todayHealthTip.title}</h4>
                     <p className="text-gray-300 text-sm">{todayHealthTip.text}</p>
                   </div>
@@ -1593,7 +1527,6 @@ const NeuroHub = () => {
               <CardContent className="py-4 px-6 relative z-10">
                 <div className="flex items-start gap-4">
                   <motion.div
-                    className="text-5xl"
                     animate={{
                       scale: [1, 1.2, 1],
                       rotate: [0, 10, -10, 0],
@@ -1603,10 +1536,17 @@ const NeuroHub = () => {
                       repeat: Infinity,
                     }}
                   >
-                    {todayChallenge.icon}
+                    <todayChallenge.icon 
+                      size={48} 
+                      weight="duotone" 
+                      style={{ color: todayChallenge.color, filter: `drop-shadow(0 0 15px ${todayChallenge.color}80)` }}
+                    />
                   </motion.div>
                   <div className="flex-1">
-                    <p className="text-sm text-yellow-400 mb-1 font-bold">🎯 Челлендж дня</p>
+                    <div className="flex items-center gap-2 text-sm text-yellow-400 mb-1 font-bold">
+                      <TrophyIcon size={16} weight="duotone" />
+                      <span>Челлендж дня</span>
+                    </div>
                     <h3 className="text-lg font-bold text-white mb-1">{todayChallenge.title}</h3>
                     <p className="text-gray-300 text-sm mb-3">{todayChallenge.description}</p>
                     <div className="flex items-center gap-2">
@@ -1645,35 +1585,37 @@ const NeuroHub = () => {
         {/* ===== MOBILE: ТАБЫ ===== */}
         <div className="lg:hidden">
           <Tabs defaultValue="chat" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-[#00ff00]/30">
+            <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-[#b2ff2e]/30">
               <TabsTrigger 
-                value="chat"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00ff00] data-[state=active]:to-[#00cc00] data-[state=active]:text-white"
+                value="chat" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#b2ff2e] data-[state=active]:to-[#8fcc00] data-[state=active]:text-white flex items-center gap-2"
               >
-                💬 Чат
+                <ChatCircleDots size={18} weight="duotone" />
+                <span>Чат</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="dashboard"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00ff00] data-[state=active]:to-[#00cc00] data-[state=active]:text-white"
+                value="dashboard" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#b2ff2e] data-[state=active]:to-[#8fcc00] data-[state=active]:text-white flex items-center gap-2"
               >
-                📊 Дашборд
+                <ChartBar size={18} weight="duotone" />
+                <span>Дашборд</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Чат Tab */}
             <TabsContent value="chat" className="mt-6">
-              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-[400px] sm:h-[500px] flex flex-col">
+              <Card className="glass-card border-[#b2ff2e]/20 h-[400px] sm:h-[500px] flex flex-col">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-white flex items-center gap-2">
-                      <MessageCircle className="w-5 h-5 text-[#00ff00]" />
+                      <MessageCircle className="w-5 h-5 text-[#b2ff2e]" />
                       Чат с AI
                     </CardTitle>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={handleNewChat}
-                      className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00] text-xs"
+                      className="border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 text-[#b2ff2e] text-xs"
                       title="Новый чат"
                     >
                       <Plus className="w-3 h-3" />
@@ -1684,7 +1626,7 @@ const NeuroHub = () => {
                 <ScrollArea className="flex-1 px-4">
                   {isLoadingHistory ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-[#00ff00]" />
+                      <Loader2 className="w-6 h-6 animate-spin text-[#b2ff2e]" />
                     </div>
                   ) : (
                     <div className="space-y-4 pb-4">
@@ -1696,7 +1638,7 @@ const NeuroHub = () => {
                           <div
                             className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                               msg.role === "assistant"
-                                ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white"
+                                ? "bg-gradient-to-br from-[#b2ff2e]/20 to-[#8fcc00]/20 border border-[#b2ff2e]/30 text-white"
                                 : "bg-zinc-800/80 border border-zinc-700/50 text-white"
                             }`}
                           >
@@ -1706,7 +1648,7 @@ const NeuroHub = () => {
                       ))}
                       {isSending && (
                         <div className="flex justify-start">
-                          <div className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/20 border border-[#00ff00]/30 text-white rounded-2xl px-4 py-3">
+                          <div className="bg-gradient-to-br from-[#b2ff2e]/20 to-[#8fcc00]/20 border border-[#b2ff2e]/30 text-white rounded-2xl px-4 py-3">
                             <Loader2 className="w-4 h-4 animate-spin" />
                           </div>
                         </div>
@@ -1716,13 +1658,13 @@ const NeuroHub = () => {
                   )}
                 </ScrollArea>
 
-                <CardContent className="border-t border-[#00ff00]/20 pt-4">
+                <CardContent className="border-t border-[#b2ff2e]/20 pt-4">
                   {/* Прикреплённые файлы (Mobile) */}
                   {attachedFiles.length > 0 && (
-                    <div className="mb-3 p-2 bg-zinc-900/50 rounded-lg border border-[#00ff00]/30">
+                    <div className="mb-3 p-2 bg-zinc-900/50 rounded-lg border border-[#b2ff2e]/30">
                       <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
                         <Paperclip className="w-3 h-3" />
-                        Файлов: <span className="text-[#00ff00] font-semibold">{attachedFiles.length}</span>
+                        Файлов: <span className="text-[#b2ff2e] font-semibold">{attachedFiles.length}</span>
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {attachedFiles.map((file, idx) => {
@@ -1733,7 +1675,7 @@ const NeuroHub = () => {
                           return (
                             <div 
                               key={idx} 
-                              className="flex items-center gap-2 bg-zinc-800 border border-[#00ff00]/30 rounded-lg px-2 py-1.5"
+                              className="flex items-center gap-2 bg-zinc-800 border border-[#b2ff2e]/30 rounded-lg px-2 py-1.5"
                             >
                               {/* Иконка */}
                               {isImage && <ImageIcon className="w-3 h-3 text-blue-400 shrink-0" />}
@@ -1780,7 +1722,7 @@ const NeuroHub = () => {
                       variant="outline"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isSending}
-                      className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00] shrink-0"
+                      className="border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 text-[#b2ff2e] shrink-0"
                     >
                       <Paperclip className="w-4 h-4" />
                     </Button>
@@ -1791,14 +1733,14 @@ const NeuroHub = () => {
                       onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                       placeholder="Напиши сообщение..."
                       disabled={isSending}
-                      className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                      className="flex-1 bg-zinc-900/50 border-[#b2ff2e]/30 text-white"
                     />
 
                     <Button
                       onClick={handleSendMessage}
                       size="icon"
                       disabled={isSending || (!input.trim() && attachedFiles.length === 0)}
-                      className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-white shrink-0"
+                      className="bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] text-white shrink-0"
                     >
                       {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </Button>
@@ -1811,7 +1753,7 @@ const NeuroHub = () => {
                       className={`shrink-0 ${
                         isRecording 
                           ? "border-red-500 bg-red-500/20 hover:bg-red-500/30 text-red-500 animate-pulse" 
-                          : "border-[#00ff00]/30 hover:bg-[#00ff00]/10 text-[#00ff00]"
+                          : "border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 text-[#b2ff2e]"
                       }`}
                       title={isRecording ? `🔴 Запись... (${recordingDuration}с)` : "🎤 Голосовой ввод"}
                     >
@@ -1826,9 +1768,12 @@ const NeuroHub = () => {
             <TabsContent value="dashboard" className="mt-6 space-y-4">
               {/* Статистика дня на мобилке */}
               {todayStats.xp_earned > 0 && (
-                <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md">
+                <Card className="glass-card border-[#b2ff2e]/20">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-400 mb-2">📊 Сегодня</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                      <ChartBar size={16} weight="duotone" className="text-[#b2ff2e]" />
+                      <span>Сегодня</span>
+                    </div>
                     <p className="text-lg font-bold text-white">
                       +{todayStats.xp_earned} XP, {todayStats.lessons_completed} урок{todayStats.lessons_completed > 1 ? 'а' : ''}!
                     </p>
@@ -1837,15 +1782,15 @@ const NeuroHub = () => {
               )}
 
               {/* Карточки прогресса вертикально */}
-              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+              <Card className="glass-card border-[#b2ff2e]/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-[#00ff00]" />
+                    <TrendingUp className="w-5 h-5 text-[#b2ff2e]" />
                     <p className="text-sm text-gray-400">Прогресс курса</p>
                   </div>
                   <p className="text-3xl font-bold text-white mb-1">{courseProgress}%</p>
                   <div className="mt-3 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]" style={{ width: `${courseProgress}%` }} />
+                    <div className="h-full bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00]" style={{ width: `${courseProgress}%` }} />
                   </div>
                 </CardContent>
               </Card>
@@ -1856,23 +1801,30 @@ const NeuroHub = () => {
                     <Flame className="w-5 h-5 text-orange-500" />
                     <p className="text-sm text-gray-400">Streak</p>
                   </div>
-                  <p className="text-3xl font-bold text-white">{streak} дней подряд 🔥</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-3xl font-bold text-white">{streak} дней подряд</p>
+                    <Flame size={32} weight="fill" className="text-orange-500" />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Совет дня */}
-              <Card className="border-[#00ff00]/30 bg-gradient-to-r from-[#00ff00]/10 to-[#00cc00]/10 backdrop-blur-md">
+              <Card className="glass-card border-[#b2ff2e]/20">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-400 mb-2">💡 Совет дня</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                      <LightbulbIcon size={16} weight="duotone" className="text-[#b2ff2e]" />
+                      <span>Совет дня</span>
+                    </div>
                   <p className="text-white">{todayTip}</p>
                 </CardContent>
               </Card>
 
               {/* Текущая миссия */}
-              <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+              <Card className="glass-card border-[#b2ff2e]/20">
                 <CardHeader>
-                  <CardTitle className="text-white text-base">
-                    {dashboardData?.active_missions?.length > 0 ? '🎯 Активная миссия' : 'Текущее задание'}
+                  <CardTitle className="text-white text-base flex items-center gap-2">
+                    <TargetIcon size={18} weight="duotone" className="text-[#b2ff2e]" />
+                    <span>{dashboardData?.active_missions?.length > 0 ? 'Активная миссия' : 'Текущее задание'}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1885,16 +1837,16 @@ const NeuroHub = () => {
                         <p className="text-sm text-gray-400 mb-3">{mission.description}</p>
                         <div className="flex justify-between text-xs mb-2">
                           <span className="text-gray-400">Прогресс</span>
-                          <span className="text-[#00ff00]">{mission.current_value}/{mission.target_value}</span>
+                          <span className="text-[#b2ff2e]">{mission.current_value}/{mission.target_value}</span>
                         </div>
                         <div className="h-2 bg-zinc-800 rounded-full mb-3">
                           <div 
-                            className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] rounded-full"
+                            className="h-full bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] rounded-full"
                             style={{ width: `${mission.progress_percent}%` }}
                           />
                         </div>
                         <Button 
-                          className="w-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-white"
+                          className="w-full bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] text-white"
                           onClick={() => toast({
                             title: "📤 Загрузка задания",
                             description: "Функция в разработке!",
@@ -1907,13 +1859,28 @@ const NeuroHub = () => {
                   ))
                 ) : (
                     <div className="text-center py-4">
-                      <p className="text-2xl mb-2">🎯</p>
+                      <div className="flex justify-center mb-2">
+                        <TargetIcon size={48} weight="duotone" className="text-[#b2ff2e] opacity-50" />
+                      </div>
                       <p className="text-white">Пока нет активных заданий</p>
                       <p className="text-sm text-gray-400">Продолжай учиться!</p>
                   </div>
                 )}
               </CardContent>
             </Card>
+
+              {/* Мои цели (КОМПАКТНАЯ ВЕРСИЯ для мобилки) */}
+              <Card className="glass-card border-[#b2ff2e]/20">
+                <CardHeader>
+                  <CardTitle className="text-white text-base flex items-center gap-2">
+                    <Target className="w-5 h-5 text-[#b2ff2e]" />
+                    Мои цели
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <GoalsTodoSystemDB />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
@@ -1924,11 +1891,11 @@ const NeuroHub = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+          <Card className="glass-card border-[#b2ff2e]/20">
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3">
-                  <Trophy className="w-7 h-7 text-[#00ff00]" />
+                  <Trophy className="w-7 h-7 text-[#b2ff2e]" />
                   <div>
                     <CardTitle className="text-white text-xl">Все достижения</CardTitle>
                     <CardDescription className="text-gray-400 mt-1">
@@ -1937,7 +1904,7 @@ const NeuroHub = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Badge className="bg-[#00ff00]/20 text-[#00ff00] border-[#00ff00]/30 px-3 py-1">
+                  <Badge className="bg-[#b2ff2e]/20 text-[#b2ff2e] border-[#b2ff2e]/30 px-3 py-1">
                     ⭐ {completedCount} завершено
                   </Badge>
                   <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 px-3 py-1">
@@ -1948,14 +1915,14 @@ const NeuroHub = () => {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="week" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50 border border-[#00ff00]/20 mb-6">
-                  <TabsTrigger value="week" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50 border border-[#b2ff2e]/20 mb-6">
+                  <TabsTrigger value="week" className="data-[state=active]:bg-[#b2ff2e]/20 data-[state=active]:text-[#b2ff2e]">
                     📅 Неделя
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                  <TabsTrigger value="month" className="data-[state=active]:bg-[#b2ff2e]/20 data-[state=active]:text-[#b2ff2e]">
                     📆 Месяц
                   </TabsTrigger>
-                  <TabsTrigger value="permanent" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                  <TabsTrigger value="permanent" className="data-[state=active]:bg-[#b2ff2e]/20 data-[state=active]:text-[#b2ff2e]">
                     ⭐ Постоянные
                   </TabsTrigger>
                 </TabsList>
@@ -2017,7 +1984,16 @@ const NeuroHub = () => {
                   >
                     <AccordionTrigger className="text-white hover:text-purple-400 transition-colors py-4 hover:no-underline">
                       <div className="flex items-center gap-3 text-left">
-                        <span className="text-3xl">{advice.icon}</span>
+                        <motion.div
+                          whileHover={{ scale: 1.2, rotate: 10 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          <advice.icon 
+                            size={32} 
+                            weight="duotone" 
+                            style={{ color: advice.color, filter: `drop-shadow(0 0 8px ${advice.color}80)` }}
+                          />
+                        </motion.div>
                         <div className="flex-1">
                           <p className="font-semibold text-base">{advice.title}</p>
                           <p className="text-xs text-gray-400 mt-1">{advice.timestamp}</p>
@@ -2034,7 +2010,10 @@ const NeuroHub = () => {
                           <p className="text-sm font-medium text-purple-300 mb-2">📝 Краткое резюме:</p>
                           <p className="text-sm text-gray-300 mb-3">{advice.summary}</p>
                           
-                          <p className="text-sm font-medium text-purple-300 mb-2">📚 Подробности:</p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <BookOpen size={16} weight="duotone" className="text-purple-300" />
+                            <p className="text-sm font-medium text-purple-300">Подробности:</p>
+                          </div>
                           <pre className="text-sm text-gray-300 whitespace-pre-wrap font-sans">{advice.details}</pre>
                         </div>
                         
@@ -2073,11 +2052,11 @@ const NeuroHub = () => {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
               >
-                <Card className="border-[#00ff00]/30 bg-zinc-900 shadow-2xl shadow-[#00ff00]/20">
+                <Card className="border-[#b2ff2e]/30 bg-zinc-900 shadow-2xl shadow-[#00ff00]/20">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-white flex items-center gap-2">
-                        <Upload className="w-6 h-6 text-[#00ff00]" />
+                        <Upload className="w-6 h-6 text-[#b2ff2e]" />
                         Загрузить домашнее задание
                       </CardTitle>
                       <Button
@@ -2093,12 +2072,12 @@ const NeuroHub = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div
-                      className="border-2 border-dashed border-[#00ff00]/30 rounded-lg p-8 text-center hover:border-[#00ff00]/60 hover:bg-[#00ff00]/5 transition-colors cursor-pointer"
+                      className="border-2 border-dashed border-[#b2ff2e]/30 rounded-lg p-8 text-center hover:border-[#b2ff2e]/60 hover:bg-[#b2ff2e]/5 transition-colors cursor-pointer"
                       onClick={() => document.getElementById('upload-input')?.click()}
                     >
                       {uploadFile ? (
                         <div className="space-y-2">
-                          <Paperclip className="w-8 h-8 text-[#00ff00] mx-auto" />
+                          <Paperclip className="w-8 h-8 text-[#b2ff2e] mx-auto" />
                           <p className="text-white font-medium">{uploadFile.name}</p>
                           <p className="text-gray-400 text-sm">{(uploadFile.size / 1024).toFixed(2)} KB</p>
                         </div>
@@ -2122,7 +2101,7 @@ const NeuroHub = () => {
                     />
                     <Textarea
                       placeholder="Комментарий к работе (необязательно)..."
-                      className="bg-zinc-800 border-[#00ff00]/30 text-white"
+                      className="bg-zinc-800 border-[#b2ff2e]/30 text-white"
                     />
                     <div className="flex gap-2">
                       <Button
@@ -2145,7 +2124,7 @@ const NeuroHub = () => {
                           setUploadFile(null);
                         }}
                         disabled={!uploadFile}
-                        className="flex-1 bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-black font-bold"
+                        className="flex-1 bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] hover:from-[#b2ff2e] hover:to-[#8fcc00] text-black font-bold"
                       >
                         Отправить
                       </Button>
@@ -2163,10 +2142,10 @@ const NeuroHub = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+          <Card className="glass-card border-[#b2ff2e]/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-[#00ff00]" />
+                <Sparkles className="w-6 h-6 text-[#b2ff2e]" />
                 Частые вопросы
               </CardTitle>
               <CardDescription>Быстрые ответы на популярные вопросы студентов</CardDescription>
@@ -2177,10 +2156,22 @@ const NeuroHub = () => {
                   <AccordionItem 
                     key={index} 
                     value={`item-${index}`}
-                    className="border border-[#00ff00]/20 rounded-lg px-4 data-[state=open]:bg-[#00ff00]/5 transition-colors"
+                    className="border border-[#b2ff2e]/20 rounded-lg px-4 data-[state=open]:bg-[#b2ff2e]/5 transition-colors"
                   >
-                    <AccordionTrigger className="text-white hover:text-[#00ff00] transition-colors py-4 hover:no-underline">
-                      <span className="text-left">{item.question}</span>
+                    <AccordionTrigger className="text-white hover:text-[#b2ff2e] transition-colors py-4 hover:no-underline">
+                      <div className="flex items-center gap-3 text-left">
+                        <motion.div
+                          whileHover={{ scale: 1.2, rotate: 10 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          <item.icon 
+                            size={24} 
+                            weight="duotone" 
+                            style={{ color: item.color, filter: `drop-shadow(0 0 6px ${item.color}80)` }}
+                          />
+                        </motion.div>
+                        <span>{item.question}</span>
+                      </div>
                     </AccordionTrigger>
                     <AccordionContent className="text-gray-400 pb-4">
             <motion.div
@@ -2193,7 +2184,7 @@ const NeuroHub = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-[#00ff00]/30 hover:bg-[#00ff00]/10 hover:border-[#00ff00] text-white w-full sm:w-auto"
+                            className="border-[#b2ff2e]/30 hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e] text-white w-full sm:w-auto"
                             onClick={() => {
                               navigator.clipboard.writeText(item.answer);
                               toast({
@@ -2207,7 +2198,7 @@ const NeuroHub = () => {
                           </Button>
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] hover:from-[#00ff00] hover:to-[#00cc00] text-white w-full sm:w-auto"
+                            className="bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] hover:from-[#b2ff2e] hover:to-[#8fcc00] text-white w-full sm:w-auto"
                           >
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Открыть урок

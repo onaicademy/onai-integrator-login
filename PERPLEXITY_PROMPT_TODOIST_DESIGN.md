@@ -171,3 +171,6 @@ Framer Motion patterns:
 - ⚡ Плавными анимациями
 - ✅ Auto-save функционалом
 
+
+
+

@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/app-sidebar';
+import { AppSidebarPremium } from '@/components/app-sidebar-premium';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -35,7 +35,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background">
-        <AppSidebar role={userRole} />
+        <AppSidebarPremium role={userRole} />
         <div className="flex-1 flex flex-col w-full">
           <header className="sticky top-0 z-10 flex h-14 sm:h-16 items-center gap-4 border-b border-gray-800 bg-[#18181b] px-4 sm:px-6">
             <SidebarTrigger className="text-white hover:text-[#00ff00] transition-colors" />

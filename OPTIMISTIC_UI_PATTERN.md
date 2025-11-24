@@ -178,3 +178,6 @@ async function optimisticSave(updates: Partial<Goal>) {
 **Автор идеи:** Пользователь (CEO onAI Academy)  
 **Статус:** Готов к реализации
 
+
+
+

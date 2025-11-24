@@ -112,3 +112,6 @@ router.put('/:id', async (req: Request, res: Response) => {
 **Дата:** 2025-11-24  
 **Исправлено в:** backend/src/routes/goals.ts (строки 84, 92-93)
 
+
+
+

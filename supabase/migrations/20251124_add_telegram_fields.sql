@@ -20,3 +20,6 @@ COMMENT ON COLUMN public.users.telegram_chat_id IS 'Telegram chat ID for sending
 COMMENT ON COLUMN public.users.telegram_connected IS 'Is Telegram bot connected to this user';
 COMMENT ON COLUMN public.users.telegram_verification_token IS 'Temporary token for deep link verification';
 
+
+
+

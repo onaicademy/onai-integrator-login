@@ -1,786 +1,161 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Send, Search, Mic, Smile, Paperclip, MoreVertical, 
-  X, StopCircle, Play, Loader2
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
-import {
-  getMyChats,
-  getChatMessages,
-  sendTextMessage,
-  uploadVoiceMessage,
-  markMessagesAsRead,
-  subscribeToMessages,
-  getAllStudents,
-  getOrCreateChat,
-  type Chat as ChatType,
-  type Message as MessageType,
-} from "@/lib/messages-api";
-
-interface Student {
-  id: string;
-  name: string;
-  avatar?: string;
-  online: boolean;
-}
-
-interface Chat {
-  id: string;
-  studentId: string;
-  name: string;
-  avatar?: string;
-  lastMessage: string;
-  time: string;
-  unread: number;
-  online: boolean;
-}
-
-interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  timestamp: string;
-  isMine: boolean;
-  type: "text" | "voice" | "file";
-  fileName?: string;
-  duration?: number;
-  attachmentUrl?: string;
-}
-
-// Mock emoji
-const emojis = ["😊", "😂", "❤️", "👍", "🎉", "🔥", "👏", "🙏", "💯", "✨", "🚀", "💪"];
+import { Lock } from "lucide-react";
 
 export default function Messages() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  
-  // Список всех студентов (для начала нового чата)
-  const [students, setStudents] = useState<Student[]>([]);
-
-  // Активные чаты (из Supabase)
-  const [chats, setChats] = useState<Chat[]>([]);
-
-  // Выбранный чат
-  const [selectedChat, setSelectedChat] = useState<string | null>(null);
-  
-  // Сообщения выбранного чата (из Supabase)
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const [newMessage, setNewMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [showStudentsList, setShowStudentsList] = useState(false);
-  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recordingInterval = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  // Загружаем чаты когда есть пользователь
-  useEffect(() => {
-    if (currentUser) {
-      loadChats();
-      loadStudents();
-    }
-  }, [currentUser]);
-
-  // Загружаем сообщения когда выбран чат
-  useEffect(() => {
-    if (selectedChat) {
-      loadMessages(selectedChat);
-      // Подписываемся на новые сообщения
-      const unsubscribe = subscribeToMessages(selectedChat, (newMsg) => {
-        setMessages((prev) => [...prev, transformMessage(newMsg, currentUser?.id)]);
-        scrollToBottom();
-      });
-      return unsubscribe;
-    }
-  }, [selectedChat]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const loadUser = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    } catch (error) {
-      console.error('Error loading user:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadChats = async () => {
-    if (!currentUser) return;
-    try {
-      const chatsData = await getMyChats(currentUser.id);
-      setChats(transformChats(chatsData, currentUser.id));
-    } catch (error) {
-      console.error('Error loading chats:', error);
-      toast({
-        title: "❌ Ошибка",
-        description: "Не удалось загрузить чаты",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const loadStudents = async () => {
-    if (!currentUser) return;
-    try {
-      const studentsData = await getAllStudents(currentUser.id);
-      setStudents(studentsData.map((s: any) => ({
-        id: s.id,
-        name: s.full_name || s.email,
-        avatar: s.avatar_url,
-        online: false, // TODO: реализовать статус online
-      })));
-    } catch (error) {
-      console.error('Error loading students:', error);
-    }
-  };
-
-  const loadMessages = async (chatId: string) => {
-    if (!currentUser) return;
-    setLoadingMessages(true);
-    try {
-      const messagesData = await getChatMessages(chatId);
-      setMessages(messagesData.map(msg => transformMessage(msg, currentUser.id)));
-      // Отмечаем сообщения как прочитанные
-      await markMessagesAsRead(chatId, currentUser.id);
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      toast({
-        title: "❌ Ошибка",
-        description: "Не удалось загрузить сообщения",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingMessages(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Трансформация данных из Supabase в UI формат
-  const transformChats = (chatsData: ChatType[], userId: string): Chat[] => {
-    return chatsData.map((chat: any) => {
-      const otherUser = chat.other_user;
-      const isUser1 = chat.user1_id === userId;
-      const unreadCount = isUser1 ? chat.unread_count_user1 : chat.unread_count_user2;
-      
-      return {
-        id: chat.id,
-        studentId: otherUser?.id || '',
-        name: otherUser?.name || otherUser?.email || 'Неизвестный',
-        avatar: otherUser?.avatar,
-        lastMessage: chat.last_message_text || '',
-        time: chat.last_message_at 
-          ? new Date(chat.last_message_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-          : '',
-        unread: unreadCount,
-        online: false, // TODO: реализовать статус online
-      };
-    });
-  };
-
-  const transformMessage = (msg: MessageType, userId?: string): Message => {
-    const isMine = msg.sender_id === userId;
-    return {
-      id: msg.id,
-      content: msg.content,
-      senderId: msg.sender_id,
-      timestamp: new Date(msg.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      isMine,
-      type: msg.message_type as 'text' | 'voice' | 'file',
-      fileName: msg.attachment_name || undefined,
-      duration: msg.attachment_type === 'audio/webm' && msg.content.includes('сек') 
-        ? parseInt(msg.content.match(/\d+/)?.[0] || '0')
-        : undefined,
-      attachmentUrl: msg.attachment_url || undefined,
-    };
-  };
-
-  // Фильтрация
-  const filteredChats = chats.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredStudents = students.filter((s) =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedChat || !currentUser) return;
-
-    const messageText = newMessage.trim();
-    setNewMessage("");
-    setShowEmojiPicker(false);
-
-    try {
-      const msg = await sendTextMessage(selectedChat, currentUser.id, messageText);
-      if (msg) {
-        setMessages((prev) => [...prev, transformMessage(msg, currentUser.id)]);
-        // Обновляем чат в списке
-        await loadChats();
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "❌ Ошибка",
-        description: "Не удалось отправить сообщение",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEmojiClick = (emoji: string) => {
-    setNewMessage(newMessage + emoji);
-  };
-
-  const handleStartRecording = async () => {
-    if (!selectedChat || !currentUser) {
-      toast({
-        title: "❌ Ошибка",
-        description: "Сначала выберите чат",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm',
-      });
-      
-      audioChunksRef.current = [];
-      
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-      
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await handleSendVoiceMessage(audioBlob);
-        
-        // Останавливаем микрофон
-        stream.getTracks().forEach(track => track.stop());
-      };
-      
-      mediaRecorder.start();
-      mediaRecorderRef.current = mediaRecorder;
-      setIsRecording(true);
-      
-      // Таймер длительности
-      setRecordingTime(0);
-      recordingInterval.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-      
-      toast({
-        title: "🎤 Запись голосового",
-        description: "Нажмите стоп для завершения",
-        className: "top-4",
-      });
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      toast({
-        title: "❌ Ошибка",
-        description: "Не удалось получить доступ к микрофону",
-        variant: "destructive",
-        className: "top-4",
-      });
-    }
-  };
-
-  const handleStopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      clearInterval(recordingInterval.current);
-    }
-  };
-
-  const handleSendVoiceMessage = async (audioBlob: Blob) => {
-    if (!selectedChat || !currentUser) return;
-    
-    try {
-      const msg = await uploadVoiceMessage(
-        selectedChat,
-        currentUser.id,
-        audioBlob,
-        recordingTime
-      );
-      
-      if (msg) {
-        setMessages((prev) => [...prev, transformMessage(msg, currentUser.id)]);
-        setRecordingTime(0);
-        // Обновляем чат в списке
-        await loadChats();
-        
-        toast({
-          title: "✅ Голосовое отправлено",
-          description: `Длительность: ${recordingTime} сек`,
-          className: "top-4",
-        });
-      }
-    } catch (error) {
-      console.error('Error sending voice message:', error);
-      toast({
-        title: "❌ Ошибка отправки",
-        description: "Не удалось отправить голосовое сообщение",
-        variant: "destructive",
-        className: "top-4",
-      });
-    }
-  };
-
-  const handlePlayVoice = (messageId: string, audioUrl?: string) => {
-    if (!audioUrl) {
-      toast({
-        title: "❌ Ошибка",
-        description: "Аудио файл не найден",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (playingMessageId === messageId) {
-      // Останавливаем текущее
-      audioRef.current?.pause();
-      setPlayingMessageId(null);
-    } else {
-      // Останавливаем предыдущее
-      audioRef.current?.pause();
-      
-      // Играем новое
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      audio.play().catch((error) => {
-        console.error('Error playing audio:', error);
-        toast({
-          title: "❌ Ошибка",
-          description: "Не удалось воспроизвести аудио",
-          variant: "destructive",
-        });
-      });
-      
-      setPlayingMessageId(messageId);
-      
-      audio.onended = () => {
-        setPlayingMessageId(null);
-      };
-      
-      audio.onerror = () => {
-        setPlayingMessageId(null);
-        toast({
-          title: "❌ Ошибка",
-          description: "Не удалось загрузить аудио",
-          variant: "destructive",
-        });
-      };
-    }
-  };
-
-  const handleStartNewChat = async (student: Student) => {
-    if (!currentUser) return;
-
-    // Проверяем есть ли уже чат
-    const existingChat = chats.find((c) => c.studentId === student.id);
-    if (existingChat) {
-      setSelectedChat(existingChat.id);
-      setShowStudentsList(false);
-      return;
-    }
-
-    try {
-      // Создаём новый чат в Supabase
-      const newChat = await getOrCreateChat(currentUser.id, student.id);
-      
-      if (newChat) {
-        // Перезагружаем список чатов
-        await loadChats();
-        setSelectedChat(newChat.id);
-        setMessages([]);
-        setShowStudentsList(false);
-
-        toast({
-          title: "✅ Новый чат создан",
-          description: `Чат с ${student.name}`,
-        });
-      }
-    } catch (error) {
-      console.error('Error creating chat:', error);
-      toast({
-        title: "❌ Ошибка",
-        description: "Не удалось создать чат",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const selectedChatData = chats.find((c) => c.id === selectedChat);
-
+  // 🚧 ВРЕМЕННО: Раздел в разработке
   return (
-    <div className="flex h-[calc(100vh-4rem)] gap-0">
-      {/* ===== ЛЕВАЯ ПАНЕЛЬ: СПИСОК ЧАТОВ ===== */}
-      <aside className="w-80 border-r flex flex-col bg-background">
-        {/* Заголовок */}
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold text-foreground">
-              💬 Сообщения
-            </h2>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowStudentsList(!showStudentsList)}
-            >
-              {showStudentsList ? "Чаты" : "Новый чат"}
-            </Button>
+    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-3xl w-full"
+      >
+        <Card className="bg-gradient-to-br from-[#1a1a24] to-[#0a0a0f] border-[#00ff00]/30 p-12 text-center relative overflow-hidden">
+          {/* Фоновый паттерн */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#00ff00_1px,_transparent_1px)] bg-[length:40px_40px]" />
           </div>
-          
-          {/* Поиск */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={showStudentsList ? "Найти студента..." : "Поиск чатов..."}
-              className="pl-10"
-            />
-          </div>
-        </div>
 
-        {/* Список чатов или студентов */}
-        <ScrollArea className="flex-1">
-          {showStudentsList ? (
-            // Список всех студентов
-            <div className="p-2">
-              {filteredStudents.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Студенты не найдены
-                </p>
-              ) : (
-                filteredStudents.map((student) => (
-                  <motion.div
-                    key={student.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="p-3 rounded-lg hover:bg-secondary/50 cursor-pointer transition mb-1"
-                    onClick={() => handleStartNewChat(student)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <Avatar>
-                          {student.avatar ? (
-                            <AvatarImage src={student.avatar} />
-                          ) : null}
-                          <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
-                        </Avatar>
-                        {student.online && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {student.online ? "В сети" : "Не в сети"}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-          ) : (
-            // Список активных чатов
-            <div className="p-2">
-              {filteredChats.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Чаты не найдены
-                </p>
-              ) : (
-                filteredChats.map((chat) => (
-                  <motion.div
-                    key={chat.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`
-                      p-3 rounded-lg cursor-pointer transition mb-1
-                      ${selectedChat === chat.id 
-                        ? "bg-neon/10 border border-neon/30" 
-                        : "hover:bg-secondary/50"}
-                    `}
-                    onClick={() => setSelectedChat(chat.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <Avatar>
-                          {chat.avatar ? (
-                            <AvatarImage src={chat.avatar} />
-                          ) : null}
-                          <AvatarFallback>{getInitials(chat.name)}</AvatarFallback>
-                        </Avatar>
-                        {chat.online && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="font-semibold truncate">{chat.name}</p>
-                          {chat.unread > 0 && (
-                            <Badge variant="destructive" className="ml-2">
-                              {chat.unread}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground truncate flex-1">
-                            {chat.lastMessage || "Нет сообщений"}
-                          </p>
-                          <p className="text-xs text-muted-foreground ml-2">
-                            {chat.time}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-          )}
-        </ScrollArea>
-      </aside>
-
-      {/* ===== ПРАВАЯ ПАНЕЛЬ: АКТИВНЫЙ ЧАТ ===== */}
-      <main className="flex-1 flex flex-col bg-background">
-        {selectedChatData ? (
-          <>
-            {/* Заголовок чата */}
-            <header className="p-4 border-b flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Avatar>
-                    {selectedChatData.avatar ? (
-                      <AvatarImage src={selectedChatData.avatar} />
-                    ) : null}
-                    <AvatarFallback>
-                      {getInitials(selectedChatData.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {selectedChatData.online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-semibold">{selectedChatData.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedChatData.online ? "В сети" : "Не в сети"}
-                  </p>
-                </div>
-              </div>
+          {/* Иконка с замочком */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mb-8 flex justify-center relative z-10"
+          >
+            <div className="relative">
+              {/* Неоновое свечение */}
+              <div className="absolute inset-0 bg-[#00ff00]/20 blur-3xl rounded-full" />
               
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </div>
-            </header>
-
-            {/* Сообщения */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {loadingMessages ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-neon" />
-                    <span className="ml-2 text-muted-foreground">Загрузка сообщений...</span>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex items-center justify-center py-8 text-muted-foreground">
-                    <p>Нет сообщений. Напишите первое сообщение! 👋</p>
-                  </div>
-                ) : null}
+              {/* Главная иконка */}
+              <div className="relative bg-gradient-to-br from-[#00ff00]/10 to-[#00cc00]/5 p-8 rounded-full border border-[#00ff00]/30">
+                <svg className="w-24 h-24 text-[#00ff00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
                 
-                <AnimatePresence>
-                  {!loadingMessages && messages.map((msg) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.isMine ? "justify-end" : "justify-start"}`}
-                    >
-                      <Card
-                        className={`
-                          max-w-md p-3
-                          ${msg.isMine 
-                            ? "bg-neon/10 border-neon/30" 
-                            : "bg-secondary"}
-                        `}
-                      >
-                        {msg.type === "voice" ? (
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="ghost"
-                              onClick={() => handlePlayVoice(msg.id, msg.attachmentUrl)}
-                            >
-                              {playingMessageId === msg.id ? (
-                                <StopCircle className="w-4 h-4" />
-                              ) : (
-                                <Play className="w-4 h-4" />
-                              )}
-                            </Button>
-                            <div className="flex-1">
-                              <div className="h-1 bg-background rounded-full" />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {msg.duration} сек
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-sm">{msg.content}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {msg.timestamp}
-                        </p>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Ввод сообщения */}
-            <footer className="p-4 border-t">
-              {/* Emoji picker */}
-              <AnimatePresence>
-                {showEmojiPicker && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="mb-3 p-3 bg-secondary rounded-lg"
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      {emojis.map((emoji, i) => (
-                        <Button
-                          key={i}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEmojiClick(emoji)}
-                          className="text-lg"
-                        >
-                          {emoji}
-                        </Button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Поле ввода */}
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                {/* Замочек поверх */}
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
+                  className="absolute -top-2 -right-2 bg-[#1a1a24] rounded-full p-3 border-2 border-[#00ff00] shadow-lg shadow-[#00ff00]/50"
                 >
-                  <Smile className="w-5 h-5" />
-                </Button>
-
-                <Button size="sm" variant="ghost">
-                  <Paperclip className="w-5 h-5" />
-                </Button>
-
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  placeholder="Напишите сообщение..."
-                  className="flex-1"
-                  disabled={isRecording}
-                />
-
-                {isRecording ? (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={handleStopRecording}
-                  >
-                    <StopCircle className="w-5 h-5 mr-2" />
-                    {recordingTime}s
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleStartRecording}
-                    >
-                      <Mic className="w-5 h-5" />
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim()}
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
+                  <Lock className="w-6 h-6 text-[#00ff00]" />
+                </motion.div>
               </div>
-            </footer>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <div className="text-6xl mb-4">💬</div>
-              <p className="text-lg">Выберите чат для начала общения</p>
-              <p className="text-sm mt-2">
-                или нажмите "Новый чат" чтобы написать студенту
-              </p>
             </div>
-          </div>
-        )}
-      </main>
+          </motion.div>
+
+          {/* Заголовок */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="relative z-10"
+          >
+            <h1 className="text-5xl font-bold text-white mb-2">
+              onAI<span className="text-[#00ff00]">gram</span>
+            </h1>
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-6">
+              <Lock className="w-4 h-4" />
+              <span>В разработке</span>
+            </div>
+          </motion.div>
+
+          {/* Описание */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="relative z-10 mb-8"
+          >
+            <p className="text-gray-300 text-lg leading-relaxed mb-4">
+              Мы создаём <span className="text-[#00ff00] font-semibold">закрытую социальную сеть</span> для предпринимателей-интеграторов — 
+              экосистему взаимной поддержки, мотивации и профессионального роста.
+            </p>
+            <p className="text-gray-400 text-base leading-relaxed">
+              Здесь вы сможете строить meaningful connections, делиться победами и инсайтами, 
+              организовывать оффлайн-встречи и вместе формировать активное предпринимательское сообщество.
+            </p>
+          </motion.div>
+
+          {/* Список функций */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 relative z-10"
+          >
+            {[
+              { icon: '💬', title: 'Личные и групповые чаты', desc: 'Общайтесь напрямую с коллегами' },
+              { icon: '📸', title: 'Посты и Reels', desc: 'Делитесь видео, фото и историями успеха' },
+              { icon: '🤝', title: 'Организация встреч', desc: 'Координируйте оффлайн-ивенты и нетворкинг' },
+              { icon: '💡', title: 'Обмен инсайтами', desc: 'Делитесь знаниями и best practices' },
+              { icon: '🏆', title: 'Форум сообщества', desc: 'Задавайте вопросы и получайте ответы' },
+              { icon: '🚀', title: 'Мотивация и поддержка', desc: 'Растите вместе с единомышленниками' }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + index * 0.1 }}
+                className="bg-[#1a1a24]/50 backdrop-blur-sm border border-[#00ff00]/10 rounded-lg p-4 text-left hover:border-[#00ff00]/30 transition-all duration-300"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{feature.icon}</span>
+                  <div>
+                    <h3 className="text-white font-semibold text-sm mb-1">{feature.title}</h3>
+                    <p className="text-gray-400 text-xs">{feature.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Прогресс бар */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="space-y-3 relative z-10"
+          >
+            <div className="flex justify-between text-sm text-gray-400">
+              <span className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-[#00ff00] rounded-full animate-pulse" />
+                Прогресс разработки
+              </span>
+              <span className="text-[#00ff00] font-semibold">15%</span>
+            </div>
+            <div className="h-3 bg-gray-800/50 rounded-full overflow-hidden border border-gray-700/50">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "15%" }}
+                transition={{ delay: 1.3, duration: 1.5, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-[#00ff00] via-[#00cc00] to-[#00ff00] relative"
+              >
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)] animate-[shimmer_2s_infinite]" />
+              </motion.div>
+            </div>
+            <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
+              <span>🗓️</span>
+              <span>Ожидаемый запуск: <span className="text-[#00ff00]">Q1 2026</span></span>
+            </p>
+          </motion.div>
+
+          {/* Футер */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+            className="mt-8 pt-6 border-t border-gray-800 relative z-10"
+          >
+            <p className="text-xs text-gray-500">
+              Доступ будет открыт автоматически после запуска всем активным студентам платформы
+            </p>
+          </motion.div>
+        </Card>
+      </motion.div>
     </div>
   );
 }

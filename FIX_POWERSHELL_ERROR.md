@@ -107,3 +107,6 @@ Get-ExecutionPolicy -List
 
 И я помогу дальше!
 
+
+
+

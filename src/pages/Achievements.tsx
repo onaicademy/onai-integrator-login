@@ -106,21 +106,21 @@ export default function Achievements() {
         .eq('user_id', user.id)
         .single();
 
-      // Загружаем профиль пользователя
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('total_xp, level')
+      // Загружаем профиль пользователя из ПРАВИЛЬНОЙ таблицы
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('xp, level, current_streak, longest_streak')
         .eq('id', user.id)
         .single();
 
-      if (statsData && userData) {
+      if (statsData && profileData) {
         setUserProgress({
           lessons_completed: statsData.lessons_completed || 0,
           modules_completed: 0, // TODO: добавить в БД
           courses_completed: statsData.courses_completed || 0,
-          streak_days: statsData.current_streak || 0,
-          total_xp: userData.total_xp || 0,
-          level: userData.level || 1,
+          streak_days: profileData.current_streak || 0,
+          total_xp: profileData.xp || 0,
+          level: profileData.level || 1,
           perfect_lessons: 0, // TODO: добавить логику
           messages_sent: 0, // TODO: добавить в БД
           ai_conversations: 0, // TODO: добавить в БД
@@ -167,13 +167,8 @@ export default function Achievements() {
     const completed = achievementsWithProgress.filter(a => a.isCompleted).length;
     const total = achievementsWithProgress.length;
     
-    // Подсчёт XP с учётом бонуса за "достижения дня"
-    const totalXpEarned = achievementsWithProgress
-      .filter(a => a.isCompleted)
-      .reduce((sum, a) => {
-        const isDaily = isDailyAchievement(a.id);
-        return sum + getAchievementXP(a, isDaily);
-      }, 0);
+    // ИСПРАВЛЕНО: Показываем ОБЩИЙ XP пользователя из профиля, а не только из достижений
+    const totalXpEarned = userProgress.total_xp;
     
     const inProgress = achievementsWithProgress.filter(
       a => !a.isCompleted && a.currentValue > 0
@@ -198,7 +193,7 @@ export default function Achievements() {
       inProgress,
       dailyWithProgress
     };
-  }, [achievementsWithProgress, dailyAchievements]);
+  }, [achievementsWithProgress, dailyAchievements, userProgress.total_xp]);
 
   // Фильтрация достижений
   const filteredAchievements = useMemo(() => {
