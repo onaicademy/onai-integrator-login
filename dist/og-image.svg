@@ -1,0 +1,107 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Фон с градиентом -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1E293B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F172A;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Градиент для свечения -->
+    <radialGradient id="glow-gradient">
+      <stop offset="0%" style="stop-color:#b2ff2e;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#b2ff2e;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+  
+  <!-- Декоративная сетка -->
+  <g opacity="0.05">
+    <line x1="0" y1="157.5" x2="1200" y2="157.5" stroke="#b2ff2e" strokeWidth="1"/>
+    <line x1="0" y1="315" x2="1200" y2="315" stroke="#b2ff2e" strokeWidth="1"/>
+    <line x1="0" y1="472.5" x2="1200" y2="472.5" stroke="#b2ff2e" strokeWidth="1"/>
+    <line x1="300" y1="0" x2="300" y2="630" stroke="#b2ff2e" strokeWidth="1"/>
+    <line x1="600" y1="0" x2="600" y2="630" stroke="#b2ff2e" strokeWidth="1"/>
+    <line x1="900" y1="0" x2="900" y2="630" stroke="#b2ff2e" strokeWidth="1"/>
+  </g>
+  
+  <!-- Логотип onAI (увеличенный, центр) -->
+  <g transform="translate(300, 200)">
+    <!-- Контур кнопки (рамка) - зеленая -->
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M226 0H110C49.25 0 0 38.6 0 86.25C0 133.9 49.25 172.5 110 172.5H226C286.75 172.5 336 133.9 336 86.25C336 38.6 286.75 0 226 0ZM226 143.75H110C69.3 143.75 36.5 118.15 36.5 86.25C36.5 54.35 69.3 28.75 110 28.75H226C266.7 28.75 299.5 54.35 299.5 86.25C299.5 118.15 266.7 143.75 226 143.75Z"
+      fill="#b2ff2e"
+    />
+    
+    <!-- Внутренний круг (справа - включено) -->
+    <circle
+      cx="226"
+      cy="86.25"
+      r="38"
+      fill="#b2ff2e"
+      stroke="#b2ff2e"
+      strokeWidth="2"
+    />
+    
+    <!-- Свечение вокруг кнопки -->
+    <ellipse
+      cx="226"
+      cy="86.25"
+      rx="120"
+      ry="80"
+      fill="url(#glow-gradient)"
+      style="filter: blur(40px);"
+    />
+  </g>
+  
+  <!-- Текст "onAI Academy" -->
+  <text 
+    x="600" 
+    y="450" 
+    font-family="Orbitron, monospace" 
+    font-size="72" 
+    font-weight="700" 
+    fill="#b2ff2e" 
+    text-anchor="middle"
+    letter-spacing="2"
+  >
+    onAI Academy
+  </text>
+  
+  <!-- Подзаголовок -->
+  <text 
+    x="600" 
+    y="510" 
+    font-family="Inter, sans-serif" 
+    font-size="28" 
+    font-weight="400" 
+    fill="#94A3B8" 
+    text-anchor="middle"
+    letter-spacing="1"
+  >
+    Платформа для обучения AI
+  </text>
+  
+  <!-- Декоративные элементы по углам -->
+  <g opacity="0.3">
+    <!-- Верхний левый -->
+    <line x1="40" y1="40" x2="120" y2="40" stroke="#b2ff2e" strokeWidth="3"/>
+    <line x1="40" y1="40" x2="40" y2="120" stroke="#b2ff2e" strokeWidth="3"/>
+    
+    <!-- Верхний правый -->
+    <line x1="1080" y1="40" x2="1160" y2="40" stroke="#b2ff2e" strokeWidth="3"/>
+    <line x1="1160" y1="40" x2="1160" y2="120" stroke="#b2ff2e" strokeWidth="3"/>
+    
+    <!-- Нижний левый -->
+    <line x1="40" y1="510" x2="40" y2="590" stroke="#b2ff2e" strokeWidth="3"/>
+    <line x1="40" y1="590" x2="120" y2="590" stroke="#b2ff2e" strokeWidth="3"/>
+    
+    <!-- Нижний правый -->
+    <line x1="1160" y1="510" x2="1160" y2="590" stroke="#b2ff2e" strokeWidth="3"/>
+    <line x1="1080" y1="590" x2="1160" y2="590" stroke="#b2ff2e" strokeWidth="3"/>
+  </g>
+</svg>
+
