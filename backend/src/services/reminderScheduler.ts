@@ -103,17 +103,37 @@ async function processTaskReminder(task: any) {
     // Check if we should send reminder
     // Send if current time is within reminder_before window
     if (minutesUntilDue <= reminderBefore && minutesUntilDue > 0) {
-      // Check if reminder was already sent (store in separate table or flag)
-      // For now, we'll send without duplicate check (can be improved)
+      // ✅ CHECK IF REMINDER WAS ALREADY SENT
+      const { data: alreadySent } = await adminSupabase
+        .from('task_reminders_sent')
+        .select('id')
+        .eq('task_id', task.id)
+        .eq('user_id', task.user_id)
+        .single();
+
+      if (alreadySent) {
+        console.log(`⏭️ [Scheduler] Reminder already sent for task ${task.id}`);
+        return;
+      }
       
       const message = formatReminderMessage(task, user.full_name, minutesUntilDue);
       
       console.log(`📨 [Scheduler] Sending reminder for task ${task.id} to ${user.full_name}`);
 
-      await sendTelegramReminder(user.telegram_chat_id, message);
+      const sent = await sendTelegramReminder(user.telegram_chat_id, message);
       
-      // Optional: Mark reminder as sent in database
-      // await markReminderSent(task.id);
+      // ✅ MARK REMINDER AS SENT
+      if (sent) {
+        await adminSupabase
+          .from('task_reminders_sent')
+          .insert({
+            task_id: task.id,
+            user_id: task.user_id,
+            reminder_minutes: minutesUntilDue
+          });
+        
+        console.log(`✅ [Scheduler] Marked reminder as sent for task ${task.id}`);
+      }
     }
   } catch (error) {
     console.error(`❌ [Scheduler] Error processing task ${task.id}:`, error);
