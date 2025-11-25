@@ -23,6 +23,17 @@ export default {
   	},
   	extend: {
   		fontFamily: {
+  			sans: [
+  				'Space Grotesk',
+  				'-apple-system',
+  				'BlinkMacSystemFont',
+  				'Segoe UI',
+  				'sans-serif'
+  			],
+  			display: [
+  				'Orbitron',
+  				'sans-serif'
+  			],
   			inter: [
   				'Inter',
   				'sans-serif'
@@ -34,6 +45,14 @@ export default {
   			gilroy: [
   				'Gilroy',
   				'Poppins',
+  				'sans-serif'
+  			],
+  			orbitron: [
+  				'Orbitron',
+  				'sans-serif'
+  			],
+  			'space-grotesk': [
+  				'Space Grotesk',
   				'sans-serif'
   			]
   		},

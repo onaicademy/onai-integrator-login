@@ -100,23 +100,23 @@ export function AppSidebar({ role }: AppSidebarProps) {
     >
       {/* ФОНОВАЯ АНИМАЦИЯ */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
+              <motion.div
           className="absolute top-0 left-0 w-full h-full"
-          style={{
+                style={{
             background: 'radial-gradient(circle at 50% 50%, rgba(178, 255, 46, 0.08), transparent 70%)',
-          }}
-          animate={{
+                }}
+                animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
+                }}
+                transition={{
             duration: 6,
-            repeat: Infinity,
+                  repeat: Infinity,
             ease: "easeInOut"
-          }}
-        />
-      </div>
-
+                }}
+              />
+          </div>
+          
       <SidebarHeader className="border-b-2 border-[#b2ff2e]/20 px-4 sm:px-6 py-4 sm:py-6 relative overflow-hidden">
         {/* Светящийся фон хедера */}
         <motion.div
@@ -189,7 +189,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
               "px-3 mb-3 text-xs font-bold uppercase tracking-[0.25em] transition-all duration-300",
               "bg-gradient-to-r from-[#b2ff2e] to-[#00ff00] bg-clip-text text-transparent",
               "drop-shadow-[0_0_8px_rgba(178,255,46,0.3)]",
-              isCollapsed && "opacity-0"
+            isCollapsed && "opacity-0"
             )}
             style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}
           >
@@ -207,25 +207,25 @@ export function AppSidebar({ role }: AppSidebarProps) {
                     transition={{ delay: index * 0.05 }}
                   >
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild tooltip={item.title}>
-                        <NavLink
-                          to={item.url}
-                          end={item.url === "/"}
-                          className={({ isActive }) =>
-                            cn(
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
+                      end={item.url === "/"}
+                      className={({ isActive }) =>
+                        cn(
                               "group relative flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all duration-300 overflow-hidden",
                               "hover:scale-[1.03] active:scale-[0.97]",
                               "border-2 border-transparent",
                               isActive 
                                 ? "bg-gradient-to-r from-[#b2ff2e]/25 via-[#00ff00]/20 to-[#b2ff2e]/15 border-[#b2ff2e]/40 shadow-[0_0_20px_rgba(178,255,46,0.25),inset_0_0_20px_rgba(178,255,46,0.1)]"
                                 : "hover:bg-[#b2ff2e]/10 hover:border-[#b2ff2e]/20 hover:shadow-[0_0_15px_rgba(178,255,46,0.15)]"
-                            )
-                          }
-                        >
-                          {({ isActive }) => (
-                            <>
+                        )
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
                               {/* Анимированный фон для активной кнопки */}
-                              {isActive && (
+                          {isActive && (
                                 <>
                                   <motion.div
                                     className="absolute inset-0 bg-gradient-to-r from-[#b2ff2e]/30 via-[#00ff00]/20 to-transparent"
@@ -238,22 +238,22 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                       ease: "linear"
                                     }}
                                   />
-                                  <motion.div
+                            <motion.div
                                     className="absolute inset-0 bg-[#b2ff2e]/10"
-                                    animate={{
+                              animate={{
                                       opacity: [0.5, 0.8, 0.5],
-                                    }}
-                                    transition={{
-                                      duration: 2,
-                                      repeat: Infinity,
-                                      ease: "easeInOut"
-                                    }}
-                                  />
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                              }}
+                            />
                                 </>
-                              )}
-                              
-                              {/* Иконка с эффектом */}
-                              <motion.div
+                          )}
+                          
+                          {/* Иконка с эффектом */}
+                          <motion.div
                                 whileHover={{ 
                                   rotate: [0, -8, 8, -8, 0],
                                   scale: 1.15,
@@ -261,7 +261,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                 whileTap={{ scale: 0.85 }}
                                 transition={{ duration: 0.4 }}
                                 className="relative z-10 flex-shrink-0"
-                              >
+                          >
                                 <div className="relative">
                                   <item.icon 
                                     className={cn(
@@ -288,10 +288,10 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                     />
                                   )}
                                 </div>
-                              </motion.div>
-                              
+                          </motion.div>
+                          
                               {/* Текст - ФУТУРИСТИЧНЫЙ ШРИФТ Space Grotesk */}
-                              {!isCollapsed && (
+                          {!isCollapsed && (
                                 <motion.span 
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
@@ -303,21 +303,21 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                   )}
                                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                                 >
-                                  {item.title}
+                              {item.title}
                                 </motion.span>
-                              )}
-                              
+                          )}
+                          
                               {/* Индикатор активности - ТОЛЩЕ */}
-                              {isActive && (
-                                <motion.div
+                          {isActive && (
+                            <motion.div
                                   initial={{ width: 0, opacity: 0 }}
                                   animate={{ width: "4px", opacity: 1 }}
                                   className="absolute right-0 top-1/2 -translate-y-1/2 h-10 bg-gradient-to-b from-[#b2ff2e] to-[#00ff00] rounded-l-full"
                                   style={{
                                     boxShadow: '0 0 15px rgba(178, 255, 46, 0.8), 0 0 30px rgba(178, 255, 46, 0.4)'
                                   }}
-                                />
-                              )}
+                            />
+                          )}
 
                               {/* Hover glow effect */}
                               <motion.div
@@ -326,13 +326,13 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                   background: 'radial-gradient(circle at center, rgba(178, 255, 46, 0.15), transparent 70%)',
                                 }}
                               />
-                            </>
-                          )}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                        </>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                   </motion.div>
-                ))}
+              ))}
               </AnimatePresence>
             </SidebarMenu>
           </SidebarGroupContent>

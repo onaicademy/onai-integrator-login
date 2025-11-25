@@ -664,8 +664,8 @@ const NeuroHub = () => {
 
     return (
     <div className="relative overflow-hidden min-h-screen">
-      {/* 🎨 ПРЕМИУМ: Matrix Rain - падающие 0 и 1 (СЛАБО 20%) */}
-      <MatrixRainBackground opacity={0.2} />
+      {/* 🎨 ПРЕМИУМ: Matrix Rain - падающие 0 и 1 (СЛАБО 15%) */}
+      <MatrixRainBackground opacity={0.15} />
 
       {/* ===== POP-UP УВЕДОМЛЕНИЯ ===== */}
       <AnimatePresence>
@@ -727,36 +727,36 @@ const NeuroHub = () => {
         >
           <RobotHead 
             avatarId="67ebd62a688cd661ebe09988"
-            style={{
+              style={{
               maxWidth: '400px',
               height: '400px',
-            }}
+              }}
             className="shadow-2xl shadow-[#b2ff2e]/30"
           />
         </motion.div> */}
 
         {/* ===== AI-НАСТАВНИК HEADER - АДАПТИВНЫЙ ===== */}
-        <motion.div
+              <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-6 sm:mb-8 relative z-10 px-2"
-        >
+          >
           <motion.h1 
             className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 tracking-wider text-white inline-block"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            style={{ 
+              style={{
               fontFamily: "'Montserrat', sans-serif",
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
               fontWeight: 900,
-            }}
-          >
-            AI-НАСТАВНИК
+              }}
+            >
+              AI-НАСТАВНИК
           </motion.h1>
-          
+
           {/* Тонкая линия под заголовком - по ширине текста */}
           <motion.div 
             className="h-[1px] mx-auto mb-3 sm:mb-4 bg-gradient-to-r from-transparent via-[#b2ff2e] to-transparent rounded-full"
@@ -1587,14 +1587,14 @@ const NeuroHub = () => {
           <Tabs defaultValue="chat" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-[#b2ff2e]/30">
               <TabsTrigger 
-                value="chat" 
+                value="chat"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#b2ff2e] data-[state=active]:to-[#8fcc00] data-[state=active]:text-white flex items-center gap-2"
               >
                 <ChatCircleDots size={18} weight="duotone" />
                 <span>Чат</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="dashboard" 
+                value="dashboard"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#b2ff2e] data-[state=active]:to-[#8fcc00] data-[state=active]:text-white flex items-center gap-2"
               >
                 <ChartBar size={18} weight="duotone" />
@@ -1879,8 +1879,8 @@ const NeuroHub = () => {
                 </CardHeader>
                 <CardContent>
                   <GoalsTodoSystemDB />
-                </CardContent>
-              </Card>
+              </CardContent>
+            </Card>
             </TabsContent>
           </Tabs>
         </div>

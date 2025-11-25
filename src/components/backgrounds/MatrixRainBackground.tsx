@@ -12,17 +12,22 @@ interface MatrixRainBackgroundProps {
  * Используется библиотека react-mdr
  */
 export function MatrixRainBackground({ 
-  opacity = 0.08, // Очень слабо заметный фон (20% от яркости)
-  color = '#00ff00' 
+  opacity = 0.15, // Очень слабо заметный фон (15% от яркости)
+  color = '#b2ff2e' 
 }: MatrixRainBackgroundProps) {
   return (
     <>
       {/* Matrix rain effect */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none w-full h-full"
+        style={{ opacity }}
+      >
         <MatrixRainingLetters 
-          custom_class={`opacity-[${opacity}]`}
+          custom_class="w-full h-full"
           style={{
             filter: `hue-rotate(0deg) brightness(0.8)`,
+            width: '100%',
+            height: '100%',
           }}
         />
       </div>

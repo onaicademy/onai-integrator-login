@@ -23,3 +23,4 @@ COMMENT ON COLUMN public.users.telegram_verification_token IS 'Temporary token f
 
 
 
+
