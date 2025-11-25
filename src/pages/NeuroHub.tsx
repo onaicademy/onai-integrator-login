@@ -55,6 +55,7 @@ import {
 } from "@/lib/openai-assistant";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import { MatrixRainBackground } from '@/components/backgrounds/MatrixRainBackground';
+import { PremiumHeroBackground } from '@/components/3D/PremiumHeroBackground';
 import { 
   Robot, 
   Lightning, 
@@ -663,9 +664,9 @@ const NeuroHub = () => {
   );
 
     return (
-    <div className="relative overflow-hidden min-h-screen">
-      {/* 🎨 ПРЕМИУМ: Matrix Rain - падающие 0 и 1 (СЛАБО 15%) */}
-      <MatrixRainBackground opacity={0.15} />
+    <div className="relative overflow-hidden min-h-screen bg-[#0a0a0a]">
+      {/* 🎨 ПРЕМИУМ: 3D Animated Hero Background */}
+      <PremiumHeroBackground />
 
       {/* ===== POP-UP УВЕДОМЛЕНИЯ ===== */}
       <AnimatePresence>
@@ -743,38 +744,45 @@ const NeuroHub = () => {
           className="text-center mb-6 sm:mb-8 relative z-10 px-2"
           >
           <motion.h1 
-            className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 tracking-wider text-white inline-block"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-wide text-white inline-block"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            style={{
+              textShadow: '0 0 40px rgba(178, 255, 46, 0.15), 0 10px 30px rgba(0, 0, 0, 0.5)',
+            }}
             >
               AI-НАСТАВНИК
           </motion.h1>
 
-          {/* Тонкая линия под заголовком - по ширине текста */}
+          {/* Минималистичная линия-акцент */}
           <motion.div 
-            className="h-[1px] mx-auto mb-3 sm:mb-4 bg-gradient-to-r from-transparent via-[#b2ff2e] to-transparent rounded-full"
+            className="h-px mx-auto mb-6 bg-gradient-to-r from-transparent via-[#6b6b6b] to-transparent"
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
             style={{ 
-              width: '60%',
-              maxWidth: '400px',
-              boxShadow: '0 0 8px rgba(178, 255, 46, 0.3)',
+              width: '200px',
             }}
           />
           
-          <div className="flex items-center justify-center gap-2 text-gray-400 text-xs sm:text-sm md:text-base px-4">
-            <Robot size={20} weight="duotone" className="text-[#b2ff2e] drop-shadow-[0_0_8px_rgba(178,255,46,0.5)]" />
-            <span>Твой персональный помощник в обучении</span>
-          </div>
-          <motion.p 
-            className="text-gray-600 text-[10px] xs:text-xs sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-2" 
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 3, repeat: Infinity }}
+          <motion.div 
+            className="flex items-center justify-center gap-3 text-[#6b6b6b] text-sm md:text-base px-4 mb-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
           >
-            <Waveform size={12} weight="duotone" className="text-[#b2ff2e]" />
-            <span>Система активна • Обновлено 2 часа назад</span>
+            <Robot size={18} weight="duotone" className="text-[#b2ff2e]" />
+            <span className="font-light">Твой персональный помощник в обучении</span>
+          </motion.div>
+          <motion.p 
+            className="text-[#6b6b6b]/60 text-xs flex items-center justify-center gap-2 font-light" 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+          >
+            <Waveform size={10} weight="duotone" className="text-[#b2ff2e]/70" />
+            <span>Система активна</span>
           </motion.p>
         </motion.div>
 

@@ -14,93 +14,93 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 5.88%; /* #0F0F0F */
-    --foreground: 0 0% 100%;
+    /* 🎨 ГРАФИТОВАЯ ПРЕМИАЛЬНАЯ ПАЛИТРА */
+    --background: 0 0% 3.92%; /* #0a0a0a - темно-графитовый фон */
+    --foreground: 0 0% 100%; /* #ffffff - чистый белый */
 
-    --card: 0 0% 10.59%; /* #1B1B1B */
+    --card: 0 0% 8%; /* #141414 - карточки */
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 6.67%;
+    --popover: 0 0% 5%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 120 100% 50%; /* #00ff00 */
-    --primary-foreground: 0 0% 1.96%;
+    --primary: 75 100% 58%; /* #b2ff2e - лаймовый акцент (МИНИМАЛЬНО) */
+    --primary-foreground: 0 0% 3.92%;
 
-    --secondary: 0 0% 16.47%; /* #2A2A2A */
+    --secondary: 0 0% 42%; /* #6b6b6b - средний графитовый */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 11.76%; /* #1E1E1E */
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 15%; /* #262626 - приглушенный */
+    --muted-foreground: 0 0% 42%; /* #6b6b6b */
 
-    --accent: 195 100% 50%; /* #00C8FF */
-    --accent-foreground: 0 0% 1.96%;
+    --accent: 0 0% 95%; /* #f2f2f2 - белый акцент */
+    --accent-foreground: 0 0% 3.92%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 120 100% 50%;
+    --border: 0 0% 20%; /* #333333 - тонкие границы */
+    --input: 0 0% 12%; /* #1f1f1f */
+    --ring: 75 100% 58%; /* #b2ff2e - лаймовый ring */
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --neon: 120 100% 50%; /* #00ff00 */
-    --neon-foreground: 0 0% 1.96%;
+    --neon: 75 100% 58%; /* #b2ff2e - лаймовый (только акценты) */
+    --neon-foreground: 0 0% 3.92%;
     
-    --cyber-blue: 210 92% 60%; /* #4D9AEA */
+    /* УБРАЛИ cyber-blue - минимализм */
 
-    --sidebar-background: 0 0% 6.67%;
+    --sidebar-background: 0 0% 5%; /* #0d0d0d */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 1.96%;
-    --sidebar-accent: 0 0% 11.76%;
+    --sidebar-primary-foreground: 0 0% 3.92%;
+    --sidebar-accent: 0 0% 10%; /* #1a1a1a */
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 75 100% 60%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 75 100% 58%;
   }
 
   .dark {
-    --background: 0 0% 5.88%; /* #0F0F0F */
+    /* 🎨 ГРАФИТОВАЯ ПРЕМИАЛЬНАЯ ПАЛИТРА (темная тема) */
+    --background: 0 0% 3.92%; /* #0a0a0a */
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 10.59%;
+    --card: 0 0% 8%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 6.67%;
+    --popover: 0 0% 5%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 75 100% 60%;
-    --primary-foreground: 0 0% 1.96%;
+    --primary: 75 100% 58%; /* #b2ff2e */
+    --primary-foreground: 0 0% 3.92%;
 
-    --secondary: 0 0% 16.47%;
+    --secondary: 0 0% 42%; /* #6b6b6b */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 11.76%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 42%;
 
-    --accent: 195 100% 50%;
-    --accent-foreground: 0 0% 1.96%;
+    --accent: 0 0% 95%;
+    --accent-foreground: 0 0% 3.92%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 75 100% 60%;
+    --border: 0 0% 20%;
+    --input: 0 0% 12%;
+    --ring: 75 100% 58%;
 
-    --neon: 75 100% 60%;
-    --neon-foreground: 0 0% 1.96%;
-    
-    --cyber-blue: 210 92% 60%; /* #4D9AEA */
+    --neon: 75 100% 58%; /* #b2ff2e */
+    --neon-foreground: 0 0% 3.92%;
 
-    --sidebar-background: 0 0% 6.67%;
+    --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 1.96%;
-    --sidebar-accent: 0 0% 11.76%;
+    --sidebar-primary-foreground: 0 0% 3.92%;
+    --sidebar-accent: 0 0% 10%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 75 100% 60%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 75 100% 58%;
   }
 }
 
