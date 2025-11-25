@@ -55,7 +55,6 @@ import {
 } from "@/lib/openai-assistant";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import { MatrixRainBackground } from '@/components/backgrounds/MatrixRainBackground';
-import { PremiumHeroBackground } from '@/components/3D/PremiumHeroBackground';
 import { 
   Robot, 
   Lightning, 
@@ -115,7 +114,7 @@ const AchievementCard = ({ achievement, index }: { achievement: Achievement; ind
         isCompleted
           ? "bg-gradient-to-br from-[#b2ff2e]/20 to-[#8fcc00]/10 border-[#b2ff2e]/40"
           : inProgress
-          ? "bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border-yellow-500/40"
+          ? "bg-gradient-to-br from-[#6b6b6b]/20 to-[#4a4a4a]/10 border-[#6b6b6b]/40"
           : "bg-zinc-900/30 border-zinc-700/50 opacity-60"
       }`}
     >
@@ -158,7 +157,7 @@ const AchievementCard = ({ achievement, index }: { achievement: Achievement; ind
               initial={{ width: 0 }}
               animate={{ width: `${achievement.progress}%` }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="h-full bg-gradient-to-r from-yellow-500 to-orange-500"
+              className="h-full bg-gradient-to-r from-[#6b6b6b] to-[#4a4a4a]"
             />
           </div>
         </div>
@@ -524,9 +523,9 @@ const NeuroHub = () => {
       { id: "w3", icon: <Lightning weight="fill" className="w-6 h-6 text-yellow-400" />, title: "Speedrunner", description: "+40 XP", status: "completed" as const, progress: 100, category: "speed" },
     ],
     month: [
-      { id: "m1", icon: <TrophyIcon weight="fill" className="w-6 h-6 text-yellow-500" />, title: "10 уроков в месяц", description: "+100 XP", status: "in_progress" as const, progress: 70, current: 7, target: 10, category: "lessons" },
-      { id: "m2", icon: <Target weight="fill" className="w-6 h-6 text-blue-400" />, title: "Все ДЗ сданы", description: "+150 XP", status: "in_progress" as const, progress: 85, current: 17, target: 20, category: "homework" },
-      { id: "m3", icon: <CheckCircle weight="fill" className="w-6 h-6 text-green-400" />, title: "Идеальный месяц", description: "+200 XP", status: "locked" as const, progress: 0, requirement: "Сдай все ДЗ на 100%", category: "perfection" },
+      { id: "m1", icon: <TrophyIcon weight="fill" className="w-6 h-6 text-[#6b6b6b]" />, title: "10 уроков в месяц", description: "+100 XP", status: "in_progress" as const, progress: 70, current: 7, target: 10, category: "lessons" },
+      { id: "m2", icon: <Target weight="fill" className="w-6 h-6 text-[#6b6b6b]" />, title: "Все ДЗ сданы", description: "+150 XP", status: "in_progress" as const, progress: 85, current: 17, target: 20, category: "homework" },
+      { id: "m3", icon: <CheckCircle weight="fill" className="w-6 h-6 text-[#6b6b6b]" />, title: "Идеальный месяц", description: "+200 XP", status: "locked" as const, progress: 0, requirement: "Сдай все ДЗ на 100%", category: "perfection" },
     ],
     permanent: [
       { id: "p1", icon: <Star weight="fill" className="w-6 h-6 text-yellow-400" />, title: "Первые шаги", description: "+20 XP", status: "completed" as const, progress: 100, category: "milestone" },
@@ -665,8 +664,8 @@ const NeuroHub = () => {
 
     return (
     <div className="relative overflow-hidden min-h-screen bg-[#0a0a0a]">
-      {/* 🎨 ПРЕМИУМ: 3D Animated Hero Background */}
-      <PremiumHeroBackground />
+      {/* 🎨 ГРАФИТОВЫЙ ФОН С MATRIX RAIN (15% opacity) */}
+      <MatrixRainBackground opacity={0.15} color="#6b6b6b" />
 
       {/* ===== POP-UP УВЕДОМЛЕНИЯ ===== */}
       <AnimatePresence>
@@ -1087,9 +1086,9 @@ const NeuroHub = () => {
                 className="h-full"
                 style={{ minHeight: '180px' }}
               >
-                <Card className="glass-card border-[#b2ff2e]/20 relative group overflow-hidden h-full">
+                <Card className="glass-card border-[#6b6b6b]/20 relative group overflow-hidden h-full">
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#6b6b6b]/10 to-transparent"
                     animate={{
                       x: ['-100%', '200%'],
                     }}
@@ -1101,14 +1100,14 @@ const NeuroHub = () => {
                   />
                   <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-5 h-5 text-[#b2ff2e]" />
+                      <TrendingUp className="w-5 h-5 text-[#6b6b6b]" />
                       <p className="text-sm text-gray-400">Прогресс курса</p>
                   </div>
                     <p className="text-3xl font-bold text-white mb-1">{courseProgress}%</p>
                     <p className="text-xs text-gray-500">{completedLessons}/{totalLessons} уроков</p>
                     <div className="mt-auto pt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00]"
+                        className="h-full bg-gradient-to-r from-[#6b6b6b] to-[#4a4a4a]"
                         initial={{ width: 0 }}
                         animate={{ width: `${courseProgress}%` }}
                         transition={{ duration: 1, delay: 0.5 }}
@@ -1125,9 +1124,9 @@ const NeuroHub = () => {
                 className="h-full"
                 style={{ minHeight: '180px' }}
               >
-                <Card className="border-orange-500/30 bg-gradient-to-br from-black/50 to-orange-500/5 backdrop-blur-md relative group overflow-hidden h-full">
+                <Card className="border-[#6b6b6b]/20 bg-gradient-to-br from-black/50 to-[#1a1a1a]/50 backdrop-blur-md relative group overflow-hidden h-full">
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#6b6b6b]/10 to-transparent"
                     animate={{
                       x: ['-100%', '200%'],
                     }}
@@ -1139,7 +1138,7 @@ const NeuroHub = () => {
                   />
                   <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center gap-2 mb-2">
-                      <Flame className="w-5 h-5 text-orange-500" />
+                      <Flame className="w-5 h-5 text-[#6b6b6b]" />
                       <p className="text-sm text-gray-400">Streak</p>
                     </div>
                     <p className="text-3xl font-bold text-white mb-1">{streak}</p>
@@ -1147,7 +1146,7 @@ const NeuroHub = () => {
                     {/* Прогресс-бар для streak */}
                     <div className="mt-auto pt-3 h-2 bg-zinc-800/50 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-orange-500 to-red-500"
+                        className="h-full bg-gradient-to-r from-[#6b6b6b] to-[#4a4a4a]"
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min((streak / 30) * 100, 100)}%` }}
                         transition={{ duration: 1, delay: 0.7 }}
@@ -1164,9 +1163,9 @@ const NeuroHub = () => {
                 className="h-full"
                 style={{ minHeight: '180px' }}
               >
-                <Card className="border-yellow-500/30 bg-gradient-to-br from-black/50 to-yellow-500/5 backdrop-blur-md relative group overflow-hidden h-full">
+                <Card className="border-[#6b6b6b]/20 bg-gradient-to-br from-black/50 to-[#1a1a1a]/50 backdrop-blur-md relative group overflow-hidden h-full">
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#6b6b6b]/10 to-transparent"
                     animate={{
                       x: ['-100%', '200%'],
                     }}
@@ -1179,10 +1178,10 @@ const NeuroHub = () => {
                   <CardContent className="p-4 relative z-10 flex flex-col h-full">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-yellow-500" />
+                        <Zap className="w-5 h-5 text-[#6b6b6b]" />
                         <p className="text-sm text-gray-400">Уровень & XP</p>
                   </div>
-                      <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
+                      <Badge className="bg-[#6b6b6b]/20 text-[#6b6b6b] border-[#6b6b6b]/30">
                         Lvl {userLevel}
                       </Badge>
                     </div>
@@ -1191,7 +1190,7 @@ const NeuroHub = () => {
                     {/* XP прогресс-бар */}
                     <div className="mt-auto pt-3 h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 relative"
+                        className="h-full bg-gradient-to-r from-[#6b6b6b] to-[#4a4a4a] relative"
                         initial={{ width: 0 }}
                         animate={{ 
                           width: `${xpProgress}%`,
@@ -1473,7 +1472,7 @@ const NeuroHub = () => {
             transition={{ duration: 0.5, delay: 0.52 }}
             style={{ minHeight: '140px' }}
           >
-            <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-md relative overflow-hidden h-full">
+            <Card className="border-[#6b6b6b]/30 bg-gradient-to-r from-[#1a1a1a]/50 to-[#2a2a2a]/30 backdrop-blur-md relative overflow-hidden h-full">
               <CardContent className="py-4 px-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <motion.div
@@ -1513,9 +1512,9 @@ const NeuroHub = () => {
             transition={{ duration: 0.5, delay: 0.54 }}
             className="hidden lg:block"
           >
-            <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-md relative overflow-hidden">
+            <Card className="border-[#6b6b6b]/30 bg-gradient-to-r from-[#1a1a1a]/50 to-[#2a2a2a]/30 backdrop-blur-md relative overflow-hidden">
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-[#6b6b6b]/10 to-transparent"
                 animate={{
                   x: ['-100%', '200%'],
                 }}
@@ -1551,7 +1550,7 @@ const NeuroHub = () => {
                     <h3 className="text-lg font-bold text-white mb-1">{todayChallenge.title}</h3>
                     <p className="text-gray-300 text-sm mb-3">{todayChallenge.description}</p>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                      <Badge className="bg-[#6b6b6b]/20 text-[#6b6b6b] border-[#6b6b6b]/30">
                         +{todayChallenge.xp} XP
                       </Badge>
                     </div>
@@ -1566,14 +1565,14 @@ const NeuroHub = () => {
                         description: `"${todayChallenge.title}" добавлен в твои задачи!`,
                       });
                     }}
-                    className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold"
+                    className="flex-1 bg-gradient-to-r from-[#b2ff2e] to-[#8fcc00] hover:from-[#b2ff2e] hover:to-[#8fcc00] text-black font-bold"
                   >
                     ✅ Принять
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setChallengeAccepted(true)}
-                    className="border-yellow-500/30 hover:bg-yellow-500/10 text-white"
+                    className="border-[#6b6b6b]/30 hover:bg-[#6b6b6b]/10 text-white"
                   >
                     Позже
                   </Button>
@@ -1908,7 +1907,7 @@ const NeuroHub = () => {
                   <Badge className="bg-[#b2ff2e]/20 text-[#b2ff2e] border-[#b2ff2e]/30 px-3 py-1">
                     ⭐ {completedCount} завершено
                   </Badge>
-                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 px-3 py-1">
+                  <Badge className="bg-[#6b6b6b]/20 text-[#6b6b6b] border-[#6b6b6b]/30 px-3 py-1">
                     ⏳ {inProgressCount} в работе
                   </Badge>
                 </div>
@@ -1965,7 +1964,7 @@ const NeuroHub = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.55 }}
         >
-          <Card className="border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5 backdrop-blur-md">
+          <Card className="border-[#6b6b6b]/30 bg-gradient-to-br from-[#1a1a1a]/50 to-[#2a2a2a]/30 backdrop-blur-md">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Sparkles className="w-7 h-7 text-purple-400" />
@@ -2021,7 +2020,7 @@ const NeuroHub = () => {
                         {advice.actionLink && (
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                            className="bg-gradient-to-r from-[#6b6b6b] to-[#4a4a4a] hover:from-[#6b6b6b] hover:to-[#4a4a4a] text-white"
                           >
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Открыть урок
