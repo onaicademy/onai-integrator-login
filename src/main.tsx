@@ -1,5 +1,11 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+
+// 🎯 ТРЕНДОВЫЙ ШРИФТ ДЛЯ AI-ПЛАТФОРМЫ: INTER (№1 для AI сайтов)
+import '@fontsource/inter/900.css'; // Extra Bold для заголовков
+import '@fontsource/inter/700.css'; // Bold для подзаголовков
+import '@fontsource/inter/400.css'; // Regular для текста
+
 import "./index.css";
 
 // ✅ Глобальная обработка ошибок

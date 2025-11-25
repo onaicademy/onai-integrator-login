@@ -23,36 +23,16 @@ export default {
   	},
   	extend: {
   		fontFamily: {
+  			// 🎯 ТРЕНДОВЫЙ ШРИФТ: INTER (№1 для AI платформ)
   			sans: [
-  				'Space Grotesk',
+  				'Inter',
   				'-apple-system',
   				'BlinkMacSystemFont',
   				'Segoe UI',
   				'sans-serif'
   			],
-  			display: [
-  				'Orbitron',
-  				'sans-serif'
-  			],
   			inter: [
   				'Inter',
-  				'sans-serif'
-  			],
-  			benzin: [
-  				'Russo One',
-  				'sans-serif'
-  			],
-  			gilroy: [
-  				'Gilroy',
-  				'Poppins',
-  				'sans-serif'
-  			],
-  			orbitron: [
-  				'Orbitron',
-  				'sans-serif'
-  			],
-  			'space-grotesk': [
-  				'Space Grotesk',
   				'sans-serif'
   			]
   		},

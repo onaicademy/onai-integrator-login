@@ -452,3 +452,4 @@ COMMENT ON FUNCTION award_xp_for_lesson IS 'Начисляет XP за заве�
 
 
 
+

@@ -33,7 +33,7 @@ export const MatrixRain = () => {
 
       // Green text color (subtle)
       ctx.fillStyle = 'rgba(178, 255, 46, 0.15)'; // Very subtle green
-      ctx.font = `${fontSize}px "Space Grotesk", monospace`;
+      ctx.font = `${fontSize}px "Inter", monospace`;
 
       for (let i = 0; i < drops.length; i++) {
         // Random character

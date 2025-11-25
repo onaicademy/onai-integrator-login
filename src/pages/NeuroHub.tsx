@@ -747,12 +747,6 @@ const NeuroHub = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-              style={{
-              fontFamily: "'Montserrat', sans-serif",
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-              fontWeight: 900,
-              }}
             >
               AI-НАСТАВНИК
           </motion.h1>
@@ -770,13 +764,12 @@ const NeuroHub = () => {
             }}
           />
           
-          <div className="flex items-center justify-center gap-2 text-gray-400 text-xs sm:text-sm md:text-base px-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <div className="flex items-center justify-center gap-2 text-gray-400 text-xs sm:text-sm md:text-base px-4">
             <Robot size={20} weight="duotone" className="text-[#b2ff2e] drop-shadow-[0_0_8px_rgba(178,255,46,0.5)]" />
             <span>Твой персональный помощник в обучении</span>
           </div>
           <motion.p 
             className="text-gray-600 text-[10px] xs:text-xs sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-2" 
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 3, repeat: Infinity }}
           >

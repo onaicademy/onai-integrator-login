@@ -191,7 +191,6 @@ export function AppSidebar({ role }: AppSidebarProps) {
               "drop-shadow-[0_0_8px_rgba(178,255,46,0.3)]",
             isCollapsed && "opacity-0"
             )}
-            style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}
           >
             🎯 НАВИГАЦИЯ
           </SidebarGroupLabel>
@@ -290,7 +289,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                 </div>
                           </motion.div>
                           
-                              {/* Текст - ФУТУРИСТИЧНЫЙ ШРИФТ Space Grotesk */}
+                              {/* Текст - ТРЕНДОВЫЙ ШРИФТ Inter (№1 для AI платформ) */}
                           {!isCollapsed && (
                                 <motion.span 
                                   initial={{ opacity: 0 }}
@@ -301,7 +300,6 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                       ? "text-white drop-shadow-[0_0_10px_rgba(178,255,46,0.4)]" 
                                       : "text-gray-300 group-hover:text-white"
                                   )}
-                                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                                 >
                               {item.title}
                                 </motion.span>

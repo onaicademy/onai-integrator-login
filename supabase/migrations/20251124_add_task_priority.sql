@@ -20,3 +20,4 @@ COMMENT ON COLUMN public.goals.reminder_before IS 'Minutes before due_date to se
 
 
 
+
