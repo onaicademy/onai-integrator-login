@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { api } from "@/utils/apiClient";
 import {
   Brain,
   TrendingUp,
@@ -90,15 +91,35 @@ interface BotConflict {
 export default function AIAnalytics() {
   const [period, setPeriod] = useState<"day" | "week" | "month">("week");
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock данные
-  const mockMetrics = {
-    total_students: 150,
-    active_students: 120,
-    avg_mood_score: 7.2,
-    ai_conversations: 89,
-    problems_detected: 8,
-    needs_attention: 3,
+  // Загружаем реальные данные из API
+  useEffect(() => {
+    loadDashboardStats();
+  }, [period]);
+
+  const loadDashboardStats = async () => {
+    setIsLoading(true);
+    try {
+      console.log('📊 [AIAnalytics] Загружаем dashboard stats...');
+      const response = await api.get('/api/analytics/dashboard-stats');
+      const data = response.data || response;
+      console.log('✅ [AIAnalytics] Dashboard stats загружены:', data);
+      setDashboardData(data);
+    } catch (error: any) {
+      console.error('❌ [AIAnalytics] Ошибка загрузки stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Реальные метрики (с fallback на моки если API не загружен)
+  const metrics = dashboardData?.kpi || {
+    total_students: 0,
+    active_today: 0,
+    chat_sentiment_score: 7.0,
+    attention_needed: 0,
   };
 
   // Mock студенты с ДЕТАЛЬНЫМИ данными
@@ -316,7 +337,7 @@ export default function AIAnalytics() {
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white font-display">
             🤖 AI-аналитика
           </h1>
           <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">
@@ -356,29 +377,27 @@ export default function AIAnalytics() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           title="Всего студентов"
-          value={mockMetrics.total_students}
+          value={isLoading ? '...' : metrics.total_students}
           icon={<Users className="w-5 h-5" />}
-          trend="+12%"
-          trendUp={true}
         />
         <MetricCard
           title="Активных сегодня"
-          value={mockMetrics.active_students}
+          value={isLoading ? '...' : metrics.active_today}
           icon={<Target className="w-5 h-5" />}
         />
         <MetricCard
           title="Средн. настроение"
-          value={`${mockMetrics.avg_mood_score}/10`}
+          value={isLoading ? '...' : `${metrics.chat_sentiment_score}/10`}
           icon={<Brain className="w-5 h-5" />}
-          badge="😊 Позитивное"
-          badgeColor="green"
+          badge={metrics.chat_sentiment_score >= 7 ? "😊 Позитивное" : metrics.chat_sentiment_score >= 5 ? "😐 Нейтральное" : "😟 Негативное"}
+          badgeColor={metrics.chat_sentiment_score >= 7 ? "green" : metrics.chat_sentiment_score >= 5 ? "yellow" : "red"}
         />
         <MetricCard
           title="Требуют внимания"
-          value={mockMetrics.needs_attention}
+          value={isLoading ? '...' : metrics.attention_needed}
           icon={<AlertTriangle className="w-5 h-5" />}
-          badge="Критично"
-          badgeColor="red"
+          badge={metrics.attention_needed > 0 ? "Критично" : "Всё в порядке"}
+          badgeColor={metrics.attention_needed > 0 ? "red" : "green"}
           onClick={() => {
             // Прокрутить к вкладке "Студенты"
             document.querySelector('[value="students"]')?.click();

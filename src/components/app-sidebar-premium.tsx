@@ -50,11 +50,12 @@ interface AppSidebarProps {
 }
 
 /**
- * 🎨 ПРЕМИУМ SIDEBAR с GLASSMORPHISM
- * - Matrix Rain фон
- * - 3D иконки из Phosphor Icons
- * - Glassmorphism эффекты
- * - Футуристичные анимации
+ * 🎯 CYBER-ARCHITECTURE SIDEBAR
+ * - Minimalist Design
+ * - Acid Green (#00FF94) Accents
+ * - JetBrains Mono for System Labels
+ * - Glassmorphism 2.0
+ * - Premium Depth & Clarity
  */
 export function AppSidebarPremium({ role }: AppSidebarProps) {
   console.log('📋 AppSidebarPremium роль:', role);
@@ -81,24 +82,20 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
   return (
     <Sidebar 
       collapsible="offcanvas" 
-      className="border-r-2 border-[#b2ff2e]/30 relative overflow-hidden"
+      className="border-r border-white/8 relative overflow-hidden"
       style={{
         background: `
           linear-gradient(
             135deg,
-            rgba(0, 0, 0, 0.85) 0%,
-            rgba(10, 10, 10, 0.9) 25%,
-            rgba(178, 255, 46, 0.05) 50%,
-            rgba(5, 5, 5, 0.88) 75%,
-            rgba(0, 0, 0, 0.9) 100%
+            rgba(3, 3, 3, 0.9) 0%,
+            rgba(10, 10, 10, 0.95) 50%,
+            rgba(3, 3, 3, 0.9) 100%
           )
         `,
-        backdropFilter: 'blur(60px) saturate(180%)',
+        backdropFilter: 'blur(16px) saturate(180%)',
         boxShadow: `
-          inset 3px 0 0 rgba(178, 255, 46, 0.2),
-          inset 0 0 80px rgba(178, 255, 46, 0.06),
-          10px 0 80px rgba(0, 0, 0, 0.9),
-          0 0 120px rgba(178, 255, 46, 0.03)
+          inset 1px 0 0 rgba(0, 255, 148, 0.08),
+          8px 0 40px rgba(0, 0, 0, 0.8)
         `,
       }}
     >
@@ -111,8 +108,8 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              backgroundColor: '#b2ff2e',
-              boxShadow: '0 0 4px #b2ff2e',
+              backgroundColor: '#00FF94',
+              boxShadow: '0 0 4px #00FF94',
             }}
             animate={{
               y: ['-10%', '110vh'],
@@ -133,7 +130,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
         <motion.div
           className="absolute top-0 left-0 w-full h-full"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(178, 255, 46, 0.12), transparent 70%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(0, 255, 148, 0.08), transparent 70%)',
           }}
           animate={{
             scale: [1, 1.3, 1],
@@ -147,13 +144,13 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
         />
       </div>
 
-      <SidebarHeader className="border-b-2 border-[#b2ff2e]/30 px-4 sm:px-6 py-4 sm:py-6 relative overflow-hidden">
+      <SidebarHeader className="border-b border-white/8 px-4 sm:px-6 py-4 sm:py-6 relative overflow-hidden">
         {/* Светящийся glassmorphism фон хедера */}
         <motion.div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(135deg, rgba(178, 255, 46, 0.15) 0%, rgba(0, 255, 0, 0.08) 100%)',
-            backdropFilter: 'blur(20px)',
+            background: 'linear-gradient(135deg, rgba(0, 255, 148, 0.08) 0%, rgba(0, 255, 148, 0.04) 100%)',
+            backdropFilter: 'blur(16px)',
           }}
           animate={{
             opacity: [0.4, 0.7, 0.4],
@@ -172,15 +169,15 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
           {/* ЛОГОТИП */}
           <motion.div 
             className="relative"
-            whileHover={{ scale: 1.08, rotate: [0, -5, 5, 0] }}
-            transition={{ duration: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
           >
             {isCollapsed ? (
               <div className="relative">
-                <OnAILogo variant="icon" className="w-12 h-12 text-[#b2ff2e] drop-shadow-[0_0_15px_rgba(178,255,46,0.7)]" />
+                <OnAILogo variant="icon" className="w-12 h-12 text-[#00FF94] drop-shadow-[0_0_15px_rgba(0,255,148,0.5)]" />
                 {/* Пульсирующее кольцо */}
                 <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-[#b2ff2e]/40"
+                  className="absolute inset-0 rounded-full border-2 border-[#00FF94]/40"
                   animate={{
                     scale: [1, 1.5, 1],
                     opacity: [0.8, 0, 0.8],
@@ -194,10 +191,10 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
               </div>
             ) : (
               <div className="relative">
-                <OnAILogo variant="full" className="h-10 w-auto text-white drop-shadow-[0_0_25px_rgba(178,255,46,0.4)]" />
+                <OnAILogo variant="full" className="h-10 w-auto text-white drop-shadow-[0_0_20px_rgba(0,255,148,0.3)]" />
                 {/* Светящийся фон за логотипом */}
                 <motion.div
-                  className="absolute -inset-2 bg-[#b2ff2e]/10 blur-xl rounded-full"
+                  className="absolute -inset-2 bg-[#00FF94]/10 blur-xl rounded-full"
                   animate={{
                     opacity: [0.3, 0.6, 0.3],
                     scale: [0.9, 1.1, 0.9],
@@ -217,7 +214,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
           <motion.div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(90deg, transparent, #b2ff2e, transparent)',
+              background: 'linear-gradient(90deg, transparent, #00FF94, transparent)',
             }}
             animate={{
               x: ['-100%', '100%'],
@@ -235,14 +232,13 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupLabel 
             className={cn(
-              "px-3 mb-3 text-xs font-bold uppercase tracking-[0.3em] transition-all duration-300 flex items-center gap-2",
-              "bg-gradient-to-r from-[#b2ff2e] to-[#00ff00] bg-clip-text text-transparent",
-              "drop-shadow-[0_0_10px_rgba(178,255,46,0.4)]",
+              "px-3 mb-3 text-[10px] font-mono font-medium uppercase tracking-[0.25em] transition-all duration-300 flex items-center gap-2",
+              "text-cyber-gray",
               isCollapsed && "opacity-0"
             )}
           >
-            <Lightning size={16} weight="duotone" className="text-[#b2ff2e]" />
-            <span>НАВИГАЦИЯ</span>
+            <Lightning size={14} weight="duotone" className="text-[#00FF94]" />
+            <span>⚡ НАВИГАЦИЯ</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
@@ -266,8 +262,8 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                               "hover:scale-[1.04] active:scale-[0.96]",
                               "border-2 border-transparent",
                               isActive 
-                                ? "bg-gradient-to-r from-[#b2ff2e]/30 via-[#00ff00]/25 to-[#b2ff2e]/20 border-[#b2ff2e]/50 shadow-[0_0_25px_rgba(178,255,46,0.3),inset_0_0_25px_rgba(178,255,46,0.15)]"
-                                : "hover:bg-[#b2ff2e]/15 hover:border-[#b2ff2e]/30 hover:shadow-[0_0_20px_rgba(178,255,46,0.2)] backdrop-blur-sm"
+                                ? "bg-gradient-to-r from-[#00FF94]/20 via-[#00FF94]/15 to-[#00FF94]/10 border-[#00FF94]/30 shadow-[0_0_20px_rgba(0,255,148,0.2)]"
+                                : "hover:bg-[#00FF94]/10 hover:border-[#00FF94]/20 hover:shadow-[0_0_15px_rgba(0,255,148,0.15)] backdrop-blur-sm"
                             )
                           }
                           style={{
@@ -280,7 +276,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                               {isActive && (
                                 <>
                                   <motion.div
-                                    className="absolute inset-0 bg-gradient-to-r from-[#b2ff2e]/40 via-[#00ff00]/30 to-transparent"
+                                    className="absolute inset-0 bg-gradient-to-r from-[#00FF94]/30 via-[#00FF94]/20 to-transparent"
                                     animate={{
                                       x: ['-100%', '200%'],
                                     }}
@@ -291,7 +287,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                                     }}
                                   />
                                   <motion.div
-                                    className="absolute inset-0 bg-[#b2ff2e]/15"
+                                    className="absolute inset-0 bg-[#00FF94]/10"
                                     animate={{
                                       opacity: [0.6, 1, 0.6],
                                     }}
@@ -319,15 +315,15 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                                     className={cn(
                                       "w-6 h-6 transition-all duration-300",
                                       isActive 
-                                        ? "text-[#b2ff2e] drop-shadow-[0_0_12px_rgba(178,255,46,1)]" 
-                                        : "text-gray-400 group-hover:text-[#b2ff2e] group-hover:drop-shadow-[0_0_8px_rgba(178,255,46,0.6)]"
+                                        ? "text-[#00FF94] drop-shadow-[0_0_10px_rgba(0,255,148,0.8)]" 
+                                        : "text-gray-400 group-hover:text-[#00FF94] group-hover:drop-shadow-[0_0_8px_rgba(0,255,148,0.5)]"
                                     )}
                                     strokeWidth={2.5}
                                   />
                                   {/* Светящееся кольцо вокруг иконки */}
                                   {isActive && (
                                     <motion.div
-                                      className="absolute inset-0 rounded-full bg-[#b2ff2e]/40 blur-md"
+                                      className="absolute inset-0 rounded-full bg-[#00FF94]/30 blur-md"
                                       animate={{
                                         scale: [1, 1.6, 1],
                                         opacity: [0.6, 0, 0.6],
@@ -363,9 +359,9 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                                 <motion.div
                                   initial={{ width: 0, opacity: 0 }}
                                   animate={{ width: "5px", opacity: 1 }}
-                                  className="absolute right-0 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-b from-[#b2ff2e] via-[#00ff00] to-[#b2ff2e] rounded-l-full"
+                                  className="absolute right-0 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-b from-[#00FF94] via-[#00FF94] to-[#00FF94] rounded-l-full"
                                   style={{
-                                    boxShadow: '0 0 20px rgba(178, 255, 46, 1), 0 0 40px rgba(178, 255, 46, 0.5)'
+                                    boxShadow: '0 0 15px rgba(0, 255, 148, 0.8), 0 0 30px rgba(0, 255, 148, 0.4)'
                                   }}
                                 />
                               )}
@@ -374,7 +370,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                               <motion.div
                                 className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                 style={{
-                                  background: 'radial-gradient(circle at center, rgba(178, 255, 46, 0.2), transparent 70%)',
+                                  background: 'radial-gradient(circle at center, rgba(0, 255, 148, 0.15), transparent 70%)',
                                   backdropFilter: 'blur(8px)',
                                 }}
                               />
@@ -391,12 +387,12 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-4 sm:px-6 py-4 sm:py-5 border-t-2 border-[#b2ff2e]/30 relative overflow-hidden">
+      <SidebarFooter className="px-4 sm:px-6 py-4 sm:py-5 border-t border-white/8 relative overflow-hidden">
         {/* ПРЕМИУМ: Glassmorphism футер */}
         <motion.div 
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(180deg, rgba(178, 255, 46, 0.08), rgba(178, 255, 46, 0.2))',
+            background: 'linear-gradient(180deg, rgba(0, 255, 148, 0.05), rgba(0, 255, 148, 0.08))',
             backdropFilter: 'blur(20px)',
           }}
           animate={{
@@ -416,8 +412,8 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
               key={i}
               className="absolute w-1.5 h-1.5 rounded-full"
               style={{
-                backgroundColor: '#b2ff2e',
-                boxShadow: '0 0 8px #b2ff2e',
+                backgroundColor: '#00FF94',
+                boxShadow: '0 0 8px #00FF94',
               }}
               initial={{ 
                 x: Math.random() * 100 + '%', 
@@ -446,41 +442,41 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
               exit={{ opacity: 0, y: 10 }}
               className="relative z-10 space-y-3"
             >
-              {/* Status indicator с glassmorphism */}
+              {/* System Status - CYBER ARCHITECTURE */}
               <motion.div 
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-[#b2ff2e]/30 relative overflow-hidden"
+                className="flex items-center justify-between px-4 py-3 rounded-xl border border-white/8 relative overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(178, 255, 46, 0.15), rgba(0, 255, 0, 0.1))',
-                  backdropFilter: 'blur(15px)',
-                  boxShadow: '0 0 20px rgba(178, 255, 46, 0.2)',
+                  background: 'rgba(10, 10, 10, 0.6)',
+                  backdropFilter: 'blur(16px)',
                 }}
-                whileHover={{ scale: 1.02 }}
               >
-                <motion.div
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    boxShadow: ['0 0 8px #b2ff2e', '0 0 20px #b2ff2e', '0 0 8px #b2ff2e'],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                  }}
-                  className="w-3 h-3 rounded-full bg-[#b2ff2e]"
-                />
-                <div className="flex items-center gap-2">
-                  <Atom size={18} weight="duotone" className="text-[#b2ff2e]" />
-                  <span className="text-xs font-bold text-[#b2ff2e] drop-shadow-[0_0_8px_rgba(178,255,46,0.6)]">
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      boxShadow: ['0 0 8px #00FF94', '0 0 15px #00FF94', '0 0 8px #00FF94'],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                    className="w-2 h-2 rounded-full bg-[#00FF94]"
+                  />
+                  <span className="text-[10px] font-mono font-medium text-cyber-gray uppercase tracking-wider">
                     СИСТЕМА АКТИВНА
                   </span>
                 </div>
+                <span className="text-[10px] font-mono font-medium text-cyber-gray uppercase tracking-wider">
+                  V.3.0
+                </span>
               </motion.div>
               
+              {/* Copyright - CYBER ARCHITECTURE */}
               <div className="px-3 space-y-1">
-                <p className="text-[11px] font-semibold text-gray-400 flex items-center gap-2">
-                  <Robot size={14} weight="duotone" className="text-[#b2ff2e]" />
-                  <span>© 2025 onAI Academy</span>
+                <p className="text-[10px] font-mono text-cyber-gray">
+                  © 2025 onAI Academy
                 </p>
-                <p className="text-[10px] font-medium text-gray-500 pl-5">
+                <p className="text-[9px] font-mono text-gray-600 uppercase tracking-wider">
                   Premium Learning Platform
                 </p>
               </div>

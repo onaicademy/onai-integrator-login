@@ -291,7 +291,7 @@ export default function Login() {
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#00ff00] flex items-center justify-center flex-shrink-0">
                   <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-[#00ff00]" />
                 </div>
-                <h2 className="text-4xl sm:text-5xl font-bold text-white">ВХОД</h2>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white font-display">ВХОД</h2>
               </motion.div>
             </div>
 

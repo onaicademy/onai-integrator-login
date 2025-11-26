@@ -383,10 +383,25 @@ const Lesson = () => {
   };
 
   // Завершение видео
-  const handleEnded = () => {
+  const handleEnded = async () => {
     setPlaying(false);
     trackEvent('complete');
     console.log('✅ Видео завершено');
+    
+    // ✅ Явно отмечаем урок как завершенный
+    try {
+      if (user?.id && lessonId) {
+        await api.post('/api/lessons/complete', {
+          user_id: user.id,
+          lesson_id: parseInt(lessonId),
+          video_completed: true,
+        });
+        setIsCompleted(true);
+        console.log('✅ Урок отмечен как завершенный');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка сохранения завершения урока:', error);
+    }
   };
 
   // Изменение скорости
@@ -860,7 +875,7 @@ const Lesson = () => {
               </div>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 font-display">
             {lesson.title}
           </h1>
           <p className="text-sm sm:text-base text-gray-400 max-w-3xl leading-relaxed mb-4">

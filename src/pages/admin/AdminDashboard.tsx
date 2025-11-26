@@ -125,7 +125,7 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-5xl font-bold text-white mb-4">
+          <h1 className="text-5xl font-bold text-white mb-4 font-display">
             Админ-панель
           </h1>
           <p className="text-gray-400 text-lg">
@@ -228,7 +228,7 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
         </div>
 
         {/* Текст */}
-        <h2 className="text-2xl font-bold text-white mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2 font-display">
           {title}
         </h2>
         <p className="text-gray-400 text-sm mb-6">

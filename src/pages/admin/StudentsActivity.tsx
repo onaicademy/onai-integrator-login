@@ -55,6 +55,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StudentCuratorChats } from "@/components/admin/StudentCuratorChats";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
@@ -538,7 +540,7 @@ export default function StudentsActivity() {
               <Users className="w-6 h-6 text-[#00ff00]" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Участники</h1>
+              <h1 className="text-3xl font-bold text-white font-display">Участники</h1>
               <p className="text-gray-400 text-sm">Управление студентами платформы</p>
             </div>
           </div>
@@ -1033,64 +1035,81 @@ export default function StudentsActivity() {
               </DialogDescription>
             </DialogHeader>
             {selectedStudent && (
-              <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                {/* Общая информация */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <InfoCard icon={Mail} label="Email" value={selectedStudent.email} />
-                  <InfoCard icon={Shield} label="Роль" value={selectedStudent.role} />
-                  <InfoCard
-                    icon={CheckCircle}
-                    label="Статус"
-                    value={selectedStudent.is_active ? "Активен" : "Неактивен"}
-                    valueColor={selectedStudent.is_active ? "text-[#00ff00]" : "text-red-500"}
-                  />
-                  <InfoCard
-                    icon={Calendar}
-                    label="Срок доступа"
-                    value={selectedStudent.account_expires_at ? new Date(selectedStudent.account_expires_at).toLocaleDateString() : "Бессрочно"}
-                  />
-                </div>
+              <Tabs defaultValue="overview" className="mt-4">
+                <TabsList className="grid w-full grid-cols-2 bg-black border border-gray-800">
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-sm">
+                    Обзор
+                  </TabsTrigger>
+                  <TabsTrigger value="ai-chats" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-sm">
+                    AI Чаты
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Статистика обучения */}
-                <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
-                  Статистика обучения
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <StatDisplayCard icon={Award} label="XP Очков" value={selectedStudent.total_xp || 0} color="#00ff00" />
-                  <StatDisplayCard icon={Target} label="Уровень" value={selectedStudent.level || 1} color="#00ff00" />
-                  <StatDisplayCard icon={Flame} label="Стрик" value={`${selectedStudent.streak_days || 0} дней`} color="#ff8c00" />
-                  <StatDisplayCard icon={Clock} label="Часов на платформе" value={`${((selectedStudent.total_study_time || 0) / 60).toFixed(1)} ч`} color="#00bfff" />
-                </div>
-
-                {/* Прогресс по курсам */}
-                <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
-                  Прогресс по курсам
-                </h3>
-                <div className="space-y-4">
-                  {mockCourseProgress.map((course, index) => (
-                    <CourseProgressCard key={index} course={course} />
-                  ))}
-                </div>
-
-                {/* Последняя активность */}
-                <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
-                  Последняя активность
-                </h3>
-                <div className="space-y-3">
-                  {mockRecentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                      <div className="w-8 h-8 rounded-full bg-[#00ff00]/10 flex items-center justify-center flex-shrink-0">
-                        {activity.type === 'lesson_completed' && <CheckCircle className="w-4 h-4 text-[#00ff00]" />}
-                        {activity.type === 'module_completed' && <Award className="w-4 h-4 text-[#00ff00]" />}
-                        {activity.type === 'xp_earned' && <Zap className="w-4 h-4 text-[#00ff00]" />}
-                      </div>
-                      <p className="text-sm text-gray-300">
-                        {activity.description} <span className="text-gray-500 text-xs">({activity.date})</span>
-                      </p>
+                <TabsContent value="overview" className="mt-4">
+                  <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4">
+                    {/* Общая информация */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <InfoCard icon={Mail} label="Email" value={selectedStudent.email} />
+                      <InfoCard icon={Shield} label="Роль" value={selectedStudent.role} />
+                      <InfoCard
+                        icon={CheckCircle}
+                        label="Статус"
+                        value={selectedStudent.is_active ? "Активен" : "Неактивен"}
+                        valueColor={selectedStudent.is_active ? "text-[#00ff00]" : "text-red-500"}
+                      />
+                      <InfoCard
+                        icon={Calendar}
+                        label="Срок доступа"
+                        value={selectedStudent.account_expires_at ? new Date(selectedStudent.account_expires_at).toLocaleDateString() : "Бессрочно"}
+                      />
                     </div>
-                  ))}
-                </div>
-              </div>
+
+                    {/* Статистика обучения */}
+                    <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
+                      Статистика обучения
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <StatDisplayCard icon={Award} label="XP Очков" value={selectedStudent.total_xp || 0} color="#00ff00" />
+                      <StatDisplayCard icon={Target} label="Уровень" value={selectedStudent.level || 1} color="#00ff00" />
+                      <StatDisplayCard icon={Flame} label="Стрик" value={`${selectedStudent.streak_days || 0} дней`} color="#ff8c00" />
+                      <StatDisplayCard icon={Clock} label="Часов на платформе" value={`${((selectedStudent.total_study_time || 0) / 60).toFixed(1)} ч`} color="#00bfff" />
+                    </div>
+
+                    {/* Прогресс по курсам */}
+                    <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
+                      Прогресс по курсам
+                    </h3>
+                    <div className="space-y-4">
+                      {mockCourseProgress.map((course, index) => (
+                        <CourseProgressCard key={index} course={course} />
+                      ))}
+                    </div>
+
+                    {/* Последняя активность */}
+                    <h3 className="text-xl font-bold text-white border-b border-zinc-800 pb-2 mb-4">
+                      Последняя активность
+                    </h3>
+                    <div className="space-y-3">
+                      {mockRecentActivity.map((activity, index) => (
+                        <div key={index} className="flex items-center gap-3 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
+                          <div className="w-8 h-8 rounded-full bg-[#00ff00]/10 flex items-center justify-center flex-shrink-0">
+                            {activity.type === 'lesson_completed' && <CheckCircle className="w-4 h-4 text-[#00ff00]" />}
+                            {activity.type === 'module_completed' && <Award className="w-4 h-4 text-[#00ff00]" />}
+                            {activity.type === 'xp_earned' && <Zap className="w-4 h-4 text-[#00ff00]" />}
+                          </div>
+                          <p className="text-sm text-gray-300">
+                            {activity.description} <span className="text-gray-500 text-xs">({activity.date})</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="ai-chats" className="mt-4">
+                  <StudentCuratorChats userId={selectedStudent.id} />
+                </TabsContent>
+              </Tabs>
             )}
             <DialogFooter className="mt-6">
               <Button onClick={() => setSelectedStudent(null)} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">Закрыть</Button>

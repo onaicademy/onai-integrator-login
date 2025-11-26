@@ -51,6 +51,7 @@ import {
 import { StatCard } from "@/components/admin/StatCard";
 import { MetricCard } from "@/components/admin/MetricCard";
 import { ActivitySection } from "@/components/admin/ActivitySection";
+import { StudentCuratorChats } from "@/components/admin/StudentCuratorChats";
 import {
   USE_MOCK_DATA,
   MOCK_USERS,
@@ -383,7 +384,7 @@ export default function Activity() {
                 <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ff00]" />
               </div>
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white">
+                <h1 className="text-3xl sm:text-4xl font-bold text-white font-display">
                   Панель Активности
                 </h1>
                 <p className="text-gray-400 mt-1 text-sm sm:text-base">Комплексная аналитика платформы и учеников</p>
@@ -797,10 +798,11 @@ export default function Activity() {
             </DialogHeader>
             {selectedUser && (
               <Tabs defaultValue="overview" className="mt-4">
-                <TabsList className="grid w-full grid-cols-3 bg-black border border-gray-800">
+                <TabsList className="grid w-full grid-cols-4 bg-black border border-gray-800">
                   <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
                   <TabsTrigger value="achievements" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Достижения</TabsTrigger>
                   <TabsTrigger value="diagnostics" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Диагностика</TabsTrigger>
+                  <TabsTrigger value="ai-chats" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">AI Чаты</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4 mt-4">
@@ -926,6 +928,11 @@ export default function Activity() {
                   ) : (
                     <p className="text-center text-gray-400 py-8 text-sm">Нет данных диагностики</p>
                   )}
+                </TabsContent>
+
+                {/* AI Чаты */}
+                <TabsContent value="ai-chats" className="mt-4">
+                  <StudentCuratorChats userId={selectedUser.id} />
                 </TabsContent>
               </Tabs>
             )}

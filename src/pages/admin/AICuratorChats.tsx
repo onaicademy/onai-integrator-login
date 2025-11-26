@@ -111,7 +111,7 @@ export default function AICuratorChats() {
       {/* Заголовок */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 font-display">
             <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             Диалоги с AI-куратором
           </h1>

@@ -23,23 +23,35 @@ export default {
   	},
   	extend: {
   		fontFamily: {
-  			// 🎯 ТРЕНДОВЫЙ ШРИФТ: INTER (№1 для AI платформ)
+  			// 🎯 CYBER-ARCHITECTURE: 3-Font System
   			sans: [
-  				'Inter',
+  				'Manrope', // Body, UI, Descriptions
   				'-apple-system',
   				'BlinkMacSystemFont',
   				'Segoe UI',
   				'sans-serif'
   			],
-  			inter: [
-  				'Inter',
+  			display: [
+  				'Space Grotesk', // H1, H2, Big Numbers
   				'sans-serif'
+  			],
+  			mono: [
+  				'JetBrains Mono', // System Labels, Micro-Text (V.3.0, REC, WAITING)
+  				'Roboto Mono',
+  				'monospace'
   			]
   		},
-  		colors: {
-  			// ✅ ФИКС: Премиум цвета
-  			'brand-green': '#b2ff2e',
-  			'brand-dark': '#0a0a0a',
+		colors: {
+			// 🎯 CYBER-ARCHITECTURE: Strict Color Palette
+			'cyber-void': '#030303', // Background (Infinite Depth)
+			'cyber-surface': '#0A0A0A', // Surface (Cards)
+			'cyber-acid': '#00FF94', // Primary (Acid Green - Money, Growth, CTA)
+			'cyber-signal': '#FF3366', // Secondary (Signal Red - Live, Errors, REC)
+			'cyber-white': '#FFFFFF', // Text Main (Holo White)
+			'cyber-gray': '#9CA3AF', // Text Muted (Tech Gray)
+			// Legacy (for compatibility)
+			'brand-green': '#00FF94',
+			'brand-dark': '#0a0a0a',
   			border: 'hsl(var(--border))',
   			neon: {
   				DEFAULT: 'hsl(var(--neon))',

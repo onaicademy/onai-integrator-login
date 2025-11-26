@@ -739,7 +739,7 @@ const Course = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 text-white font-inter leading-tight"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 text-white font-display leading-tight"
               >
                 Интегратор{" "}
                 <span className="relative inline-block">
@@ -856,7 +856,7 @@ const Course = () => {
           {/* Modules Section */}
           <section className="lg:col-span-2" aria-labelledby="modules-heading">
             <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-6">
-              <h2 id="modules-heading" className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight">
+              <h2 id="modules-heading" className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight font-display">
                 Модули курса
               </h2>
               

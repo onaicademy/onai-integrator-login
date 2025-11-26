@@ -872,7 +872,7 @@ const Module = () => {
                   <p className="text-xs sm:text-sm text-[#00ff00] mb-2 uppercase tracking-wide font-semibold">
                     Модуль {module.id}
                   </p>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 font-display">
                     {module.title}
                   </h1>
                   <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
@@ -918,7 +918,7 @@ const Module = () => {
         {/* Lessons Section */}
         <section className="relative z-10">
           <div className="flex items-center justify-between mb-6 relative z-20">
-            <h2 className="text-xl sm:text-2xl font-bold text-white">
+            <h2 className="text-xl sm:text-2xl font-bold text-white font-display">
               Уроки модуля
             </h2>
             

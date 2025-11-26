@@ -65,7 +65,7 @@ export default function TestQuery() {
       <div className="flex items-center gap-3">
         <Database className="w-8 h-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">🔍 Диагностика БД Supabase</h1>
+          <h1 className="text-3xl font-bold font-display">🔍 Диагностика БД Supabase</h1>
           <p className="text-muted-foreground">Проверка структуры базы данных</p>
         </div>
       </div>

@@ -245,7 +245,7 @@ export default function Achievements() {
               <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ff00]" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white font-display">
                 Достижения
               </h1>
               <p className="text-gray-400 mt-1 text-sm sm:text-base">

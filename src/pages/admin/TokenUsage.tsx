@@ -130,7 +130,7 @@ export default function TokenUsagePage() {
           transition={{ duration: 0.5 }}
         >
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Отслеживание токенов</h1>
+            <h1 className="text-4xl font-bold text-white mb-2 font-display">Отслеживание токенов</h1>
             <p className="text-gray-400">Статистика использования OpenAI API</p>
           </div>
           <div className="flex gap-2">

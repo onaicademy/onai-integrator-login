@@ -54,7 +54,7 @@ export default function Messages() {
             transition={{ delay: 0.3 }}
             className="relative z-10"
           >
-            <h1 className="text-5xl font-bold text-white mb-2">
+            <h1 className="text-5xl font-bold text-white mb-2 font-display">
               onAI<span className="text-[#00ff00]">gram</span>
             </h1>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-6">

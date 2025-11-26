@@ -494,7 +494,7 @@ const Profile = () => {
                   className="space-y-3"
                 >
                   <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                    <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 font-display">
                       {profileData?.profile?.full_name || 'Студент'}
                     </h1>
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
@@ -633,7 +633,7 @@ const Profile = () => {
             transition={{ delay: 0.7 }}
             className="mb-8"
           >
-            <h2 className="text-2xl font-bold text-white mb-6">Настройки профиля</h2>
+            <h2 className="text-2xl font-bold text-white mb-6 font-display">Настройки профиля</h2>
             
             <div className="space-y-6">
               {/* Аватар */}

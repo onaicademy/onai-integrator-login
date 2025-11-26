@@ -1,8 +1,7 @@
-/* 🎨 ПРЕМИУМ: Графитовый фон с шумом и 3D эффектами */
+/* 🎨 CYBER-ARCHITECTURE: Infinite Depth Background */
 @import './styles/graphite-background.css';
 
-/* 🎯 ТРЕНДОВЫЙ ШРИФТ ДЛЯ AI ПЛАТФОРМЫ: INTER (№1 для tech/AI сайтов) */
-/* Импорты через fontsource в main.tsx */
+/* 🎯 CYBER-ARCHITECTURE: 3-Font System (Display + Body + Mono) */
 
 @tailwind base;
 @tailwind components;
@@ -14,93 +13,93 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* 🎨 ГРАФИТОВАЯ ПРЕМИАЛЬНАЯ ПАЛИТРА */
-    --background: 0 0% 3.92%; /* #0a0a0a - темно-графитовый фон */
-    --foreground: 0 0% 100%; /* #ffffff - чистый белый */
+    /* 🎯 CYBER-ARCHITECTURE: Backgrounds (Infinite Depth) */
+    --background: 0 0% 1.18%; /* #030303 - Cyber Void */
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 8%; /* #141414 - карточки */
+    --card: 0 0% 3.92%; /* #0A0A0A - Cyber Surface */
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 5%;
+    --popover: 0 0% 3.92%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 75 100% 58%; /* #b2ff2e - лаймовый акцент (МИНИМАЛЬНО) */
-    --primary-foreground: 0 0% 3.92%;
+    /* 🎯 CYBER-ARCHITECTURE: Accents (Neon Lights) */
+    --primary: 160 100% 50%; /* #00FF94 - Acid Green */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 42%; /* #6b6b6b - средний графитовый */
+    --secondary: 347 100% 60%; /* #FF3366 - Signal Red */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 15%; /* #262626 - приглушенный */
-    --muted-foreground: 0 0% 42%; /* #6b6b6b */
+    --muted: 0 0% 3.92%;
+    --muted-foreground: 215 14% 66%; /* #9CA3AF - Tech Gray */
 
-    --accent: 0 0% 95%; /* #f2f2f2 - белый акцент */
-    --accent-foreground: 0 0% 3.92%;
+    --accent: 160 100% 50%; /* #00FF94 - Acid Green */
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 347 100% 60%; /* #FF3366 - Signal Red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%; /* #333333 - тонкие границы */
-    --input: 0 0% 12%; /* #1f1f1f */
-    --ring: 75 100% 58%; /* #b2ff2e - лаймовый ring */
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 160 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --neon: 75 100% 58%; /* #b2ff2e - лаймовый (только акценты) */
-    --neon-foreground: 0 0% 3.92%;
-    
-    /* УБРАЛИ cyber-blue - минимализм */
+    --neon: 160 100% 50%; /* #00FF94 - Acid Green */
+    --neon-foreground: 0 0% 0%;
 
-    --sidebar-background: 0 0% 5%; /* #0d0d0d */
+    --sidebar-background: 0 0% 1.18%; /* #030303 */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 3.92%;
-    --sidebar-accent: 0 0% 10%; /* #1a1a1a */
+    --sidebar-primary-foreground: 0 0% 1.96%;
+    --sidebar-accent: 0 0% 3.92%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 75 100% 58%;
+    --sidebar-border: 0 0% 8%;
+    --sidebar-ring: 160 100% 50%;
   }
 
   .dark {
-    /* 🎨 ГРАФИТОВАЯ ПРЕМИАЛЬНАЯ ПАЛИТРА (темная тема) */
-    --background: 0 0% 3.92%; /* #0a0a0a */
+    /* 🎯 CYBER-ARCHITECTURE: Backgrounds (Infinite Depth) */
+    --background: 0 0% 1.18%; /* #030303 - Cyber Void */
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 8%;
+    --card: 0 0% 3.92%; /* #0A0A0A - Cyber Surface */
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 5%;
+    --popover: 0 0% 3.92%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 75 100% 58%; /* #b2ff2e */
-    --primary-foreground: 0 0% 3.92%;
+    /* 🎯 CYBER-ARCHITECTURE: Accents (Neon Lights) */
+    --primary: 160 100% 50%; /* #00FF94 - Acid Green */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 42%; /* #6b6b6b */
+    --secondary: 347 100% 60%; /* #FF3366 - Signal Red */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 42%;
+    --muted: 0 0% 3.92%;
+    --muted-foreground: 215 14% 66%; /* #9CA3AF - Tech Gray */
 
-    --accent: 0 0% 95%;
-    --accent-foreground: 0 0% 3.92%;
+    --accent: 160 100% 50%; /* #00FF94 - Acid Green */
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 347 100% 60%; /* #FF3366 - Signal Red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 12%;
-    --ring: 75 100% 58%;
+    --border: 0 0% 8%;
+    --input: 0 0% 8%;
+    --ring: 160 100% 50%;
 
-    --neon: 75 100% 58%; /* #b2ff2e */
-    --neon-foreground: 0 0% 3.92%;
+    --neon: 160 100% 50%; /* #00FF94 - Acid Green */
+    --neon-foreground: 0 0% 0%;
 
-    --sidebar-background: 0 0% 5%;
+    --sidebar-background: 0 0% 1.18%; /* #030303 */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 3.92%;
-    --sidebar-accent: 0 0% 10%;
+    --sidebar-primary-foreground: 0 0% 1.96%;
+    --sidebar-accent: 0 0% 3.92%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 75 100% 58%;
+    --sidebar-border: 0 0% 8%;
+    --sidebar-ring: 160 100% 50%;
   }
 }
 
@@ -109,9 +108,16 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  /* 🌌 INTEGRATOR 3.0: The "Void" Background (Deep, Textured, Premium) */
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #030303; /* Deep Void Black */
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 255, 148, 0.03) 0px, transparent 50%),
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px; /* Grid Effect */
+    color: #ffffff;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
@@ -119,16 +125,24 @@ All colors MUST be HSL.
   }
   
   :root {
-    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Manrope', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
   
-  /* 🎯 ТРЕНДОВЫЕ ЗАГОЛОВКИ - INTER (№1 для AI платформ) */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', var(--font-inter), sans-serif !important;
-    font-weight: 900; /* Extra Bold для мощных заголовков */
-    letter-spacing: -0.02em; /* Плотный кернинг для modern tech look */
+  /* 🎯 DISPLAY HEADERS - Space Grotesk (H1, H2) */
+  h1, h2 {
+    font-family: 'Space Grotesk', var(--font-display), sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
-    font-variation-settings: "wght" 900; /* Variable font support */
+  }
+  
+  /* 🎯 BODY HEADERS - Manrope (H3, H4, H5, H6) */
+  h3, h4, h5, h6 {
+    font-family: 'Manrope', var(--font-body), sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   /* 🎨 GLASSMORPHISM для премиум карточек */
@@ -145,11 +159,11 @@ All colors MUST be HSL.
 
   .glass-card:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(178, 255, 46, 0.2);
+    border-color: rgba(0, 255, 148, 0.2);
     box-shadow: 
       0 8px 32px 0 rgba(0, 0, 0, 0.37),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-      0 0 20px 0 rgba(178, 255, 46, 0.1);
+      0 0 20px 0 rgba(0, 255, 148, 0.1);
   }
 }
 
@@ -184,10 +198,10 @@ All colors MUST be HSL.
 
   @keyframes glow {
     0%, 100% {
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      box-shadow: 0 0 20px rgba(0, 255, 148, 0.3);
     }
     50% {
-      box-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
+      box-shadow: 0 0 40px rgba(0, 255, 148, 0.6);
     }
   }
 
@@ -244,9 +258,55 @@ All colors MUST be HSL.
 
   /* Text gradient effect */
   .text-gradient {
-    background: linear-gradient(135deg, #00FF88, #8B5CF6);
+    background: linear-gradient(135deg, #00FF94, #8B5CF6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* 🪟 INTEGRATOR 3.0: Global Glass Material (The "Floating" Effect) */
+  .glass-panel {
+    background: rgba(10, 10, 10, 0.7); /* Darker glass */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 🎯 CYBER-ARCHITECTURE: Glassmorphism 2.0 (Premium Feel) */
+  .glass-panel-cyber {
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* 🎯 CYBER-ARCHITECTURE: Neon Glows (Acid Green) */
+  .neon-shadow {
+    box-shadow: 0 0 20px rgba(0, 255, 148, 0.4);
+  }
+
+  .neon-shadow-strong {
+    box-shadow: 0 0 30px rgba(0, 255, 148, 0.6), 0 0 60px rgba(0, 255, 148, 0.3);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(0, 255, 148, 0.4);
+  }
+
+  .text-glow-strong {
+    text-shadow: 0 0 30px rgba(0, 255, 148, 0.6), 0 0 60px rgba(0, 255, 148, 0.3);
+  }
+
+  /* 🎯 CYBER-ARCHITECTURE: Signal Red Glows */
+  .signal-glow {
+    box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+  }
+
+  .text-signal-glow {
+    text-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
   }
 }

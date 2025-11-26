@@ -335,7 +335,7 @@ export default function ProfileSettings() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-5xl font-bold text-white mb-2">
+          <h1 className="text-5xl font-bold text-white mb-2 font-display">
             Настройки профиля
           </h1>
           <p className="text-gray-400 text-lg">
