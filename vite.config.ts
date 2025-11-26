@@ -19,6 +19,12 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0", // Слушаем на всех интерфейсах (IPv4 и IPv6)
       port: 8080,
       strictPort: true, // Не менять порт, если занят
+      // 🧹 CACHE-BUSTING: Отключаем кэш для CSS/JS в dev mode
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
       // ✅ ФИКС: HMR конфигурация для Windows
       watch: {
         usePolling: true,  // Используй polling вместо file watcher
@@ -66,12 +72,18 @@ export default defineConfig(({ mode }) => {
     exclude: ['tailwindcss'],
     force: true,
   },
+  // 🧹 CACHE-BUSTING: Очищаем кэш при каждом старте
+  cacheDir: '.vite',
   build: {
     minify: 'esbuild', // Используем esbuild (быстрее, встроен в Vite)
     sourcemap: mode === "development", // Source maps только в development
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
+        // 🔥 CACHE-BUSTING: Уникальные хеши для файлов
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['framer-motion'],

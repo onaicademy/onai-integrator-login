@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Sparkles, Code, ArrowRight, Clock, Users, Star } from 'lucide-react';
+import { BookOpen, Sparkles, Code, ArrowRight, Clock, Users, Star, Zap, Target, Trophy, PartyPopper } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 
@@ -252,30 +252,85 @@ export default function Courses() {
           ))}
         </div>
 
-        {/* Дополнительная информация */}
+        {/* 🔥 ПОЛНЫЙ ПАКЕТ - Мотивашка */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="text-center space-y-6 pt-8"
+          className="mt-12 relative overflow-hidden"
         >
-          <p className="text-gray-400">
-            Не можете определиться?{' '}
-            <button className="text-[#00ff00] hover:underline font-semibold transition-colors">
-              Пройдите тест на выбор курса
-            </button>
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <span>🎯</span> Гарантия возврата 14 дней
-            </div>
-            <div className="flex items-center gap-2">
-              <span>🎓</span> Сертификат после обучения
-            </div>
-            <div className="flex items-center gap-2">
-              <span>💬</span> Поддержка 24/7
-            </div>
-          </div>
+          <Card className="glass-card border-[#00FF00]/30 hover:border-[#00FF00]/60 hover:shadow-[0_0_30px_rgba(0,255,0,0.3)] transition-all duration-500 relative overflow-hidden group">
+            {/* Animated background glow */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-[#00FF00]/10 via-[#00FF00]/20 to-[#00FF00]/10"
+              animate={{
+                x: ['-100%', '100%'],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+            
+            <CardContent className="relative z-10 p-8 text-center">
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 bg-[#00FF00]/20 border border-[#00FF00]/50 text-[#00FF00] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                  <Zap className="w-4 h-4" />
+                  <span>Полный доступ ко всем курсам</span>
+                </div>
+                
+                {/* Main title */}
+                <h3 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
+                  Стань мастером AI-технологий
+                  <br />
+                  <span className="text-[#00FF00]">за 24 недели</span>
+                </h3>
+                
+                {/* Description */}
+                <p className="text-gray-300 text-lg mb-6 max-w-2xl mx-auto">
+                  Получи доступ ко всем 3 курсам и прокачай все ключевые навыки: 
+                  <span className="text-[#00FF00] font-semibold"> автоматизация + контент + разработка</span>
+                </p>
+                
+                {/* Stats */}
+                <div className="flex flex-wrap items-center justify-center gap-6 mb-8">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <BookOpen className="w-5 h-5 text-[#00FF00]" />
+                    <span className="font-semibold text-white">37 модулей</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Target className="w-5 h-5 text-[#00FF00]" />
+                    <span className="font-semibold text-white">148 уроков</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Trophy className="w-5 h-5 text-[#00FF00]" />
+                    <span className="font-semibold text-white">30+ проектов</span>
+                  </div>
+                </div>
+                
+                {/* CTA Button */}
+                <Button 
+                  className="bg-gradient-to-r from-[#00FF00] to-[#00CC00] hover:from-[#00FF00] hover:to-[#00CC00] text-black font-bold text-lg px-8 py-6 rounded-xl shadow-2xl shadow-[#00FF00]/40 hover:shadow-[#00FF00]/60 hover:scale-105 transition-all duration-300"
+                  onClick={() => window.open('https://t.me/onaiacademy', '_blank')}
+                >
+                  <PartyPopper className="w-6 h-6 mr-2" />
+                  Узнать о полном пакете
+                  <ArrowRight className="w-6 h-6 ml-2" />
+                </Button>
+                
+                {/* Price hint */}
+                <p className="text-gray-500 text-sm mt-4">
+                  🎁 Скидка 30% при покупке всех курсов вместе
+                </p>
+              </motion.div>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     </div>

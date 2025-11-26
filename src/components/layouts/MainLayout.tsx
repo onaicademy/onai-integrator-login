@@ -38,7 +38,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar role={userRole} />
         <div className="flex-1 flex flex-col w-full">
           <header className="sticky top-0 z-10 flex h-14 sm:h-16 items-center gap-4 border-b border-gray-800 bg-[#18181b] px-4 sm:px-6">
-            <SidebarTrigger className="text-white hover:text-[#b2ff2e] transition-colors" />
+            <SidebarTrigger className="text-white hover:text-[#00FF00] transition-colors" />
           </header>
           <main className="flex-1 overflow-auto">
             {children}

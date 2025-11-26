@@ -419,13 +419,47 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* ✨ UNIQUE PROFILE BACKGROUND - Personal Data Vault */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#050505] to-[#000000]"></div>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            radial-gradient(circle at 30% 20%, rgba(0, 255, 0, 0.06) 0%, transparent 40%),
+            radial-gradient(circle at 70% 80%, rgba(0, 200, 0, 0.04) 0%, transparent 50%),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 3px,
+              rgba(0, 255, 0, 0.02) 3px,
+              rgba(0, 255, 0, 0.02) 6px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 3px,
+              rgba(0, 255, 0, 0.02) 3px,
+              rgba(0, 255, 0, 0.02) 6px
+            )
+          `,
+          backgroundSize: '100% 100%, 100% 100%, 60px 60px, 60px 60px'
+        }}></div>
+        {/* Animated scan line effect */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div 
+            className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-[#00FF00]/30 to-transparent"
+            style={{
+              animation: 'scanLine 8s linear infinite'
+            }}
+          ></div>
+        </div>
+      </div>
       <div className="relative z-10 w-full">
         {/* HERO PROFILE SECTION */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="relative bg-gradient-to-b from-[#00ff00]/5 via-black to-black border-b border-gray-800"
+          className="relative bg-gradient-to-b from-[#00ff00]/5 via-black/80 to-black/80 border-b border-[#00FF00]/20 backdrop-blur-sm"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             {/* Profile Header */}
@@ -871,7 +905,7 @@ const Profile = () => {
         </motion.footer>
       </div>
       
-      {/* Добавляем стили для shimmer анимации */}
+      {/* Добавляем стили для shimmer и scan line анимации */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
@@ -879,6 +913,10 @@ const Profile = () => {
         }
         .animate-shimmer {
           animation: shimmer 2s infinite;
+        }
+        @keyframes scanLine {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100vh); }
         }
       `}</style>
     </div>

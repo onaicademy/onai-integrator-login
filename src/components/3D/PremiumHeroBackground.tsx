@@ -18,7 +18,7 @@ function AnimatedSphere() {
   return (
     <Sphere ref={meshRef} args={[1, 100, 200]} scale={2.5}>
       <MeshDistortMaterial
-        color="#b2ff2e"
+        color="#00FF00"
         attach="material"
         distort={0.4}
         speed={1.5}
@@ -47,7 +47,7 @@ export function PremiumHeroBackground() {
       >
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
-        <pointLight position={[-10, -10, -5]} intensity={0.5} color="#b2ff2e" />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} color="#00FF00" />
         
         <AnimatedSphere />
         
@@ -64,7 +64,7 @@ export function PremiumHeroBackground() {
       
       {/* Премиальное свечение */}
       <motion.div 
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#b2ff2e]/10 blur-3xl"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#00FF00]/10 blur-3xl"
         animate={{
           scale: [1, 1.3, 1],
           opacity: [0.08, 0.15, 0.08],
