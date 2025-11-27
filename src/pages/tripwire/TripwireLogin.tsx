@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { OnAILogo } from '@/components/OnAILogo';
 import { AnimatedBackground } from '@/components/tripwire/AnimatedBackground';
 import { TripwireLoginForm } from '@/components/tripwire/TripwireLoginForm';
@@ -100,14 +98,6 @@ export default function TripwireLogin() {
               Свяжитесь с нами →
             </a>
           </p>
-
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#00FF00] transition-colors text-sm"
-          >
-            <ArrowLeft size={16} />
-            <span>Вернуться на главную</span>
-          </Link>
         </motion.div>
 
         {/* Footer */}
@@ -117,7 +107,7 @@ export default function TripwireLogin() {
           transition={{ delay: 0.7 }}
           className="mt-12 text-center text-gray-600 text-xs"
         >
-          <p>© 2025 onAI Academy • Tripwire Trial Version</p>
+          <p>© 2025 onAI Academy</p>
           <p className="mt-1">Premium AI Learning Platform</p>
         </motion.footer>
       </div>
