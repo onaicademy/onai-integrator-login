@@ -56,7 +56,7 @@ export function AnimatedBackground() {
         // Draw node
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 255, 148, 0.4)';
+          ctx.fillStyle = 'rgba(0, 255, 0, 0.4)';
         ctx.fill();
 
         // Draw connections
@@ -70,7 +70,7 @@ export function AnimatedBackground() {
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(otherNode.x, otherNode.y);
             const opacity = (1 - distance / 150) * 0.3;
-            ctx.strokeStyle = `rgba(0, 255, 148, ${opacity})`;
+            ctx.strokeStyle = `rgba(0, 255, 0, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -103,7 +103,7 @@ export function AnimatedBackground() {
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 50% 50%, rgba(0, 255, 148, 0.08) 0%, transparent 60%)',
+          background: 'radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.08) 0%, transparent 60%)',
         }}
         animate={{
           opacity: [0.3, 0.6, 0.3],
@@ -123,7 +123,7 @@ export function AnimatedBackground() {
             className="absolute left-0 right-0 h-px"
             style={{
               top: `${20 + i * 20}%`,
-              background: 'linear-gradient(90deg, transparent, rgba(0, 255, 148, 0.2), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent)',
             }}
             animate={{
               opacity: [0.2, 0.5, 0.2],
@@ -141,7 +141,7 @@ export function AnimatedBackground() {
       {/* Corner decorative elements */}
       <div className="absolute top-0 left-0 w-32 h-32 pointer-events-none">
         <motion.div
-          className="absolute inset-0 border-l-2 border-t-2 border-[#00FF94]/30"
+          className="absolute inset-0 border-l-2 border-t-2 border-[#00FF00]/30"
           animate={{
             opacity: [0.3, 0.6, 0.3],
           }}
@@ -154,7 +154,7 @@ export function AnimatedBackground() {
 
       <div className="absolute bottom-0 right-0 w-32 h-32 pointer-events-none">
         <motion.div
-          className="absolute inset-0 border-r-2 border-b-2 border-[#00FF94]/30"
+          className="absolute inset-0 border-r-2 border-b-2 border-[#00FF00]/30"
           animate={{
             opacity: [0.3, 0.6, 0.3],
           }}

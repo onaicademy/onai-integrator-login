@@ -42,11 +42,11 @@ export default function TripwireLogin() {
           <h1 
             className="text-3xl sm:text-4xl font-bold text-white mb-3 font-display uppercase tracking-wider"
             style={{
-              textShadow: '0 0 30px rgba(0, 255, 148, 0.3)',
+              textShadow: '0 0 30px rgba(0, 255, 0, 0.3)',
             }}
           >
             ИНТЕГРАТОР<br />
-            <span className="text-[#00FF94]">ОТ 0 ДО 1000$</span>
+            <span className="text-[#00FF00]">ОТ 0 ДО 1000$</span>
           </h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -67,7 +67,7 @@ export default function TripwireLogin() {
         >
           {/* Card Glow Effect */}
           <div 
-            className="absolute inset-0 rounded-2xl blur-2xl bg-[#00FF94]/10"
+            className="absolute inset-0 rounded-2xl blur-2xl bg-[#00FF00]/10"
             style={{
               animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             }}
@@ -77,7 +77,7 @@ export default function TripwireLogin() {
           <div 
             className="relative bg-[#0A0A0A]/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 sm:p-8"
             style={{
-              boxShadow: '0 0 60px rgba(0, 255, 148, 0.15)',
+              boxShadow: '0 0 60px rgba(0, 255, 0, 0.15)',
             }}
           >
             <TripwireLoginForm onForgotPassword={() => setShowPasswordRecovery(true)} />
@@ -95,7 +95,7 @@ export default function TripwireLogin() {
             У вас нет доступа?{' '}
             <a 
               href="mailto:feedback@onaiacademy.kz" 
-              className="text-[#00FF94] hover:text-[#00cc75] transition-colors"
+              className="text-[#00FF00] hover:text-[#00cc00] transition-colors"
             >
               Свяжитесь с нами →
             </a>
@@ -103,7 +103,7 @@ export default function TripwireLogin() {
 
           <Link 
             to="/" 
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#00FF94] transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#00FF00] transition-colors text-sm"
           >
             <ArrowLeft size={16} />
             <span>Вернуться на главную</span>
