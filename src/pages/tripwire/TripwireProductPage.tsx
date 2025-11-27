@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, CheckCircle, Play, Lock } from "lucide-react";
@@ -64,6 +65,7 @@ const tripwireCourse = {
  * - EXACT styling from Course.tsx
  */
 export default function TripwireProductPage() {
+  const navigate = useNavigate();
   const [selectedModule, setSelectedModule] = useState<any | null>(null);
 
   const handleModuleClick = (module: any) => {
@@ -71,7 +73,23 @@ export default function TripwireProductPage() {
       alert('🔒 Сначала завершите предыдущий модуль!');
       return;
     }
-    setSelectedModule(module);
+    
+    // Map module IDs to first lesson IDs from database
+    // Module 1 → lesson 29, Module 2 → lesson 40, Module 3 → lesson 36, Module 4 → lesson 43
+    const moduleToLessonMap: { [key: number]: number } = {
+      1: 29,
+      2: 40,
+      3: 36,
+      4: 43
+    };
+    
+    const firstLessonId = moduleToLessonMap[module.id];
+    if (!firstLessonId) {
+      alert('❌ Урок не найден для этого модуля');
+      return;
+    }
+    
+    navigate(`/tripwire/module/${module.id}/lesson/${firstLessonId}`);
   };
 
   return (

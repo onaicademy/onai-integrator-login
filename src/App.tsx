@@ -33,6 +33,7 @@ import { Loader2 } from "lucide-react";
 // Tripwire pages
 import TripwireProductPage from "./pages/tripwire/TripwireProductPage";
 import TripwireLogin from "./pages/tripwire/TripwireLogin";
+import TripwireLesson from "./pages/tripwire/TripwireLesson";
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
 
 const queryClient = new QueryClient();
@@ -136,6 +137,11 @@ const AppRoutes = () => {
       <Route path="/tripwire" element={
         <TripwireLayout>
           <TripwireProductPage />
+        </TripwireLayout>
+      } />
+      <Route path="/tripwire/module/:moduleId/lesson/:lessonId" element={
+        <TripwireLayout>
+          <TripwireLesson />
         </TripwireLayout>
       } />
       <Route path="/tripwire/profile" element={
