@@ -1,12 +1,9 @@
 import {
   ACESFilmicToneMapping,
   BasicShadowMap,
-  BufferGeometry,
   Camera,
   Clock,
-  Color,
   Layers,
-  Material,
   NoToneMapping,
   OrthographicCamera,
   PCFShadowMap,
@@ -15,7 +12,6 @@ import {
   RGBAFormat,
   Raycaster,
   Scene,
-  Texture,
   UnsignedByteType,
   VSMShadowMap,
   Vector2,
@@ -12698,9 +12694,9 @@ var require_react_reconciler_development = __commonJS({
             var targetRight = targetLeft + targetRect.width;
             var targetTop = targetRect.y;
             var targetBottom = targetTop + targetRect.height;
-            for (var j = _i - 1; j >= 0; j--) {
-              if (_i !== j) {
-                var otherRect = boundingRects[j];
+            for (var j2 = _i - 1; j2 >= 0; j2--) {
+              if (_i !== j2) {
+                var otherRect = boundingRects[j2];
                 var otherLeft = otherRect.x;
                 var otherRight = otherLeft + otherRect.width;
                 var otherTop = otherRect.y;
@@ -15113,8 +15109,8 @@ var require_react_reconciler_development = __commonJS({
             if (typeof component.render === "function") {
               throw new Error("Unable to find node on an unmounted component.");
             } else {
-              var keys2 = Object.keys(component).join(",");
-              throw new Error("Argument appears to not be a ReactComponent. Keys: " + keys2);
+              var keys = Object.keys(component).join(",");
+              throw new Error("Argument appears to not be a ReactComponent. Keys: " + keys);
             }
           }
           var hostFiber = findCurrentHostFiber(fiber);
@@ -15130,8 +15126,8 @@ var require_react_reconciler_development = __commonJS({
               if (typeof component.render === "function") {
                 throw new Error("Unable to find node on an unmounted component.");
               } else {
-                var keys2 = Object.keys(component).join(",");
-                throw new Error("Argument appears to not be a ReactComponent. Keys: " + keys2);
+                var keys = Object.keys(component).join(",");
+                throw new Error("Argument appears to not be a ReactComponent. Keys: " + keys);
               }
             }
             var hostFiber = findCurrentHostFiber(fiber);
@@ -16006,59 +16002,7 @@ var require_scheduler2 = __commonJS({
   }
 });
 
-// node_modules/debounce/index.js
-var require_debounce = __commonJS({
-  "node_modules/debounce/index.js"(exports, module) {
-    function debounce(func, wait, immediate) {
-      var timeout, args, context2, timestamp, result;
-      if (null == wait) wait = 100;
-      function later() {
-        var last = Date.now() - timestamp;
-        if (last < wait && last >= 0) {
-          timeout = setTimeout(later, wait - last);
-        } else {
-          timeout = null;
-          if (!immediate) {
-            result = func.apply(context2, args);
-            context2 = args = null;
-          }
-        }
-      }
-      ;
-      var debounced = function() {
-        context2 = this;
-        args = arguments;
-        timestamp = Date.now();
-        var callNow = immediate && !timeout;
-        if (!timeout) timeout = setTimeout(later, wait);
-        if (callNow) {
-          result = func.apply(context2, args);
-          context2 = args = null;
-        }
-        return result;
-      };
-      debounced.clear = function() {
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = null;
-        }
-      };
-      debounced.flush = function() {
-        if (timeout) {
-          result = func.apply(context2, args);
-          context2 = args = null;
-          clearTimeout(timeout);
-          timeout = null;
-        }
-      };
-      return debounced;
-    }
-    debounce.debounce = debounce;
-    module.exports = debounce;
-  }
-});
-
-// node_modules/@react-three/fiber/dist/events-321b05fb.esm.js
+// node_modules/@react-three/fiber/dist/events-776716bd.esm.js
 var React = __toESM(require_react());
 var import_constants = __toESM(require_constants());
 
@@ -16182,10 +16126,10 @@ function shallowEqualArrays(arrA, arrB, equal = (a, b) => a === b) {
   for (let i2 = 0; i2 < len; i2++) if (!equal(arrA[i2], arrB[i2])) return false;
   return true;
 }
-function query(fn, keys2 = null, preload2 = false, config = {}) {
-  if (keys2 === null) keys2 = [fn];
+function query(fn, keys = null, preload2 = false, config = {}) {
+  if (keys === null) keys = [fn];
   for (const entry2 of globalCache) {
-    if (shallowEqualArrays(keys2, entry2.keys, entry2.equal)) {
+    if (shallowEqualArrays(keys, entry2.keys, entry2.equal)) {
       if (preload2) return void 0;
       if (Object.prototype.hasOwnProperty.call(entry2, "error")) throw entry2.error;
       if (Object.prototype.hasOwnProperty.call(entry2, "response")) {
@@ -16199,7 +16143,7 @@ function query(fn, keys2 = null, preload2 = false, config = {}) {
     }
   }
   const entry = {
-    keys: keys2,
+    keys,
     equal: config.equal,
     remove: () => {
       const index = globalCache.indexOf(entry);
@@ -16207,7 +16151,7 @@ function query(fn, keys2 = null, preload2 = false, config = {}) {
     },
     promise: (
       // Execute the promise
-      (isPromise(fn) ? fn : fn(...keys2)).then((response) => {
+      (isPromise(fn) ? fn : fn(...keys)).then((response) => {
         entry.response = response;
         if (config.lifespan && config.lifespan > 0) {
           entry.timeout = setTimeout(entry.remove, config.lifespan);
@@ -16219,17 +16163,17 @@ function query(fn, keys2 = null, preload2 = false, config = {}) {
   if (!preload2) throw entry.promise;
   return void 0;
 }
-var suspend = (fn, keys2, config) => query(fn, keys2, false, config);
-var preload = (fn, keys2, config) => void query(fn, keys2, true, config);
-var clear = (keys2) => {
-  if (keys2 === void 0 || keys2.length === 0) globalCache.splice(0, globalCache.length);
+var suspend = (fn, keys, config) => query(fn, keys, false, config);
+var preload = (fn, keys, config) => void query(fn, keys, true, config);
+var clear = (keys) => {
+  if (keys === void 0 || keys.length === 0) globalCache.splice(0, globalCache.length);
   else {
-    const entry = globalCache.find((entry2) => shallowEqualArrays(keys2, entry2.keys, entry2.equal));
+    const entry = globalCache.find((entry2) => shallowEqualArrays(keys, entry2.keys, entry2.equal));
     if (entry) entry.remove();
   }
 };
 
-// node_modules/@react-three/fiber/dist/events-321b05fb.esm.js
+// node_modules/@react-three/fiber/dist/events-776716bd.esm.js
 var import_jsx_runtime = __toESM(require_jsx_runtime());
 var import_react_reconciler = __toESM(require_react_reconciler());
 var import_scheduler = __toESM(require_scheduler2());
@@ -16272,8 +16216,8 @@ function createRenderer(_roots, _getEventPriority) {
       });
     }
     if (instance.__r3f.attach === void 0) {
-      if (instance instanceof BufferGeometry) instance.__r3f.attach = "geometry";
-      else if (instance instanceof Material) instance.__r3f.attach = "material";
+      if (instance.isBufferGeometry) instance.__r3f.attach = "geometry";
+      else if (instance.isMaterial) instance.__r3f.attach = "material";
     }
     if (name !== "inject") applyProps$1(instance, props);
     return instance;
@@ -16628,9 +16572,9 @@ function buildGraph(object) {
 }
 function dispose(obj) {
   if (obj.dispose && obj.type !== "Scene") obj.dispose();
-  for (const p in obj) {
-    p.dispose == null ? void 0 : p.dispose();
-    delete obj[p];
+  for (const p2 in obj) {
+    p2.dispose == null ? void 0 : p2.dispose();
+    delete obj[p2];
   }
 }
 function prepare(object, state) {
@@ -16751,7 +16695,7 @@ function applyProps$1(instance, data) {
   const prevHandlers = localState == null ? void 0 : localState.eventCount;
   if (instance.__r3f) instance.__r3f.memoizedProps = memoized;
   for (let i2 = 0; i2 < changes.length; i2++) {
-    let [key, value, isEvent, keys2] = changes[i2];
+    let [key, value, isEvent, keys] = changes[i2];
     if (hasColorSpace(instance)) {
       const sRGBEncoding = 3001;
       const SRGBColorSpace = "srgb";
@@ -16766,10 +16710,10 @@ function applyProps$1(instance, data) {
     }
     let currentInstance = instance;
     let targetProp = currentInstance[key];
-    if (keys2.length) {
-      targetProp = keys2.reduce((acc, key2) => acc[key2], instance);
+    if (keys.length) {
+      targetProp = keys.reduce((acc, key2) => acc[key2], instance);
       if (!(targetProp && targetProp.set)) {
-        const [name, ...reverseEntries] = keys2.reverse();
+        const [name, ...reverseEntries] = keys.reverse();
         currentInstance = reverseEntries.reverse().reduce((acc, key2) => acc[key2], instance);
         key = name;
       }
@@ -16801,15 +16745,17 @@ function applyProps$1(instance, data) {
       (__DEV__ ? targetProp.constructor.name === value.constructor.name : targetProp.constructor === value.constructor)) {
         targetProp.copy(value);
       } else if (value !== void 0) {
-        const isColor = targetProp instanceof Color;
+        var _targetProp;
+        const isColor = (_targetProp = targetProp) == null ? void 0 : _targetProp.isColor;
         if (!isColor && targetProp.setScalar) targetProp.setScalar(value);
         else if (targetProp instanceof Layers && value instanceof Layers) targetProp.mask = value.mask;
         else targetProp.set(value);
         if (!getColorManagement() && rootState && !rootState.linear && isColor) targetProp.convertSRGBToLinear();
       }
     } else {
+      var _currentInstance$key;
       currentInstance[key] = value;
-      if (currentInstance[key] instanceof Texture && // sRGB textures must be RGBA8 since r137 https://github.com/mrdoob/three.js/pull/23129
+      if ((_currentInstance$key = currentInstance[key]) != null && _currentInstance$key.isTexture && // sRGB textures must be RGBA8 since r137 https://github.com/mrdoob/three.js/pull/23129
       currentInstance[key].format === RGBAFormat && currentInstance[key].type === UnsignedByteType && rootState) {
         const texture = currentInstance[key];
         if (hasColorSpace(texture) && hasColorSpace(rootState.gl)) texture.colorSpace = rootState.gl.outputColorSpace;
@@ -17181,7 +17127,7 @@ var createStore2 = (invalidate2, advance2) => {
         left
       } = size;
       const aspect = width / height;
-      if (target instanceof Vector3) tempTarget.copy(target);
+      if (target.isVector3) tempTarget.copy(target);
       else tempTarget.set(...target);
       const distance = camera.getWorldPosition(position).distanceTo(tempTarget);
       if (isOrthographicCamera(camera)) {
@@ -17532,19 +17478,19 @@ function loadingFn(extensions, onProgress) {
   };
 }
 function useLoader(Proto, input, extensions, onProgress) {
-  const keys2 = Array.isArray(input) ? input : [input];
-  const results = suspend(loadingFn(extensions, onProgress), [Proto, ...keys2], {
+  const keys = Array.isArray(input) ? input : [input];
+  const results = suspend(loadingFn(extensions, onProgress), [Proto, ...keys], {
     equal: is.equ
   });
   return Array.isArray(input) ? results : results[0];
 }
 useLoader.preload = function(Proto, input, extensions) {
-  const keys2 = Array.isArray(input) ? input : [input];
-  return preload(loadingFn(extensions), [Proto, ...keys2]);
+  const keys = Array.isArray(input) ? input : [input];
+  return preload(loadingFn(extensions), [Proto, ...keys]);
 };
 useLoader.clear = function(Proto, input) {
-  const keys2 = Array.isArray(input) ? input : [input];
-  return clear([Proto, ...keys2]);
+  const keys = Array.isArray(input) ? input : [input];
+  return clear([Proto, ...keys]);
 };
 var roots = /* @__PURE__ */ new Map();
 var {
@@ -17703,7 +17649,7 @@ function createRoot(canvas) {
       }
       if (!state.scene) {
         let scene;
-        if (sceneOptions instanceof Scene) {
+        if (sceneOptions != null && sceneOptions.isScene) {
           scene = sceneOptions;
         } else {
           scene = new Scene();
@@ -18091,8 +18037,66 @@ function createPointerEvents(store) {
 
 // node_modules/@react-three/fiber/dist/react-three-fiber.esm.js
 var React3 = __toESM(require_react());
+
+// node_modules/react-use-measure/dist/index.js
 var import_react2 = __toESM(require_react());
-var import_debounce = __toESM(require_debounce());
+function g(n, t) {
+  let o;
+  return (...i2) => {
+    window.clearTimeout(o), o = window.setTimeout(() => n(...i2), t);
+  };
+}
+function j({ debounce: n, scroll: t, polyfill: o, offsetSize: i2 } = { debounce: 0, scroll: false, offsetSize: false }) {
+  const a = o || (typeof window == "undefined" ? class {
+  } : window.ResizeObserver);
+  if (!a) throw new Error("This browser does not support ResizeObserver out of the box. See: https://github.com/react-spring/react-use-measure/#resize-observer-polyfills");
+  const [c, h] = (0, import_react2.useState)({ left: 0, top: 0, width: 0, height: 0, bottom: 0, right: 0, x: 0, y: 0 }), e = (0, import_react2.useRef)({ element: null, scrollContainers: null, resizeObserver: null, lastBounds: c, orientationHandler: null }), d = n ? typeof n == "number" ? n : n.scroll : null, f = n ? typeof n == "number" ? n : n.resize : null, w = (0, import_react2.useRef)(false);
+  (0, import_react2.useEffect)(() => (w.current = true, () => void (w.current = false)));
+  const [z, m, s] = (0, import_react2.useMemo)(() => {
+    const r = () => {
+      if (!e.current.element) return;
+      const { left: y, top: C, width: H, height: O, bottom: S, right: x, x: B, y: R } = e.current.element.getBoundingClientRect(), l = { left: y, top: C, width: H, height: O, bottom: S, right: x, x: B, y: R };
+      e.current.element instanceof HTMLElement && i2 && (l.height = e.current.element.offsetHeight, l.width = e.current.element.offsetWidth), Object.freeze(l), w.current && !D(e.current.lastBounds, l) && h(e.current.lastBounds = l);
+    };
+    return [r, f ? g(r, f) : r, d ? g(r, d) : r];
+  }, [h, i2, d, f]);
+  function v() {
+    e.current.scrollContainers && (e.current.scrollContainers.forEach((r) => r.removeEventListener("scroll", s, true)), e.current.scrollContainers = null), e.current.resizeObserver && (e.current.resizeObserver.disconnect(), e.current.resizeObserver = null), e.current.orientationHandler && ("orientation" in screen && "removeEventListener" in screen.orientation ? screen.orientation.removeEventListener("change", e.current.orientationHandler) : "onorientationchange" in window && window.removeEventListener("orientationchange", e.current.orientationHandler));
+  }
+  function b() {
+    e.current.element && (e.current.resizeObserver = new a(s), e.current.resizeObserver.observe(e.current.element), t && e.current.scrollContainers && e.current.scrollContainers.forEach((r) => r.addEventListener("scroll", s, { capture: true, passive: true })), e.current.orientationHandler = () => {
+      s();
+    }, "orientation" in screen && "addEventListener" in screen.orientation ? screen.orientation.addEventListener("change", e.current.orientationHandler) : "onorientationchange" in window && window.addEventListener("orientationchange", e.current.orientationHandler));
+  }
+  const L = (r) => {
+    !r || r === e.current.element || (v(), e.current.element = r, e.current.scrollContainers = E(r), b());
+  };
+  return X(s, !!t), W(m), (0, import_react2.useEffect)(() => {
+    v(), b();
+  }, [t, s, m]), (0, import_react2.useEffect)(() => v, []), [L, c, z];
+}
+function W(n) {
+  (0, import_react2.useEffect)(() => {
+    const t = n;
+    return window.addEventListener("resize", t), () => void window.removeEventListener("resize", t);
+  }, [n]);
+}
+function X(n, t) {
+  (0, import_react2.useEffect)(() => {
+    if (t) {
+      const o = n;
+      return window.addEventListener("scroll", o, { capture: true, passive: true }), () => void window.removeEventListener("scroll", o, true);
+    }
+  }, [n, t]);
+}
+function E(n) {
+  const t = [];
+  if (!n || n === document.body) return t;
+  const { overflow: o, overflowX: i2, overflowY: a } = window.getComputedStyle(n);
+  return [o, i2, a].some((c) => c === "auto" || c === "scroll") && t.push(n), [...t, ...E(n.parentElement)];
+}
+var k = ["x", "y", "top", "bottom", "left", "right", "width", "height"];
+var D = (n, t) => k.every((o) => n[o] === t[o]);
 
 // node_modules/its-fine/dist/index.js
 var React2 = __toESM(require_react());
@@ -18228,165 +18232,6 @@ var import_jsx_runtime2 = __toESM(require_jsx_runtime());
 var import_constants2 = __toESM(require_constants());
 var import_react_reconciler2 = __toESM(require_react_reconciler());
 var import_scheduler2 = __toESM(require_scheduler2());
-function useMeasure({
-  debounce,
-  scroll,
-  polyfill,
-  offsetSize
-} = {
-  debounce: 0,
-  scroll: false,
-  offsetSize: false
-}) {
-  const ResizeObserver = polyfill || typeof window !== "undefined" && window.ResizeObserver;
-  const [bounds, set] = (0, import_react2.useState)({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-    bottom: 0,
-    right: 0,
-    x: 0,
-    y: 0
-  });
-  if (!ResizeObserver) {
-    bounds.width = 1280;
-    bounds.height = 800;
-    return [() => {
-    }, bounds, () => {
-    }];
-  }
-  const state = (0, import_react2.useRef)({
-    element: null,
-    scrollContainers: null,
-    resizeObserver: null,
-    lastBounds: bounds,
-    orientationHandler: null
-  });
-  const scrollDebounce = debounce ? typeof debounce === "number" ? debounce : debounce.scroll : null;
-  const resizeDebounce = debounce ? typeof debounce === "number" ? debounce : debounce.resize : null;
-  const mounted = (0, import_react2.useRef)(false);
-  (0, import_react2.useEffect)(() => {
-    mounted.current = true;
-    return () => void (mounted.current = false);
-  });
-  const [forceRefresh, resizeChange, scrollChange] = (0, import_react2.useMemo)(() => {
-    const callback = () => {
-      if (!state.current.element) return;
-      const {
-        left,
-        top,
-        width,
-        height,
-        bottom,
-        right,
-        x,
-        y
-      } = state.current.element.getBoundingClientRect();
-      const size = {
-        left,
-        top,
-        width,
-        height,
-        bottom,
-        right,
-        x,
-        y
-      };
-      if (state.current.element instanceof HTMLElement && offsetSize) {
-        size.height = state.current.element.offsetHeight;
-        size.width = state.current.element.offsetWidth;
-      }
-      Object.freeze(size);
-      if (mounted.current && !areBoundsEqual(state.current.lastBounds, size)) set(state.current.lastBounds = size);
-    };
-    return [callback, resizeDebounce ? (0, import_debounce.default)(callback, resizeDebounce) : callback, scrollDebounce ? (0, import_debounce.default)(callback, scrollDebounce) : callback];
-  }, [set, offsetSize, scrollDebounce, resizeDebounce]);
-  function removeListeners() {
-    if (state.current.scrollContainers) {
-      state.current.scrollContainers.forEach((element) => element.removeEventListener("scroll", scrollChange, true));
-      state.current.scrollContainers = null;
-    }
-    if (state.current.resizeObserver) {
-      state.current.resizeObserver.disconnect();
-      state.current.resizeObserver = null;
-    }
-    if (state.current.orientationHandler) {
-      if ("orientation" in screen && "removeEventListener" in screen.orientation) {
-        screen.orientation.removeEventListener("change", state.current.orientationHandler);
-      } else if ("onorientationchange" in window) {
-        window.removeEventListener("orientationchange", state.current.orientationHandler);
-      }
-    }
-  }
-  function addListeners() {
-    var _state$current$resize;
-    if (!state.current.element) return;
-    state.current.resizeObserver = new ResizeObserver(resizeChange);
-    (_state$current$resize = state.current.resizeObserver) == null ? void 0 : _state$current$resize.observe(state.current.element);
-    if (scroll && state.current.scrollContainers) {
-      state.current.scrollContainers.forEach((scrollContainer) => scrollContainer.addEventListener("scroll", scrollChange, {
-        capture: true,
-        passive: true
-      }));
-    }
-    state.current.orientationHandler = () => {
-      scrollChange();
-    };
-    if ("orientation" in screen && "addEventListener" in screen.orientation) {
-      screen.orientation.addEventListener("change", state.current.orientationHandler);
-    } else if ("onorientationchange" in window) {
-      window.addEventListener("orientationchange", state.current.orientationHandler);
-    }
-  }
-  const ref = (node) => {
-    if (!node || node === state.current.element) return;
-    removeListeners();
-    state.current.element = node;
-    state.current.scrollContainers = findScrollContainers(node);
-    addListeners();
-  };
-  useOnWindowScroll(scrollChange, Boolean(scroll));
-  useOnWindowResize(resizeChange);
-  (0, import_react2.useEffect)(() => {
-    removeListeners();
-    addListeners();
-  }, [scroll, scrollChange, resizeChange]);
-  (0, import_react2.useEffect)(() => removeListeners, []);
-  return [ref, bounds, forceRefresh];
-}
-function useOnWindowResize(onWindowResize) {
-  (0, import_react2.useEffect)(() => {
-    const cb = onWindowResize;
-    window.addEventListener("resize", cb);
-    return () => void window.removeEventListener("resize", cb);
-  }, [onWindowResize]);
-}
-function useOnWindowScroll(onScroll, enabled) {
-  (0, import_react2.useEffect)(() => {
-    if (enabled) {
-      const cb = onScroll;
-      window.addEventListener("scroll", cb, {
-        capture: true,
-        passive: true
-      });
-      return () => void window.removeEventListener("scroll", cb, true);
-    }
-  }, [onScroll, enabled]);
-}
-function findScrollContainers(element) {
-  const result = [];
-  if (!element || element === document.body) return result;
-  const {
-    overflow,
-    overflowX,
-    overflowY
-  } = window.getComputedStyle(element);
-  if ([overflow, overflowX, overflowY].some((prop) => prop === "auto" || prop === "scroll")) result.push(element);
-  return [...result, ...findScrollContainers(element.parentElement)];
-}
-var keys = ["x", "y", "top", "bottom", "left", "right", "width", "height"];
-var areBoundsEqual = (a, b) => keys.every((key) => a[key] === b[key]);
 var CanvasImpl = React3.forwardRef(function Canvas({
   children,
   fallback,
@@ -18413,7 +18258,7 @@ var CanvasImpl = React3.forwardRef(function Canvas({
 }, forwardedRef) {
   React3.useMemo(() => extend(three_module_exports), []);
   const Bridge = useContextBridge();
-  const [containerRef, containerRect] = useMeasure({
+  const [containerRef, containerRect] = j({
     scroll: true,
     debounce: {
       scroll: 50,
@@ -18473,7 +18318,7 @@ var CanvasImpl = React3.forwardRef(function Canvas({
             fallback: (0, import_jsx_runtime2.jsx)(Block, {
               set: setBlock
             }),
-            children
+            children: children != null ? children : null
           })
         })
       }));
@@ -18601,4 +18446,4 @@ scheduler/cjs/scheduler.development.js:
    * LICENSE file in the root directory of this source tree.
    *)
 */
-//# sourceMappingURL=chunk-YMVGTXG3.js.map
+//# sourceMappingURL=chunk-IRZC6A4A.js.map

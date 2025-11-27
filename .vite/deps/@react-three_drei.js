@@ -1,12 +1,12 @@
 import {
+  _extends
+} from "./chunk-HQ6ZTAWL.js";
+import {
   Events
 } from "./chunk-MYHIP5LU.js";
 import {
   require_client
 } from "./chunk-DO4JO5NU.js";
-import {
-  _extends
-} from "./chunk-HQ6ZTAWL.js";
 import {
   addAfterEffect,
   addEffect,
@@ -21,7 +21,7 @@ import {
   useInstanceHandle,
   useLoader,
   useThree
-} from "./chunk-YMVGTXG3.js";
+} from "./chunk-IRZC6A4A.js";
 import {
   AddEquation,
   AdditiveBlending,

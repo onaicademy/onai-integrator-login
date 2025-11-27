@@ -29,7 +29,7 @@ import {
   useLoader,
   useStore,
   useThree
-} from "./chunk-YMVGTXG3.js";
+} from "./chunk-IRZC6A4A.js";
 import "./chunk-FQ3ZCWQQ.js";
 import "./chunk-G7Y47P27.js";
 import "./chunk-FXJVXTVJ.js";

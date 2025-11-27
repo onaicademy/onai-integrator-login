@@ -69,6 +69,7 @@ import modulesRouter from './routes/modules';
 import lessonsRouter from './routes/lessons';
 import videosRouter from './routes/videos';
 import materialsRouter from './routes/materials';
+import tripwireRouter from './routes/tripwire';
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 
@@ -176,6 +177,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
+app.use('/api/tripwire', tripwireRouter);
 app.use('/api/supabase', supabaseRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/tokens', tokensRouter);

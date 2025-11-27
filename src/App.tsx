@@ -30,6 +30,10 @@ import Messages from "./pages/Messages";
 // 🔥 БЕЗОПАСНОСТЬ: TestQuery удалён - не должен быть доступен в production
 // import TestQuery from "./pages/TestQuery";
 import { Loader2 } from "lucide-react";
+// Tripwire pages
+import TripwireProductPage from "./pages/tripwire/TripwireProductPage";
+import TripwireLogin from "./pages/tripwire/TripwireLogin";
+import { TripwireLayout } from "./components/tripwire/TripwireLayout";
 
 const queryClient = new QueryClient();
 
@@ -125,6 +129,19 @@ const AppRoutes = () => {
         <ProtectedRoute>
           <MainLayout><Messages /></MainLayout>
         </ProtectedRoute>
+      } />
+      
+      {/* Tripwire (Trial Version - Public Access) */}
+      <Route path="/tripwire/login" element={<TripwireLogin />} />
+      <Route path="/tripwire" element={
+        <TripwireLayout>
+          <TripwireProductPage />
+        </TripwireLayout>
+      } />
+      <Route path="/tripwire/profile" element={
+        <TripwireLayout>
+          <div className="text-white">Profile Page (Coming Soon)</div>
+        </TripwireLayout>
       } />
       
       {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}

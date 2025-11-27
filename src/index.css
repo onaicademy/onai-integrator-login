@@ -264,6 +264,23 @@ All colors MUST be HSL.
     background-clip: text;
   }
 
+  /* Shake animation for errors */
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+      transform: translateX(5px);
+    }
+  }
+
+  .animate-shake {
+    animation: shake 0.3s ease-in-out;
+  }
+
   /* 🪟 INTEGRATOR 3.0: Global Glass Material (The "Floating" Effect) */
   .glass-panel {
     background: rgba(10, 10, 10, 0.7); /* Darker glass */
