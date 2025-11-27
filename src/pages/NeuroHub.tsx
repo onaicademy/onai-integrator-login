@@ -55,7 +55,7 @@ import {
 } from "@/lib/openai-assistant";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import { MatrixRainBackground } from '@/components/backgrounds/MatrixRainBackground';
-import { LivingNeuralNetwork } from '@/components/3d/LivingNeuralNetwork';
+import { LivingNeuralNetwork } from '@/components/3D/LivingNeuralNetwork';
 import { 
   Robot, 
   Lightning, 
