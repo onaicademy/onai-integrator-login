@@ -22,9 +22,9 @@ export default function Login() {
 
   const from = (location.state as any)?.from?.pathname || '/courses';
 
-  // Генерируем звёзды ОДИН РАЗ при монтировании компонента
+  // 🚀 PERFORMANCE FIX: Reduced from 50 to 20 stars for faster rendering
   const stars = useMemo(() => {
-    return [...Array(50)].map((_, i) => {
+    return [...Array(20)].map((_, i) => {
       const startX = Math.random() * 100;
       const startY = Math.random() * 100;
       const moveX = (Math.random() - 0.5) * 30;
@@ -180,22 +180,23 @@ export default function Login() {
       {/* Основная страница логина */}
       {!showLoadingScreen && (
     <div className="relative min-h-screen bg-black overflow-hidden flex flex-col">
-      {/* v2.0.FINAL - СЕРЫЙ БЛИК КАЖДЫЕ 5 СЕК */}
+      {/* 🚀 PERFORMANCE FIX: Optimized blur animation - smaller size, longer delay, will-change */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
-          className="absolute w-[1000px] h-[1000px] rounded-full blur-3xl"
+          className="absolute w-[600px] h-[600px] rounded-full blur-3xl"
           style={{
-            background: 'radial-gradient(circle, rgba(155,155,155,0.35) 0%, rgba(122,122,122,0.25) 20%, rgba(88,88,88,0.16) 40%, rgba(66,66,66,0.08) 60%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(155,155,155,0.25) 0%, rgba(122,122,122,0.18) 20%, rgba(88,88,88,0.12) 40%, rgba(66,66,66,0.06) 60%, transparent 80%)',
+            willChange: 'transform, opacity',
           }}
           animate={{
             x: ['-50%', '110%'],
             y: ['-50%', '110%'],
-            opacity: [0, 1, 1, 0],
+            opacity: [0, 0.8, 0.8, 0],
           }}
           transition={{
-            duration: 5,
+            duration: 4,
             repeat: Infinity,
-            repeatDelay: 5,
+            repeatDelay: 8,
             ease: "easeInOut",
             times: [0, 0.2, 0.8, 1],
           }}

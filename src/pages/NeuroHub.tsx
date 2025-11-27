@@ -55,6 +55,7 @@ import {
 } from "@/lib/openai-assistant";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import { MatrixRainBackground } from '@/components/backgrounds/MatrixRainBackground';
+import { LivingNeuralNetwork } from '@/components/3d/LivingNeuralNetwork';
 import { 
   Robot, 
   Lightning, 
@@ -735,24 +736,41 @@ const NeuroHub = () => {
           />
         </motion.div> */}
 
-        {/* ===== AI-НАСТАВНИК HEADER - АДАПТИВНЫЙ ===== */}
+        {/* ===== AI-НАСТАВНИК HEADER WITH 3D LOGO - АДАПТИВНЫЙ ===== */}
               <motion.div
           initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-6 sm:mb-8 relative z-10 px-2"
           >
-          <motion.h1 
-            className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-wide text-white inline-block"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            style={{
-              textShadow: '0 0 40px rgba(0, 255, 0, 0.15), 0 10px 30px rgba(0, 0, 0, 0.5)',
-            }}
+          {/* 🚀 ADVANCED 3D NEURAL NETWORK ABOVE TITLE (VERTICAL LAYOUT) */}
+          <div className="flex flex-col items-center justify-center gap-4 mb-6">
+            {/* Living Neural Network - Advanced 3D Visualization (ABOVE TITLE) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="flex-shrink-0"
+            >
+              <LivingNeuralNetwork 
+                size={window.innerWidth < 640 ? 80 : 120}
+                className="drop-shadow-[0_0_40px_rgba(0,255,0,0.9)]"
+              />
+            </motion.div>
+
+            {/* Title (BELOW 3D ELEMENT) */}
+            <motion.h1 
+              className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-wide text-white text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+              style={{
+                textShadow: '0 0 40px rgba(0, 255, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.5)',
+              }}
             >
               AI-НАСТАВНИК
-          </motion.h1>
+            </motion.h1>
+          </div>
 
           {/* Минималистичная линия-акцент */}
           <motion.div 

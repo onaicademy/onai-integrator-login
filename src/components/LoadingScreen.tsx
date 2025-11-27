@@ -8,15 +8,15 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
       onAnimationComplete={() => {
-        // Через 3 секунды вызываем onComplete
-        setTimeout(onComplete, 3000);
+        // 🚀 PERFORMANCE FIX: Reduced from 3000ms to 800ms
+        setTimeout(onComplete, 800);
       }}
     >
-      {/* Фоновая анимация */}
+      {/* 🚀 PERFORMANCE FIX: Reduced from 20 to 8 particles */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-0.5 h-0.5 sm:w-1 sm:h-1 bg-white rounded-full"
@@ -42,7 +42,7 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           className="w-full"
         >
           <OnAILogo 
