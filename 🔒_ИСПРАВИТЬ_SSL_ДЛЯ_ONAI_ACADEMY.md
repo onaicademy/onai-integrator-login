@@ -3,7 +3,7 @@
 ## ⚠️ ТЕКУЩАЯ ПРОБЛЕМА:
 
 ```
-❌ Сертификат выдан для: integratoronai.kz
+❌ Сертификат выдан для: onai.academy
 ❌ Нужен сертификат для: onai.academy
 ```
 
@@ -93,7 +93,7 @@ Let's Encrypt лимит: 5 сертификатов в неделю на дом
 sudo certbot certificates
 
 # Удали старые/ненужные
-sudo certbot delete --cert-name integratoronai.kz
+sudo certbot delete --cert-name onai.academy
 
 # Попробуй снова
 sudo certbot --nginx -d onai.academy
@@ -142,8 +142,8 @@ sudo lsof -i :80
 ```bash
 # Получи сертификат для обоих доменов сразу
 sudo certbot --nginx \
-  -d integratoronai.kz \
-  -d www.integratoronai.kz \
+  -d onai.academy \
+  -d www.onai.academy \
   -d onai.academy \
   -d www.onai.academy
 

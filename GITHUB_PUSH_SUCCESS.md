@@ -119,7 +119,7 @@ ls -lh dist/
 cat > .env <<'EOF'
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhcGRqdm9ramRpdnhqZmRkZG14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjc5MDUsImV4cCI6MjA3Nzc0MzkwNX0.bsikIoF86BjthWauzbLXq3SZbNQFodppZ2TC64NniJs
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 EOF
 
 # 5. Выставить права
@@ -147,7 +147,7 @@ curl -I http://localhost/admin/activity
 ### 2. Проверка Last-Modified
 
 ```bash
-curl -I https://integratoronai.kz/ | grep Last-Modified
+curl -I https://onai.academy/ | grep Last-Modified
 ```
 
 **Ожидается:**  
@@ -170,7 +170,7 @@ ls -lh /var/www/onai-integrator-login/dist/assets/*.js
 
 ### 4. Проверка в браузере
 
-1. Открой https://integratoronai.kz/admin/activity
+1. Открой https://onai.academy/admin/activity
 2. Нажми `F12` → вкладка `Network`
 3. Нажми `Ctrl+Shift+R` (жёсткая перезагрузка с очисткой кеша)
 4. Найди файл `index-mBC9421I.js` в списке загруженных файлов

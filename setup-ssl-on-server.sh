@@ -38,8 +38,8 @@ if [ ! -f "$NGINX_CONF" ]; then
 fi
 
 # Check if old domain is still in config
-if grep -q "integratoronai.kz" "$NGINX_CONF"; then
-    echo -e "${YELLOW}⚠ Found old domain integratoronai.kz in config${NC}"
+if grep -q "onai.academy" "$NGINX_CONF"; then
+    echo -e "${YELLOW}⚠ Found old domain onai.academy in config${NC}"
     echo -e "${YELLOW}  Replacing with onai.academy...${NC}"
     
     # Backup

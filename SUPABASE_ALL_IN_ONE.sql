@@ -699,7 +699,7 @@ BEGIN
     v_invitation_id,
     v_token,
     v_password,
-    'https://integratoronai.kz/invite/' || v_token;
+    'https://onai.academy/invite/' || v_token;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

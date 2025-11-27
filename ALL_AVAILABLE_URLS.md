@@ -2,8 +2,8 @@
 
 ## 📋 Полный список маршрутов
 
-### 🌐 Production (integratoronai.kz)
-Все ссылки работают по HTTPS: `https://integratoronai.kz`
+### 🌐 Production (onai.academy)
+Все ссылки работают по HTTPS: `https://onai.academy`
 
 ### 💻 Локальная разработка
 Все ссылки работают на: `http://localhost:8080`
@@ -14,7 +14,7 @@
 
 | Описание | Локальный URL | Production URL |
 |----------|---------------|----------------|
-| **Главная (Логин)** | http://localhost:8080/ | https://integratoronai.kz/ |
+| **Главная (Логин)** | http://localhost:8080/ | https://onai.academy/ |
 
 ---
 
@@ -22,10 +22,10 @@
 
 | Описание | Локальный URL | Production URL |
 |----------|---------------|----------------|
-| **Профиль пользователя** | http://localhost:8080/profile | https://integratoronai.kz/profile |
-| **Опросник (Welcome)** | http://localhost:8080/welcome | https://integratoronai.kz/welcome |
-| **NeuroHub (Центр обучения)** | http://localhost:8080/neurohub | https://integratoronai.kz/neurohub |
-| **Админ-панель активности** | http://localhost:8080/admin/activity | https://integratoronai.kz/admin/activity |
+| **Профиль пользователя** | http://localhost:8080/profile | https://onai.academy/profile |
+| **Опросник (Welcome)** | http://localhost:8080/welcome | https://onai.academy/welcome |
+| **NeuroHub (Центр обучения)** | http://localhost:8080/neurohub | https://onai.academy/neurohub |
+| **Админ-панель активности** | http://localhost:8080/admin/activity | https://onai.academy/admin/activity |
 
 ---
 
@@ -41,9 +41,9 @@
 
 | Описание | Локальный URL | Production URL |
 |----------|---------------|----------------|
-| Курс #1 | http://localhost:8080/course/1 | https://integratoronai.kz/course/1 |
-| Курс #2 | http://localhost:8080/course/2 | https://integratoronai.kz/course/2 |
-| Любой курс | http://localhost:8080/course/ANY_ID | https://integratoronai.kz/course/ANY_ID |
+| Курс #1 | http://localhost:8080/course/1 | https://onai.academy/course/1 |
+| Курс #2 | http://localhost:8080/course/2 | https://onai.academy/course/2 |
+| Любой курс | http://localhost:8080/course/ANY_ID | https://onai.academy/course/ANY_ID |
 
 ---
 
@@ -55,16 +55,16 @@
 
 | # | Название модуля | Локальный URL | Production URL |
 |---|----------------|---------------|----------------|
-| 1 | **Введение в профессию** | http://localhost:8080/course/1/module/1 | https://integratoronai.kz/course/1/module/1 |
-| 2 | **Создание GPT бота и CRM** | http://localhost:8080/course/1/module/2 | https://integratoronai.kz/course/1/module/2 |
-| 3 | **Интеграция amoCRM и Bitrix24** | http://localhost:8080/course/1/module/3 | https://integratoronai.kz/course/1/module/3 |
-| 4 | **Автоматизация при помощи Make** | http://localhost:8080/course/1/module/4 | https://integratoronai.kz/course/1/module/4 |
-| 5 | **N8N автоматизация и работа с API** | http://localhost:8080/course/1/module/5 | https://integratoronai.kz/course/1/module/5 |
-| 6 | **Реализация и закрытие проекта** | http://localhost:8080/course/1/module/6 | https://integratoronai.kz/course/1/module/6 |
-| 7 | **Упаковка и продвижение** | http://localhost:8080/course/1/module/7 | https://integratoronai.kz/course/1/module/7 |
-| 8 | **Продажи на высокий чек** | http://localhost:8080/course/1/module/8 | https://integratoronai.kz/course/1/module/8 |
-| 9 | **Бонусы** | http://localhost:8080/course/1/module/9 | https://integratoronai.kz/course/1/module/9 |
-| 10 | **Воркшопы** | http://localhost:8080/course/1/module/10 | https://integratoronai.kz/course/1/module/10 |
+| 1 | **Введение в профессию** | http://localhost:8080/course/1/module/1 | https://onai.academy/course/1/module/1 |
+| 2 | **Создание GPT бота и CRM** | http://localhost:8080/course/1/module/2 | https://onai.academy/course/1/module/2 |
+| 3 | **Интеграция amoCRM и Bitrix24** | http://localhost:8080/course/1/module/3 | https://onai.academy/course/1/module/3 |
+| 4 | **Автоматизация при помощи Make** | http://localhost:8080/course/1/module/4 | https://onai.academy/course/1/module/4 |
+| 5 | **N8N автоматизация и работа с API** | http://localhost:8080/course/1/module/5 | https://onai.academy/course/1/module/5 |
+| 6 | **Реализация и закрытие проекта** | http://localhost:8080/course/1/module/6 | https://onai.academy/course/1/module/6 |
+| 7 | **Упаковка и продвижение** | http://localhost:8080/course/1/module/7 | https://onai.academy/course/1/module/7 |
+| 8 | **Продажи на высокий чек** | http://localhost:8080/course/1/module/8 | https://onai.academy/course/1/module/8 |
+| 9 | **Бонусы** | http://localhost:8080/course/1/module/9 | https://onai.academy/course/1/module/9 |
+| 10 | **Воркшопы** | http://localhost:8080/course/1/module/10 | https://onai.academy/course/1/module/10 |
 
 ---
 
@@ -76,11 +76,11 @@
 
 | # | Название урока | Длительность | Локальный URL | Production URL |
 |---|---------------|--------------|---------------|----------------|
-| 1 | Введение и обзор платформы | 7 мин | http://localhost:8080/course/1/module/2/lesson/1 | https://integratoronai.kz/course/1/module/2/lesson/1 |
-| 2 | Создание API-ключа OpenAI | 10 мин | http://localhost:8080/course/1/module/2/lesson/2 | https://integratoronai.kz/course/1/module/2/lesson/2 |
-| 3 | Подключение Telegram-бота | 12 мин | http://localhost:8080/course/1/module/2/lesson/3 | https://integratoronai.kz/course/1/module/2/lesson/3 |
-| 4 | Интеграция с amoCRM через Webhook | 15 мин | http://localhost:8080/course/1/module/2/lesson/4 | https://integratoronai.kz/course/1/module/2/lesson/4 |
-| 5 | Настройка автопостов и ответов | 9 мин | http://localhost:8080/course/1/module/2/lesson/5 | https://integratoronai.kz/course/1/module/2/lesson/5 |
+| 1 | Введение и обзор платформы | 7 мин | http://localhost:8080/course/1/module/2/lesson/1 | https://onai.academy/course/1/module/2/lesson/1 |
+| 2 | Создание API-ключа OpenAI | 10 мин | http://localhost:8080/course/1/module/2/lesson/2 | https://onai.academy/course/1/module/2/lesson/2 |
+| 3 | Подключение Telegram-бота | 12 мин | http://localhost:8080/course/1/module/2/lesson/3 | https://onai.academy/course/1/module/2/lesson/3 |
+| 4 | Интеграция с amoCRM через Webhook | 15 мин | http://localhost:8080/course/1/module/2/lesson/4 | https://onai.academy/course/1/module/2/lesson/4 |
+| 5 | Настройка автопостов и ответов | 9 мин | http://localhost:8080/course/1/module/2/lesson/5 | https://onai.academy/course/1/module/2/lesson/5 |
 
 ### Общий паттерн для уроков:
 
@@ -88,7 +88,7 @@
 
 ```
 http://localhost:8080/course/COURSE_ID/module/MODULE_ID/lesson/LESSON_ID
-https://integratoronai.kz/course/COURSE_ID/module/MODULE_ID/lesson/LESSON_ID
+https://onai.academy/course/COURSE_ID/module/MODULE_ID/lesson/LESSON_ID
 ```
 
 **Примеры:**
@@ -102,7 +102,7 @@ https://integratoronai.kz/course/COURSE_ID/module/MODULE_ID/lesson/LESSON_ID
 
 | Описание | Локальный URL | Production URL |
 |----------|---------------|----------------|
-| **404 - Страница не найдена** | http://localhost:8080/any-wrong-url | https://integratoronai.kz/any-wrong-url |
+| **404 - Страница не найдена** | http://localhost:8080/any-wrong-url | https://onai.academy/any-wrong-url |
 
 ---
 
@@ -141,16 +141,16 @@ open http://localhost:8080/course/1/module/2/lesson/3
 
 ```bash
 # Основные
-open https://integratoronai.kz/
-open https://integratoronai.kz/profile
-open https://integratoronai.kz/welcome
-open https://integratoronai.kz/neurohub
-open https://integratoronai.kz/admin/activity
+open https://onai.academy/
+open https://onai.academy/profile
+open https://onai.academy/welcome
+open https://onai.academy/neurohub
+open https://onai.academy/admin/activity
 
 # Курсы
-open https://integratoronai.kz/course/1
-open https://integratoronai.kz/course/1/module/2
-open https://integratoronai.kz/course/1/module/2/lesson/3
+open https://onai.academy/course/1
+open https://onai.academy/course/1/module/2
+open https://onai.academy/course/1/module/2/lesson/3
 ```
 
 ---
@@ -159,29 +159,29 @@ open https://integratoronai.kz/course/1/module/2/lesson/3
 
 ### Минимальный набор для проверки:
 
-1. **Главная:** https://integratoronai.kz/
-2. **Профиль:** https://integratoronai.kz/profile
-3. **Опросник:** https://integratoronai.kz/welcome
-4. **Админка:** https://integratoronai.kz/admin/activity
-5. **Курс:** https://integratoronai.kz/course/1
-6. **Модуль:** https://integratoronai.kz/course/1/module/2
-7. **Урок:** https://integratoronai.kz/course/1/module/2/lesson/3
+1. **Главная:** https://onai.academy/
+2. **Профиль:** https://onai.academy/profile
+3. **Опросник:** https://onai.academy/welcome
+4. **Админка:** https://onai.academy/admin/activity
+5. **Курс:** https://onai.academy/course/1
+6. **Модуль:** https://onai.academy/course/1/module/2
+7. **Урок:** https://onai.academy/course/1/module/2/lesson/3
 
 ### Расширенный набор:
 
 ```
-https://integratoronai.kz/
-https://integratoronai.kz/profile
-https://integratoronai.kz/welcome
-https://integratoronai.kz/neurohub
-https://integratoronai.kz/admin/activity
-https://integratoronai.kz/course/1
-https://integratoronai.kz/course/1/module/1
-https://integratoronai.kz/course/1/module/2
-https://integratoronai.kz/course/1/module/3
-https://integratoronai.kz/course/1/module/2/lesson/1
-https://integratoronai.kz/course/1/module/2/lesson/2
-https://integratoronai.kz/course/1/module/2/lesson/3
+https://onai.academy/
+https://onai.academy/profile
+https://onai.academy/welcome
+https://onai.academy/neurohub
+https://onai.academy/admin/activity
+https://onai.academy/course/1
+https://onai.academy/course/1/module/1
+https://onai.academy/course/1/module/2
+https://onai.academy/course/1/module/3
+https://onai.academy/course/1/module/2/lesson/1
+https://onai.academy/course/1/module/2/lesson/2
+https://onai.academy/course/1/module/2/lesson/3
 ```
 
 ---
@@ -218,30 +218,30 @@ https://integratoronai.kz/course/1/module/2/lesson/3
 
 ## 🚀 Итого: Все рабочие ссылки
 
-### Production (integratoronai.kz):
+### Production (onai.academy):
 
 ```
-✅ https://integratoronai.kz/
-✅ https://integratoronai.kz/profile
-✅ https://integratoronai.kz/welcome
-✅ https://integratoronai.kz/neurohub
-✅ https://integratoronai.kz/admin/activity
-✅ https://integratoronai.kz/course/1
-✅ https://integratoronai.kz/course/1/module/1
-✅ https://integratoronai.kz/course/1/module/2
-✅ https://integratoronai.kz/course/1/module/3
-✅ https://integratoronai.kz/course/1/module/4
-✅ https://integratoronai.kz/course/1/module/5
-✅ https://integratoronai.kz/course/1/module/6
-✅ https://integratoronai.kz/course/1/module/7
-✅ https://integratoronai.kz/course/1/module/8
-✅ https://integratoronai.kz/course/1/module/9
-✅ https://integratoronai.kz/course/1/module/10
-✅ https://integratoronai.kz/course/1/module/2/lesson/1
-✅ https://integratoronai.kz/course/1/module/2/lesson/2
-✅ https://integratoronai.kz/course/1/module/2/lesson/3
-✅ https://integratoronai.kz/course/1/module/2/lesson/4
-✅ https://integratoronai.kz/course/1/module/2/lesson/5
+✅ https://onai.academy/
+✅ https://onai.academy/profile
+✅ https://onai.academy/welcome
+✅ https://onai.academy/neurohub
+✅ https://onai.academy/admin/activity
+✅ https://onai.academy/course/1
+✅ https://onai.academy/course/1/module/1
+✅ https://onai.academy/course/1/module/2
+✅ https://onai.academy/course/1/module/3
+✅ https://onai.academy/course/1/module/4
+✅ https://onai.academy/course/1/module/5
+✅ https://onai.academy/course/1/module/6
+✅ https://onai.academy/course/1/module/7
+✅ https://onai.academy/course/1/module/8
+✅ https://onai.academy/course/1/module/9
+✅ https://onai.academy/course/1/module/10
+✅ https://onai.academy/course/1/module/2/lesson/1
+✅ https://onai.academy/course/1/module/2/lesson/2
+✅ https://onai.academy/course/1/module/2/lesson/3
+✅ https://onai.academy/course/1/module/2/lesson/4
+✅ https://onai.academy/course/1/module/2/lesson/5
 ```
 
 **Все эти ссылки работают и открываются мгновенно!** 🎉

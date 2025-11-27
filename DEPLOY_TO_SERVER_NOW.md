@@ -75,7 +75,7 @@ cat .env
 ```env
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGc...
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 ```
 
 **Если файла нет или неправильные данные - создать/исправить:**
@@ -83,7 +83,7 @@ VITE_SITE_URL=https://integratoronai.kz
 cat > .env << 'EOF'
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhcGRqdm9ramRpdnhqZmRkZG14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2Mzc3MDIsImV4cCI6MjA0NjIxMzcwMn0.1rHZY2Ng0HqA-A5JVh3IKYx4jqZqx9FJfI8iqMKLHVc
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 EOF
 ```
 
@@ -123,7 +123,7 @@ cat /etc/nginx/sites-available/onai-integrator-login
 **ДОЛЖНО БЫТЬ (ключевое - `try_files`):**
 ```nginx
 server {
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
     root /var/www/onai-integrator-login/dist;
     index index.html;
     
@@ -133,8 +133,8 @@ server {
     
     # SSL настройки...
     listen 443 ssl;
-    ssl_certificate /etc/letsencrypt/live/integratoronai.kz/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/integratoronai.kz/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/onai.academy/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/onai.academy/privkey.pem;
 }
 ```
 
@@ -210,10 +210,10 @@ curl -I http://localhost/profile
 
 Открой в браузере:
 ```
-https://integratoronai.kz/
-https://integratoronai.kz/profile
-https://integratoronai.kz/welcome
-https://integratoronai.kz/admin/activity
+https://onai.academy/
+https://onai.academy/profile
+https://onai.academy/welcome
+https://onai.academy/admin/activity
 ```
 
 **Ожидаемый результат:**
@@ -274,16 +274,16 @@ chown -R www-data:www-data dist
 ## 📊 ЧТО ДОЛЖНО РАБОТАТЬ ПОСЛЕ ДЕПЛОЯ
 
 ```
-✅ https://integratoronai.kz/ 
+✅ https://onai.academy/ 
    - Открывается главная страница
 
-✅ https://integratoronai.kz/profile 
+✅ https://onai.academy/profile 
    - Открывается профиль БЕЗ авторизации
 
-✅ https://integratoronai.kz/welcome 
+✅ https://onai.academy/welcome 
    - Открывается опросник БЕЗ авторизации
 
-✅ https://integratoronai.kz/admin/activity 
+✅ https://onai.academy/admin/activity 
    - Открывается админ-панель БЕЗ авторизации
 
 ✅ Все страницы без 404 ошибок

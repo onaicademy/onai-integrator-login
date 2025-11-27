@@ -3,7 +3,7 @@
 **Дата:** 6 ноября 2025  
 **Статус:** ✅ **РЕШЕНО**  
 **Сервер:** Digital Ocean (178.128.203.40)  
-**Сайт:** https://integratoronai.kz
+**Сайт:** https://onai.academy
 
 ---
 
@@ -56,12 +56,12 @@
 
 ```bash
 ssh root@178.128.203.40
-curl -I https://integratoronai.kz/ | grep Last-Modified
+curl -I https://onai.academy/ | grep Last-Modified
 ```
 
 **Результат:**
 ```
-curl: (7) Failed to connect to integratoronai.kz port 443
+curl: (7) Failed to connect to onai.academy port 443
 ```
 
 ❌ **Проблема #1: HTTPS не работал!**
@@ -213,7 +213,7 @@ cat /etc/nginx/sites-enabled/onai-integrator-login.conf
 server {
     listen 80;
     listen [::]:80;
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
     
     return 301 https://$host$request_uri;
 }
@@ -222,11 +222,11 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
 
     # SSL certificates
-    ssl_certificate /etc/letsencrypt/live/integratoronai.kz/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/integratoronai.kz/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/onai.academy/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/onai.academy/privkey.pem;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -332,7 +332,7 @@ systemctl restart nginx
 ### 1. Проверка HTTPS
 
 ```bash
-curl -I https://integratoronai.kz/
+curl -I https://onai.academy/
 ```
 
 **Результат:**
@@ -346,7 +346,7 @@ content-length: 1553
 ### 2. Проверка JavaScript файла
 
 ```bash
-curl -I https://integratoronai.kz/assets/index-mBC9421I.js
+curl -I https://onai.academy/assets/index-mBC9421I.js
 ```
 
 **Результат:**
@@ -464,11 +464,11 @@ EOF
 # 4. Проверка
 echo "4️⃣ Проверка результата..."
 sleep 2
-curl -I https://integratoronai.kz/ | grep "HTTP\|Last-Modified"
+curl -I https://onai.academy/ | grep "HTTP\|Last-Modified"
 
 echo ""
 echo "✅ ДЕПЛОЙ ЗАВЕРШЁН!"
-echo "🌐 Сайт: https://integratoronai.kz/"
+echo "🌐 Сайт: https://onai.academy/"
 ```
 
 **Использование:**
@@ -566,11 +566,11 @@ ENDSSH
 
 echo ""
 echo "🌐 Проверка сайта:"
-curl -I https://integratoronai.kz/ | grep -E "(HTTP|Last-Modified)"
+curl -I https://onai.academy/ | grep -E "(HTTP|Last-Modified)"
 
 echo ""
 echo "✅ ВСЁ ГОТОВО!"
-echo "🔗 Сайт: https://integratoronai.kz/"
+echo "🔗 Сайт: https://onai.academy/"
 ```
 
 ---
@@ -581,16 +581,16 @@ echo "🔗 Сайт: https://integratoronai.kz/"
 
 ```bash
 # HTTPS статус
-curl -I https://integratoronai.kz/
+curl -I https://onai.academy/
 
 # Last-Modified
-curl -I https://integratoronai.kz/ | grep Last-Modified
+curl -I https://onai.academy/ | grep Last-Modified
 
 # Проверка JavaScript
-curl -I https://integratoronai.kz/assets/index-mBC9421I.js
+curl -I https://onai.academy/assets/index-mBC9421I.js
 
 # Какие файлы загружаются
-curl -s https://integratoronai.kz/ | grep -oE 'index-[^"]+\.(js|css)'
+curl -s https://onai.academy/ | grep -oE 'index-[^"]+\.(js|css)'
 ```
 
 ### Проверка на сервере:
@@ -622,7 +622,7 @@ tail -50 /var/log/nginx/access.log
 
 ## 🆘 ЧАСТЫЕ ПРОБЛЕМЫ И РЕШЕНИЯ
 
-### Проблема 1: "Failed to connect to integratoronai.kz port 443"
+### Проблема 1: "Failed to connect to onai.academy port 443"
 
 **Причина:** Nginx не слушает порт 443 (HTTPS не настроен)
 
@@ -737,7 +737,7 @@ grep -n "const topStudentsData" src/pages/admin/Activity.tsx
 
 ### Результат:
 
-- 🌐 **Сайт работает:** https://integratoronai.kz/
+- 🌐 **Сайт работает:** https://onai.academy/
 - ✅ **HTTPS включён:** HTTP/2 200
 - ✅ **Актуальная сборка:** коммит `c0bc9fd`
 - ✅ **Новые файлы:** `index-mBC9421I.js` (1.16MB)

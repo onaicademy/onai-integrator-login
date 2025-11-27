@@ -28,7 +28,7 @@
   ```env
   VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
   VITE_SUPABASE_PUBLISHABLE_KEY=[HIDDEN]
-  VITE_SITE_URL=https://integratoronai.kz
+  VITE_SITE_URL=https://onai.academy
   ```
 
 ### 4. Сборка проекта
@@ -67,8 +67,8 @@
 ## 🌐 РЕЗУЛЬТАТ
 
 ### Сайт работает:
-- 🌍 https://integratoronai.kz/
-- 🌍 https://integratoronai.kz/admin/activity
+- 🌍 https://onai.academy/
+- 🌍 https://onai.academy/admin/activity
 
 ### Что изменилось:
 - ✅ `dist/` пересобран с **НОВОЙ датой** (20:09)
@@ -92,7 +92,7 @@
 
 ### Проверка в браузере:
 
-1. Открой https://integratoronai.kz/admin/activity
+1. Открой https://onai.academy/admin/activity
 2. Нажми `F12` → `Network`
 3. Нажми `Ctrl+Shift+R` (жёсткая перезагрузка)
 4. Найди `index-DPqPWVg7.js`

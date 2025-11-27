@@ -10,7 +10,7 @@
 - ✅ Код задеплоен на сервер
 - ✅ Messages.tsx обновлён
 - ✅ API (messages-api.ts) создан
-- ✅ Сайт работает: https://integratoronai.kz
+- ✅ Сайт работает: https://onai.academy
 
 ---
 
@@ -203,7 +203,7 @@ Success. No rows returned.
 
 1. **Откройте сайт:**
    ```
-   https://integratoronai.kz/messages
+   https://onai.academy/messages
    ```
 
 2. **Войдите под студентом**

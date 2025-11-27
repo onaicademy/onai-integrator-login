@@ -420,8 +420,8 @@ location / {
 
 4. **Проверить результат:**
    ```
-   https://integratoronai.kz/
-   https://integratoronai.kz/admin/activity
+   https://onai.academy/
+   https://onai.academy/admin/activity
    ```
 
 ---

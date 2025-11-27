@@ -182,7 +182,7 @@ chown -R www-data:www-data dist
 
 ### На сервере:
 ```
-1. Открой https://integratoronai.kz/admin/activity
+1. Открой https://onai.academy/admin/activity
 2. Страница должна загрузиться БЕЗ редиректа
 3. НЕ должно быть 404 или редиректа на /
 ```
@@ -214,7 +214,7 @@ chown -R www-data:www-data dist
 systemctl restart nginx
 
 # 8. Проверить
-curl -I https://integratoronai.kz/admin/activity
+curl -I https://onai.academy/admin/activity
 # Должен быть 200 OK
 ```
 

@@ -306,7 +306,7 @@ npm run preview
 
 3. **Deploy to Digital Ocean:**
    ```bash
-   ssh root@integratoronai.kz
+   ssh root@207.154.231.30
    cd /var/www/onai-integrator-login
    git pull origin main
    npm install

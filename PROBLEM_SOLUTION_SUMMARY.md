@@ -11,7 +11,7 @@
 
 ### Симптомы:
 1. **Локально** (localhost:8080) - все страницы открывались корректно ✅
-2. **На сервере** (integratoronai.kz) - страницы `/profile`, `/welcome`, `/admin/activity` давали:
+2. **На сервере** (onai.academy) - страницы `/profile`, `/welcome`, `/admin/activity` давали:
    - Ошибку 404, либо
    - Редирект на главную страницу `/`, либо
    - Бесконечную загрузку
@@ -134,7 +134,7 @@ systemctl restart nginx
 ### Шаг 6: Исправление Nginx конфигурации
 ```nginx
 server {
-    server_name integratoronai.kz www.integratoronai.kz;
+    server_name onai.academy www.onai.academy;
     root /var/www/onai-integrator-login/dist;
     index index.html;
     
@@ -151,7 +151,7 @@ server {
 cat > /var/www/onai-integrator-login/.env << 'EOF'
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGc...
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 EOF
 
 npm run build
@@ -171,7 +171,7 @@ chown -R www-data:www-data dist
 - ✅ `/admin/activity` - админ-панель
 - ✅ Все остальные маршруты
 
-**На сервере (https://integratoronai.kz):**
+**На сервере (https://onai.academy):**
 - ✅ `/` - страница логина
 - ✅ `/profile` - профиль пользователя (загружается мгновенно!)
 - ✅ `/welcome` - опросник (работает без редиректов!)
@@ -244,7 +244,7 @@ https://github.com/onaicademy/onai-integrator-login
 https://supabase.com/dashboard/project/capdjvokjdivxjfdddmx
 
 **Production URL:**  
-https://integratoronai.kz
+https://onai.academy
 
 ---
 

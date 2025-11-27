@@ -47,14 +47,14 @@ git push origin main
 git push origin main
 
 # Жди 2-3 минуты
-# Проверь: https://integratoronai.kz
+# Проверь: https://onai.academy
 ```
 
 ### Способ 2: Вручную через SSH
 
 ```bash
 # 1. Подключись к серверу
-ssh root@integratoronai.kz
+ssh root@207.154.231.30
 # Или:
 ssh root@YOUR_SERVER_IP
 
@@ -90,7 +90,7 @@ sudo systemctl restart nginx
 # 2. Выбери своё приложение
 # 3. Deploy → Deploy Latest Commit
 # 4. Жди 5-10 минут
-# 5. Проверь: https://integratoronai.kz
+# 5. Проверь: https://onai.academy
 ```
 
 ---
@@ -99,12 +99,12 @@ sudo systemctl restart nginx
 
 ```bash
 # Открой сайт
-https://integratoronai.kz
+https://onai.academy
 
 # Проверь страницы:
-✅ https://integratoronai.kz/admin
-✅ https://integratoronai.kz/profile
-✅ https://integratoronai.kz/achievements
+✅ https://onai.academy/admin
+✅ https://onai.academy/profile
+✅ https://onai.academy/achievements
 
 # Консоль браузера (F12):
 ✅ Нет ошибок?
@@ -119,7 +119,7 @@ https://integratoronai.kz
 
 ```bash
 # Проверь nginx конфигурацию
-ssh root@integratoronai.kz
+ssh root@207.154.231.30
 cat /etc/nginx/sites-available/onai-integrator-login
 
 # Должно быть:
@@ -135,7 +135,7 @@ sudo systemctl restart nginx
 
 ```bash
 # Проверь логи на сервере
-ssh root@integratoronai.kz
+ssh root@207.154.231.30
 pm2 logs
 
 # Или:
@@ -149,7 +149,7 @@ Ctrl+Shift+R (Chrome/Firefox)
 
 ```bash
 # Проверь что .env на сервере обновлён
-ssh root@integratoronai.kz
+ssh root@207.154.231.30
 cd /var/www/onai-integrator-login
 cat .env | grep TELEGRAM
 
@@ -180,14 +180,14 @@ git commit -m "feat: Новые страницы админ-панели" && \
 git push origin main
 
 # На сервере (через SSH):
-ssh root@integratoronai.kz "cd /var/www/onai-integrator-login && \
+ssh root@207.154.231.30 "cd /var/www/onai-integrator-login && \
 git pull origin main && \
 npm install && \
 npm run build && \
 pm2 restart all"
 
 # Жди 2 минуты, потом проверь:
-open https://integratoronai.kz/admin
+open https://onai.academy/admin
 ```
 
 ---
@@ -197,11 +197,11 @@ open https://integratoronai.kz/admin
 После успешного deploy, проверь:
 
 ```
-✅ https://integratoronai.kz/admin
-✅ https://integratoronai.kz/admin/students-activity
-✅ https://integratoronai.kz/admin/ai-analytics
-✅ https://integratoronai.kz/profile/settings
-✅ https://integratoronai.kz/messages
+✅ https://onai.academy/admin
+✅ https://onai.academy/admin/students-activity
+✅ https://onai.academy/admin/ai-analytics
+✅ https://onai.academy/profile/settings
+✅ https://onai.academy/messages
 ```
 
 **Всё должно работать!** 🎉

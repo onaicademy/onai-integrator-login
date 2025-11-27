@@ -289,7 +289,7 @@ chown -R www-data:www-data dist
 systemctl restart nginx
 
 # Проверка
-curl -I https://integratoronai.kz/
+curl -I https://onai.academy/
 ```
 
 ---
@@ -342,8 +342,8 @@ cd "/Users/miso/Documents/MVP onAI Academy Platform/onai-integrator-login"
 ## 🔗 ПОЛЕЗНЫЕ ССЫЛКИ
 
 **Если сайт работает:**
-- https://integratoronai.kz/
-- https://integratoronai.kz/admin/activity
+- https://onai.academy/
+- https://onai.academy/admin/activity
 
 **GitHub (код там точно актуальный):**
 - https://github.com/onaicademy/onai-integrator-login

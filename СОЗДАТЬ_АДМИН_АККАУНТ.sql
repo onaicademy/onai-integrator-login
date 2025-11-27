@@ -89,6 +89,6 @@ WHERE email = 'saint@onaiacademy.kz';
 -- ГОТОВО!
 -- ========================
 -- Теперь можно войти:
--- 🌐 https://integratoronai.kz
+-- 🌐 https://onai.academy
 -- 📧 Email: saint@onaiacademy.kz
 -- 🔑 Password: Onai2134!

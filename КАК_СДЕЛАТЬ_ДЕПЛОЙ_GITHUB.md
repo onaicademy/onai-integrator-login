@@ -142,7 +142,7 @@ graph LR
 
 **Открой сайт:**
 ```
-https://integratoronai.kz
+https://onai.academy
 ```
 
 **Проверь что работает:**
@@ -276,7 +276,7 @@ https://github.com/onaicademy/onai-integrator-login/actions
 □ Выбрал "Deploy to DigitalOcean Droplet"
 □ Нажал "Run workflow"
 □ Дождался зелёной галочки ✅
-□ Открыл https://integratoronai.kz
+□ Открыл https://onai.academy
 □ Проверил что всё работает
 ```
 
@@ -289,7 +289,7 @@ https://github.com/onaicademy/onai-integrator-login/actions
 1. **Открой:** https://github.com/onaicademy/onai-integrator-login/actions
 2. **Нажми:** `Run workflow` → `Run workflow`
 3. **Жди:** ~2-3 минуты
-4. **Проверь:** https://integratoronai.kz
+4. **Проверь:** https://onai.academy
 
 **Всё работает автоматически! 🤖✨**
 

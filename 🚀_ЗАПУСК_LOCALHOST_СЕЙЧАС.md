@@ -157,7 +157,7 @@ OPENAI_ASSISTANT_CURATOR_ID=asst_твой_ассистент
 
 ### Домен:
 - ✅ **onai.academy** - основной
-- ❌ ~~integratoronai.kz~~ - старый, не используется
+- ❌ ~~integratoronai.kz~~ - старый, не используется (заменен на onai.academy)
 
 ### Storage:
 - ✅ **Supabase Storage** - для всех файлов

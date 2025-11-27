@@ -40,7 +40,7 @@
    - Работа над компонентами без логина
 
 2. **Доступность на домене**
-   - Страницы работают и на localhost, и на integratoronai.kz
+   - Страницы работают и на localhost, и на onai.academy
    - Нет ошибок 404 или редиректов
    - Полная свобода навигации
 
@@ -67,12 +67,12 @@ http://localhost:8080/course/1
 
 ### Production (домен):
 ```
-https://integratoronai.kz/
-https://integratoronai.kz/profile
-https://integratoronai.kz/welcome
-https://integratoronai.kz/admin/activity
-https://integratoronai.kz/neurohub
-https://integratoronai.kz/course/1
+https://onai.academy/
+https://onai.academy/profile
+https://onai.academy/welcome
+https://onai.academy/admin/activity
+https://onai.academy/neurohub
+https://onai.academy/course/1
 ```
 
 ---
@@ -218,10 +218,10 @@ const checkAdminAccess = async () => {
 ### Проверка доступа (production):
 
 1. **После деплоя откройте:**
-   - https://integratoronai.kz/
-   - https://integratoronai.kz/profile
-   - https://integratoronai.kz/welcome
-   - https://integratoronai.kz/admin/activity
+   - https://onai.academy/
+   - https://onai.academy/profile
+   - https://onai.academy/welcome
+   - https://onai.academy/admin/activity
 
 2. **Ожидаемый результат:**
    - ✅ Все страницы открываются без 404
@@ -285,7 +285,7 @@ git checkout <commit-hash> -- src/pages/
 Цель: Тестирование UI/UX
 Доступ к страницам: ✅ ПОЛНЫЙ
 Localhost: ✅ Работает
-Production (integratoronai.kz): ✅ Работает
+Production (onai.academy): ✅ Работает
 Последнее обновление: 5 ноября 2025
 ```
 

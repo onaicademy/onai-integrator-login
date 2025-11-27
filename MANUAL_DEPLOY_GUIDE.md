@@ -167,7 +167,7 @@ git commit -m "🔧 CONFIG: обновлен .env для production"
 
 ```bash
 # 1. Открой сайт в инкогнито
-open https://integratoronai.kz
+open https://onai.academy
 
 # 2. Проверь что изменения видны
 # Нажми Ctrl+Shift+R для жесткого обновления
@@ -203,7 +203,7 @@ git push origin main
 ./manual-deploy.sh
 
 # 6. Проверяешь production
-open https://integratoronai.kz/profile
+open https://onai.academy/profile
 ```
 
 ---
@@ -306,7 +306,7 @@ git log --oneline              # История коммитов
 ### Деплой:
 ```bash
 ./manual-deploy.sh             # Ручной деплой
-https://integratoronai.kz      # Production URL
+https://onai.academy      # Production URL
 ```
 
 ---

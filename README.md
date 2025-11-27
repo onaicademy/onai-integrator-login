@@ -33,7 +33,7 @@ npm run preview
 
 ## 🌐 Production Deployment
 
-**URL:** https://integratoronai.kz  
+**URL:** https://onai.academy  
 **Server:** 178.128.203.40
 
 ### Деплой на сервер:
@@ -64,7 +64,7 @@ VITE_SITE_URL=http://localhost:5173
 ```env
 VITE_SUPABASE_URL=https://capdjvokjdivxjfdddmx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_key_here
-VITE_SITE_URL=https://integratoronai.kz
+VITE_SITE_URL=https://onai.academy
 ```
 
 ---
@@ -269,7 +269,7 @@ Proprietary - onAI Academy © 2025
 
 **GitHub Issues:** https://github.com/onaicademy/onai-integrator-login/issues  
 **Supabase Dashboard:** https://supabase.com/dashboard/project/capdjvokjdivxjfdddmx  
-**Production URL:** https://integratoronai.kz
+**Production URL:** https://onai.academy
 
 ---
 

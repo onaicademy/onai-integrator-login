@@ -214,7 +214,7 @@ WHERE email = 'saint@onaiacademy.kz';
 
 ### **1. Открой сайт:**
 ```
-https://integratoronai.kz
+https://onai.academy
 ```
 
 ### **2. Войди под админом:**
@@ -278,7 +278,7 @@ Password: Onai2134!
 ## 🚀 СТАТУС ДЕПЛОЯ:
 
 ```
-✅ Код задеплоен на https://integratoronai.kz
+✅ Код задеплоен на https://onai.academy
 ✅ SSL работает
 ✅ GitHub обновлён (commit: 0a53675)
 ✅ Время сборки: 25.30s

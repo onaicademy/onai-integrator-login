@@ -21,8 +21,8 @@
 4. Включите "shadcn" server
 
 ### 2. DNS обновлен
-✅ Домен `integratoronai.kz` указывает на `178.128.203.40`  
-✅ Сайт доступен по адресу: **https://integratoronai.kz**
+✅ Домен `onai.academy` указывает на `178.128.203.40`  
+✅ Сайт доступен по адресу: **https://onai.academy**
 
 ### 3. Все проверки авторизации отключены
 
@@ -76,13 +76,13 @@ npm run dev
 - http://localhost:8080/welcome
 - http://localhost:8080/admin/activity
 
-### На сервере (https://integratoronai.kz):
+### На сервере (https://onai.academy):
 
 Откройте:
-- https://integratoronai.kz
-- https://integratoronai.kz/profile
-- https://integratoronai.kz/welcome  
-- https://integratoronai.kz/admin/activity
+- https://onai.academy
+- https://onai.academy/profile
+- https://onai.academy/welcome  
+- https://onai.academy/admin/activity
 
 **Все страницы должны открываться мгновенно без редиректов!** ✨
 
@@ -154,7 +154,7 @@ systemctl restart nginx
 ## ✅ Checklist
 
 - [x] MCP Server настроен в `.cursor/mcp.json`
-- [x] DNS обновлен (integratoronai.kz → 178.128.203.40)
+- [x] DNS обновлен (onai.academy → 178.128.203.40)
 - [x] Авторизация отключена в Index.tsx
 - [x] Авторизация отключена в Profile.tsx
 - [x] Авторизация отключена в Welcome.tsx

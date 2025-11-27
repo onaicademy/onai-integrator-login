@@ -66,7 +66,7 @@ is_ceo: true
 
 После применения SQL можешь войти:
 
-**🌐 https://integratoronai.kz**
+**🌐 https://onai.academy**
 
 ```
 📧 Email: saint@onaiacademy.kz

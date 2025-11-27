@@ -257,7 +257,7 @@ https://github.com/onaicademy/onai-integrator-login/blob/main/src/pages/admin/Ac
 
 **Production URL:**
 ```
-https://integratoronai.kz/admin/activity
+https://onai.academy/admin/activity
 ```
 
 ---
@@ -272,7 +272,7 @@ https://integratoronai.kz/admin/activity
 □ npm run build
 □ chown -R www-data:www-data dist
 □ systemctl restart nginx
-□ Открыть https://integratoronai.kz/admin/activity
+□ Открыть https://onai.academy/admin/activity
 □ Проверить что топ ученики - реальные
 □ Проверить что статистика - реальная
 □ Проверить клик на пользователя
