@@ -74,7 +74,7 @@ const NeuroHub = () => {
     return (
       <div className="relative overflow-hidden min-h-screen bg-gradient-to-br from-black via-zinc-950 to-black flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#00ff00] animate-spin mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 text-[#00FF88] animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Загрузка NeuroHub...</p>
         </div>
       </div>
@@ -91,8 +91,8 @@ const NeuroHub = () => {
           className="w-full h-full"
           style={{
             backgroundImage: `
-              linear-gradient(to right, #00ff00 1px, transparent 1px),
-              linear-gradient(to bottom, #00ff00 1px, transparent 1px)
+              linear-gradient(to right, #00FF88 1px, transparent 1px),
+              linear-gradient(to bottom, #00FF88 1px, transparent 1px)
             `,
             backgroundSize: '40px 40px',
           }}
@@ -102,7 +102,7 @@ const NeuroHub = () => {
       {/* Зеленые светящиеся блобы */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
-          className="absolute w-96 h-96 rounded-full bg-[#00ff00]/20 blur-3xl"
+          className="absolute w-96 h-96 rounded-full bg-[#00FF88]/20 blur-3xl"
           style={{ top: '10%', left: '15%' }}
           animate={{
             scale: [1, 1.3, 1],
@@ -115,7 +115,7 @@ const NeuroHub = () => {
           }}
         />
         <motion.div
-          className="absolute w-96 h-96 rounded-full bg-[#00ff00]/15 blur-3xl"
+          className="absolute w-96 h-96 rounded-full bg-[#00FF88]/15 blur-3xl"
           style={{ bottom: '10%', right: '15%' }}
           animate={{
             scale: [1, 1.2, 1],
@@ -134,7 +134,7 @@ const NeuroHub = () => {
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="absolute w-1 h-1 rounded-full bg-[#00ff00]"
+            className="absolute w-1 h-1 rounded-full bg-[#00FF88]"
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
@@ -158,7 +158,7 @@ const NeuroHub = () => {
         {dataStreams.map((stream) => (
           <motion.div
             key={stream.id}
-            className="absolute w-px h-20 bg-gradient-to-b from-transparent via-[#00ff00] to-transparent"
+            className="absolute w-px h-20 bg-gradient-to-b from-transparent via-[#00FF88] to-transparent"
             style={{ left: `${stream.left}%` }}
             animate={{
               y: ['-100px', 'calc(100vh + 100px)'],
@@ -175,7 +175,7 @@ const NeuroHub = () => {
 
       {/* Сканирующие линии */}
       <motion.div
-        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00ff00] to-transparent"
+        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00FF88] to-transparent"
         animate={{
           top: ['0%', '100%'],
           opacity: [0, 1, 0],
@@ -214,11 +214,11 @@ const NeuroHub = () => {
               }}
             >
               {/* Brain Core */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#00ff00] via-[#00cc00] to-[#008800] shadow-[0_0_40px_rgba(0,255,0,0.6)]" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#00FF88] via-[#00cc88] to-[#008800] shadow-[0_0_40px_rgba(0,255,136,0.6)]" />
               
               {/* Orbital Rings */}
               <motion.div
-                className="absolute inset-0 border-2 border-[#00ff00]/40 rounded-full"
+                className="absolute inset-0 border-2 border-[#00FF88]/40 rounded-full"
                 animate={{
                   rotate: 360,
                   scale: [1, 1.1, 1],
@@ -230,7 +230,7 @@ const NeuroHub = () => {
                 style={{ transform: "rotateX(60deg)" }}
               />
               <motion.div
-                className="absolute inset-0 border-2 border-[#00ff00]/30 rounded-full"
+                className="absolute inset-0 border-2 border-[#00FF88]/30 rounded-full"
                 animate={{
                   rotate: -360,
                   scale: [1.1, 1, 1.1],
@@ -246,7 +246,7 @@ const NeuroHub = () => {
               {[...Array(6)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-2 h-2 bg-[#00ff00] rounded-full"
+                  className="absolute w-2 h-2 bg-[#00FF88] rounded-full"
                   style={{
                     top: '50%',
                     left: '50%',
@@ -274,7 +274,7 @@ const NeuroHub = () => {
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-black mb-3">
-            <span className="text-[#00ff00] drop-shadow-[0_0_20px_rgba(0,255,0,0.8)]">Neuro</span>
+            <span className="text-[#00FF88] drop-shadow-[0_0_20px_rgba(0,255,136,0.8)]">Neuro</span>
             <span className="text-white">HUB</span>
           </h1>
           <motion.p
@@ -297,16 +297,16 @@ const NeuroHub = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md shadow-[0_0_30px_rgba(0,255,0,0.15)] relative overflow-hidden">
+            <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md shadow-[0_0_30px_rgba(0,255,136,0.15)] relative overflow-hidden">
               {/* Corner Accents */}
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff00]/60" />
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff00]/60" />
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff00]/60" />
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ff00]/60" />
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00FF88]/60" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00FF88]/60" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00FF88]/60" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00FF88]/60" />
 
               {/* Scan Line Effect */}
               <motion.div
-                className="absolute inset-x-0 h-px bg-[#00ff00]/50"
+                className="absolute inset-x-0 h-px bg-[#00FF88]/50"
                 animate={{
                   top: ['0%', '100%'],
                   opacity: [0, 1, 0],
@@ -321,12 +321,12 @@ const NeuroHub = () => {
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <motion.div
-                    className="w-16 h-16 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30 flex items-center justify-center relative overflow-hidden"
+                    className="w-16 h-16 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center relative overflow-hidden"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <Brain className="w-8 h-8 text-[#00ff00] relative z-10" />
+                    <Brain className="w-8 h-8 text-[#00FF88] relative z-10" />
                     <motion.div
-                      className="absolute inset-0 bg-[#00ff00]/20"
+                      className="absolute inset-0 bg-[#00FF88]/20"
                       animate={{
                         opacity: [0, 0.5, 0],
                       }}
@@ -347,10 +347,10 @@ const NeuroHub = () => {
               <CardContent className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full justify-start border-[#00ff00]/40 hover:bg-[#00ff00]/10 hover:border-[#00ff00] group transition-all duration-300 text-white"
+                  className="w-full justify-start border-[#00FF88]/40 hover:bg-[#00FF88]/10 hover:border-[#00FF88] group transition-all duration-300 text-white"
                   onClick={() => navigate("/course/1")}
                 >
-                  <Target className="w-5 h-5 mr-3 text-[#00ff00]" />
+                  <Target className="w-5 h-5 mr-3 text-[#00FF88]" />
                   <span className="flex-1 text-left">Рекомендовать следующий урок</span>
                   <motion.span
                     className="opacity-0 group-hover:opacity-100"
@@ -362,9 +362,9 @@ const NeuroHub = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start border-[#00ff00]/40 hover:bg-[#00ff00]/10 hover:border-[#00ff00] group transition-all duration-300 text-white"
+                  className="w-full justify-start border-[#00FF88]/40 hover:bg-[#00FF88]/10 hover:border-[#00FF88] group transition-all duration-300 text-white"
                 >
-                  <Sparkles className="w-5 h-5 mr-3 text-[#00ff00]" />
+                  <Sparkles className="w-5 h-5 mr-3 text-[#00FF88]" />
                   <span className="flex-1 text-left">Установить цель недели</span>
                   <motion.span
                     className="opacity-0 group-hover:opacity-100"
@@ -376,9 +376,9 @@ const NeuroHub = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start border-[#00ff00]/40 hover:bg-[#00ff00]/10 hover:border-[#00ff00] group transition-all duration-300 text-white"
+                  className="w-full justify-start border-[#00FF88]/40 hover:bg-[#00FF88]/10 hover:border-[#00FF88] group transition-all duration-300 text-white"
                 >
-                  <MessageCircle className="w-5 h-5 mr-3 text-[#00ff00]" />
+                  <MessageCircle className="w-5 h-5 mr-3 text-[#00FF88]" />
                   <span className="flex-1 text-left">Задать вопрос AI</span>
                   <motion.span
                     className="opacity-0 group-hover:opacity-100"
@@ -398,23 +398,23 @@ const NeuroHub = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden group hover:shadow-[0_0_40px_rgba(0,255,0,0.2)] transition-all">
+            <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md relative overflow-hidden group hover:shadow-[0_0_40px_rgba(0,255,136,0.2)] transition-all">
               {/* Glow Effect on Hover */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-[#00ff00]/0 via-[#00ff00]/10 to-[#00ff00]/0 opacity-0 group-hover:opacity-100"
+                className="absolute inset-0 bg-gradient-to-br from-[#00FF88]/0 via-[#00FF88]/10 to-[#00FF88]/0 opacity-0 group-hover:opacity-100"
                 transition={{ duration: 0.3 }}
               />
               
               <CardHeader className="relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-[#00ff00]" />
+                  <div className="w-12 h-12 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-[#00FF88]" />
                   </div>
                   <CardTitle className="text-white">Активность</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 relative z-10">
-                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20">
+                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-lg border border-[#00FF88]/20">
                   <div className="flex items-center gap-3">
                     <Flame className="w-6 h-6 text-orange-500" />
                     <div>
@@ -435,15 +435,15 @@ const NeuroHub = () => {
                   </motion.div>
                 </div>
 
-                <div className="p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20">
+                <div className="p-3 bg-zinc-900/50 rounded-lg border border-[#00FF88]/20">
                   <div className="flex items-center gap-3 mb-2">
-                    <Award className="w-5 h-5 text-[#00ff00]" />
+                    <Award className="w-5 h-5 text-[#00FF88]" />
                     <p className="text-sm text-gray-400">Недельная цель</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88]"
                         initial={{ width: 0 }}
                         animate={{ width: "65%" }}
                         transition={{ duration: 1, delay: 0.5 }}
@@ -453,9 +453,9 @@ const NeuroHub = () => {
                   </div>
                 </div>
 
-                <div className="p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20">
+                <div className="p-3 bg-zinc-900/50 rounded-lg border border-[#00FF88]/20">
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-[#00ff00]" />
+                    <Clock className="w-5 h-5 text-[#00FF88]" />
                     <div>
                       <p className="text-sm text-gray-400">Время обучения сегодня</p>
                       <p className="text-lg font-bold text-white">
@@ -478,11 +478,11 @@ const NeuroHub = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+            <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-[#00ff00]" />
+                  <div className="w-10 h-10 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-[#00FF88]" />
                   </div>
                   <CardTitle className="text-white">Мини-миссии</CardTitle>
                 </div>
@@ -492,23 +492,23 @@ const NeuroHub = () => {
                   missions.map((mission: any) => (
                     <motion.div
                       key={mission.id}
-                      className="p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 flex items-center justify-between group hover:bg-zinc-900/70 transition-colors"
+                      className="p-3 bg-zinc-900/50 rounded-lg border border-[#00FF88]/20 flex items-center justify-between group hover:bg-zinc-900/70 transition-colors"
                       whileHover={{ x: 5 }}
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <motion.div
                           className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                             mission.is_completed
-                              ? 'bg-[#00ff00] border-[#00ff00]'
-                              : 'border-[#00ff00]/40'
+                              ? 'bg-[#00FF88] border-[#00FF88]'
+                              : 'border-[#00FF88]/40'
                           }`}
                           animate={
                             mission.is_completed
                               ? {
                                   boxShadow: [
-                                    '0 0 0px rgba(0,255,0,0.5)',
-                                    '0 0 15px rgba(0,255,0,0.8)',
-                                    '0 0 0px rgba(0,255,0,0.5)',
+                                    '0 0 0px rgba(0,255,136,0.5)',
+                                    '0 0 15px rgba(0,255,136,0.8)',
+                                    '0 0 0px rgba(0,255,136,0.5)',
                                   ],
                                 }
                               : {}
@@ -530,7 +530,7 @@ const NeuroHub = () => {
                       </div>
                       {!mission.is_completed && mission.current_value > 0 && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#00ff00] font-semibold">
+                          <span className="text-xs text-[#00FF88] font-semibold">
                             {mission.current_value}/{mission.target_value}
                           </span>
                           <span className="text-xs text-gray-500">+{mission.xp_reward} XP</span>
@@ -554,11 +554,11 @@ const NeuroHub = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
-            <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md">
+            <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-[#00ff00]" />
+                  <div className="w-10 h-10 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-[#00FF88]" />
                   </div>
                   <CardTitle className="text-white">Обновления</CardTitle>
                 </div>
@@ -567,12 +567,12 @@ const NeuroHub = () => {
                 {updates.map((update) => (
                   <motion.div
                     key={update.id}
-                    className="p-3 bg-zinc-900/50 rounded-lg border border-[#00ff00]/20 group hover:bg-zinc-900/70 transition-colors relative overflow-hidden"
+                    className="p-3 bg-zinc-900/50 rounded-lg border border-[#00FF88]/20 group hover:bg-zinc-900/70 transition-colors relative overflow-hidden"
                     whileHover={{ x: 5 }}
                   >
                     {/* Hover Line */}
                     <motion.div
-                      className="absolute left-0 top-0 bottom-0 w-1 bg-[#00ff00]"
+                      className="absolute left-0 top-0 bottom-0 w-1 bg-[#00FF88]"
                       initial={{ scaleY: 0 }}
                       whileHover={{ scaleY: 1 }}
                       transition={{ duration: 0.3 }}
@@ -594,10 +594,10 @@ const NeuroHub = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden">
+          <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md relative overflow-hidden">
             {/* Animated Glow */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00ff00]/10 to-transparent"
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00FF88]/10 to-transparent"
               animate={{
                 x: ['-100%', '200%'],
               }}
@@ -618,7 +618,7 @@ const NeuroHub = () => {
                   ease: "linear",
                 }}
               >
-                <Brain className="w-12 h-12 text-[#00ff00]" />
+                <Brain className="w-12 h-12 text-[#00FF88]" />
               </motion.div>
               <div>
                 <p className="text-sm text-gray-400 mb-1">💡 Совет дня от AI</p>

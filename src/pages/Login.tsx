@@ -257,8 +257,8 @@ export default function Login() {
                 transition={{ delay: 0.2 }}
                 className="flex items-center justify-center gap-3 sm:gap-4 mb-4"
               >
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#00ff00] flex items-center justify-center flex-shrink-0">
-                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-[#00ff00]" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#00FF88] flex items-center justify-center flex-shrink-0">
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-[#00FF88]" />
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-bold text-white font-display">ВХОД</h2>
               </motion.div>
@@ -278,7 +278,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="h-12 sm:h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/20"
+                  className="h-12 sm:h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88] focus:ring-[#00FF88]/20"
                   placeholder="student@onaiacademy.kz"
                 />
               </div>
@@ -296,13 +296,13 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isLoading}
-                    className="h-12 sm:h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00] focus:ring-[#00ff00]/20 pr-12"
+                    className="h-12 sm:h-14 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88] focus:ring-[#00FF88]/20 pr-12"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00ff00] transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00FF88] transition"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -318,7 +318,7 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 sm:h-14 bg-[#00ff00] hover:bg-[#00cc00] text-black font-semibold text-base sm:text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#00ff00]/20"
+                className="w-full h-12 sm:h-14 bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold text-base sm:text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#00FF88]/20"
               >
                 {isLoading ? (
                   <>
@@ -338,7 +338,7 @@ export default function Login() {
             <div className="mt-6 sm:mt-8 text-center space-y-2 px-4">
               <p className="text-xs sm:text-sm text-gray-400">
                 Нет аккаунта?{' '}
-                <span className="text-[#00ff00] cursor-pointer hover:underline">
+                <span className="text-[#00FF88] cursor-pointer hover:underline">
                   Обратитесь к администратору
                 </span>
               </p>
@@ -358,12 +358,12 @@ export default function Login() {
                 <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">О ПЛАТФОРМЕ</h3>
                 <ul className="space-y-2 text-xs sm:text-sm text-gray-400">
                   <li>
-                    <a href="#" className="hover:text-[#00ff00] transition break-words">
+                    <a href="#" className="hover:text-[#00FF88] transition break-words">
                       Публичная оферта
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-[#00ff00] transition break-words">
+                    <a href="#" className="hover:text-[#00FF88] transition break-words">
                       Политика конфиденциальности
                     </a>
                   </li>
@@ -387,7 +387,7 @@ export default function Login() {
                     href="https://instagram.com/onaiacademy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] transition flex items-center justify-center text-lg"
+                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00FF88] transition flex items-center justify-center text-lg"
                     title="Instagram"
                   >
                     📷
@@ -396,7 +396,7 @@ export default function Login() {
                     href="https://youtube.com/@onaiacademy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00ff00] transition flex items-center justify-center text-lg"
+                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#00FF88] transition flex items-center justify-center text-lg"
                     title="YouTube"
                   >
                     📺

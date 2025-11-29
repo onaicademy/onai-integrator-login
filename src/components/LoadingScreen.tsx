@@ -8,10 +8,11 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.5 }}
       onAnimationComplete={() => {
-        // 🚀 PERFORMANCE FIX: Reduced from 3000ms to 800ms
-        setTimeout(onComplete, 800);
+        // ⏱️ Увеличено до 3000ms, чтобы анимация логотипа проиграла полностью
+        // (OnAILogo включается через 2 секунды, нужно дать время на просмотр)
+        setTimeout(onComplete, 3000);
       }}
     >
       {/* 🚀 PERFORMANCE FIX: Reduced from 20 to 8 particles */}
@@ -42,7 +43,7 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="w-full"
         >
           <OnAILogo 

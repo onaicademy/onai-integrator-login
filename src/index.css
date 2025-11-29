@@ -24,7 +24,7 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 100%;
 
     /* 🎯 CYBER-ARCHITECTURE: Accents (Neon Lights) */
-    --primary: 120 100% 50%; /* #00FF00 - Pure Neon Green */
+    --primary: 152 100% 50%; /* #00FF88 - Cyber Neon */
     --primary-foreground: 0 0% 0%;
 
     --secondary: 347 100% 60%; /* #FF3366 - Signal Red */
@@ -33,7 +33,7 @@ All colors MUST be HSL.
     --muted: 0 0% 3.92%;
     --muted-foreground: 215 14% 66%; /* #9CA3AF - Tech Gray */
 
-    --accent: 120 100% 50%; /* #00FF00 - Pure Neon Green */
+    --accent: 152 100% 50%; /* #00FF88 - Cyber Neon */
     --accent-foreground: 0 0% 0%;
 
     --destructive: 347 100% 60%; /* #FF3366 - Signal Red */
@@ -41,11 +41,11 @@ All colors MUST be HSL.
 
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 120 100% 50%;
+    --ring: 152 100% 50%;
 
     --radius: 1rem;
 
-    --neon: 120 100% 50%; /* #00FF00 - Pure Neon Green */
+    --neon: 152 100% 50%; /* #00FF88 - Cyber Neon */
     --neon-foreground: 0 0% 0%;
 
     --sidebar-background: 0 0% 1.18%; /* #030303 */
@@ -70,7 +70,7 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 100%;
 
     /* 🎯 CYBER-ARCHITECTURE: Accents (Neon Lights) */
-    --primary: 160 100% 50%; /* #00FF94 - Acid Green */
+    --primary: 152 100% 50%; /* #00FF88 - Cyber Neon */
     --primary-foreground: 0 0% 0%;
 
     --secondary: 347 100% 60%; /* #FF3366 - Signal Red */
@@ -79,7 +79,7 @@ All colors MUST be HSL.
     --muted: 0 0% 3.92%;
     --muted-foreground: 215 14% 66%; /* #9CA3AF - Tech Gray */
 
-    --accent: 120 100% 50%; /* #00FF00 - Pure Neon Green */
+    --accent: 152 100% 50%; /* #00FF88 - Cyber Neon */
     --accent-foreground: 0 0% 0%;
 
     --destructive: 347 100% 60%; /* #FF3366 - Signal Red */
@@ -87,9 +87,9 @@ All colors MUST be HSL.
 
     --border: 0 0% 8%;
     --input: 0 0% 8%;
-    --ring: 160 100% 50%;
+    --ring: 152 100% 50%;
 
-    --neon: 120 100% 50%; /* #00FF00 - Pure Neon Green */
+    --neon: 152 100% 50%; /* #00FF88 - Cyber Neon */
     --neon-foreground: 0 0% 0%;
 
     --sidebar-background: 0 0% 1.18%; /* #030303 */
@@ -99,7 +99,7 @@ All colors MUST be HSL.
     --sidebar-accent: 0 0% 3.92%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 8%;
-    --sidebar-ring: 120 100% 50%;
+    --sidebar-ring: 152 100% 50%;
   }
 }
 
@@ -112,7 +112,7 @@ All colors MUST be HSL.
   body {
     background-color: #030303; /* Deep Void Black */
     background-image: 
-      radial-gradient(at 0% 0%, rgba(0, 255, 0, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, rgba(0, 255, 136, 0.05) 0px, transparent 50%),
       linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px; /* Grid Effect */
@@ -159,11 +159,11 @@ All colors MUST be HSL.
 
   .glass-card:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 136, 0.2);
     box-shadow: 
       0 8px 32px 0 rgba(0, 0, 0, 0.37),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-      0 0 20px 0 rgba(0, 255, 0, 0.1);
+      0 0 20px 0 rgba(0, 255, 136, 0.1);
   }
 }
 
@@ -198,10 +198,10 @@ All colors MUST be HSL.
 
   @keyframes glow {
     0%, 100% {
-      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
     }
     50% {
-      box-shadow: 0 0 40px rgba(0, 255, 0, 0.6);
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
     }
   }
 
@@ -258,7 +258,7 @@ All colors MUST be HSL.
 
   /* Text gradient effect */
   .text-gradient {
-    background: linear-gradient(135deg, #00FF00, #8B5CF6);
+    background: linear-gradient(135deg, #00FF88, #8B5CF6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -303,19 +303,19 @@ All colors MUST be HSL.
 
   /* 🎯 CYBER-ARCHITECTURE: Neon Glows (Acid Green) */
   .neon-shadow {
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
   }
 
   .neon-shadow-strong {
-    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6), 0 0 60px rgba(0, 255, 0, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
   }
 
   .text-glow {
-    text-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
   }
 
   .text-glow-strong {
-    text-shadow: 0 0 30px rgba(0, 255, 0, 0.6), 0 0 60px rgba(0, 255, 0, 0.3);
+    text-shadow: 0 0 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
   }
 
   /* 🎯 CYBER-ARCHITECTURE: Signal Red Glows */

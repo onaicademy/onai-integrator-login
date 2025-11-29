@@ -349,7 +349,7 @@ export default function AIAnalytics() {
           <Button
             variant={period === "day" ? "default" : "outline"}
             onClick={() => setPeriod("day")}
-            className={period === "day" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-gray-700 text-white hover:bg-gray-800"}
+            className={period === "day" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-gray-700 text-white hover:bg-gray-800"}
             size="sm"
           >
             День
@@ -357,7 +357,7 @@ export default function AIAnalytics() {
           <Button
             variant={period === "week" ? "default" : "outline"}
             onClick={() => setPeriod("week")}
-            className={period === "week" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-gray-700 text-white hover:bg-gray-800"}
+            className={period === "week" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-gray-700 text-white hover:bg-gray-800"}
             size="sm"
           >
             Неделя
@@ -365,7 +365,7 @@ export default function AIAnalytics() {
           <Button
             variant={period === "month" ? "default" : "outline"}
             onClick={() => setPeriod("month")}
-            className={period === "month" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-gray-700 text-white hover:bg-gray-800"}
+            className={period === "month" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-gray-700 text-white hover:bg-gray-800"}
             size="sm"
           >
             Месяц
@@ -408,10 +408,10 @@ export default function AIAnalytics() {
       {/* Вкладки */}
       <Tabs defaultValue="overview">
         <TabsList className="bg-[#1a1a24] border border-gray-800">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
-          <TabsTrigger value="insights" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Инсайты</TabsTrigger>
-          <TabsTrigger value="students" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Студенты</TabsTrigger>
-          <TabsTrigger value="conflicts" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Конфликты бота</TabsTrigger>
+          <TabsTrigger value="overview" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
+          <TabsTrigger value="insights" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Инсайты</TabsTrigger>
+          <TabsTrigger value="students" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Студенты</TabsTrigger>
+          <TabsTrigger value="conflicts" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Конфликты бота</TabsTrigger>
         </TabsList>
 
         {/* Вкладка: Обзор */}
@@ -478,7 +478,7 @@ export default function AIAnalytics() {
                       key={student.id}
                       className={`
                         p-3 sm:p-4 rounded-lg border-2 cursor-pointer
-                        hover:shadow-lg hover:shadow-[#00ff00]/10 transition-all
+                        hover:shadow-lg hover:shadow-[#00FF88]/10 transition-all
                         ${levelColors.bg} ${levelColors.border}
                       `}
                       whileHover={{ scale: 1.02 }}
@@ -486,7 +486,7 @@ export default function AIAnalytics() {
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center font-bold text-white text-sm sm:text-base">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 flex items-center justify-center font-bold text-white text-sm sm:text-base">
                             {student.name.split(" ").map(n => n[0]).join("")}
                           </div>
                           <div>
@@ -626,7 +626,7 @@ export default function AIAnalytics() {
                       {/* Кнопки действий */}
                       {conflict.status !== "resolved" && (
                         <div className="flex gap-2 mt-3 flex-wrap">
-                          <Button size="sm" variant="default" className="bg-[#00ff00] text-black hover:bg-[#00cc00]">
+                          <Button size="sm" variant="default" className="bg-[#00FF88] text-black hover:bg-[#00cc88]">
                             <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             <span className="text-xs sm:text-sm">Пометить решённым</span>
                           </Button>
@@ -671,7 +671,7 @@ export default function AIAnalytics() {
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1a1a24] border-gray-800">
             <DialogHeader>
               <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2 sm:gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center font-bold text-base sm:text-lg text-white">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 flex items-center justify-center font-bold text-base sm:text-lg text-white">
                   {selectedStudent.name.split(" ").map(n => n[0]).join("")}
                 </div>
                 <div>
@@ -773,11 +773,11 @@ export default function AIAnalytics() {
 
               {/* Рекомендуемые действия */}
               <div>
-                <h3 className="text-base sm:text-lg font-semibold mb-3 text-[#00ff00]">✅ Рекомендуемые действия</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3 text-[#00FF88]">✅ Рекомендуемые действия</h3>
                 <div className="space-y-2">
                   {selectedStudent.actions.map((action, i) => (
-                    <div key={i} className="flex items-start gap-2 p-2 sm:p-3 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg">
-                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ff00] flex-shrink-0 mt-0.5" />
+                    <div key={i} className="flex items-start gap-2 p-2 sm:p-3 bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-lg">
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF88] flex-shrink-0 mt-0.5" />
                       <p className="text-xs sm:text-sm text-white">{action}</p>
                     </div>
                   ))}
@@ -808,22 +808,22 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, icon, trend, trendUp, badge, badgeColor, onClick }: MetricCardProps) {
   return (
-    <Card className={`bg-[#1a1a24] border-gray-800 ${onClick ? "cursor-pointer hover:shadow-lg hover:shadow-[#00ff00]/10 transition-shadow hover:border-[#00ff00]/50" : ""}`} onClick={onClick}>
+    <Card className={`bg-[#1a1a24] border-gray-800 ${onClick ? "cursor-pointer hover:shadow-lg hover:shadow-[#00FF88]/10 transition-shadow hover:border-[#00FF88]/50" : ""}`} onClick={onClick}>
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs sm:text-sm text-gray-400">{title}</p>
-          <div className="p-1.5 sm:p-2 rounded-lg bg-[#00ff00]/10 border border-[#00ff00]/30">{icon}</div>
+          <div className="p-1.5 sm:p-2 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30">{icon}</div>
         </div>
         <div className="flex items-end justify-between">
           <p className="text-2xl sm:text-3xl font-bold text-white">{value}</p>
           {trend && (
-            <div className={`flex items-center gap-1 text-xs sm:text-sm ${trendUp ? "text-[#00ff00]" : "text-red-500"}`}>
+            <div className={`flex items-center gap-1 text-xs sm:text-sm ${trendUp ? "text-[#00FF88]" : "text-red-500"}`}>
               {trendUp ? <TrendingUp className="w-3 w-3 sm:w-4 sm:h-4" /> : <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />}
               {trend}
             </div>
           )}
           {badge && (
-            <Badge variant={badgeColor === "green" ? "default" : "destructive"} className={`text-xs ${badgeColor === "green" ? "bg-[#00ff00] text-black" : "bg-red-600 text-white"}`}>
+            <Badge variant={badgeColor === "green" ? "default" : "destructive"} className={`text-xs ${badgeColor === "green" ? "bg-[#00FF88] text-black" : "bg-red-600 text-white"}`}>
               {badge}
             </Badge>
           )}
@@ -850,7 +850,7 @@ function TopicBar({ topic, count, total }: TopicBarProps) {
       </div>
       <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+          className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88]"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -876,20 +876,20 @@ function InsightCard({ insight }: InsightCardProps) {
       case "trend":
         return <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />;
       case "achievement":
-        return <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ff00]" />;
+        return <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF88]" />;
       default:
         return <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-white" />;
     }
   };
 
   return (
-    <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800 hover:border-[#00ff00]/30 transition-colors">
+    <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-black/40 rounded-lg border border-gray-800 hover:border-[#00FF88]/30 transition-colors">
       <div className="flex-shrink-0">{getIcon()}</div>
       <div className="flex-1">
         <h4 className="font-semibold mb-1 text-white text-sm sm:text-base">{insight.title}</h4>
         <p className="text-xs sm:text-sm text-gray-400 mb-2">{insight.description}</p>
         {insight.action && (
-          <p className="text-xs sm:text-sm text-[#00ff00]">→ {insight.action}</p>
+          <p className="text-xs sm:text-sm text-[#00FF88]">→ {insight.action}</p>
         )}
       </div>
     </div>
@@ -908,7 +908,7 @@ function CriteriaBar({ label, score, weight, details }: CriteriaBarProps) {
     if (score < 30) return "bg-red-500";
     if (score < 50) return "bg-orange-500";
     if (score < 70) return "bg-yellow-500";
-    if (score < 85) return "bg-[#00ff00]";
+    if (score < 85) return "bg-[#00FF88]";
     return "bg-blue-500";
   };
 

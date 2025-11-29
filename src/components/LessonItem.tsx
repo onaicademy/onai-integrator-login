@@ -33,7 +33,7 @@ export function LessonItem({ lesson, userRole, onEdit, onDelete }: LessonItemPro
         border border-slate-700
         transition-all duration-300
         ${lesson.is_locked ? 'opacity-50' : ''}
-        ${!isAdmin && !lesson.is_locked ? 'hover:bg-slate-800/50 hover:border-emerald-500/50 cursor-pointer hover:shadow-lg hover:shadow-emerald-500/10' : ''}
+        ${!isAdmin && !lesson.is_locked ? 'hover:bg-slate-800/50 hover:border-#00FF88]/50 cursor-pointer hover:shadow-lg hover:shadow-#00FF88]/10' : ''}
       `}
       onClick={!isAdmin ? handleClick : undefined}
     >
@@ -46,7 +46,7 @@ export function LessonItem({ lesson, userRole, onEdit, onDelete }: LessonItemPro
 
         <div className="flex-shrink-0">
           {lesson.is_completed ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+            <CheckCircle2 className="h-5 w-5 text-#00FF88]" />
           ) : lesson.is_locked ? (
             <Lock className="h-5 w-5 text-slate-500" />
           ) : (
@@ -64,14 +64,14 @@ export function LessonItem({ lesson, userRole, onEdit, onDelete }: LessonItemPro
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {lesson.is_completed && !isAdmin && (
-            <Badge variant="secondary" className="text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/50">
+            <Badge variant="secondary" className="text-xs bg-#00FF88]/20 text-#00FF88] border-#00FF88]/50">
               Пройдено
             </Badge>
           )}
           
           {isAdmin ? (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={onEdit} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+              <Button variant="ghost" size="sm" onClick={onEdit} className="text-#00FF88] hover:text-[#00FF88] 300 hover:bg-#00FF88]/10">
                 <Edit className="h-4 w-4 mr-1" />
                 Редактировать
               </Button>

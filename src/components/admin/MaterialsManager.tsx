@@ -160,7 +160,7 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
   return (
     <div className="space-y-4">
       {/* Drag-n-drop зона */}
-      <div className="border-2 border-dashed border-gray-800 rounded-lg p-8 text-center hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0f]">
+      <div className="border-2 border-dashed border-gray-800 rounded-lg p-8 text-center hover:border-[#00FF88]/50 transition-colors bg-[#0a0a0f]">
         <input
           type="file"
           multiple
@@ -223,7 +223,7 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
                     <p className="text-xs text-blue-400">⏳ Загрузка...</p>
                   )}
                   {material.id && (
-                    <p className="text-xs text-[#00ff00]">✅ Загружено</p>
+                    <p className="text-xs text-[#00FF88]">✅ Загружено</p>
                   )}
                 </div>
 
@@ -251,7 +251,7 @@ export function MaterialsManager({ lessonId, onLessonCreated, moduleId, onMateri
             <Button
               onClick={handleUploadAll}
               disabled={loading}
-              className="w-full mt-4 bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold"
+              className="w-full mt-4 bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold"
             >
               {loading ? '⏳ Загрузка...' : `📤 Загрузить материалы (${materials.filter(m => m.file && !m.id).length})`}
             </Button>

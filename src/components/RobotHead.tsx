@@ -61,8 +61,8 @@ export function RobotHead({
         borderRadius: '20px',
         overflow: 'hidden',
         background: 'linear-gradient(135deg, rgba(0,0,0,0.9), rgba(45,80,22,0.3))',
-        border: '2px solid rgba(0,255,0,0.3)',
-        boxShadow: '0 0 40px rgba(0,255,0,0.2)',
+        border: '2px solid rgba(0,255,136,0.3)',
+        boxShadow: '0 0 40px rgba(0,255,136,0.2)',
         ...style,
       }}
     >
@@ -73,13 +73,13 @@ export function RobotHead({
         <ambientLight intensity={0.8} />
         <directionalLight position={[5, 5, 5]} intensity={1.2} castShadow />
         <directionalLight position={[-5, 3, 2]} intensity={0.6} />
-        <pointLight position={[0, 2, 3]} intensity={0.8} color="#00FF00" />
+        <pointLight position={[0, 2, 3]} intensity={0.8} color="#00FF88" />
         <spotLight 
           position={[0, 3, 0]} 
           intensity={1} 
           angle={0.6} 
           penumbra={1}
-          color="#00FF00"
+          color="#00FF88"
         />
 
         <Suspense fallback={null}>
@@ -104,7 +104,7 @@ export function RobotHead({
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          color: '#00FF00',
+          color: '#00FF88',
           fontSize: '14px',
           fontWeight: 'bold',
           pointerEvents: 'none',

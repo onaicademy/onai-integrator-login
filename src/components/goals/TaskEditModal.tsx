@@ -313,7 +313,7 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Название задачи..."
-              className="text-lg font-medium bg-transparent border-0 border-b border-zinc-800 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#00ff00] text-white placeholder:text-gray-600 transition-colors"
+              className="text-lg font-medium bg-transparent border-0 border-b border-zinc-800 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#00FF88] text-white placeholder:text-gray-600 transition-colors"
               autoFocus
             />
           </div>
@@ -324,7 +324,7 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Описание (опционально)"
-              className="min-h-[80px] bg-zinc-900/50 border-zinc-800 text-white placeholder:text-gray-600 focus-visible:border-[#00ff00] resize-none"
+              className="min-h-[80px] bg-zinc-900/50 border-zinc-800 text-white placeholder:text-gray-600 focus-visible:border-[#00FF88] resize-none"
               rows={3}
             />
           </div>
@@ -374,13 +374,13 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                     variant="outline"
                     className={`w-full justify-start text-left font-normal ${
                       dueDate ? 'text-white bg-zinc-900' : 'text-gray-500 bg-zinc-900/30'
-                    } border-zinc-800 hover:bg-zinc-800 hover:border-[#00ff00]/50 transition-colors`}
+                    } border-zinc-800 hover:bg-zinc-800 hover:border-[#00FF88]/50 transition-colors`}
                   >
                     {dueDate ? format(dueDate, 'd MMM', { locale: ru }) : 'Выбрать'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="w-auto p-3 bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-2xl shadow-[#00ff00]/10" 
+                  className="w-auto p-3 bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-2xl shadow-[#00FF88]/10" 
                   align="start"
                   sideOffset={8}
                   style={{ zIndex: 100001, pointerEvents: 'auto' }}
@@ -401,7 +401,7 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                     classNames={{
                       months: "space-y-4",
                       month: "space-y-4",
-                      caption: "flex justify-center pt-1 relative items-center text-[#00ff00]",
+                      caption: "flex justify-center pt-1 relative items-center text-[#00FF88]",
                       caption_label: "text-sm font-medium",
                       nav: "space-x-1 flex items-center",
                       nav_button: "h-7 w-7 bg-transparent hover:bg-zinc-800 rounded-md transition-colors",
@@ -412,8 +412,8 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                       head_cell: "text-gray-500 rounded-md w-9 font-normal text-[0.8rem]",
                       row: "flex w-full mt-2",
                       cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                      day: "h-9 w-9 p-0 font-normal hover:bg-zinc-800 hover:text-[#00ff00] rounded-md transition-all",
-                      day_selected: "bg-[#00ff00] text-black hover:bg-[#00ff00] hover:text-black font-bold",
+                      day: "h-9 w-9 p-0 font-normal hover:bg-zinc-800 hover:text-[#00FF88] rounded-md transition-all",
+                      day_selected: "bg-[#00FF88] text-black hover:bg-[#00FF88] hover:text-black font-bold",
                       day_today: "bg-zinc-800 text-white font-semibold",
                       day_outside: "text-gray-600 opacity-50",
                       day_disabled: "text-gray-700 opacity-30",
@@ -436,7 +436,7 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                   toast.success(`🕐 Время: ${value}`, { duration: 1000 });
                 }}
               >
-                <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00ff00]/50 transition-all">
+                <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00FF88]/50 transition-all">
                   <SelectValue placeholder="12:00" />
                 </SelectTrigger>
                 <SelectContent 
@@ -447,7 +447,7 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                     <SelectItem 
                       key={time} 
                       value={time} 
-                      className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors"
+                      className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors"
                     >
                       {time}
                     </SelectItem>
@@ -491,13 +491,13 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                       setHasChanges(true);
                     }}
                     disabled={!telegramConnected}
-                    className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:border-[#00ff00]"
+                    className="border-zinc-700 data-[state=checked]:bg-[#00FF88] data-[state=checked]:border-[#00FF88]"
                   />
                   <Label htmlFor="telegram" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
                     <Bell className="w-4 h-4" />
                     Telegram напоминание
                   </Label>
-                  <span className="text-xs text-[#00ff00]">✓ Подключен</span>
+                  <span className="text-xs text-[#00FF88]">✓ Подключен</span>
                 </div>
               </div>
             )}
@@ -515,20 +515,20 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
                     toast.success(`⏰ Напомнить за: ${label}`, { duration: 1000 });
                   }}
                 >
-                  <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00ff00]/50 transition-all">
+                  <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00FF88]/50 transition-all">
                     <SelectValue placeholder="30 минут" />
                   </SelectTrigger>
                   <SelectContent 
                     className="bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-xl"
                     style={{ zIndex: 100003 }}
                   >
-                    <SelectItem value="5" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">5 минут</SelectItem>
-                    <SelectItem value="10" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">10 минут</SelectItem>
-                    <SelectItem value="15" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">15 минут</SelectItem>
-                    <SelectItem value="30" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">30 минут</SelectItem>
-                    <SelectItem value="60" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">1 час</SelectItem>
-                    <SelectItem value="120" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">2 часа</SelectItem>
-                    <SelectItem value="1440" className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors">1 день</SelectItem>
+                    <SelectItem value="5" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">5 минут</SelectItem>
+                    <SelectItem value="10" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">10 минут</SelectItem>
+                    <SelectItem value="15" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">15 минут</SelectItem>
+                    <SelectItem value="30" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">30 минут</SelectItem>
+                    <SelectItem value="60" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">1 час</SelectItem>
+                    <SelectItem value="120" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">2 часа</SelectItem>
+                    <SelectItem value="1440" className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors">1 день</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -548,7 +548,7 @@ export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: Tas
             <div className="flex-1" />
             <Button
               onClick={onClose}
-              className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-medium"
+              className="bg-[#00FF88] hover:bg-[#00cc88] text-black font-medium"
             >
               Готово
             </Button>

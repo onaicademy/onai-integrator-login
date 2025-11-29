@@ -143,5 +143,63 @@ router.post('/password-reset', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/tripwire/module-unlocks/:userId
+ * Get newly unlocked modules that haven't shown animation yet
+ */
+router.get('/module-unlocks/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from('module_unlocks')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('animation_shown', false)
+      .order('unlocked_at', { ascending: true });
+
+    if (error) {
+      console.error('❌ Failed to fetch module unlocks:', error);
+      return res.status(500).json({ error: 'Failed to fetch module unlocks' });
+    }
+
+    res.json({ success: true, unlocks: data || [] });
+  } catch (error: any) {
+    console.error('❌ Module unlocks error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/tripwire/module-unlocks/mark-shown
+ * Mark animation as shown for a specific module unlock
+ */
+router.post('/module-unlocks/mark-shown', async (req: Request, res: Response) => {
+  try {
+    const { userId, moduleId } = req.body;
+
+    if (!userId || !moduleId) {
+      return res.status(400).json({ error: 'userId and moduleId are required' });
+    }
+
+    const { error } = await supabase
+      .from('module_unlocks')
+      .update({ animation_shown: true })
+      .eq('user_id', userId)
+      .eq('module_id', moduleId);
+
+    if (error) {
+      console.error('❌ Failed to mark animation as shown:', error);
+      return res.status(500).json({ error: 'Failed to update unlock status' });
+    }
+
+    console.log(`✅ Animation marked as shown for user ${userId}, module ${moduleId}`);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('❌ Mark shown error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
 

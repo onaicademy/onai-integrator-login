@@ -40,11 +40,11 @@ export default function TripwireLogin() {
           <h1 
             className="text-3xl sm:text-4xl font-bold text-white mb-3 font-display uppercase tracking-wider"
             style={{
-              textShadow: '0 0 30px rgba(0, 255, 0, 0.3)',
+              textShadow: '0 0 30px rgba(0, 255, 136, 0.3)',
             }}
           >
             ИНТЕГРАТОР<br />
-            <span className="text-[#00FF00]">ОТ 0 ДО 1000$</span>
+            <span className="text-[#00FF88]">ОТ 0 ДО 1000$</span>
           </h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -65,7 +65,7 @@ export default function TripwireLogin() {
         >
           {/* Card Glow Effect */}
           <div 
-            className="absolute inset-0 rounded-2xl blur-2xl bg-[#00FF00]/10"
+            className="absolute inset-0 rounded-2xl blur-2xl bg-[#00FF88]/10"
             style={{
               animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             }}
@@ -75,7 +75,7 @@ export default function TripwireLogin() {
           <div 
             className="relative bg-[#0A0A0A]/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 sm:p-8"
             style={{
-              boxShadow: '0 0 60px rgba(0, 255, 0, 0.15)',
+              boxShadow: '0 0 60px rgba(0, 255, 136, 0.15)',
             }}
           >
             <TripwireLoginForm onForgotPassword={() => setShowPasswordRecovery(true)} />
@@ -93,7 +93,7 @@ export default function TripwireLogin() {
             У вас нет доступа?{' '}
             <a 
               href="mailto:feedback@onaiacademy.kz" 
-              className="text-[#00FF00] hover:text-[#00cc00] transition-colors"
+              className="text-[#00FF88] hover:text-[#00cc88] transition-colors"
             >
               Свяжитесь с нами →
             </a>

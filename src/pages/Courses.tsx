@@ -142,7 +142,7 @@ export default function Courses() {
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto" style={{ fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif' }}>
             Изучайте AI-технологии и создавайте реальные проекты вместе с{' '}
-            <span className="text-[#00ff00] font-semibold">onAI Academy</span>
+            <span className="text-[#00FF88] font-semibold">onAI Academy</span>
           </p>
         </motion.div>
 
@@ -159,7 +159,7 @@ export default function Courses() {
                 className={`h-full bg-[#1a1a24] border-gray-800 transition-all duration-300 ${
                   course.inDevelopment 
                     ? 'opacity-70' 
-                    : 'hover:border-[#00ff00]/50 hover:shadow-lg hover:shadow-[#00ff00]/10 cursor-pointer hover:scale-[1.02]'
+                    : 'hover:border-[#00FF88]/50 hover:shadow-lg hover:shadow-[#00FF88]/10 cursor-pointer hover:scale-[1.02]'
                 }`}
                 onClick={() => !course.inDevelopment && navigate(`/course/${course.id}`)}
               >
@@ -168,11 +168,11 @@ export default function Courses() {
                     {/* Иконка */}
                     <motion.div
                       whileHover={!course.inDevelopment ? { scale: 1.1, rotate: 5 } : {}}
-                      className={`w-16 h-16 rounded-xl bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center border border-[#00ff00]/30 ${
-                        !course.inDevelopment && 'group-hover:border-[#00ff00]'
+                      className={`w-16 h-16 rounded-xl bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 flex items-center justify-center border border-[#00FF88]/30 ${
+                        !course.inDevelopment && 'group-hover:border-[#00FF88]'
                       }`}
                     >
-                      <div className="text-[#00ff00]">{course.icon}</div>
+                      <div className="text-[#00FF88]">{course.icon}</div>
                     </motion.div>
                     
                     {course.inDevelopment && (
@@ -192,15 +192,15 @@ export default function Courses() {
                   {/* Статистика */}
                   <div className="flex items-center gap-4 text-sm text-gray-400">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-[#00ff00]" />
+                      <Clock className="w-4 h-4 text-[#00FF88]" />
                       {course.duration}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-[#00ff00]" />
+                      <Users className="w-4 h-4 text-[#00FF88]" />
                       {course.students}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Star className="w-4 h-4 fill-[#00ff00] text-[#00ff00]" />
+                      <Star className="w-4 h-4 fill-[#00FF88] text-[#00FF88]" />
                       {course.rating}
                     </div>
                   </div>
@@ -219,7 +219,7 @@ export default function Courses() {
                   <ul className="space-y-2">
                     {course.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#00ff00] mt-1.5 flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] mt-1.5 flex-shrink-0" />
                         {feature}
                       </li>
                     ))}
@@ -231,7 +231,7 @@ export default function Courses() {
                     className={`w-full mt-4 ${
                       course.inDevelopment
                         ? 'bg-gray-700 text-gray-400'
-                        : 'bg-[#00ff00] hover:bg-[#00cc00] text-black font-semibold shadow-lg shadow-[#00ff00]/20 hover:scale-[1.02]'
+                        : 'bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold shadow-lg shadow-[#00FF88]/20 hover:scale-[1.02]'
                     } transition-all duration-300`}
                   >
                     {course.inDevelopment ? (
@@ -259,10 +259,10 @@ export default function Courses() {
           transition={{ delay: 0.5 }}
           className="mt-12 relative overflow-hidden"
         >
-          <Card className="glass-card border-[#00FF00]/30 hover:border-[#00FF00]/60 hover:shadow-[0_0_30px_rgba(0,255,0,0.3)] transition-all duration-500 relative overflow-hidden group">
+          <Card className="glass-card border-[#00FF88]/30 hover:border-[#00FF88]/60 hover:shadow-[0_0_30px_rgba(0,255,136,0.3)] transition-all duration-500 relative overflow-hidden group">
             {/* Animated background glow */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-[#00FF00]/10 via-[#00FF00]/20 to-[#00FF00]/10"
+              className="absolute inset-0 bg-gradient-to-r from-[#00FF88]/10 via-[#00FF88]/20 to-[#00FF88]/10"
               animate={{
                 x: ['-100%', '100%'],
               }}
@@ -280,7 +280,7 @@ export default function Courses() {
                 transition={{ delay: 0.6 }}
               >
                 {/* Badge */}
-                <div className="inline-flex items-center gap-2 bg-[#00FF00]/20 border border-[#00FF00]/50 text-[#00FF00] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                <div className="inline-flex items-center gap-2 bg-[#00FF88]/20 border border-[#00FF88]/50 text-[#00FF88] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
                   <Zap className="w-4 h-4" />
                   <span>Полный доступ ко всем курсам</span>
                 </div>
@@ -289,34 +289,34 @@ export default function Courses() {
                 <h3 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
                   Стань мастером AI-технологий
                   <br />
-                  <span className="text-[#00FF00]">за 24 недели</span>
+                  <span className="text-[#00FF88]">за 24 недели</span>
                 </h3>
                 
                 {/* Description */}
                 <p className="text-gray-300 text-lg mb-6 max-w-2xl mx-auto">
                   Получи доступ ко всем 3 курсам и прокачай все ключевые навыки: 
-                  <span className="text-[#00FF00] font-semibold"> автоматизация + контент + разработка</span>
+                  <span className="text-[#00FF88] font-semibold"> автоматизация + контент + разработка</span>
                 </p>
                 
                 {/* Stats */}
                 <div className="flex flex-wrap items-center justify-center gap-6 mb-8">
                   <div className="flex items-center gap-2 text-gray-400">
-                    <BookOpen className="w-5 h-5 text-[#00FF00]" />
+                    <BookOpen className="w-5 h-5 text-[#00FF88]" />
                     <span className="font-semibold text-white">37 модулей</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <Target className="w-5 h-5 text-[#00FF00]" />
+                    <Target className="w-5 h-5 text-[#00FF88]" />
                     <span className="font-semibold text-white">148 уроков</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <Trophy className="w-5 h-5 text-[#00FF00]" />
+                    <Trophy className="w-5 h-5 text-[#00FF88]" />
                     <span className="font-semibold text-white">30+ проектов</span>
                   </div>
                 </div>
                 
                 {/* CTA Button */}
                 <Button 
-                  className="bg-gradient-to-r from-[#00FF00] to-[#00CC00] hover:from-[#00FF00] hover:to-[#00CC00] text-black font-bold text-lg px-8 py-6 rounded-xl shadow-2xl shadow-[#00FF00]/40 hover:shadow-[#00FF00]/60 hover:scale-105 transition-all duration-300"
+                  className="bg-gradient-to-r from-[#00FF88] to-[#00CC00] hover:from-[#00FF88] hover:to-[#00CC00] text-black font-bold text-lg px-8 py-6 rounded-xl shadow-2xl shadow-[#00FF88]/40 hover:shadow-[#00FF88]/60 hover:scale-105 transition-all duration-300"
                   onClick={() => window.open('https://t.me/onaiacademy', '_blank')}
                 >
                   <PartyPopper className="w-6 h-6 mr-2" />

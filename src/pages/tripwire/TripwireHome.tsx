@@ -122,7 +122,7 @@ export default function TripwireHome() {
           <div className="md:flex">
             {/* Course Image - Neon Style Placeholder */}
             <div className="md:w-1/3 relative overflow-hidden group">
-              <div className="aspect-video md:aspect-square bg-gradient-to-br from-[#b2ff2e]/20 via-emerald-500/10 to-cyan-500/20 relative">
+              <div className="aspect-video md:aspect-square bg-gradient-to-br from-[#b2ff2e]/20 via-#00FF88]/10 to-cyan-500/20 relative">
                 {/* Animated Gradient Overlay */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-[#b2ff2e]/20 to-transparent"
@@ -231,7 +231,7 @@ export default function TripwireHome() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <Card className="p-8 bg-gradient-to-br from-[#b2ff2e]/10 via-emerald-500/5 to-transparent border-[#b2ff2e]/30 backdrop-blur-xl relative overflow-hidden">
+        <Card className="p-8 bg-gradient-to-br from-[#b2ff2e]/10 via-#00FF88]/5 to-transparent border-[#b2ff2e]/30 backdrop-blur-xl relative overflow-hidden">
           {/* Animated Background */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-[#b2ff2e]/10 to-transparent"

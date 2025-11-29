@@ -10,11 +10,21 @@ import * as crypto from 'crypto';
 
 const router = Router();
 
-// Initialize Telegram Bot
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_MENTOR_BOT_TOKEN || '';
-
-// ✅ POLLING MODE для localhost (бот сам опрашивает Telegram)
+// 🔄 АВТОМАТИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ БОТОВ в зависимости от окружения
 const isProduction = process.env.NODE_ENV === 'production';
+
+// Localhost → @onainastavnik_bot (тестовый)
+// Production → @onaimentor_bot (продакшн)
+const TELEGRAM_BOT_TOKEN = isProduction 
+  ? process.env.TELEGRAM_MENTOR_BOT_TOKEN || ''
+  : process.env.TELEGRAM_MENTOR_BOT_TOKEN_TEST || '';
+
+const BOT_USERNAME = isProduction ? '@onaimentor_bot' : '@onainastavnik_bot';
+
+console.log(`🤖 Выбран ${isProduction ? 'ПРОДАКШН' : 'ТЕСТОВЫЙ'} бот: ${BOT_USERNAME}`);
+console.log(`   Environment: ${process.env.NODE_ENV}`);
+console.log(`   Token: ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
+
 let bot: TelegramBot;
 
 if (isProduction && process.env.BACKEND_URL) {
@@ -30,8 +40,7 @@ if (isProduction && process.env.BACKEND_URL) {
   // Development: polling mode (для localhost)
   bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
   console.log('🤖 Telegram bot started in POLLING mode (localhost)');
-  console.log(`   Bot username: @onaimentor_bot`);
-  console.log(`   Token: ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
+  console.log(`   Bot username: ${BOT_USERNAME}`);
 }
 
 /**
@@ -67,7 +76,7 @@ router.post('/generate-token', async (req, res) => {
     res.json({ 
       success: true, 
       token,
-      deepLink: `https://t.me/onaimentor_bot?start=${token}`
+      deepLink: `https://t.me/${BOT_USERNAME.replace('@', '')}?start=${token}`
     });
   } catch (error) {
     console.error('❌ Error in generate-token:', error);

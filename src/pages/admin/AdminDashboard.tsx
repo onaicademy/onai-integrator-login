@@ -206,7 +206,7 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
       whileTap={{ scale: 0.98 }}
     >
       <Card
-        className="relative p-6 cursor-pointer bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#00ff00]/10 overflow-hidden group"
+        className="relative p-6 cursor-pointer bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF88]/10 overflow-hidden group"
         onClick={onClick}
       >
         {/* Иконка */}
@@ -214,16 +214,16 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
           <motion.div
             whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
             transition={{ duration: 0.3 }}
-            className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center border border-[#00ff00]/30"
+            className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 flex items-center justify-center border border-[#00FF88]/30"
           >
-            <div className="text-[#00ff00]">{icon}</div>
+            <div className="text-[#00FF88]">{icon}</div>
           </motion.div>
           
           {/* Индикатор hover */}
           <motion.div
             initial={{ width: 0 }}
             whileHover={{ width: "3px" }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 h-16 bg-[#00ff00] rounded-l-full opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-0 top-1/2 -translate-y-1/2 h-16 bg-[#00FF88] rounded-l-full opacity-0 group-hover:opacity-100 transition-opacity"
           />
         </div>
 
@@ -243,7 +243,7 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
               className="flex justify-between items-center"
             >
               <span className="text-sm text-gray-500">{stat.label}</span>
-              <span className="text-base font-bold text-[#00ff00]">{stat.value}</span>
+              <span className="text-base font-bold text-[#00FF88]">{stat.value}</span>
             </div>
           ))}
         </div>

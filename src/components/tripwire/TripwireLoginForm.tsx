@@ -91,9 +91,9 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
       case 'error':
         return 'bg-[#FF3366] hover:bg-[#FF3366]/90 text-white';
       case 'success':
-        return 'bg-[#00FF00] text-black';
+        return 'bg-[#00FF88] text-black';
       default:
-        return 'bg-[#00FF00] hover:bg-[#00cc00] text-black hover:scale-[1.02]';
+        return 'bg-[#00FF88] hover:bg-[#00cc88] text-black hover:scale-[1.02]';
     }
   };
 
@@ -118,7 +118,7 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
             ${
               errors.email
                 ? 'border-[#FF3366] animate-shake'
-                : 'focus:border-[#00FF00] focus:ring-2 focus:ring-[#00FF00]/20'
+                : 'focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/20'
             }
             ${
               !errors.email && watch('email')
@@ -165,11 +165,11 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
               ${
                 errors.password
                   ? 'border-[#FF3366] animate-shake'
-                  : 'focus:border-[#00FF00] focus:ring-2 focus:ring-[#00FF00]/20'
+                  : 'focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/20'
               }
               ${
                 !errors.password && watch('password')
-                  ? 'focus:shadow-[0_0_20px_rgba(0,255,0,0.3)]'
+                  ? 'focus:shadow-[0_0_20px_rgba(0,255,136,0.3)]'
                   : ''
               }`}
             style={{
@@ -181,7 +181,7 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00FF00] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00FF88] transition-colors"
             disabled={isLoading}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -213,7 +213,7 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
             id="remember"
             checked={rememberValue}
             onCheckedChange={(checked) => setValue('remember', !!checked)}
-            className="border-gray-600 data-[state=checked]:bg-[#00FF00] data-[state=checked]:border-[#00FF00]"
+            className="border-gray-600 data-[state=checked]:bg-[#00FF88] data-[state=checked]:border-[#00FF88]"
           />
           <label
             htmlFor="remember"
@@ -226,7 +226,7 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
         <button
           type="button"
           onClick={onForgotPassword}
-          className="text-sm text-[#00FF00] hover:text-[#00cc00] transition-colors"
+          className="text-sm text-[#00FF88] hover:text-[#00cc88] transition-colors"
         >
           Забыли пароль?
         </button>
@@ -264,7 +264,7 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
           style={{
             boxShadow:
               buttonState === 'default'
-                ? '0 0 30px rgba(0, 255, 0, 0.4)'
+                ? '0 0 30px rgba(0, 255, 136, 0.4)'
                 : buttonState === 'error'
                 ? '0 0 30px rgba(255, 51, 102, 0.4)'
                 : undefined,

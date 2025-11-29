@@ -111,7 +111,7 @@ export default function TokenUsagePage() {
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           >
-            <Activity className="h-12 w-12 text-[#00ff00] mx-auto mb-4" />
+            <Activity className="h-12 w-12 text-[#00FF88] mx-auto mb-4" />
           </motion.div>
           <p className="text-gray-400">Загрузка данных...</p>
         </motion.div>
@@ -138,7 +138,7 @@ export default function TokenUsagePage() {
               variant={currency === 'usd' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setCurrency('usd')}
-              className={currency === 'usd' ? 'bg-[#00ff00] text-black hover:bg-[#00cc00]' : 'border-gray-700 text-white hover:bg-gray-800'}
+              className={currency === 'usd' ? 'bg-[#00FF88] text-black hover:bg-[#00cc88]' : 'border-gray-700 text-white hover:bg-gray-800'}
             >
               USD ($)
             </Button>
@@ -146,7 +146,7 @@ export default function TokenUsagePage() {
               variant={currency === 'kzt' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setCurrency('kzt')}
-              className={currency === 'kzt' ? 'bg-[#00ff00] text-black hover:bg-[#00cc00]' : 'border-gray-700 text-white hover:bg-gray-800'}
+              className={currency === 'kzt' ? 'bg-[#00FF88] text-black hover:bg-[#00cc88]' : 'border-gray-700 text-white hover:bg-gray-800'}
             >
               KZT (₸)
             </Button>
@@ -188,25 +188,25 @@ export default function TokenUsagePage() {
           <TabsList className="bg-[#1a1a24] border border-gray-800">
             <TabsTrigger 
               value="overview"
-              className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+              className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white"
             >
               Обзор
             </TabsTrigger>
             <TabsTrigger 
               value="agents"
-              className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+              className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white"
             >
               По агентам
             </TabsTrigger>
             <TabsTrigger 
               value="models"
-              className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+              className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white"
             >
               По моделям
             </TabsTrigger>
             <TabsTrigger 
               value="calendar"
-              className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+              className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white"
             >
               Календарь
             </TabsTrigger>
@@ -243,7 +243,7 @@ export default function TokenUsagePage() {
                       </Pie>
                       <Tooltip 
                         formatter={(value: number) => formatCurrency(value)}
-                        contentStyle={{ backgroundColor: '#1a1a24', border: '1px solid #00ff00', borderRadius: '8px' }}
+                        contentStyle={{ backgroundColor: '#1a1a24', border: '1px solid #00FF88', borderRadius: '8px' }}
                         labelStyle={{ color: '#fff' }}
                       />
                     </PieChart>
@@ -264,10 +264,10 @@ export default function TokenUsagePage() {
                       <YAxis stroke="#999" />
                       <Tooltip 
                         formatter={(value: number) => formatCurrency(value)}
-                        contentStyle={{ backgroundColor: '#1a1a24', border: '1px solid #00ff00', borderRadius: '8px' }}
+                        contentStyle={{ backgroundColor: '#1a1a24', border: '1px solid #00FF88', borderRadius: '8px' }}
                         labelStyle={{ color: '#fff' }}
                       />
-                      <Bar dataKey="cost" fill="#00ff00" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="cost" fill="#00FF88" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -284,7 +284,7 @@ export default function TokenUsagePage() {
                   {stats?.recent_requests?.slice(0, 10).map((req: any, idx: number) => (
                     <motion.div 
                       key={idx} 
-                      className="flex justify-between items-center p-3 bg-black/40 border border-gray-800 rounded-lg hover:border-[#00ff00]/30 transition-all"
+                      className="flex justify-between items-center p-3 bg-black/40 border border-gray-800 rounded-lg hover:border-[#00FF88]/30 transition-all"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05 }}
@@ -301,7 +301,7 @@ export default function TokenUsagePage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-[#00ff00]">{formatCurrency(req.total_cost_usd || 0)}</p>
+                        <p className="font-medium text-[#00FF88]">{formatCurrency(req.total_cost_usd || 0)}</p>
                         <p className="text-sm text-gray-400">{req.total_tokens} токенов</p>
                       </div>
                     </motion.div>
@@ -322,13 +322,13 @@ export default function TokenUsagePage() {
                   transition={{ delay: idx * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                 >
-                  <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/50 transition-all">
+                  <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all">
                     <CardHeader>
                       <CardTitle className="text-white">{agent.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div>
-                        <p className="text-2xl font-bold text-[#00ff00]">{formatCurrency(agent.cost)}</p>
+                        <p className="text-2xl font-bold text-[#00FF88]">{formatCurrency(agent.cost)}</p>
                         <p className="text-sm text-gray-400">Всего затрачено</p>
                       </div>
                       <div>
@@ -357,13 +357,13 @@ export default function TokenUsagePage() {
                   transition={{ delay: idx * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                 >
-                  <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/50 transition-all">
+                  <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all">
                     <CardHeader>
                       <CardTitle className="text-white">{model.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div>
-                        <p className="text-2xl font-bold text-[#00ff00]">{formatCurrency(model.cost)}</p>
+                        <p className="text-2xl font-bold text-[#00FF88]">{formatCurrency(model.cost)}</p>
                         <p className="text-sm text-gray-400">Всего затрачено</p>
                       </div>
                       <div>
@@ -424,11 +424,11 @@ function MetricCard({
       transition={{ delay: index * 0.1 }}
       whileHover={{ scale: 1.02, y: -5 }}
     >
-      <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/50 transition-all overflow-hidden group">
+      <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all overflow-hidden group">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-white">{title}</CardTitle>
           <motion.div
-            className="text-[#00ff00]"
+            className="text-[#00FF88]"
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.5 }}
           >
@@ -436,13 +436,13 @@ function MetricCard({
           </motion.div>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-[#00ff00] mb-1">{value}</div>
+          <div className="text-3xl font-bold text-[#00FF88] mb-1">{value}</div>
           {subtitle && (
             <p className="text-xs text-gray-400">{subtitle}</p>
           )}
         </CardContent>
         {/* Зеленая полоска при hover */}
-        <div className="h-1 w-0 bg-gradient-to-r from-[#00ff00] to-[#00cc00] group-hover:w-full transition-all duration-300" />
+        <div className="h-1 w-0 bg-gradient-to-r from-[#00FF88] to-[#00cc88] group-hover:w-full transition-all duration-300" />
       </Card>
     </motion.div>
   );

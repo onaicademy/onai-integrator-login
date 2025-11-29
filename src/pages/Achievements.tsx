@@ -241,8 +241,8 @@ export default function Achievements() {
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         >
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 rounded-xl border border-[#00ff00]/30">
-              <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ff00]" />
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 rounded-xl border border-[#00FF88]/30">
+              <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-[#00FF88]" />
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-white font-display">
@@ -257,7 +257,7 @@ export default function Achievements() {
           {/* Overall Progress Badge */}
           <Badge
             variant="outline"
-            className="text-base sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 border-[#00ff00] text-[#00ff00] bg-[#00ff00]/10"
+            className="text-base sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 border-[#00FF88] text-[#00FF88] bg-[#00FF88]/10"
           >
             {stats.completed} / {stats.total}
           </Badge>
@@ -271,12 +271,12 @@ export default function Achievements() {
             transition={{ delay: 0.1 }}
             whileHover={{ scale: 1.02 }}
           >
-            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/50 transition-all">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="w-full sm:w-auto">
                     <p className="text-xs sm:text-sm text-gray-400 mb-1">Общий прогресс</p>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-[#00ff00]">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[#00FF88]">
                       {Math.round(stats.percentage)}%
                     </h3>
                     <p className="text-xs text-gray-500 mt-1">
@@ -287,8 +287,8 @@ export default function Achievements() {
                     <CircularProgress
                       percentage={stats.percentage}
                       size={60}
-                      color="#00ff00"
-                      glowColor="rgba(0, 255, 0, 0.4)"
+                      color="#00FF88"
+                      glowColor="rgba(0, 255, 136, 0.4)"
                       showPercentage={false}
                       icon="🎯"
                     />
@@ -500,7 +500,7 @@ export default function Achievements() {
                 >
                   <p className="text-xs sm:text-sm text-gray-400 text-center">
                     💡 <span className="font-medium text-orange-500">Совет:</span> Достижения дня обновляются каждый день в полночь. 
-                    Выполни их сегодня, чтобы получить <span className="font-bold text-[#00ff00]">x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP</span>!
+                    Выполни их сегодня, чтобы получить <span className="font-bold text-[#00FF88]">x{DAILY_ACHIEVEMENT_BONUS_MULTIPLIER} XP</span>!
                   </p>
                 </motion.div>
               </CardContent>
@@ -518,7 +518,7 @@ export default function Achievements() {
                   placeholder="Поиск достижений..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                  className="pl-10 bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                 />
               </div>
             </div>
@@ -530,7 +530,7 @@ export default function Achievements() {
           <TabsList className="w-full flex-wrap h-auto bg-[#1a1a24] border border-gray-800 p-2 gap-2">
             <TabsTrigger 
               value="all" 
-              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white"
             >
               <Award className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Все</span> ({achievementsWithProgress.filter(a => !a.hidden).length})
@@ -543,7 +543,7 @@ export default function Achievements() {
                 <TabsTrigger 
                   key={key} 
                   value={key} 
-                  className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white"
+                  className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white"
                 >
                   <span>{cat.icon}</span>
                   <span className="hidden sm:inline">{cat.name}</span> ({count})

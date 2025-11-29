@@ -13,7 +13,7 @@ interface MatrixRainBackgroundProps {
  */
 export function MatrixRainBackground({ 
   opacity = 0.15, // Очень слабо заметный фон (15% от яркости)
-  color = '#00FF00' 
+  color = '#00FF88' 
 }: MatrixRainBackgroundProps) {
   return (
     <>

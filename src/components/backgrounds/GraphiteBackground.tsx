@@ -10,7 +10,7 @@ function GraphiteParticles() {
   // Цветовая палитра: ТОЛЬКО твои цвета!
   const colors = useMemo(() => ({
     black: new THREE.Color(0x0a0a0a),     // #0a0a0a - черный
-    green: new THREE.Color(0x00FF00),     // #00FF00 - зеленый
+    green: new THREE.Color(0x00FF00),     // #00FF88 - зеленый
     gray: new THREE.Color(0x6b6b6b),      // #6b6b6b - серый
     white: new THREE.Color(0xffffff),     // #ffffff - белый
   }), []);
@@ -158,7 +158,7 @@ export function GraphiteBackground() {
         }}
       >
         <ambientLight intensity={0.3} />
-        <pointLight position={[10, 10, 10]} intensity={0.5} color="#00FF00" />
+        <pointLight position={[10, 10, 10]} intensity={0.5} color="#00FF88" />
         <pointLight position={[-10, -10, -10]} intensity={0.3} color="#6b6b6b" />
         <GraphiteParticles />
       </Canvas>

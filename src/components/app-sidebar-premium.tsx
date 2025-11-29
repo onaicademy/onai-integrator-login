@@ -97,7 +97,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
           {/* ЛОГОТИП - MINIMALIST (No animations) */}
           <div className="relative">
             {isCollapsed ? (
-              <OnAILogo variant="icon" className="w-12 h-12 text-[#00FF00]" />
+              <OnAILogo variant="icon" className="w-12 h-12 text-[#00FF88]" />
             ) : (
               <OnAILogo variant="full" className="h-10 w-auto text-white" />
             )}
@@ -110,12 +110,12 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupLabel 
             className={cn(
-              "px-3 mb-3 text-[10px] font-mono font-medium uppercase tracking-widest text-gray-500 flex items-center gap-2",
+              "px-3 mb-4 text-base font-display font-bold uppercase tracking-wider text-white flex items-center gap-2.5",
               isCollapsed && "opacity-0"
             )}
           >
-            <Lightning size={14} weight="regular" className="text-[#00FF00]" />
-            <span>НАВИГАЦИЯ</span>
+            <Lightning size={20} weight="fill" className="text-[#00FF88] drop-shadow-[0_0_8px_rgba(0,255,136,0.6)]" />
+            <span className="drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">НАВИГАЦИЯ</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
@@ -137,8 +137,8 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                             cn(
                               "group relative flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-300",
                               isActive 
-                                ? "text-[#00FF00] bg-black/40 border border-[#00FF00] shadow-[0_0_8px_rgba(0,255,0,0.3)]"
-                                : "text-gray-500 hover:text-white hover:bg-[#00FF00]/5 hover:scale-[1.01] border border-transparent"
+                                ? "text-[#00FF88] bg-[#00FF88]/10 border-l-2 border-l-[#00FF88] shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                                : "text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1 border-l-2 border-l-transparent"
                             )
                           }
                           style={{
@@ -153,15 +153,15 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                                 weight={isActive ? "fill" : "duotone"}
                                 className={cn(
                                   "flex-shrink-0 transition-all duration-300",
-                                  isActive && "drop-shadow-[0_0_6px_rgba(0,255,0,0.6)]"
+                                  isActive && "drop-shadow-[0_0_6px_rgba(0,255,136,0.6)]"
                                 )}
                               />
                               
-                              {/* Text - Enhanced */}
+                              {/* Text - Brand Code 3.0 (Manrope) */}
                               {!isCollapsed && (
                                 <span className={cn(
-                                  "text-sm font-medium transition-all duration-300",
-                                  isActive && "drop-shadow-[0_0_4px_rgba(0,255,0,0.4)]"
+                                  "text-sm font-sans font-semibold transition-all duration-300",
+                                  isActive && "drop-shadow-[0_0_6px_rgba(0,255,136,0.5)]"
                                 )}>
                                   {item.title}
                                 </span>
@@ -170,7 +170,7 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                               {/* Active glow effect */}
                               {isActive && (
                                 <motion.div
-                                  className="absolute inset-0 rounded-lg bg-[#00FF00]/5 pointer-events-none"
+                                  className="absolute inset-0 rounded-lg bg-[#00FF88]/5 pointer-events-none"
                                   animate={{
                                     opacity: [0.3, 0.5, 0.3],
                                   }}
@@ -209,27 +209,27 @@ export function AppSidebarPremium({ role }: AppSidebarProps) {
                 <div className="flex items-center gap-2">
                   <motion.div
                     animate={{
-                      boxShadow: ['0 0 4px #00FF00', '0 0 8px #00FF00', '0 0 4px #00FF00'],
+                      boxShadow: ['0 0 6px #00FF88', '0 0 12px #00FF88', '0 0 6px #00FF88'],
                     }}
                     transition={{
                       duration: 2,
                       repeat: Infinity,
                     }}
-                    className="w-2 h-2 rounded-full bg-[#00FF00]"
+                    className="w-2 h-2 rounded-full bg-[#00FF88]"
                   />
-                  <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">
+                  <span className="text-[11px] font-mono font-semibold text-[#00FF88]/80 uppercase tracking-widest drop-shadow-[0_0_4px_rgba(0,255,136,0.3)]">
                     СИСТЕМА АКТИВНА
                   </span>
                 </div>
               </div>
               
               <div className="px-3 space-y-1">
-                <p className="text-[11px] font-semibold text-gray-400 flex items-center gap-2">
-                  <Robot size={14} weight="duotone" className="text-[#00FF00]" />
+                <p className="text-[11px] font-sans font-semibold text-gray-400 flex items-center gap-2">
+                  <Robot size={14} weight="duotone" className="text-[#00FF88]" />
                   <span>© 2025 onAI Academy</span>
                 </p>
-                <p className="text-[10px] font-medium text-gray-500 pl-5">
-                  Premium Learning Platform
+                <p className="text-[10px] font-mono font-medium text-gray-600 tracking-wide pl-5">
+                  PREMIUM LEARNING PLATFORM
                 </p>
               </div>
             </motion.div>

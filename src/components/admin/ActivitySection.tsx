@@ -23,8 +23,8 @@ export function ActivitySection({
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-[#00ff00]/10 rounded-lg border border-[#00ff00]/30">
-            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#00ff00]" />
+          <div className="p-1.5 sm:p-2 bg-[#00FF88]/10 rounded-lg border border-[#00FF88]/30">
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#00FF88]" />
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-white">
@@ -36,8 +36,8 @@ export function ActivitySection({
           </div>
         </div>
         {badge && (
-          <div className="px-3 py-1 bg-[#00ff00]/20 rounded-full border border-[#00ff00]/30">
-            <span className="text-xs sm:text-sm font-medium text-[#00ff00]">{badge}</span>
+          <div className="px-3 py-1 bg-[#00FF88]/20 rounded-full border border-[#00FF88]/30">
+            <span className="text-xs sm:text-sm font-medium text-[#00FF88]">{badge}</span>
           </div>
         )}
       </div>

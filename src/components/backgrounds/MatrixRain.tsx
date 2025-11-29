@@ -32,7 +32,7 @@ export const MatrixRain = () => {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Green text color (subtle)
-      ctx.fillStyle = 'rgba(0, 255, 0, 0.15)'; // Very subtle green
+      ctx.fillStyle = 'rgba(0, 255, 136, 0.15)'; // Very subtle green
       ctx.font = `${fontSize}px "Inter", monospace`;
 
       for (let i = 0; i < drops.length; i++) {

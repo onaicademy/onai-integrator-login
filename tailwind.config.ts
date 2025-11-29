@@ -45,12 +45,12 @@ export default {
 			// 🎯 CYBER-ARCHITECTURE: Strict Color Palette
 			'cyber-void': '#030303', // Background (Infinite Depth)
 			'cyber-surface': '#0A0A0A', // Surface (Cards)
-			'cyber-acid': '#00FF94', // Primary (Acid Green - Money, Growth, CTA)
+			'cyber-acid': '#00FF88', // Primary (Cyber Neon - Money, Growth, CTA)
 			'cyber-signal': '#FF3366', // Secondary (Signal Red - Live, Errors, REC)
 			'cyber-white': '#FFFFFF', // Text Main (Holo White)
 			'cyber-gray': '#9CA3AF', // Text Muted (Tech Gray)
 			// Legacy (for compatibility)
-			'brand-green': '#00FF94',
+			'brand-green': '#00FF88',
 			'brand-dark': '#0a0a0a',
   			border: 'hsl(var(--border))',
   			neon: {

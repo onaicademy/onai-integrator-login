@@ -22,6 +22,8 @@ import {
   Edit
 } from "lucide-react";
 import { LessonEditDialog } from "@/components/admin/LessonEditDialog";
+import { MaterialPreviewDialog } from "@/components/MaterialPreviewDialog";
+import { VideoPlayer } from "@/components/VideoPlayer";
 
 const Lesson = () => {
   const { id, moduleId, lessonId } = useParams();
@@ -48,6 +50,9 @@ const Lesson = () => {
   
   // Edit dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  // Material preview dialog
+  const [previewMaterial, setPreviewMaterial] = useState<any>(null);
 
   // Video player
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -222,12 +227,26 @@ const Lesson = () => {
         setIsCompleted(completed === "true");
       }
 
-      // Загрузить видео
+      // Загрузить видео (теперь только Bunny Stream с HLS)
       try {
         console.log('🎬 Загрузка видео для урока:', lessonId);
         const videoRes = await api.get(`/api/videos/lesson/${lessonId}`);
-        setVideo(videoRes?.video || videoRes);
-        console.log('✅ Видео загружено:', videoRes?.video?.video_url);
+        const fetchedVideo = videoRes?.video || videoRes;
+        
+        // Если есть bunny_video_id, используем только его для HLS URL
+        if (fetchedVideo?.bunny_video_id) {
+          setVideo({
+            ...fetchedVideo,
+            video_url: `https://video.onai.academy/${fetchedVideo.bunny_video_id}/playlist.m3u8`,
+            thumbnail_url: `https://video.onai.academy/${fetchedVideo.bunny_video_id}/thumbnail.jpg`
+          });
+          console.log('✅ Видео загружено (Bunny Stream HLS):', fetchedVideo.bunny_video_id);
+        } else {
+          // Если видео без bunny_video_id - значит оно старое (Bunny Storage)
+          // Нужно перезагрузить видео через новый Bunny Stream
+          console.warn('⚠️ Старое видео Bunny Storage обнаружено. Необходима перезагрузка через Bunny Stream.');
+          setVideo(null);
+        }
       } catch (error) {
         console.log('ℹ️ Видео не найдено для урока:', lessonId);
       }
@@ -615,7 +634,7 @@ const Lesson = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-center">
-          <div className="w-16 h-16 border-4 border-[#00ff00] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-[#00FF88] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-lg">Загрузка урока...</p>
         </div>
       </div>
@@ -644,8 +663,8 @@ const Lesson = () => {
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px)
+              linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px'
           }}
@@ -661,13 +680,13 @@ const Lesson = () => {
           return (
             <motion.div
               key={`node-${i}`}
-              className="absolute rounded-full bg-[#00ff00]"
+              className="absolute rounded-full bg-[#00FF88]"
               style={{
                 width: size,
                 height: size,
                 left: `${x}%`,
                 top: `${y}%`,
-                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 0, 0.6)`,
+                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 136, 0.6)`,
               }}
               animate={{
                 x: [0, Math.random() * 40 - 20, 0],
@@ -689,9 +708,9 @@ const Lesson = () => {
         <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#00ff00" stopOpacity="0" />
-              <stop offset="50%" stopColor="#00ff00" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#00ff00" stopOpacity="0" />
+              <stop offset="0%" stopColor="#00FF88" stopOpacity="0" />
+              <stop offset="50%" stopColor="#00FF88" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#00FF88" stopOpacity="0" />
             </linearGradient>
           </defs>
           
@@ -732,7 +751,7 @@ const Lesson = () => {
         {!playing && Array.from({ length: 15 }).map((_, i) => (
           <motion.div
             key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
+            className="absolute w-1 h-1 bg-[#00FF88] rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -832,7 +851,7 @@ const Lesson = () => {
                 navigate('/courses');
               }
             }}
-            className="text-gray-400 hover:text-[#00ff00] hover:bg-[#00ff00]/10 gap-2 transition-colors"
+            className="text-gray-400 hover:text-[#00FF88] hover:bg-[#00FF88]/10 gap-2 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Назад к курсу
@@ -851,7 +870,7 @@ const Lesson = () => {
                 navigate('/courses');
               }
             }}
-            className="text-gray-400 hover:text-[#00ff00] hover:bg-[#00ff00]/10 gap-2 transition-colors"
+            className="text-gray-400 hover:text-[#00FF88] hover:bg-[#00FF88]/10 gap-2 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Назад к модулю
@@ -869,9 +888,9 @@ const Lesson = () => {
               Модуль {moduleId} • Урок {getLessonNumber()} из {allLessons.length}
             </span>
             {isCompleted && (
-              <div className="flex items-center gap-1.5 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-full px-3 py-1">
-                <CheckCircle2 className="w-4 h-4 text-[#00ff00]" />
-                <span className="text-[#00ff00] text-xs sm:text-sm font-semibold">Завершено</span>
+              <div className="flex items-center gap-1.5 bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-full px-3 py-1">
+                <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />
+                <span className="text-[#00FF88] text-xs sm:text-sm font-semibold">Завершено</span>
               </div>
             )}
           </div>
@@ -886,8 +905,15 @@ const Lesson = () => {
           {isAdmin && (
             <Button
               variant="outline"
-              onClick={() => setEditDialogOpen(true)}
-              className="mt-4 text-gray-300 hover:text-[#00ff00] hover:bg-[#00ff00]/10 border-gray-700 hover:border-[#00ff00]/30"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Клик по кнопке "Редактировать урок"');
+                console.log('🖱️ Текущее состояние editDialogOpen:', editDialogOpen);
+                setEditDialogOpen(true);
+                console.log('🖱️ Установлено editDialogOpen = true');
+              }}
+              className="mt-4 text-gray-300 hover:text-[#00FF88] hover:bg-[#00FF88]/10 border-gray-700 hover:border-[#00FF88]/30 relative z-50"
             >
               <Edit className="mr-2 h-4 w-4" />
               Редактировать урок
@@ -904,126 +930,17 @@ const Lesson = () => {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2 space-y-6"
           >
-            {/* Video Player */}
-            {video?.video_url ? (
-              <div className="relative rounded-2xl overflow-hidden border border-[#00ff00]/20 shadow-lg shadow-[#00ff00]/10">
-                <div 
-                  ref={videoContainerRef}
-                  className="relative aspect-video bg-black"
-                  onMouseEnter={() => setShowControls(true)}
-                  onMouseLeave={() => playing && setShowControls(false)}
-                >
-                  <video
-                    ref={videoRef}
-                    src={video.video_url}
-                    className="w-full h-full cursor-pointer"
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onEnded={handleEnded}
-                    onClick={togglePlay}
-                  />
-
-                  {/* Play button overlay */}
-                  {!playing && showControls && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <motion.button
-                        onClick={togglePlay}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="w-20 h-20 rounded-full bg-[#00ff00]/20 border-2 border-[#00ff00] flex items-center justify-center backdrop-blur-sm"
-                      >
-                        <Play className="w-10 h-10 text-[#00ff00] ml-1" />
-                      </motion.button>
-                    </div>
-                  )}
-
-                  {/* Video Controls */}
-                  {showControls && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4"
-                    >
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <input
-                          type="range"
-                          min="0"
-                          max={duration || 100}
-                          value={currentTime}
-                          onChange={(e) => handleSeek(parseFloat(e.target.value))}
-                          className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#00ff00]"
-                        />
-                      </div>
-
-                      {/* Controls */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          {/* Play/Pause */}
-                          <button
-                            onClick={togglePlay}
-                            className="text-white hover:text-[#00ff00] transition-colors"
-                          >
-                            {playing ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-                          </button>
-
-                          {/* Volume */}
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={toggleMute}
-                              className="text-white hover:text-[#00ff00] transition-colors"
-                            >
-                              {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                            </button>
-                            <input
-                              type="range"
-                              min="0"
-                              max="1"
-                              step="0.1"
-                              value={volume}
-                              onChange={(e) => changeVolume(parseFloat(e.target.value))}
-                              className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#00ff00]"
-                            />
-                          </div>
-
-                          {/* Time */}
-                          <span className="text-white text-sm font-mono">
-                            {formatTime(currentTime)} / {formatTime(duration)}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {/* Playback Speed */}
-                          <select
-                            value={playbackRate}
-                            onChange={(e) => changePlaybackRate(parseFloat(e.target.value))}
-                            className="bg-black/50 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-[#00ff00] outline-none cursor-pointer"
-                            title="Скорость воспроизведения"
-                          >
-                            <option value="0.5">0.5x</option>
-                            <option value="0.75">0.75x</option>
-                            <option value="1">1x</option>
-                            <option value="1.25">1.25x</option>
-                            <option value="1.5">1.5x</option>
-                            <option value="1.75">1.75x</option>
-                            <option value="2">2x</option>
-                          </select>
-
-                          {/* Fullscreen */}
-                          <button
-                            onClick={toggleFullscreen}
-                            className="text-white hover:text-[#00ff00] transition-colors"
-                          >
-                            <Maximize className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
+            {/* 🎥 BunnyCDN Video Player */}
+            {video?.bunny_video_id ? (
+              <VideoPlayer 
+                videoId={video.bunny_video_id}
+                title={lesson?.title || 'Lesson Video'}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleEnded}
+                autoPlay={false}
+              />
             ) : (
-              <div className="relative rounded-2xl overflow-hidden border border-[#00ff00]/20 shadow-lg shadow-[#00ff00]/10">
+              <div className="relative rounded-2xl overflow-hidden border border-[#00FF88]/20 shadow-lg shadow-[#00FF88]/10">
                 <div className="aspect-video bg-[#0a0a0f] flex items-center justify-center">
                   <div className="text-center">
                     <Play className="w-16 h-16 text-gray-600 mx-auto mb-4" />
@@ -1042,7 +959,7 @@ const Lesson = () => {
                 className={`flex-1 font-semibold rounded-xl transition-all ${
                   isCompleted 
                     ? "bg-gray-800 text-gray-400 cursor-not-allowed" 
-                    : "bg-[#00ff00] text-black hover:bg-[#00cc00] shadow-lg shadow-[#00ff00]/30"
+                    : "bg-[#00FF88] text-black hover:bg-[#00cc88] shadow-lg shadow-[#00FF88]/30"
                 }`}
               >
                 <CheckCircle2 className="w-5 h-5 mr-2" />
@@ -1055,7 +972,7 @@ const Lesson = () => {
                     size="lg"
                     onClick={handlePrevious}
                     variant="outline"
-                    className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
+                    className="flex-1 bg-transparent border-2 border-[#00FF88]/40 text-[#00FF88] hover:bg-[#00FF88]/10 hover:border-[#00FF88] font-semibold rounded-xl transition-all"
                   >
                     <ChevronLeft className="w-5 h-5 mr-2" />
                     Предыдущий урок
@@ -1067,7 +984,7 @@ const Lesson = () => {
                   <Button
                     size="lg"
                     onClick={handleNext}
-                    className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
+                    className="flex-1 bg-transparent border-2 border-[#00FF88]/40 text-[#00FF88] hover:bg-[#00FF88]/10 hover:border-[#00FF88] font-semibold rounded-xl transition-all"
                   >
                     Следующий урок
                     <ChevronRight className="w-5 h-5 ml-2" />
@@ -1076,7 +993,7 @@ const Lesson = () => {
                   <Button
                     size="lg"
                     onClick={() => navigate(`/course/${id}/module/${moduleId}`)}
-                    className="flex-1 bg-transparent border-2 border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 hover:border-[#00ff00] font-semibold rounded-xl transition-all"
+                    className="flex-1 bg-transparent border-2 border-[#00FF88]/40 text-[#00FF88] hover:bg-[#00FF88]/10 hover:border-[#00FF88] font-semibold rounded-xl transition-all"
                   >
                     Вернуться к модулю
                     <ChevronRight className="w-5 h-5 ml-2" />
@@ -1096,8 +1013,8 @@ const Lesson = () => {
               className="bg-[#1a1a24] border border-gray-800 rounded-2xl p-6"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-[#00ff00]/10 border border-[#00ff00]/20 flex items-center justify-center">
-                  <Play className="w-6 h-6 text-[#00ff00]" />
+                <div className="w-12 h-12 rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/20 flex items-center justify-center">
+                  <Play className="w-6 h-6 text-[#00FF88]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Длительность</p>
@@ -1110,11 +1027,11 @@ const Lesson = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">Прогресс модуля</span>
-                  <span className="text-[#00ff00] font-semibold">60%</span>
+                  <span className="text-[#00FF88] font-semibold">60%</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+                    className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88]"
                     initial={{ width: 0 }}
                     animate={{ width: "60%" }}
                     transition={{ duration: 1, ease: "easeOut" }}
@@ -1131,7 +1048,7 @@ const Lesson = () => {
               className="bg-[#1a1a24] border border-gray-800 rounded-2xl p-6"
             >
               <div className="flex items-center gap-2 mb-4">
-                <Book className="w-5 h-5 text-[#00ff00]" />
+                <Book className="w-5 h-5 text-[#00FF88]" />
                 <h3 className="text-lg font-bold text-white">
                   Материалы урока
                 </h3>
@@ -1140,19 +1057,16 @@ const Lesson = () => {
               {materials.length > 0 ? (
                 <div className="space-y-2">
                   {materials.map((material, index) => (
-                    <a
+                    <button
                       key={material.id || index}
-                      href={material.public_url || material.file_url || material.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download={material.display_name || material.filename}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-black/40 hover:bg-[#00ff00]/10 border border-gray-800 hover:border-[#00ff00]/30 transition-all group"
+                      onClick={() => setPreviewMaterial(material)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-black/40 hover:bg-[#00FF88]/10 border border-gray-800 hover:border-[#00FF88]/30 transition-all group"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-[#00ff00]/10 flex items-center justify-center text-[#00ff00] group-hover:bg-[#00ff00]/20 transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-[#00FF88]/10 flex items-center justify-center text-[#00FF88] group-hover:bg-[#00FF88]/20 transition-colors">
                         {getMaterialIcon(material.type || material.file_type)}
                       </div>
-                      <div className="flex-1">
-                        <span className="text-sm text-gray-300 group-hover:text-[#00ff00] transition-colors block">
+                      <div className="flex-1 text-left">
+                        <span className="text-sm text-gray-300 group-hover:text-[#00FF88] transition-colors block">
                           {material.display_name || material.filename || material.title}
                         </span>
                         {material.file_size_bytes && (
@@ -1161,8 +1075,8 @@ const Lesson = () => {
                           </span>
                         )}
                       </div>
-                      <Download className="w-4 h-4 text-gray-500 group-hover:text-[#00ff00] transition-colors" />
-                    </a>
+                      <Download className="w-4 h-4 text-gray-500 group-hover:text-[#00FF88] transition-colors" />
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -1178,9 +1092,9 @@ const Lesson = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-gradient-to-br from-[#00ff00]/10 to-[#00cc00]/5 border border-[#00ff00]/30 rounded-2xl p-6"
+                className="bg-gradient-to-br from-[#00FF88]/10 to-[#00cc88]/5 border border-[#00FF88]/30 rounded-2xl p-6"
               >
-                <h3 className="text-base font-bold text-[#00ff00] mb-3 flex items-center gap-2">
+                <h3 className="text-base font-bold text-[#00FF88] mb-3 flex items-center gap-2">
                   <span className="text-xl">💡</span>
                   Совет по уроку
                 </h3>
@@ -1214,6 +1128,13 @@ const Lesson = () => {
           moduleId={parseInt(moduleId!)}
         />
       )}
+      
+      {/* Material Preview Dialog */}
+      <MaterialPreviewDialog
+        open={!!previewMaterial}
+        onClose={() => setPreviewMaterial(null)}
+        material={previewMaterial}
+      />
     </div>
   );
 };

@@ -69,15 +69,15 @@ export function ModuleEditDialog({ open, onClose, onSave, module, courseId }: Mo
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] border border-[#00ff00]/20 shadow-2xl shadow-[#00ff00]/10 max-w-2xl"
+        className="bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] border border-[#00FF88]/20 shadow-2xl shadow-[#00FF88]/10 max-w-2xl"
         style={{ zIndex: 10001 }}
       >
         {/* Header with green accent */}
-        <DialogHeader className="relative pb-4 border-b border-[#00ff00]/10">
-          <div className="absolute -top-2 -right-2 w-20 h-20 bg-[#00ff00]/5 rounded-full blur-2xl" />
+        <DialogHeader className="relative pb-4 border-b border-[#00FF88]/10">
+          <div className="absolute -top-2 -right-2 w-20 h-20 bg-[#00FF88]/5 rounded-full blur-2xl" />
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border border-[#00ff00]/30 flex items-center justify-center">
-              <span className="text-[#00ff00] text-xl">📦</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 border border-[#00FF88]/30 flex items-center justify-center">
+              <span className="text-[#00FF88] text-xl">📦</span>
             </div>
             {module ? 'Редактировать модуль' : 'Создать новый модуль'}
           </DialogTitle>
@@ -91,7 +91,7 @@ export function ModuleEditDialog({ open, onClose, onSave, module, courseId }: Mo
           {/* Title Input */}
           <div className="space-y-2.5">
             <Label htmlFor="title" className="text-white font-semibold flex items-center gap-2">
-              <span className="text-[#00ff00]">●</span>
+              <span className="text-[#00FF88]">●</span>
               Название модуля
               <span className="text-red-400 text-sm">*</span>
             </Label>
@@ -100,14 +100,14 @@ export function ModuleEditDialog({ open, onClose, onSave, module, courseId }: Mo
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Например: Основы автоматизации"
-              className="bg-[#18181b] border-gray-800 text-white h-12 text-base focus:border-[#00ff00]/50 focus:ring-1 focus:ring-[#00ff00]/30 transition-all placeholder:text-gray-500"
+              className="bg-[#18181b] border-gray-800 text-white h-12 text-base focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/30 transition-all placeholder:text-gray-500"
             />
           </div>
 
           {/* Description Textarea */}
           <div className="space-y-2.5">
             <Label htmlFor="description" className="text-white font-semibold flex items-center gap-2">
-              <span className="text-[#00ff00]/60">○</span>
+              <span className="text-[#00FF88]/60">○</span>
               Описание модуля
               <span className="text-gray-500 text-sm font-normal">(опционально)</span>
             </Label>
@@ -117,7 +117,7 @@ export function ModuleEditDialog({ open, onClose, onSave, module, courseId }: Mo
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Опишите содержание модуля, цели обучения и ключевые темы..."
               rows={5}
-              className="bg-[#18181b] border-gray-800 text-white text-base focus:border-[#00ff00]/50 focus:ring-1 focus:ring-[#00ff00]/30 transition-all resize-none placeholder:text-gray-500"
+              className="bg-[#18181b] border-gray-800 text-white text-base focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/30 transition-all resize-none placeholder:text-gray-500"
             />
             <p className="text-xs text-gray-500 flex items-center gap-1.5">
               <span>💡</span>
@@ -127,7 +127,7 @@ export function ModuleEditDialog({ open, onClose, onSave, module, courseId }: Mo
         </div>
 
         {/* Footer with buttons */}
-        <DialogFooter className="border-t border-[#00ff00]/10 pt-4 gap-3">
+        <DialogFooter className="border-t border-[#00FF88]/10 pt-4 gap-3">
           <Button 
             variant="outline" 
             onClick={onClose} 
@@ -139,7 +139,7 @@ export function ModuleEditDialog({ open, onClose, onSave, module, courseId }: Mo
           <Button 
             onClick={handleSubmit} 
             disabled={loading || !title.trim()}
-            className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-black hover:from-[#00e66c] hover:to-[#00b84f] font-semibold px-8 shadow-lg shadow-[#00ff00]/20 hover:shadow-[#00ff00]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-[#00FF88] to-[#00cc88] text-black hover:from-[#00e66c] hover:to-[#00b84f] font-semibold px-8 shadow-lg shadow-[#00FF88]/20 hover:shadow-[#00FF88]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center gap-2">

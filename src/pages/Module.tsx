@@ -76,13 +76,13 @@ function SortableLesson({ lesson, index, onLessonClick, onEdit, onDelete, isAdmi
       transition={{ delay: index * 0.05 }}
       className={`
         relative overflow-hidden rounded-2xl border transition-all duration-300 group
-        ${isDragging ? 'z-50 shadow-2xl shadow-[#00ff00]/30 border-[#00ff00]/60' : ''}
+        ${isDragging ? 'z-50 shadow-2xl shadow-[#00FF88]/30 border-[#00FF88]/60' : ''}
         ${lessonStatus === "active"
-          ? "border-[#00ff00]/40 bg-[#00ff00]/5 shadow-lg shadow-[#00ff00]/10"
+          ? "border-[#00FF88]/40 bg-[#00FF88]/5 shadow-lg shadow-[#00FF88]/10"
           : lessonStatus === "completed"
           ? "border-gray-800 bg-[#0a0a0f]"
           : "border-gray-800 bg-[#0a0a0f] opacity-60"}
-        ${lessonStatus !== "locked" ? "cursor-pointer hover:border-[#00ff00]/40 hover:bg-[#00ff00]/5" : "cursor-not-allowed"}
+        ${lessonStatus !== "locked" ? "cursor-pointer hover:border-[#00FF88]/40 hover:bg-[#00FF88]/5" : "cursor-not-allowed"}
       `}
     >
       <div className="p-4 sm:p-5">
@@ -94,13 +94,13 @@ function SortableLesson({ lesson, index, onLessonClick, onEdit, onDelete, isAdmi
               {...listeners}
               className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <GripVertical className="w-5 h-5 text-[#00ff00]/60 hover:text-[#00ff00]" />
+              <GripVertical className="w-5 h-5 text-[#00FF88]/60 hover:text-[#00FF88]" />
             </div>
           )}
 
           {/* Lesson Number Badge */}
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#00ff00]/10 border border-[#00ff00]/30 shrink-0">
-            <span className="text-lg font-bold text-[#00ff00]">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/30 shrink-0">
+            <span className="text-lg font-bold text-[#00FF88]">
               {index + 1}
             </span>
           </div>
@@ -131,7 +131,7 @@ function SortableLesson({ lesson, index, onLessonClick, onEdit, onDelete, isAdmi
                   e.stopPropagation();
                   onEdit(lesson);
                 }}
-                className="bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30"
+                className="bg-[#00FF88]/10 text-[#00FF88] hover:bg-[#00FF88]/20 border border-[#00FF88]/30"
                 title="Редактировать урок"
               >
                 <Edit className="w-4 h-4" />
@@ -372,7 +372,7 @@ const Module = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#00ff00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-[#00FF88] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-xl text-white">Загрузка модуля...</p>
         </div>
       </div>
@@ -385,7 +385,7 @@ const Module = () => {
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-white mb-4">Модуль не найден</h1>
           <p className="text-gray-400 mb-6">{moduleError || 'Модуль с указанным ID не существует'}</p>
-          <Button onClick={() => navigate(`/course/${id}`)} className="bg-[#00ff00] text-black">
+          <Button onClick={() => navigate(`/course/${id}`)} className="bg-[#00FF88] text-black">
             Вернуться к курсу
           </Button>
         </div>
@@ -556,9 +556,9 @@ const Module = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle2 className="w-5 h-5 text-[#00ff00]" />;
+        return <CheckCircle2 className="w-5 h-5 text-[#00FF88]" />;
       case "active":
-        return <PlayCircle className="w-5 h-5 text-[#00ff00] animate-pulse" />;
+        return <PlayCircle className="w-5 h-5 text-[#00FF88] animate-pulse" />;
       default:
         return <Circle className="w-5 h-5 text-gray-600" />;
     }
@@ -643,8 +643,8 @@ const Module = () => {
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px)
+              linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px'
           }}
@@ -660,13 +660,13 @@ const Module = () => {
           return (
             <motion.div
               key={`node-${i}`}
-              className="absolute rounded-full bg-[#00ff00]"
+              className="absolute rounded-full bg-[#00FF88]"
               style={{
                 width: size,
                 height: size,
                 left: `${x}%`,
                 top: `${y}%`,
-                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 0, 0.6)`,
+                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 136, 0.6)`,
               }}
               animate={{
                 x: [0, Math.random() * 40 - 20, 0],
@@ -688,9 +688,9 @@ const Module = () => {
         <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#00ff00" stopOpacity="0" />
-              <stop offset="50%" stopColor="#00ff00" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#00ff00" stopOpacity="0" />
+              <stop offset="0%" stopColor="#00FF88" stopOpacity="0" />
+              <stop offset="50%" stopColor="#00FF88" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#00FF88" stopOpacity="0" />
             </linearGradient>
           </defs>
           
@@ -729,7 +729,7 @@ const Module = () => {
         {Array.from({ length: 20 }).map((_, i) => (
           <motion.div
             key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
+            className="absolute w-1 h-1 bg-[#00FF88] rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -830,7 +830,7 @@ const Module = () => {
                 navigate('/courses');
               }
             }}
-            className="text-gray-400 hover:text-[#00ff00] hover:bg-[#00ff00]/10 gap-2 transition-colors relative z-50"
+            className="text-gray-400 hover:text-[#00FF88] hover:bg-[#00FF88]/10 gap-2 transition-colors relative z-50"
             style={{ pointerEvents: 'auto' }}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -844,15 +844,15 @@ const Module = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 sm:mb-12"
         >
-          <div className="bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] rounded-3xl overflow-hidden border border-[#00ff00]/20 p-6 sm:p-8 md:p-10">
+          <div className="bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] rounded-3xl overflow-hidden border border-[#00FF88]/20 p-6 sm:p-8 md:p-10">
             {/* Animated Background Pattern */}
             <div className="absolute inset-0 opacity-5">
               <motion.div
                 className="absolute inset-0"
                 style={{
                   backgroundImage: `
-                    radial-gradient(circle at 20% 50%, rgba(0, 255, 0, 0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 50%, rgba(0, 255, 0, 0.2) 0%, transparent 50%)
+                    radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.3) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 50%, rgba(0, 255, 136, 0.2) 0%, transparent 50%)
                   `
                 }}
                 animate={{
@@ -869,7 +869,7 @@ const Module = () => {
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-[#00ff00] mb-2 uppercase tracking-wide font-semibold">
+                  <p className="text-xs sm:text-sm text-[#00FF88] mb-2 uppercase tracking-wide font-semibold">
                     Модуль {module.id}
                   </p>
                   <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 font-display">
@@ -887,11 +887,11 @@ const Module = () => {
                   <span className="text-gray-400">
                     Прогресс: {completedLessons} из {totalLessons} уроков
                   </span>
-                  <span className="text-[#00ff00] font-bold">{progressPercent}%</span>
+                  <span className="text-[#00FF88] font-bold">{progressPercent}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00]"
+                    className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88]"
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
@@ -900,7 +900,7 @@ const Module = () => {
                 {/* Module Duration */}
                 {apiLessons.length > 0 && (
                   <div className="flex items-center gap-2 text-sm text-gray-400 pt-2 border-t border-gray-800">
-                    <Clock className="w-4 h-4 text-[#00ff00]" />
+                    <Clock className="w-4 h-4 text-[#00FF88]" />
                     <span>
                       Время прохождения модуля: {' '}
                       <span className="text-white font-semibold">
@@ -939,7 +939,7 @@ const Module = () => {
                   console.log('🖱️ MOUSEDOWN на кнопке "Добавить урок"!');
                 }}
                 type="button"
-                className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer relative z-50"
+                className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer relative z-50"
                 style={{ position: 'relative', zIndex: 9999, pointerEvents: 'auto' }}
               >
                 <Plus className="w-4 h-4" />
@@ -997,12 +997,12 @@ const Module = () => {
                     relative overflow-hidden rounded-2xl border transition-all duration-300
                     ${
                       lessonStatus === "active"
-                        ? "border-[#00ff00]/40 bg-[#00ff00]/5 shadow-lg shadow-[#00ff00]/10"
+                        ? "border-[#00FF88]/40 bg-[#00FF88]/5 shadow-lg shadow-[#00FF88]/10"
                         : lessonStatus === "completed"
                         ? "border-gray-800 bg-[#0a0a0f]"
                         : "border-gray-800 bg-[#0a0a0f] opacity-60"
                     }
-                    ${lessonStatus !== "locked" ? "cursor-pointer hover:border-[#00ff00]/40 hover:bg-[#00ff00]/5" : "cursor-not-allowed"}
+                    ${lessonStatus !== "locked" ? "cursor-pointer hover:border-[#00FF88]/40 hover:bg-[#00FF88]/5" : "cursor-not-allowed"}
                   `}
               >
                 <div className="p-4 sm:p-5">
@@ -1011,9 +1011,9 @@ const Module = () => {
                     <div className={`
                       flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center font-bold text-base
                       ${lessonStatus === "active" 
-                        ? "bg-[#00ff00] text-black" 
+                        ? "bg-[#00FF88] text-black" 
                         : lessonStatus === "completed"
-                        ? "bg-[#00ff00]/20 text-[#00ff00]"
+                        ? "bg-[#00FF88]/20 text-[#00FF88]"
                         : "bg-gray-800 text-gray-600"}
                     `}>
                       {lesson.id}
@@ -1034,10 +1034,10 @@ const Module = () => {
                           <span>{lesson.duration || lesson.duration_minutes ? `${lesson.duration || lesson.duration_minutes} мин` : 'Не указано'}</span>
                         </div>
                         {lessonStatus === "completed" && (
-                          <span className="text-[#00ff00] font-semibold">✓ Завершено</span>
+                          <span className="text-[#00FF88] font-semibold">✓ Завершено</span>
                         )}
                         {lessonStatus === "active" && (
-                          <span className="text-[#00ff00] font-semibold">▶ Доступен</span>
+                          <span className="text-[#00FF88] font-semibold">▶ Доступен</span>
                         )}
                         {lessonStatus === "locked" && (
                           <span className="text-gray-500">🔒 Заблокирован</span>
@@ -1058,7 +1058,7 @@ const Module = () => {
                           className={`${
                             lessonStatus === "completed" 
                               ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
-                              : "bg-[#00ff00] text-black hover:bg-[#00cc00]"
+                              : "bg-[#00FF88] text-black hover:bg-[#00cc88]"
                           } font-semibold rounded-xl px-4 py-2 transition-all`}
                         >
                           {lessonStatus === "completed" ? "Повторить" : "Открыть"}
@@ -1075,7 +1075,7 @@ const Module = () => {
                             console.log('✏️ Редактирование урока:', lesson);
                             handleEditLesson(lesson);
                           }}
-                          className="relative z-[102] bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30 hover:border-[#00ff00]/50 rounded-xl px-3 py-2 transition-all group"
+                          className="relative z-[102] bg-[#00FF88]/10 text-[#00FF88] hover:bg-[#00FF88]/20 border border-[#00FF88]/30 hover:border-[#00FF88]/50 rounded-xl px-3 py-2 transition-all group"
                           title="Редактировать урок"
                         >
                           <Edit className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -1124,7 +1124,7 @@ const Module = () => {
                 <div className="text-center py-12">
                   <p className="text-gray-400 mb-4">Уроки не найдены</p>
                   {isAdmin && (
-                    <Button onClick={handleAddLesson} className="bg-[#00ff00] text-black">
+                    <Button onClick={handleAddLesson} className="bg-[#00FF88] text-black">
                       <Plus className="w-4 h-4 mr-2" />
                       Добавить первый урок
                     </Button>
@@ -1143,7 +1143,7 @@ const Module = () => {
           className="mt-12 bg-[#1a1a24] border border-gray-800 rounded-2xl p-6 sm:p-8"
         >
           <div className="flex items-center gap-3 mb-4">
-            <FileText className="w-5 h-5 text-[#00ff00]" />
+            <FileText className="w-5 h-5 text-[#00FF88]" />
             <h3 className="text-lg sm:text-xl font-bold text-white">
               Материалы модуля
             </h3>
@@ -1154,7 +1154,7 @@ const Module = () => {
           <Button 
             variant="outline" 
             disabled={completedLessons < totalLessons}
-            className="w-full sm:w-auto border-[#00ff00]/40 text-[#00ff00] hover:bg-[#00ff00]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto border-[#00FF88]/40 text-[#00FF88] hover:bg-[#00FF88]/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <BookOpen className="w-4 h-4 mr-2" />
             Скачать материалы

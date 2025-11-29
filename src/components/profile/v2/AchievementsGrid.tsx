@@ -81,10 +81,10 @@ export const AchievementsGrid = () => {
         };
       default:
         return {
-          border: "border-[#00ff00]/50",
-          bg: "from-[#00ff00]/20 to-[#00cc00]/5",
-          glow: "bg-[#00ff00]/20",
-          text: "text-[#00ff00]",
+          border: "border-[#00FF88]/50",
+          bg: "from-[#00FF88]/20 to-[#00cc88]/5",
+          glow: "bg-[#00FF88]/20",
+          text: "text-[#00FF88]",
         };
     }
   };

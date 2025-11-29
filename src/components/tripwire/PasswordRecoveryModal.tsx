@@ -71,7 +71,7 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
             <div 
               className="relative bg-[#0A0A0A]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl"
               style={{
-                boxShadow: '0 0 40px rgba(0, 255, 0, 0.2)',
+                boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)',
               }}
             >
               {/* Close Button */}
@@ -104,7 +104,7 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
                         type="email"
                         placeholder="your@email.com"
                         disabled={isLoading}
-                        className={`h-12 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF94] focus:ring-[#00FF94]/20 ${
+                        className={`h-12 bg-[#1a1a24] border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88] focus:ring-[#00FF88]/20 ${
                           errors.email ? 'border-[#FF3366] animate-shake' : ''
                         }`}
                       />
@@ -123,9 +123,9 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
                     <Button
                       type="submit"
                       disabled={isLoading}
-                    className="w-full h-12 bg-[#00FF00] hover:bg-[#00cc00] text-black font-semibold transition-all duration-300 hover:scale-[1.02]"
+                    className="w-full h-12 bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold transition-all duration-300 hover:scale-[1.02]"
                     style={{
-                      boxShadow: '0 0 20px rgba(0, 255, 0, 0.4)',
+                      boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
                     }}
                     >
                       {isLoading ? 'Отправка...' : 'Отправить ссылку'}
@@ -143,9 +143,9 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', damping: 10 }}
-                    className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#00FF00]/20 mb-4"
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#00FF88]/20 mb-4"
                   >
-                    <CheckCircle size={32} className="text-[#00FF00]" />
+                    <CheckCircle size={32} className="text-[#00FF88]" />
                   </motion.div>
 
                   <h3 className="text-xl font-bold text-white mb-2">
@@ -157,7 +157,7 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
 
                   <Button
                     onClick={handleClose}
-                    className="w-full h-12 bg-[#00FF00] hover:bg-[#00cc00] text-black font-semibold"
+                    className="w-full h-12 bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold"
                   >
                     Понятно
                   </Button>

@@ -75,7 +75,7 @@ const AchievementCard = ({ achievement, index }: { achievement: Achievement; ind
       whileHover={{ scale: isLocked ? 1 : 1.05, y: isLocked ? 0 : -5 }}
       className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${
         isCompleted
-          ? "bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border-[#00ff00]/40"
+          ? "bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 border-[#00FF88]/40"
           : inProgress
           ? "bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border-yellow-500/40"
           : "bg-zinc-900/30 border-zinc-700/50 opacity-60"
@@ -115,11 +115,11 @@ const AchievementCard = ({ achievement, index }: { achievement: Achievement; ind
 
       {isCompleted && (
         <div className="absolute top-2 right-2">
-          <CheckCircle className="w-6 h-6 text-[#00ff00]" />
+          <CheckCircle className="w-6 h-6 text-[#00FF88]" />
         </div>
       )}
 
-      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-zinc-900 border-2 border-[#00ff00]/60 rounded-lg p-2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-20 shadow-xl">
+      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-zinc-900 border-2 border-[#00FF88]/60 rounded-lg p-2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-20 shadow-xl">
         <p className="text-xs text-white text-center">
           {isLocked ? achievement.requirement : isCompleted ? "✅ Завершено!" : `${achievement.progress}% выполнено`}
         </p>
@@ -382,8 +382,8 @@ const NeuroHub = () => {
           className="w-full h-full"
           style={{
             backgroundImage: `
-              linear-gradient(to right, #00ff00 1px, transparent 1px),
-              linear-gradient(to bottom, #00ff00 1px, transparent 1px)
+              linear-gradient(to right, #00FF88 1px, transparent 1px),
+              linear-gradient(to bottom, #00FF88 1px, transparent 1px)
             `,
             backgroundSize: '40px 40px',
           }}
@@ -395,7 +395,7 @@ const NeuroHub = () => {
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="absolute w-1 h-1 rounded-full bg-[#00ff00]"
+            className="absolute w-1 h-1 rounded-full bg-[#00FF88]"
             style={{ left: `${particle.x}%`, top: `${particle.y}%` }}
             animate={{ y: ['-10%', '110%'], opacity: [0, 1, 0] }}
             transition={{
@@ -417,7 +417,7 @@ const NeuroHub = () => {
             exit={{ opacity: 0, scale: 0.5, y: -50 }}
             className="fixed top-20 right-4 z-50"
           >
-            <div className="bg-gradient-to-r from-[#00ff00] to-[#00cc00] text-black font-bold px-6 py-4 rounded-2xl flex items-center gap-3">
+            <div className="bg-gradient-to-r from-[#00FF88] to-[#00cc88] text-black font-bold px-6 py-4 rounded-2xl flex items-center gap-3">
               <Zap className="w-8 h-8" />
               <div>
                 <p className="text-2xl font-black">+{xpAmount} XP</p>
@@ -444,11 +444,11 @@ const NeuroHub = () => {
               className="w-20 h-20 mx-auto"
               style={{ transformStyle: "preserve-3d" }}
             >
-              <Brain className="w-20 h-20 text-[#00ff00] drop-shadow-[0_0_15px_rgba(0,255,0,0.6)]" />
+              <Brain className="w-20 h-20 text-[#00FF88] drop-shadow-[0_0_15px_rgba(0,255,136,0.6)]" />
             </motion.div>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-3 text-white" style={{ textShadow: '0 0 20px rgba(0,255,0,0.3)' }}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-3 text-white" style={{ textShadow: '0 0 20px rgba(0,255,136,0.3)' }}>
             AI-НАСТАВНИК
           </h1>
           <p className="text-gray-400">🤖 Твой персональный помощник</p>
@@ -457,14 +457,14 @@ const NeuroHub = () => {
         {/* Чат Desktop */}
         <div className="hidden lg:block">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card className="border-[#00ff00]/30 bg-black/50 h-[500px] flex flex-col">
+            <Card className="border-[#00FF88]/30 bg-black/50 h-[500px] flex flex-col">
               <CardHeader>
                 <div className="flex justify-between">
                   <CardTitle className="text-white flex items-center gap-2">
-                    <MessageCircle className="w-6 h-6 text-[#00ff00]" />
+                    <MessageCircle className="w-6 h-6 text-[#00FF88]" />
                     Чат с AI
                   </CardTitle>
-                  <Button size="sm" variant="outline" onClick={handleNewChat} className="border-[#00ff00]/30 text-[#00ff00]">
+                  <Button size="sm" variant="outline" onClick={handleNewChat} className="border-[#00FF88]/30 text-[#00FF88]">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -473,7 +473,7 @@ const NeuroHub = () => {
               <ScrollArea className="flex-1 px-6">
                 {isLoadingHistory ? (
                   <div className="flex justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-[#00ff00]" />
+                    <Loader2 className="w-6 h-6 animate-spin text-[#00FF88]" />
                   </div>
                 ) : (
                   <div className="space-y-4 pb-4">
@@ -481,7 +481,7 @@ const NeuroHub = () => {
                       <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                           msg.role === "assistant" 
-                            ? "bg-[#00ff00]/10 border border-[#00ff00]/30 text-white" 
+                            ? "bg-[#00FF88]/10 border border-[#00FF88]/30 text-white" 
                             : "bg-zinc-800/80 text-white"
                         }`}>
                           {msg.role === "assistant" ? (
@@ -494,8 +494,8 @@ const NeuroHub = () => {
                     ))}
                     {isSending && (
                       <div className="flex justify-start">
-                        <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-2xl px-4 py-3">
-                          <Loader2 className="w-4 h-4 animate-spin text-[#00ff00]" />
+                        <div className="bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-2xl px-4 py-3">
+                          <Loader2 className="w-4 h-4 animate-spin text-[#00FF88]" />
                         </div>
                       </div>
                     )}
@@ -504,12 +504,12 @@ const NeuroHub = () => {
                 )}
               </ScrollArea>
 
-              <CardContent className="border-t border-[#00ff00]/20 pt-4">
+              <CardContent className="border-t border-[#00FF88]/20 pt-4">
                 {attachedFiles.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
                     {attachedFiles.map((file, idx) => (
                       <div key={idx} className="flex items-center gap-1 bg-zinc-800 rounded px-2 py-1 text-sm">
-                        <Paperclip className="w-3 h-3 text-[#00ff00]" />
+                        <Paperclip className="w-3 h-3 text-[#00FF88]" />
                         <span className="text-white">{file.name}</span>
                         <button onClick={() => removeFile(idx)}>
                           <X className="w-3 h-3 text-gray-400" />
@@ -522,7 +522,7 @@ const NeuroHub = () => {
                 <div className="flex gap-2">
                   <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileUpload} />
                   
-                  <Button size="icon" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isSending} className="border-[#00ff00]/30 text-[#00ff00]">
+                  <Button size="icon" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isSending} className="border-[#00FF88]/30 text-[#00FF88]">
                     <Paperclip className="w-5 h-5" />
                   </Button>
 
@@ -532,14 +532,14 @@ const NeuroHub = () => {
                     onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                     placeholder="Напиши сообщение..."
                     disabled={isSending}
-                    className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                    className="flex-1 bg-zinc-900/50 border-[#00FF88]/30 text-white"
                   />
 
-                  <Button onClick={handleSendMessage} size="icon" disabled={isSending || (!input.trim() && attachedFiles.length === 0)} className="bg-[#00ff00] hover:bg-[#00cc00] text-black">
+                  <Button onClick={handleSendMessage} size="icon" disabled={isSending || (!input.trim() && attachedFiles.length === 0)} className="bg-[#00FF88] hover:bg-[#00cc88] text-black">
                     {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                   </Button>
 
-                  <Button size="icon" variant="outline" onClick={handleVoiceInput} disabled={isSending} className="border-[#00ff00]/30 text-[#00ff00]">
+                  <Button size="icon" variant="outline" onClick={handleVoiceInput} disabled={isSending} className="border-[#00FF88]/30 text-[#00FF88]">
                     <Mic className="w-5 h-5" />
                   </Button>
                 </div>
@@ -550,36 +550,36 @@ const NeuroHub = () => {
           {/* Карточки прогресса */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6">
             <div className="grid grid-cols-4 gap-4">
-              <Card className="border-[#00ff00]/20 bg-black/40">
+              <Card className="border-[#00FF88]/20 bg-black/40">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-[#00ff00]" />
+                    <TrendingUp className="w-4 h-4 text-[#00FF88]" />
                     <p className="text-xs text-gray-500">Прогресс</p>
                   </div>
                   <p className="text-2xl font-bold text-white">{courseProgress}%</p>
                   <div className="mt-2 h-1.5 bg-zinc-800/50 rounded-full">
-                    <div className="h-full bg-[#00ff00]" style={{ width: `${courseProgress}%` }} />
+                    <div className="h-full bg-[#00FF88]" style={{ width: `${courseProgress}%` }} />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-[#00ff00]/20 bg-black/40">
+              <Card className="border-[#00FF88]/20 bg-black/40">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Flame className="w-4 h-4 text-[#00ff00]" />
+                    <Flame className="w-4 h-4 text-[#00FF88]" />
                     <p className="text-xs text-gray-500">Streak</p>
                   </div>
                   <p className="text-2xl font-bold text-white">{streak} дней</p>
                   <div className="mt-2 h-1.5 bg-zinc-800/50 rounded-full">
-                    <div className="h-full bg-[#00ff00]" style={{ width: `${Math.min((streak / 30) * 100, 100)}%` }} />
+                    <div className="h-full bg-[#00FF88]" style={{ width: `${Math.min((streak / 30) * 100, 100)}%` }} />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-[#00ff00]/20 bg-black/40">
+              <Card className="border-[#00FF88]/20 bg-black/40">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Zap className="w-4 h-4 text-[#00ff00]" />
+                    <Zap className="w-4 h-4 text-[#00FF88]" />
                     <p className="text-xs text-gray-500">XP</p>
                   </div>
                   <p className="text-2xl font-bold text-white">{userXP}</p>
@@ -587,10 +587,10 @@ const NeuroHub = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-[#00ff00]/20 bg-black/40">
+              <Card className="border-[#00FF88]/20 bg-black/40">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="w-4 h-4 text-[#00ff00]" />
+                    <Trophy className="w-4 h-4 text-[#00FF88]" />
                     <p className="text-xs text-gray-500">Достижения</p>
                   </div>
                   <p className="text-2xl font-bold text-white">{achievements.length}</p>
@@ -606,10 +606,10 @@ const NeuroHub = () => {
 
           {/* Домашнее задание */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6">
-            <Card className="border-[#00ff00]/40 bg-gradient-to-br from-[#00ff00]/10 to-black/50">
+            <Card className="border-[#00FF88]/40 bg-gradient-to-br from-[#00FF88]/10 to-black/50">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Target className="w-6 h-6 text-[#00ff00]" />
+                  <Target className="w-6 h-6 text-[#00FF88]" />
                   Домашнее задание
                 </CardTitle>
               </CardHeader>
@@ -620,9 +620,9 @@ const NeuroHub = () => {
                       <h3 className="text-lg font-semibold text-white mb-2">{mission.title}</h3>
                       <p className="text-sm text-gray-400 mb-3">{mission.description}</p>
                       <div className="h-3 bg-zinc-800/50 rounded-full mb-4">
-                        <div className="h-full bg-[#00ff00]" style={{ width: `${mission.progress_percent}%` }} />
+                        <div className="h-full bg-[#00FF88]" style={{ width: `${mission.progress_percent}%` }} />
                       </div>
-                      <Button className="w-full bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold" onClick={() => setIsUploadModalOpen(true)}>
+                      <Button className="w-full bg-[#00FF88] hover:bg-[#00cc88] text-black font-bold" onClick={() => setIsUploadModalOpen(true)}>
                         <Upload className="w-4 h-4 mr-2" />
                         Сдать задание
                       </Button>
@@ -641,22 +641,22 @@ const NeuroHub = () => {
           {/* Челлендж */}
           {!challengeAccepted && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6">
-              <Card className="border-[#00ff00]/30 bg-black/40">
+              <Card className="border-[#00FF88]/30 bg-black/40">
                 <CardContent className="py-4 px-6">
                   <div className="flex items-start gap-4">
                     <div className="text-5xl">{todayChallenge.icon}</div>
                     <div className="flex-1">
-                      <p className="text-sm text-[#00ff00] font-bold">🎯 Челлендж дня</p>
+                      <p className="text-sm text-[#00FF88] font-bold">🎯 Челлендж дня</p>
                       <h3 className="text-lg font-bold text-white mb-1">{todayChallenge.title}</h3>
                       <p className="text-sm text-gray-400 mb-3">{todayChallenge.description}</p>
-                      <Badge className="bg-[#00ff00]/20 text-[#00ff00]">+{todayChallenge.xp} XP</Badge>
+                      <Badge className="bg-[#00FF88]/20 text-[#00FF88]">+{todayChallenge.xp} XP</Badge>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Button onClick={() => setChallengeAccepted(true)} className="flex-1 bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold">
+                    <Button onClick={() => setChallengeAccepted(true)} className="flex-1 bg-[#00FF88] hover:bg-[#00cc88] text-black font-bold">
                       ✅ Принять
                     </Button>
-                    <Button variant="outline" onClick={() => setChallengeAccepted(true)} className="border-[#00ff00]/30 text-white">
+                    <Button variant="outline" onClick={() => setChallengeAccepted(true)} className="border-[#00FF88]/30 text-white">
                       Позже
                     </Button>
                   </div>
@@ -667,10 +667,10 @@ const NeuroHub = () => {
 
           {/* Совет дня */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6">
-            <Card className="border-[#00ff00]/20 bg-black/40">
+            <Card className="border-[#00FF88]/20 bg-black/40">
               <CardContent className="py-4 px-6">
                 <div className="flex items-center gap-4">
-                  <Lightbulb className="w-8 h-8 text-[#00ff00]" />
+                  <Lightbulb className="w-8 h-8 text-[#00FF88]" />
                   <div>
                     <p className="text-xs text-gray-500 font-semibold">💡 Совет дня</p>
                     <p className="text-white">{todayTip}</p>
@@ -684,17 +684,17 @@ const NeuroHub = () => {
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="chat">
-            <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-[#00ff00]/30">
-              <TabsTrigger value="chat" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+            <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-[#00FF88]/30">
+              <TabsTrigger value="chat" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                 💬 Чат
               </TabsTrigger>
-              <TabsTrigger value="dashboard" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+              <TabsTrigger value="dashboard" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                 📊 Дашборд
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="chat" className="mt-6">
-              <Card className="border-[#00ff00]/30 bg-black/50 h-[450px] flex flex-col">
+              <Card className="border-[#00FF88]/30 bg-black/50 h-[450px] flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-white text-lg">Чат с AI</CardTitle>
                 </CardHeader>
@@ -703,7 +703,7 @@ const NeuroHub = () => {
                     {messages.map((msg, idx) => (
                       <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                          msg.role === "assistant" ? "bg-[#00ff00]/10 border border-[#00ff00]/30 text-white" : "bg-zinc-800/80 text-white"
+                          msg.role === "assistant" ? "bg-[#00FF88]/10 border border-[#00FF88]/30 text-white" : "bg-zinc-800/80 text-white"
                         }`}>
                           <p className="text-sm">{msg.content}</p>
                         </div>
@@ -712,7 +712,7 @@ const NeuroHub = () => {
                     <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
-                <CardContent className="border-t border-[#00ff00]/20 pt-4">
+                <CardContent className="border-t border-[#00FF88]/20 pt-4">
                   <div className="flex gap-2">
                     <Input
                       value={input}
@@ -720,9 +720,9 @@ const NeuroHub = () => {
                       onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                       placeholder="Напиши..."
                       disabled={isSending}
-                      className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                      className="flex-1 bg-zinc-900/50 border-[#00FF88]/30 text-white"
                     />
-                    <Button onClick={handleSendMessage} size="icon" disabled={isSending} className="bg-[#00ff00] text-black">
+                    <Button onClick={handleSendMessage} size="icon" disabled={isSending} className="bg-[#00FF88] text-black">
                       {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </Button>
                   </div>
@@ -731,12 +731,12 @@ const NeuroHub = () => {
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-6 space-y-4">
-              <Card className="border-[#00ff00]/30 bg-black/50">
+              <Card className="border-[#00FF88]/30 bg-black/50">
                 <CardContent className="p-4">
                   <p className="text-sm text-gray-400 mb-2">📊 Прогресс</p>
                   <p className="text-3xl font-bold text-white">{courseProgress}%</p>
                   <div className="mt-3 h-2 bg-zinc-800 rounded-full">
-                    <div className="h-full bg-[#00ff00]" style={{ width: `${courseProgress}%` }} />
+                    <div className="h-full bg-[#00FF88]" style={{ width: `${courseProgress}%` }} />
                   </div>
                 </CardContent>
               </Card>
@@ -746,11 +746,11 @@ const NeuroHub = () => {
 
         {/* Все достижения */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8">
-          <Card className="border-[#00ff00]/30 bg-black/50">
+          <Card className="border-[#00FF88]/30 bg-black/50">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Trophy className="w-7 h-7 text-[#00ff00]" />
+                  <Trophy className="w-7 h-7 text-[#00FF88]" />
                   <div>
                     <CardTitle className="text-white">Все достижения</CardTitle>
                     <p className="text-sm text-gray-400 mt-1">
@@ -762,14 +762,14 @@ const NeuroHub = () => {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="week">
-                <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50 border border-[#00ff00]/20 mb-6">
-                  <TabsTrigger value="week" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50 border border-[#00FF88]/20 mb-6">
+                  <TabsTrigger value="week" className="data-[state=active]:bg-[#00FF88]/20 data-[state=active]:text-[#00FF88]">
                     📅 Неделя
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                  <TabsTrigger value="month" className="data-[state=active]:bg-[#00FF88]/20 data-[state=active]:text-[#00FF88]">
                     📆 Месяц
                   </TabsTrigger>
-                  <TabsTrigger value="permanent" className="data-[state=active]:bg-[#00ff00]/20 data-[state=active]:text-[#00ff00]">
+                  <TabsTrigger value="permanent" className="data-[state=active]:bg-[#00FF88]/20 data-[state=active]:text-[#00FF88]">
                     ⭐ Постоянные
                   </TabsTrigger>
                 </TabsList>
@@ -804,18 +804,18 @@ const NeuroHub = () => {
 
         {/* FAQ */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8">
-          <Card className="border-[#00ff00]/30 bg-black/50">
+          <Card className="border-[#00FF88]/30 bg-black/50">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-[#00ff00]" />
+                <Sparkles className="w-6 h-6 text-[#00FF88]" />
                 Частые вопросы
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full space-y-2">
                 {faqItems.map((item, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border border-[#00ff00]/20 rounded-lg px-4 data-[state=open]:bg-[#00ff00]/5">
-                    <AccordionTrigger className="text-white hover:text-[#00ff00]">
+                  <AccordionItem key={index} value={`item-${index}`} className="border border-[#00FF88]/20 rounded-lg px-4 data-[state=open]:bg-[#00FF88]/5">
+                    <AccordionTrigger className="text-white hover:text-[#00FF88]">
                       <span>{item.question}</span>
                     </AccordionTrigger>
                     <AccordionContent className="text-gray-400 pb-4">
@@ -847,7 +847,7 @@ const NeuroHub = () => {
               exit={{ opacity: 0, scale: 0.9 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
             >
-              <Card className="border-[#00ff00]/30 bg-zinc-900">
+              <Card className="border-[#00FF88]/30 bg-zinc-900">
                 <CardHeader>
                   <div className="flex justify-between">
                     <CardTitle className="text-white">Загрузить задание</CardTitle>
@@ -857,11 +857,11 @@ const NeuroHub = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-[#00ff00]/30 rounded-lg p-8 text-center">
+                  <div className="border-2 border-dashed border-[#00FF88]/30 rounded-lg p-8 text-center">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-white">Нажми или перетащи файл</p>
                   </div>
-                  <Button className="w-full bg-[#00ff00] text-black font-bold" onClick={() => {
+                  <Button className="w-full bg-[#00FF88] text-black font-bold" onClick={() => {
                     toast({ title: "✅ Задание отправлено!" });
                     setIsUploadModalOpen(false);
                   }}>

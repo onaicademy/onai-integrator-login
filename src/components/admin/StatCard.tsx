@@ -35,7 +35,7 @@ export function StatCard({
 }: StatCardProps) {
   // Определяем цвет border на основе iconColor
   const getBorderColor = () => {
-    if (iconColor.includes("green") || iconColor.includes("#00ff00")) return "hover:border-[#00ff00]/50";
+    if (iconColor.includes("green") || iconColor.includes("#00FF88")) return "hover:border-[#00FF88]/50";
     if (iconColor.includes("yellow")) return "hover:border-yellow-500/50";
     if (iconColor.includes("blue")) return "hover:border-blue-500/50";
     if (iconColor.includes("purple")) return "hover:border-purple-500/50";
@@ -43,7 +43,7 @@ export function StatCard({
     if (iconColor.includes("orange")) return "hover:border-orange-500/50";
     if (iconColor.includes("cyan")) return "hover:border-cyan-500/50";
     if (iconColor.includes("pink")) return "hover:border-pink-500/50";
-    return "hover:border-[#00ff00]/50";
+    return "hover:border-[#00FF88]/50";
   };
 
   return (
@@ -80,13 +80,13 @@ export function StatCard({
         {trend && (
           <div className="flex items-center gap-1 mt-2">
             {trend.isPositive ? (
-              <TrendingUp className="h-3 w-3 text-[#00ff00]" />
+              <TrendingUp className="h-3 w-3 text-[#00FF88]" />
             ) : (
               <TrendingDown className="h-3 w-3 text-red-500" />
             )}
             <p className={cn(
               "text-xs font-medium",
-              trend.isPositive ? "text-[#00ff00]" : "text-red-500"
+              trend.isPositive ? "text-[#00FF88]" : "text-red-500"
             )}>
               {trend.isPositive ? "+" : ""}{trend.value}% {trend.label}
             </p>

@@ -502,7 +502,7 @@ export default function StudentsActivity() {
         />
         {/* Green blur blobs */}
         <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full bg-[#00ff00]/10 blur-3xl"
+          className="absolute w-[600px] h-[600px] rounded-full bg-[#00FF88]/10 blur-3xl"
           style={{ top: '10%', left: '10%' }}
           animate={{
             scale: [1, 1.2, 1],
@@ -514,7 +514,7 @@ export default function StudentsActivity() {
           }}
         />
         <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full bg-[#00ff00]/8 blur-3xl"
+          className="absolute w-[500px] h-[500px] rounded-full bg-[#00FF88]/8 blur-3xl"
           style={{ bottom: '15%', right: '10%' }}
           animate={{
             scale: [1, 1.15, 1],
@@ -536,8 +536,8 @@ export default function StudentsActivity() {
           transition={{ duration: 0.5 }}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#00ff00]/10 border border-[#00ff00]/30 flex items-center justify-center">
-              <Users className="w-6 h-6 text-[#00ff00]" />
+            <div className="w-12 h-12 rounded-full bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center">
+              <Users className="w-6 h-6 text-[#00FF88]" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white font-display">Участники</h1>
@@ -546,7 +546,7 @@ export default function StudentsActivity() {
           </div>
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-[#00ff00] text-black hover:bg-[#00cc00] shadow-[0_0_20px_rgba(0,255,0,0.3)] hover:shadow-[0_0_30px_rgba(0,255,0,0.5)] transition-all"
+            className="bg-[#00FF88] text-black hover:bg-[#00cc88] shadow-[0_0_20px_rgba(0,255,136,0.3)] hover:shadow-[0_0_30px_rgba(0,255,136,0.5)] transition-all"
           >
             <UserPlus className="w-4 h-4 mr-2" />
             Добавить участника
@@ -556,8 +556,8 @@ export default function StudentsActivity() {
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {[
-            { label: "Всего участников", value: stats.total, icon: Users, color: "#00ff00" },
-            { label: "Активных", value: stats.active, icon: Zap, color: "#00ff00" },
+            { label: "Всего участников", value: stats.total, icon: Users, color: "#00FF88" },
+            { label: "Активных", value: stats.active, icon: Zap, color: "#00FF88" },
             { label: "Неактивных", value: stats.inactive, icon: Clock, color: "#666666" },
           ].map((stat, i) => (
             <motion.div
@@ -565,14 +565,14 @@ export default function StudentsActivity() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="relative bg-zinc-900 border border-[#00ff00]/20 rounded-lg p-5 shadow-lg"
+              className="relative bg-zinc-900 border border-[#00FF88]/20 rounded-lg p-5 shadow-lg"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">{stat.label}</p>
                   <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-[#00ff00]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#00FF88]/10 flex items-center justify-center">
                   <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                 </div>
               </div>
@@ -581,7 +581,7 @@ export default function StudentsActivity() {
         </div>
 
         {/* Поиск и Фильтры */}
-        <Card className="mb-8 bg-zinc-900 border-[#00ff00]/20">
+        <Card className="mb-8 bg-zinc-900 border-[#00FF88]/20">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="relative flex-1">
@@ -591,10 +591,10 @@ export default function StudentsActivity() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                  className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]/50 focus:ring-0"
                 />
               </div>
-              <Button onClick={handleSearch} disabled={isLoading} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">
+              <Button onClick={handleSearch} disabled={isLoading} className="bg-[#00FF88] text-black hover:bg-[#00cc88]">
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Найти'}
               </Button>
             </div>
@@ -603,21 +603,21 @@ export default function StudentsActivity() {
               <Button
                 variant={filter === "all" ? "default" : "outline"}
                 onClick={() => setFilter("all")}
-                className={filter === "all" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"}
+                className={filter === "all" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
               >
                 Все
               </Button>
               <Button
                 variant={filter === "active" ? "default" : "outline"}
                 onClick={() => setFilter("active")}
-                className={filter === "active" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"}
+                className={filter === "active" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
               >
                 Активные
               </Button>
               <Button
                 variant={filter === "inactive" ? "default" : "outline"}
                 onClick={() => setFilter("inactive")}
-                className={filter === "inactive" ? "bg-[#00ff00] text-black hover:bg-[#00cc00]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"}
+                className={filter === "inactive" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
               >
                 Неактивные
               </Button>
@@ -643,7 +643,7 @@ export default function StudentsActivity() {
         )}
 
         {/* Таблица */}
-        <Card className="bg-zinc-900 border-[#00ff00]/20">
+        <Card className="bg-zinc-900 border-[#00FF88]/20">
           <CardContent className="pt-6">
             <Table>
               <TableHeader>
@@ -661,8 +661,8 @@ export default function StudentsActivity() {
                 {filteredStudents.map((student) => (
                   <TableRow key={student.id} className="border-zinc-800 hover:bg-zinc-800/50 transition-colors">
                     <TableCell className="font-medium text-white flex items-center gap-2">
-                      <Avatar className="h-7 w-7 border border-[#00ff00]/30">
-                        <AvatarFallback className="bg-[#00ff00]/10 text-[#00ff00] text-xs">
+                      <Avatar className="h-7 w-7 border border-[#00FF88]/30">
+                        <AvatarFallback className="bg-[#00FF88]/10 text-[#00FF88] text-xs">
                           {student.full_name ? student.full_name.charAt(0).toUpperCase() : '?'}</AvatarFallback>
                       </Avatar>
                       {student.full_name}
@@ -699,7 +699,7 @@ export default function StudentsActivity() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge className={`text-black ${student.is_active ? 'bg-[#00ff00] shadow-[0_0_10px_rgba(0,255,0,0.3)]' : 'bg-gray-500'}`}>
+                      <Badge className={`text-black ${student.is_active ? 'bg-[#00FF88] shadow-[0_0_10px_rgba(0,255,136,0.3)]' : 'bg-gray-500'}`}>
                         {student.is_active ? "Активен" : "Неактивен"}
                       </Badge>
                     </TableCell>
@@ -715,7 +715,7 @@ export default function StudentsActivity() {
                           variant="outline"
                           onClick={() => setSelectedStudent(student)}
                           title="Просмотр деталей"
-                          className="border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00ff00]/30"
+                          className="border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -739,9 +739,9 @@ export default function StudentsActivity() {
 
         {/* Модал добавления */}
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-          <DialogContent className="max-w-2xl bg-zinc-950 border-[#00ff00]/30 text-white">
+          <DialogContent className="max-w-2xl bg-zinc-950 border-[#00FF88]/30 text-white">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-[#00ff00]">Добавить участника</DialogTitle>
+              <DialogTitle className="text-2xl font-bold text-[#00FF88]">Добавить участника</DialogTitle>
               <DialogDescription className="text-gray-400">
                 Создайте новый аккаунт для студента, куратора или администратора.
               </DialogDescription>
@@ -750,7 +750,7 @@ export default function StudentsActivity() {
               {/* Email */}
               <div>
                 <Label htmlFor="email" className="text-gray-300 flex items-center gap-2 mb-1">
-                  <Mail className="w-4 h-4 text-[#00ff00]" /> Email <span className="text-red-500">*</span>
+                  <Mail className="w-4 h-4 text-[#00FF88]" /> Email <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="email"
@@ -759,13 +759,13 @@ export default function StudentsActivity() {
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]/50 focus:ring-0"
                 />
               </div>
               {/* Полное имя */}
               <div>
                 <Label htmlFor="fullName" className="text-gray-300 flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4 text-[#00ff00]" /> Полное имя <span className="text-red-500">*</span>
+                  <Users className="w-4 h-4 text-[#00FF88]" /> Полное имя <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="fullName"
@@ -773,13 +773,13 @@ export default function StudentsActivity() {
                   value={formData.fullName}
                   onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                   required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]/50 focus:ring-0"
                 />
               </div>
               {/* Телефон */}
               <div>
                 <Label htmlFor="phone" className="text-gray-300 flex items-center gap-2 mb-1">
-                  <Phone className="w-4 h-4 text-[#00ff00]" /> Телефон <span className="text-red-500">*</span>
+                  <Phone className="w-4 h-4 text-[#00FF88]" /> Телефон <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="phone"
@@ -788,13 +788,13 @@ export default function StudentsActivity() {
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]/50 focus:ring-0"
                 />
               </div>
               {/* Пароль */}
               <div>
                 <Label htmlFor="password" className="text-gray-300 flex items-center gap-2 mb-1">
-                  <Key className="w-4 h-4 text-[#00ff00]" /> Пароль <span className="text-red-500">*</span>
+                  <Key className="w-4 h-4 text-[#00FF88]" /> Пароль <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="password"
@@ -804,7 +804,7 @@ export default function StudentsActivity() {
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   minLength={8}
                   required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]/50 focus:ring-0"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]/50 focus:ring-0"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Минимум 8 символов (только латиница и символы)
@@ -813,10 +813,10 @@ export default function StudentsActivity() {
               {/* Роль */}
               <div>
                 <Label htmlFor="role" className="text-gray-300 flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4 text-[#00ff00]" /> Роль <span className="text-red-500">*</span>
+                  <Shield className="w-4 h-4 text-[#00FF88]" /> Роль <span className="text-red-500">*</span>
                 </Label>
                 <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
-                  <SelectTrigger id="role" className="bg-zinc-800 border-zinc-700 text-white focus:border-[#00ff00]/50">
+                  <SelectTrigger id="role" className="bg-zinc-800 border-zinc-700 text-white focus:border-[#00FF88]/50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
@@ -831,10 +831,10 @@ export default function StudentsActivity() {
               {formData.role === 'student' && (
                 <div>
                   <Label htmlFor="accountDuration" className="text-gray-300 flex items-center gap-2 mb-1">
-                    <Calendar className="w-4 h-4 text-[#00ff00]" /> Срок доступа <span className="text-red-500">*</span>
+                    <Calendar className="w-4 h-4 text-[#00FF88]" /> Срок доступа <span className="text-red-500">*</span>
                   </Label>
                   <Select value={formData.accountDuration} onValueChange={(value) => setFormData({...formData, accountDuration: value})}>
-                    <SelectTrigger id="accountDuration" className="bg-zinc-800 border-zinc-700 text-white focus:border-[#00ff00]/50">
+                    <SelectTrigger id="accountDuration" className="bg-zinc-800 border-zinc-700 text-white focus:border-[#00FF88]/50">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
@@ -851,7 +851,7 @@ export default function StudentsActivity() {
               {/* Курсы */}
               <div className="md:col-span-2">
                 <Label className="text-gray-300 flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-4 h-4 text-[#00ff00]" /> Назначенные курсы
+                  <TrendingUp className="w-4 h-4 text-[#00FF88]" /> Назначенные курсы
                   <div className="relative group">
                     <Info className="w-3 h-3 text-gray-500 cursor-help" />
                     <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 bg-zinc-800 text-white text-xs rounded-md shadow-lg z-10 border border-zinc-700">
@@ -878,7 +878,7 @@ export default function StudentsActivity() {
                           }));
                         }
                       }}
-                      className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
+                      className="border-zinc-700 data-[state=checked]:bg-[#00FF88] data-[state=checked]:text-black"
                     />
                     <label htmlFor="course-integrator" className="text-sm text-gray-300 cursor-pointer">
                       📚 Интегратор 2.0
@@ -902,7 +902,7 @@ export default function StudentsActivity() {
                           }));
                         }
                       }}
-                      className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
+                      className="border-zinc-700 data-[state=checked]:bg-[#00FF88] data-[state=checked]:text-black"
                     />
                     <label htmlFor="course-creator" className="text-sm text-gray-300 cursor-pointer">
                       🎨 Креатор 2.0
@@ -926,7 +926,7 @@ export default function StudentsActivity() {
                           }));
                         }
                       }}
-                      className="border-zinc-700 data-[state=checked]:bg-[#00ff00] data-[state=checked]:text-black"
+                      className="border-zinc-700 data-[state=checked]:bg-[#00FF88] data-[state=checked]:text-black"
                     />
                     <label htmlFor="course-programmer" className="text-sm text-gray-300 cursor-pointer">
                       💻 Программист на Cursor
@@ -939,7 +939,7 @@ export default function StudentsActivity() {
               <Button variant="outline" onClick={() => setShowAddModal(false)} className="border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-gray-500">
                 Отмена
               </Button>
-              <Button onClick={handleAddStudent} disabled={isLoading} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">
+              <Button onClick={handleAddStudent} disabled={isLoading} className="bg-[#00FF88] text-black hover:bg-[#00cc88]">
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -955,9 +955,9 @@ export default function StudentsActivity() {
 
         {/* Модал результата */}
         <Dialog open={showInvitationResult} onOpenChange={setShowInvitationResult}>
-          <DialogContent className="max-w-2xl bg-zinc-950 border-[#00ff00]/30 text-white">
+          <DialogContent className="max-w-2xl bg-zinc-950 border-[#00FF88]/30 text-white">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-[#00ff00]">Аккаунт успешно создан!</DialogTitle>
+              <DialogTitle className="text-2xl font-bold text-[#00FF88]">Аккаунт успешно создан!</DialogTitle>
               <DialogDescription className="text-gray-400">
                 Поделитесь этими данными с новым участником.
               </DialogDescription>
@@ -1018,16 +1018,16 @@ export default function StudentsActivity() {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={() => setShowInvitationResult(false)} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">Готово</Button>
+              <Button onClick={() => setShowInvitationResult(false)} className="bg-[#00FF88] text-black hover:bg-[#00cc88]">Готово</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Модал деталей студента */}
         <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-          <DialogContent className="max-w-3xl bg-zinc-950 border-[#00ff00]/30 text-white">
+          <DialogContent className="max-w-3xl bg-zinc-950 border-[#00FF88]/30 text-white">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-[#00ff00]">
+              <DialogTitle className="text-2xl font-bold text-[#00FF88]">
                 Детали участника: {selectedStudent?.full_name}
               </DialogTitle>
               <DialogDescription className="text-gray-400">
@@ -1037,10 +1037,10 @@ export default function StudentsActivity() {
             {selectedStudent && (
               <Tabs defaultValue="overview" className="mt-4">
                 <TabsList className="grid w-full grid-cols-2 bg-black border border-gray-800">
-                  <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-sm">
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-sm">
                     Обзор
                   </TabsTrigger>
-                  <TabsTrigger value="ai-chats" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-sm">
+                  <TabsTrigger value="ai-chats" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-sm">
                     AI Чаты
                   </TabsTrigger>
                 </TabsList>
@@ -1055,7 +1055,7 @@ export default function StudentsActivity() {
                         icon={CheckCircle}
                         label="Статус"
                         value={selectedStudent.is_active ? "Активен" : "Неактивен"}
-                        valueColor={selectedStudent.is_active ? "text-[#00ff00]" : "text-red-500"}
+                        valueColor={selectedStudent.is_active ? "text-[#00FF88]" : "text-red-500"}
                       />
                       <InfoCard
                         icon={Calendar}
@@ -1069,8 +1069,8 @@ export default function StudentsActivity() {
                       Статистика обучения
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <StatDisplayCard icon={Award} label="XP Очков" value={selectedStudent.total_xp || 0} color="#00ff00" />
-                      <StatDisplayCard icon={Target} label="Уровень" value={selectedStudent.level || 1} color="#00ff00" />
+                      <StatDisplayCard icon={Award} label="XP Очков" value={selectedStudent.total_xp || 0} color="#00FF88" />
+                      <StatDisplayCard icon={Target} label="Уровень" value={selectedStudent.level || 1} color="#00FF88" />
                       <StatDisplayCard icon={Flame} label="Стрик" value={`${selectedStudent.streak_days || 0} дней`} color="#ff8c00" />
                       <StatDisplayCard icon={Clock} label="Часов на платформе" value={`${((selectedStudent.total_study_time || 0) / 60).toFixed(1)} ч`} color="#00bfff" />
                     </div>
@@ -1092,10 +1092,10 @@ export default function StudentsActivity() {
                     <div className="space-y-3">
                       {mockRecentActivity.map((activity, index) => (
                         <div key={index} className="flex items-center gap-3 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                          <div className="w-8 h-8 rounded-full bg-[#00ff00]/10 flex items-center justify-center flex-shrink-0">
-                            {activity.type === 'lesson_completed' && <CheckCircle className="w-4 h-4 text-[#00ff00]" />}
-                            {activity.type === 'module_completed' && <Award className="w-4 h-4 text-[#00ff00]" />}
-                            {activity.type === 'xp_earned' && <Zap className="w-4 h-4 text-[#00ff00]" />}
+                          <div className="w-8 h-8 rounded-full bg-[#00FF88]/10 flex items-center justify-center flex-shrink-0">
+                            {activity.type === 'lesson_completed' && <CheckCircle className="w-4 h-4 text-[#00FF88]" />}
+                            {activity.type === 'module_completed' && <Award className="w-4 h-4 text-[#00FF88]" />}
+                            {activity.type === 'xp_earned' && <Zap className="w-4 h-4 text-[#00FF88]" />}
                           </div>
                           <p className="text-sm text-gray-300">
                             {activity.description} <span className="text-gray-500 text-xs">({activity.date})</span>
@@ -1112,7 +1112,7 @@ export default function StudentsActivity() {
               </Tabs>
             )}
             <DialogFooter className="mt-6">
-              <Button onClick={() => setSelectedStudent(null)} className="bg-[#00ff00] text-black hover:bg-[#00cc00]">Закрыть</Button>
+              <Button onClick={() => setSelectedStudent(null)} className="bg-[#00FF88] text-black hover:bg-[#00cc88]">Закрыть</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1125,8 +1125,8 @@ export default function StudentsActivity() {
 function InfoCard({ icon: Icon, label, value, valueColor = "text-white" }: any) {
   return (
     <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 flex items-center gap-3">
-      <div className="w-8 h-8 rounded-full bg-[#00ff00]/10 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-[#00ff00]" />
+      <div className="w-8 h-8 rounded-full bg-[#00FF88]/10 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-[#00FF88]" />
       </div>
       <div>
         <p className="text-xs text-gray-400">{label}</p>
@@ -1139,7 +1139,7 @@ function InfoCard({ icon: Icon, label, value, valueColor = "text-white" }: any) 
 function StatDisplayCard({ icon: Icon, label, value, color }: any) {
   return (
     <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 text-center shadow-md">
-      <div className="w-12 h-12 rounded-full bg-[#00ff00]/10 flex items-center justify-center mx-auto mb-2">
+      <div className="w-12 h-12 rounded-full bg-[#00FF88]/10 flex items-center justify-center mx-auto mb-2">
         <Icon className="w-6 h-6" style={{ color: color }} />
       </div>
       <p className="text-xs text-gray-400">{label}</p>
@@ -1155,7 +1155,7 @@ function CourseProgressCard({ course }: any) {
         <p className="font-medium text-white">{course.title}</p>
         <p className="text-sm text-gray-400">{course.progress}%</p>
       </div>
-      <Progress value={course.progress} className="h-2 bg-zinc-800 [&>*]:bg-[#00ff00]" />
+      <Progress value={course.progress} className="h-2 bg-zinc-800 [&>*]:bg-[#00FF88]" />
       <p className="text-xs text-gray-500 mt-1">{course.completedModules}/{course.totalModules} модулей, {course.completedLessons}/{course.totalLessons} уроков</p>
     </div>
   );

@@ -79,7 +79,7 @@ function SortableModule({ module, index, onModuleClick, onDelete, isAdmin }: Sor
           <div
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-gray-500 hover:text-[#00ff00] transition-colors p-2"
+            className="cursor-grab active:cursor-grabbing text-gray-500 hover:text-[#00FF88] transition-colors p-2"
             title="Перетащить для изменения порядка"
           >
             <GripVertical className="w-5 h-5" />
@@ -178,7 +178,7 @@ const Course = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Ошибка</h1>
           <p className="text-gray-400 mb-6">ID курса не указан</p>
-          <Button onClick={() => navigate('/courses')} className="bg-[#00ff00] text-black">
+          <Button onClick={() => navigate('/courses')} className="bg-[#00FF88] text-black">
             Вернуться к курсам
           </Button>
         </div>
@@ -483,7 +483,7 @@ const Course = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#00ff00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-[#00FF88] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-xl text-white">Загрузка курса...</p>
         </div>
       </div>
@@ -497,7 +497,7 @@ const Course = () => {
           <h1 className="text-2xl font-bold text-white mb-4">Ошибка загрузки</h1>
           <p className="text-gray-400 mb-6">{error}</p>
           <div className="flex gap-4 justify-center">
-            <Button onClick={() => loadModulesFromAPI()} className="bg-[#00ff00] text-black">
+            <Button onClick={() => loadModulesFromAPI()} className="bg-[#00FF88] text-black">
               Попробовать снова
             </Button>
             <Button onClick={() => navigate('/courses')} variant="outline" className="border-gray-600 text-white">
@@ -518,8 +518,8 @@ const Course = () => {
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px)
+              linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px'
           }}
@@ -535,13 +535,13 @@ const Course = () => {
           return (
             <motion.div
               key={`node-${i}`}
-              className="absolute rounded-full bg-[#00ff00]"
+              className="absolute rounded-full bg-[#00FF88]"
               style={{
                 width: size,
                 height: size,
                 left: `${x}%`,
                 top: `${y}%`,
-                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 0, 0.6)`,
+                boxShadow: `0 0 ${size * 4}px rgba(0, 255, 136, 0.6)`,
               }}
               animate={{
                 x: [0, Math.random() * 40 - 20, 0],
@@ -563,9 +563,9 @@ const Course = () => {
         <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#00ff00" stopOpacity="0" />
-              <stop offset="50%" stopColor="#00ff00" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#00ff00" stopOpacity="0" />
+              <stop offset="0%" stopColor="#00FF88" stopOpacity="0" />
+              <stop offset="50%" stopColor="#00FF88" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#00FF88" stopOpacity="0" />
             </linearGradient>
           </defs>
           
@@ -604,7 +604,7 @@ const Course = () => {
         {Array.from({ length: 20 }).map((_, i) => (
           <motion.div
             key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-[#00ff00] rounded-full"
+            className="absolute w-1 h-1 bg-[#00FF88] rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -694,15 +694,15 @@ const Course = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <div className="relative bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] rounded-3xl overflow-hidden border border-[#00ff00]/20 p-8 sm:p-10 md:p-12 lg:p-16">
+          <div className="relative bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] rounded-3xl overflow-hidden border border-[#00FF88]/20 p-8 sm:p-10 md:p-12 lg:p-16">
             {/* Animated Background Pattern */}
             <div className="absolute inset-0 opacity-5">
               <motion.div
                 className="absolute inset-0"
                 style={{
                   backgroundImage: `
-                    radial-gradient(circle at 20% 50%, rgba(0, 255, 0, 0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 50%, rgba(0, 255, 0, 0.2) 0%, transparent 50%)
+                    radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.3) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 50%, rgba(0, 255, 136, 0.2) 0%, transparent 50%)
                   `
                 }}
                 animate={{
@@ -717,7 +717,7 @@ const Course = () => {
             </div>
 
             {/* Green Glow Effect */}
-            <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#00ff00]/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#00FF88]/10 rounded-full blur-3xl" />
             
             {/* Hero Content */}
             <div className="relative z-10 max-w-3xl">
@@ -726,10 +726,10 @@ const Course = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-full px-4 py-2 mb-6"
+                className="inline-flex items-center gap-2 bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-full px-4 py-2 mb-6"
               >
-                <span className="w-2 h-2 bg-[#00ff00] rounded-full animate-pulse" />
-                <p className="text-xs sm:text-sm text-[#00ff00] font-semibold uppercase tracking-wide">
+                <span className="w-2 h-2 bg-[#00FF88] rounded-full animate-pulse" />
+                <p className="text-xs sm:text-sm text-[#00FF88] font-semibold uppercase tracking-wide">
                   Самый полный курс по автоматизации при помощи нейросетей
                 </p>
               </motion.div>
@@ -743,9 +743,9 @@ const Course = () => {
               >
                 Интегратор{" "}
                 <span className="relative inline-block">
-                  <span className="text-[#00ff00] relative z-10">2.0</span>
+                  <span className="text-[#00FF88] relative z-10">2.0</span>
                   <motion.span
-                    className="absolute inset-0 bg-[#00ff00] blur-xl opacity-50"
+                    className="absolute inset-0 bg-[#00FF88] blur-xl opacity-50"
                     animate={{
                       opacity: [0.3, 0.6, 0.3],
                       scale: [1, 1.1, 1],
@@ -768,7 +768,7 @@ const Course = () => {
                 <Button 
                   size="lg" 
                   onClick={() => setIsAIChatOpen(true)}
-                  className="group relative bg-black/40 backdrop-blur-sm border-2 border-[#00ff00]/30 hover:border-[#00ff00]/60 hover:bg-black/60 text-white font-bold text-base md:text-lg px-8 md:px-10 py-4 md:py-5 rounded-2xl transition-all duration-500 w-full sm:w-auto overflow-hidden"
+                  className="group relative bg-black/40 backdrop-blur-sm border-2 border-[#00FF88]/30 hover:border-[#00FF88]/60 hover:bg-black/60 text-white font-bold text-base md:text-lg px-8 md:px-10 py-4 md:py-5 rounded-2xl transition-all duration-500 w-full sm:w-auto overflow-hidden"
                   aria-label="AI Куратор"
                 >
                   {/* Subtle shimmer effect - раз в 5 секунд */}
@@ -788,7 +788,7 @@ const Course = () => {
                     {/* AI indicator - пульсирующая линия вместо робота */}
                     <div className="flex items-center gap-1.5">
                       <motion.div
-                        className="w-0.5 h-5 bg-[#00ff00] rounded-full"
+                        className="w-0.5 h-5 bg-[#00FF88] rounded-full"
                         animate={{
                           height: [20, 12, 20],
                           opacity: [1, 0.4, 1],
@@ -800,7 +800,7 @@ const Course = () => {
                         }}
                       />
                       <motion.div
-                        className="w-0.5 h-3 bg-[#00ff00] rounded-full"
+                        className="w-0.5 h-3 bg-[#00FF88] rounded-full"
                         animate={{
                           height: [12, 20, 12],
                           opacity: [0.6, 1, 0.6],
@@ -813,7 +813,7 @@ const Course = () => {
                         }}
                       />
                       <motion.div
-                        className="w-0.5 h-4 bg-[#00ff00] rounded-full"
+                        className="w-0.5 h-4 bg-[#00FF88] rounded-full"
                         animate={{
                           height: [16, 10, 16],
                           opacity: [0.8, 0.5, 0.8],
@@ -828,13 +828,13 @@ const Course = () => {
                     </div>
                     
                     {/* Gradient text */}
-                    <span className="bg-gradient-to-r from-[#00ff00] via-[#00ff00] to-[#00cc00] bg-clip-text text-transparent font-extrabold tracking-wide">
+                    <span className="bg-gradient-to-r from-[#00FF88] via-[#00FF88] to-[#00cc88] bg-clip-text text-transparent font-extrabold tracking-wide">
                       AI Куратор
                     </span>
                     
                     {/* Typing cursor effect */}
                     <motion.div
-                      className="w-0.5 h-5 bg-[#00ff00] rounded-full"
+                      className="w-0.5 h-5 bg-[#00FF88] rounded-full"
                       animate={{
                         opacity: [1, 0, 1],
                       }}
@@ -874,7 +874,7 @@ const Course = () => {
                       console.log('🖱️ MOUSEDOWN на кнопке "Добавить модуль"!');
                     }}
                     type="button"
-                    className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                    className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold text-sm px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                     style={{ zIndex: 101, pointerEvents: 'auto' }}
                   >
                     <Plus className="w-4 h-4" />
@@ -918,7 +918,7 @@ const Course = () => {
                         <div className="text-center py-12">
                           <p className="text-gray-400 mb-4">Модули не найдены</p>
                           {isAdmin && (
-                            <Button onClick={handleAddModule} className="bg-[#00ff00] text-black">
+                            <Button onClick={handleAddModule} className="bg-[#00FF88] text-black">
                               <Plus className="w-4 h-4 mr-2" />
                               Добавить первый модуль
                             </Button>
@@ -939,14 +939,14 @@ const Course = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-[#00ff00] rounded-2xl p-3 sm:p-4 md:p-6"
+              className="bg-[#00FF88] rounded-2xl p-3 sm:p-4 md:p-6"
               aria-labelledby="materials-heading"
             >
               <h3 id="materials-heading" className="text-xs sm:text-sm md:text-base font-bold text-black mb-2 sm:mb-3 md:mb-4 uppercase leading-tight">
                 договор-оферта курса интегратор 2.0
               </h3>
               <Button 
-                className="w-full bg-black text-[#00ff00] hover:bg-black/90 font-bold rounded-xl mb-2 sm:mb-3 md:mb-4 text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
+                className="w-full bg-black text-[#00FF88] hover:bg-black/90 font-bold rounded-xl mb-2 sm:mb-3 md:mb-4 text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
                 aria-label="Посмотреть договор-оферту"
               >
                 <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1 sm:mr-2 flex-shrink-0" />
@@ -957,7 +957,7 @@ const Course = () => {
                 <p className="text-lg sm:text-xl md:text-2xl font-bold">10:00—22:00</p>
               </div>
               <Button 
-                className="w-full bg-black text-[#00ff00] hover:bg-black/90 font-bold rounded-xl text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
+                className="w-full bg-black text-[#00FF88] hover:bg-black/90 font-bold rounded-xl text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
                 aria-label="Перейти в общий чат"
               >
                 <span className="truncate">Перейти в общий чат</span>
@@ -977,11 +977,11 @@ const Course = () => {
               </h3>
               <div className="space-y-1.5 sm:space-y-2 md:space-y-3" role="list">
                 <div className="flex items-center gap-2" role="listitem">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff00] flex-shrink-0" />
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00FF88] flex-shrink-0" />
                   <span className="text-gray-400 text-[10px] sm:text-xs md:text-sm leading-tight">Каждый понедельник в 20:00</span>
                 </div>
                 <div className="flex items-center gap-2" role="listitem">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff00] flex-shrink-0" />
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00FF88] flex-shrink-0" />
                   <span className="text-gray-400 text-[10px] sm:text-xs md:text-sm leading-tight">Каждый четверг в 14:00</span>
                 </div>
               </div>
@@ -998,13 +998,13 @@ const Course = () => {
               <h3 id="curators-heading" className="sr-only">Кураторы</h3>
               
               {/* Curator 1 */}
-              <div className="bg-[#00ff00] rounded-2xl p-3 sm:p-4 md:p-6" role="listitem">
+              <div className="bg-[#00FF88] rounded-2xl p-3 sm:p-4 md:p-6" role="listitem">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
                   <div 
                     className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-black flex items-center justify-center flex-shrink-0"
                     aria-hidden="true"
                   >
-                    <span className="text-[#00ff00] font-bold text-sm sm:text-base md:text-lg">Е</span>
+                    <span className="text-[#00FF88] font-bold text-sm sm:text-base md:text-lg">Е</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] sm:text-xs md:text-sm text-black/70 leading-tight">Куратор</p>
@@ -1013,7 +1013,7 @@ const Course = () => {
                   </div>
                 </div>
                 <Button 
-                  className="w-full bg-black text-[#00ff00] hover:bg-black/90 font-bold rounded-xl text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
+                  className="w-full bg-black text-[#00FF88] hover:bg-black/90 font-bold rounded-xl text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
                   aria-label="Написать куратору Ерке"
                 >
                   <span className="truncate">Написать куратору</span>
@@ -1021,13 +1021,13 @@ const Course = () => {
               </div>
 
               {/* Curator 2 */}
-              <div className="bg-[#00ff00] rounded-2xl p-3 sm:p-4 md:p-6" role="listitem">
+              <div className="bg-[#00FF88] rounded-2xl p-3 sm:p-4 md:p-6" role="listitem">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
                   <div 
                     className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-black flex items-center justify-center flex-shrink-0"
                     aria-hidden="true"
                   >
-                    <span className="text-[#00ff00] font-bold text-sm sm:text-base md:text-lg">Р</span>
+                    <span className="text-[#00FF88] font-bold text-sm sm:text-base md:text-lg">Р</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] sm:text-xs md:text-sm text-black/70 leading-tight">Куратор</p>
@@ -1036,7 +1036,7 @@ const Course = () => {
                   </div>
                 </div>
                 <Button 
-                  className="w-full bg-black text-[#00ff00] hover:bg-black/90 font-bold rounded-xl text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
+                  className="w-full bg-black text-[#00FF88] hover:bg-black/90 font-bold rounded-xl text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:h-10"
                   aria-label="Написать куратору Раймжан"
                 >
                   <span className="truncate">Написать куратору</span>

@@ -142,14 +142,44 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
           console.log(`⏱️ Длительность видео: ${durationSeconds} секунд (${Math.round(durationSeconds / 60)} минут)`);
           
           const formData = new FormData();
-          // 🔥 КРИТИЧНО: Поля ПЕРЕД файлом! (Multer Field Order Issue)
+          formData.append('lessonId', lesson.id.toString());
+          formData.append('title', title || `Lesson ${lesson.id}`);
           formData.append('duration_seconds', durationSeconds.toString());
           formData.append('video', videoFile);
           
-          await api.post(`/api/videos/upload/${lesson.id}`, formData);
+          // ✅ Используем XMLHttpRequest для прогресс-бара
+          await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', (e) => {
+              if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                const adjustedPercent = 30 + Math.round(percentComplete * 0.3); // 30-60%
+                setUploadProgress(adjustedPercent);
+                setUploadStatus(`📹 Загрузка видео... ${percentComplete}%`);
+                console.log(`📊 Upload progress: ${percentComplete}%`);
+              }
+            });
+
+            xhr.addEventListener('load', () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                console.log('✅ Видео обновлено и загружено в Bunny Stream! Начинается обработка...');
+                setUploadStatus('✅ Загружено! Обработка началась...');
+                resolve(JSON.parse(xhr.responseText));
+              } else {
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+            });
+
+            xhr.addEventListener('error', () => {
+              reject(new Error('Network error during video upload'));
+            });
+            
+            xhr.open('POST', 'http://localhost:3000/api/stream/upload');
+            xhr.send(formData);
+          });
           
           setUploadProgress(60);
-          console.log('✅ Видео обновлено с длительностью');
         } else {
           setUploadProgress(60);
         }
@@ -248,14 +278,44 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
         console.log(`⏱️ Длительность видео: ${durationSeconds} секунд (${Math.round(durationSeconds / 60)} минут)`);
         
         const formData = new FormData();
-        // 🔥 КРИТИЧНО: Поля ПЕРЕД файлом! (Multer Field Order Issue)
+        formData.append('lessonId', newLessonId.toString());
+        formData.append('title', title || `Lesson ${newLessonId}`);
         formData.append('duration_seconds', durationSeconds.toString());
         formData.append('video', videoFile);
 
-        await api.post(`/api/videos/upload/${newLessonId}`, formData);
+        // ✅ Используем XMLHttpRequest для прогресс-бара
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const percentComplete = Math.round((e.loaded / e.total) * 100);
+              const adjustedPercent = 20 + Math.round(percentComplete * 0.3); // 20-50%
+              setUploadProgress(adjustedPercent);
+              setUploadStatus(`📹 Загрузка видео... ${percentComplete}%`);
+              console.log(`📊 Upload progress: ${percentComplete}%`);
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              console.log('✅ Видео загружено в Bunny Stream! Начинается обработка...');
+              setUploadStatus('✅ Загружено! Обработка началась...');
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            reject(new Error('Network error during video upload'));
+          });
+          
+          xhr.open('POST', 'http://localhost:3000/api/stream/upload');
+          xhr.send(formData);
+        });
         
         setUploadProgress(50);
-        console.log('✅ Видео загружено с длительностью');
       } else {
         setUploadProgress(50);
       }
@@ -365,35 +425,56 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
       
       const formData = new FormData();
       // 🔥 КРИТИЧНО: Поля ПЕРЕД файлом! (Multer Field Order Issue)
+      formData.append('lessonId', lessonId.toString());
+      formData.append('title', title || `Lesson ${lessonId}`);
       formData.append('duration_seconds', durationSeconds.toString());
       formData.append('video', videoFile);
 
-      console.log('📤 Загружаем видео на сервер...');
+      console.log('📤 Загружаем видео в Bunny Stream...');
       console.log('  - Файл:', videoFile.name);
       console.log('  - Размер:', (videoFile.size / 1024 / 1024).toFixed(2), 'MB');
       console.log('  - Длительность:', durationSeconds, 'секунд');
       console.log('  - Lesson ID:', lessonId);
       
-      // Симуляция progress (т.к. fetch не поддерживает onUploadProgress)
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
-      }, 200);
+      // ✅ Используем XMLHttpRequest для РЕАЛЬНОГО прогресс-бара (не симуляция!)
+      const res: any = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            setUploadProgress(percentComplete);
+            setUploadStatus(`📹 Загрузка видео... ${percentComplete}%`);
+            console.log(`📊 Upload progress: ${percentComplete}%`);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            console.log('✅ Видео загружено в Bunny Stream! Начинается обработка...');
+            setUploadStatus('✅ Загружено! Обработка началась...');
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error during video upload'));
+        });
+        
+        xhr.open('POST', 'http://localhost:3000/api/stream/upload');
+        xhr.send(formData);
+      });
       
-      const res = await api.post(`/api/videos/upload/${lessonId}`, formData);
-      
-      clearInterval(progressInterval);
       setUploadProgress(100);
       
-      const newVideoUrl = 
-        res.data?.video?.video_url ||
-        res.video?.video_url ||
-        res.data?.url ||
-        null;
+      const newVideoUrl = res.hlsUrl || res.data?.hlsUrl || null;
       
       if (newVideoUrl) {
         setVideoUrl(newVideoUrl);
-        console.log('✅ Видео загружено:', newVideoUrl);
-        console.log('✅ Длительность сохранена:', res.data?.video?.duration_minutes || res.video?.duration_minutes, 'минут');
+        console.log('✅ Видео загружено в Bunny Stream (HLS):', newVideoUrl);
+        console.log('✅ Video ID:', res.videoId || res.data?.videoId);
         
         // 🔥 FIX: Перезагружаем список уроков после загрузки видео
         if (onVideoUploaded) {
@@ -401,7 +482,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
           onVideoUploaded();
         }
       } else {
-        throw new Error('Backend не вернул URL видео');
+        throw new Error('Backend не вернул HLS URL');
       }
       
     } catch (error: any) {
@@ -432,18 +513,18 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
 
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-[#1a1a24] border border-gray-800">
-            <TabsTrigger value="basic" className="text-white data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+            <TabsTrigger value="basic" className="text-white data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
               Основное
             </TabsTrigger>
             <TabsTrigger 
               value="video"
-              className="text-white data-[state=active]:bg-[#00ff00] data-[state=active]:text-black"
+              className="text-white data-[state=active]:bg-[#00FF88] data-[state=active]:text-black"
             >
               Видео
             </TabsTrigger>
             <TabsTrigger 
               value="materials"
-              className="text-white data-[state=active]:bg-[#00ff00] data-[state=active]:text-black"
+              className="text-white data-[state=active]:bg-[#00FF88] data-[state=active]:text-black"
             >
               Материалы
             </TabsTrigger>
@@ -490,26 +571,26 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
 
             {/* ✅ Progress Bar для единой загрузки */}
             {isUploading && (
-              <div className="mt-4 space-y-2 p-4 bg-[#1a1a24] border border-[#00ff00]/30 rounded-lg">
+              <div className="mt-4 space-y-2 p-4 bg-[#1a1a24] border border-[#00FF88]/30 rounded-lg">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-white">{uploadStatus}</span>
-                  <span className="text-[#00ff00] font-bold">{uploadProgress}%</span>
+                  <span className="text-[#00FF88] font-bold">{uploadProgress}%</span>
                 </div>
                 
                 {/* Progress bar */}
                 <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-blue-500 via-purple-500 to-[#00ff00] h-full transition-all duration-300 ease-out"
+                    className="bg-[#00FF88] h-full transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
                 
                 {/* Детальный статус */}
                 <div className="text-xs text-gray-400 space-y-1 pt-2">
-                  {uploadProgress >= 10 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Урок создан в базе данных</div>}
-                  {uploadProgress >= 50 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Видео загружено на сервер</div>}
-                  {uploadProgress >= 90 && <div className="flex items-center gap-2"><span className="text-[#00ff00]">✅</span> Материалы загружены в Supabase Storage</div>}
-                  {uploadProgress === 100 && <div className="flex items-center gap-2 text-[#00ff00] font-medium animate-pulse">🎉 Готово! Переходим к уроку...</div>}
+                  {uploadProgress >= 10 && <div className="flex items-center gap-2"><span className="text-[#00FF88]">✅</span> Урок создан в базе данных</div>}
+                  {uploadProgress >= 50 && <div className="flex items-center gap-2"><span className="text-[#00FF88]">✅</span> Видео загружено на сервер</div>}
+                  {uploadProgress >= 90 && <div className="flex items-center gap-2"><span className="text-[#00FF88]">✅</span> Материалы загружены в Supabase Storage</div>}
+                  {uploadProgress === 100 && <div className="flex items-center gap-2 text-[#00FF88] font-medium animate-pulse">🎉 Готово! Переходим к уроку...</div>}
                 </div>
               </div>
             )}
@@ -521,7 +602,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
               <Button 
                 onClick={handleSubmit} 
                 disabled={!title || !title.trim() || isUploading}
-                className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold flex-1"
+                className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold flex-1"
               >
                 {isUploading ? (
                   <>⏳ Загрузка {uploadProgress}%...</>
@@ -534,8 +615,8 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
             </div>
             
             {videoFile && !savedLessonId && (
-              <div className="mt-3 p-3 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg">
-                <p className="text-sm text-[#00ff00] font-medium">
+              <div className="mt-3 p-3 bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-lg">
+                <p className="text-sm text-[#00FF88] font-medium">
                   📹 Видео выбрано: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
@@ -545,8 +626,8 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
             )}
             
             {savedLessonId && (
-              <div className="mt-3 p-3 bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg">
-                <p className="text-sm text-[#00ff00] font-medium">
+              <div className="mt-3 p-3 bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-lg">
+                <p className="text-sm text-[#00FF88] font-medium">
                   ✅ Урок создан! Можете загрузить видео и материалы на соответствующих вкладках.
                 </p>
               </div>
@@ -557,7 +638,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
           <TabsContent value="video" className="space-y-4 py-4">
             <div className="space-y-2">
               <Label className="text-white">Загрузить видео (MP4, MOV, AVI)</Label>
-              <div className="border-2 border-dashed border-gray-800 rounded-lg p-8 text-center hover:border-[#00ff00]/50 transition-colors">
+              <div className="border-2 border-dashed border-gray-800 rounded-lg p-8 text-center hover:border-[#00FF88]/50 transition-colors">
                 <input
                   type="file"
                   accept="video/*"
@@ -581,11 +662,11 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
                 <div className="mt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">Загрузка видео...</span>
-                    <span className="text-[#00ff00]">{uploadProgress}%</span>
+                    <span className="text-[#00FF88]">{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
                     <div 
-                      className="bg-[#00ff00] h-full transition-all duration-300"
+                      className="bg-[#00FF88] h-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -595,7 +676,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
               {videoUrl && (
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-[#00ff00]">✅ Видео загружено</p>
+                    <p className="text-sm text-[#00FF88]">✅ Видео загружено</p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -606,9 +687,9 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
                           console.log('🗑️ Удаление видео для урока:', savedLessonId);
                           
                           if (savedLessonId) {
-                            // ✅ Вызываем API для удаления видео из БД и R2
-                            await api.delete(`/api/videos/lesson/${savedLessonId}`);
-                            console.log('✅ Видео удалено из БД и R2');
+                            // ✅ Используем новый Bunny Stream DELETE роут
+                            await api.delete(`/api/stream/lesson/${savedLessonId}`);
+                            console.log('✅ Видео удалено из Bunny Stream и БД');
                           }
                           
                           // Очистить локальное состояние

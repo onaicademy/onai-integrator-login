@@ -73,7 +73,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             <div className="flex gap-4 justify-center">
               <Button
                 onClick={this.handleReset}
-                className="bg-[#00ff00] text-black hover:bg-[#00cc00]"
+                className="bg-[#00FF88] text-black hover:bg-[#00cc88]"
               >
                 Вернуться на главную
               </Button>

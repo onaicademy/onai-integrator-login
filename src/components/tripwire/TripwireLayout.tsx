@@ -23,10 +23,10 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black">
-      {/* Desktop Sidebar - Fixed */}
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF88]/30">
+      {/* Sidebar - добавили z-[100] чтобы был поверх всего */}
       {!isMobile && (
-        <aside className="fixed left-0 top-0 h-screen w-64 z-40 transition-transform duration-300">
+        <aside className="fixed left-0 top-0 h-screen w-80 border-r border-white/5 bg-[#050505]/95 backdrop-blur-xl z-[100] hidden lg:block">
           <TripwireSidebar />
         </aside>
       )}
@@ -35,7 +35,7 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
       {isMobile && (
         <>
           {/* Mobile Header with Hamburger */}
-          <header className="fixed top-0 left-0 right-0 h-16 border-b border-white/10 z-50 flex items-center px-4"
+          <header className="sticky top-0 z-50 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md px-6 py-4 lg:hidden flex items-center"
             style={{
               background: 'rgba(10, 10, 10, 0.8)',
               backdropFilter: 'blur(20px)',
@@ -68,11 +68,11 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
         </>
       )}
 
-      {/* Main Content Area */}
-      <main className={`min-h-screen transition-all duration-300 ${isMobile ? 'pt-16' : 'ml-64'}`}>
-        {/* Desktop Header with Toggle Button */}
+      {/* Main Content - добавили relative и z-0 */}
+      <main className={`relative z-0 min-h-screen transition-all duration-300 ${isMobile ? 'pt-16' : 'lg:ml-80'}`}>
+        {/* Desktop Header - тоже поднимаем z-index если он есть */}
         {!isMobile && (
-          <header className="sticky top-0 z-10 flex h-14 sm:h-16 items-center gap-4 border-b border-white/10 px-4 sm:px-6"
+          <header className="sticky top-0 z-50 flex h-14 sm:h-16 items-center gap-4 border-b border-white/10 px-4 sm:px-6"
             style={{
               background: 'rgba(10, 10, 10, 0.8)',
               backdropFilter: 'blur(20px)',
@@ -88,21 +88,21 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
                 if (sidebar && main) {
                   if (sidebar.style.transform === 'translateX(-100%)') {
                     sidebar.style.transform = 'translateX(0)';
-                    main.style.marginLeft = '256px';
+                    main.style.marginLeft = '320px';
                   } else {
                     sidebar.style.transform = 'translateX(-100%)';
                     main.style.marginLeft = '0';
                   }
                 }
               }}
-              className="text-white/70 hover:text-[#00FF00] hover:bg-white/10 transition-colors"
+              className="text-white/70 hover:text-[#00FF88] hover:bg-white/10 transition-colors"
             >
               <List size={24} weight="bold" />
             </Button>
           </header>
         )}
         
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="p-4 lg:p-8 max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>

@@ -62,7 +62,7 @@ export function MetricCard({
                     variant={item.badge.variant || "secondary"}
                     className={cn(
                       "text-xs",
-                      item.badge.variant === "default" && "bg-[#00ff00] text-black",
+                      item.badge.variant === "default" && "bg-[#00FF88] text-black",
                       item.badge.variant === "destructive" && "bg-red-600 text-white"
                     )}
                   >

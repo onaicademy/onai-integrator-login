@@ -55,11 +55,11 @@ export function ModuleCard({
           
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+              <Badge variant="outline" className="border-#00FF88]/50 text-#00FF88] bg-#00FF88]/10">
                 Модуль {order_index + 1}
               </Badge>
               {completedCount === lessons.length && lessons.length > 0 && !isAdmin && (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                <CheckCircle2 className="h-5 w-5 text-#00FF88]" />
               )}
             </div>
             <h3 className="text-xl font-semibold text-white">{title}</h3>
@@ -71,7 +71,7 @@ export function ModuleCard({
 
         {isAdmin && (
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onEditModule} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+            <Button variant="ghost" size="sm" onClick={onEditModule} className="text-#00FF88] hover:text-[#00FF88] 300 hover:bg-#00FF88]/10">
               <Edit className="h-4 w-4 mr-1" />
               Редактировать
             </Button>
@@ -87,7 +87,7 @@ export function ModuleCard({
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-slate-400">
             <span>{completedCount} из {lessons.length} уроков пройдено</span>
-            <span className="text-emerald-400 font-bold">{Math.round(progress)}%</span>
+            <span className="text-#00FF88] font-bold">{Math.round(progress)}%</span>
           </div>
           <Progress 
             value={progress} 
@@ -113,7 +113,7 @@ export function ModuleCard({
           variant="outline" 
           size="sm" 
           onClick={onAddLesson} 
-          className="w-full border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+          className="w-full border-#00FF88]/50 text-#00FF88] hover:bg-#00FF88]/10"
         >
           <Plus className="h-4 w-4 mr-2" />
           Добавить урок

@@ -67,10 +67,12 @@ import missionsRouter from './routes/missions';
 import coursesRouter from './routes/courses';
 import modulesRouter from './routes/modules';
 import lessonsRouter from './routes/lessons';
-import videosRouter from './routes/videos';
+// ❌ videosRouter УДАЛЁН - старый Bunny Storage код
 import materialsRouter from './routes/materials';
 import tripwireRouter from './routes/tripwire';
 import tripwireLessonsRouter from './routes/tripwire-lessons';
+import videoUploadRouter from './routes/videoUpload';
+import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW)
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 
@@ -134,12 +136,14 @@ app.get('/api/health', (req, res) => {
 // ✅ КРИТИЧНО: MULTER ROUTES ДО express.json()
 // ============================================
 console.log('🔥 Registering Multer routes BEFORE express.json()');
-app.use('/api/videos', videosRouter);
+// ❌ app.use('/api/videos', videosRouter); - УДАЛЕНО (старый Bunny Storage)
 app.use('/api/materials', materialsRouter);
+app.use('/api/stream', streamUploadRouter); // ✅ Bunny Stream Upload (NEW!)
 
 // ✅ Explicit OPTIONS handler для file upload routes
-app.options('/api/videos/upload/:lessonId', cors());
+// ❌ app.options('/api/videos/upload/:lessonId', cors()); - УДАЛЕНО
 app.options('/api/materials/upload', cors());
+app.options('/api/stream/upload', cors());
 
 // ============================================
 // ✅ express.json() ПОСЛЕ Multer routes
@@ -192,6 +196,7 @@ app.use('/api/missions', missionsRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/modules', modulesRouter);
 app.use('/api/lessons', lessonsRouter);
+app.use('/api', videoUploadRouter); // 🐰 BunnyCDN Video Upload
 
 // 404 обработка
 app.use((req, res) => {

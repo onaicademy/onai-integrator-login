@@ -350,10 +350,10 @@ export default function ProfileSettings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-[#00ff00]" />
+                  <Camera className="w-5 h-5 text-[#00FF88]" />
                   Аватар
                 </CardTitle>
               </CardHeader>
@@ -363,11 +363,11 @@ export default function ProfileSettings() {
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Avatar className="w-24 h-24 border-4 border-[#00ff00]/30">
+                    <Avatar className="w-24 h-24 border-4 border-[#00FF88]/30">
                       {avatarUrl ? (
                         <AvatarImage src={avatarUrl} alt="Avatar" />
                       ) : null}
-                      <AvatarFallback className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 text-2xl font-bold text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 text-2xl font-bold text-white">
                         {fullName ? getInitials(fullName) : "?"}
                       </AvatarFallback>
                     </Avatar>
@@ -389,7 +389,7 @@ export default function ProfileSettings() {
                         variant="outline"
                         onClick={() => document.getElementById("avatar-upload")?.click()}
                         disabled={loading}
-                        className="bg-transparent border-[#00ff00] text-[#00ff00] hover:bg-[#00ff00]/10"
+                        className="bg-transparent border-[#00FF88] text-[#00FF88] hover:bg-[#00FF88]/10"
                       >
                         <Camera className="w-4 h-4 mr-2" />
                         {loading ? "Загрузка..." : "Загрузить фото"}
@@ -407,10 +407,10 @@ export default function ProfileSettings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <User className="w-5 h-5 text-[#00ff00]" />
+                  <User className="w-5 h-5 text-[#00FF88]" />
                   Основная информация
                 </CardTitle>
               </CardHeader>
@@ -423,7 +423,7 @@ export default function ProfileSettings() {
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Иван Иванов"
                     disabled={profileLoading}
-                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                   />
                 </div>
                 <div>
@@ -435,13 +435,13 @@ export default function ProfileSettings() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@example.com"
                     disabled={profileLoading}
-                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                   />
                 </div>
                 <Button 
                   onClick={handleUpdateProfile} 
                   disabled={loading || profileLoading}
-                  className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold"
+                  className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Сохранить изменения
@@ -456,10 +456,10 @@ export default function ProfileSettings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Key className="w-5 h-5 text-[#00ff00]" />
+                  <Key className="w-5 h-5 text-[#00FF88]" />
                   Смена пароля
                 </CardTitle>
               </CardHeader>
@@ -472,7 +472,7 @@ export default function ProfileSettings() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Минимум 6 символов"
-                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                   />
                 </div>
                 <div>
@@ -483,13 +483,13 @@ export default function ProfileSettings() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Повторите пароль"
-                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                    className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                   />
                 </div>
                 <Button 
                   onClick={handleChangePassword} 
                   disabled={loading}
-                  className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold"
+                  className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold"
                 >
                   <Key className="w-4 h-4 mr-2" />
                   Изменить пароль
@@ -534,10 +534,10 @@ export default function ProfileSettings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+            <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-[#00ff00]" />
+                  <Mail className="w-5 h-5 text-[#00FF88]" />
                   Уведомления
                 </CardTitle>
               </CardHeader>

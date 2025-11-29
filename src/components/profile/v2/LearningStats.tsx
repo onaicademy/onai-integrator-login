@@ -18,13 +18,13 @@ export const LearningStats = () => {
   ];
 
   return (
-    <div className="bg-[#1a1a24] backdrop-blur-md border border-gray-800 rounded-2xl p-4 sm:p-6 hover:border-[#00ff00]/50 transition-all duration-300">
+    <div className="bg-[#1a1a24] backdrop-blur-md border border-gray-800 rounded-2xl p-4 sm:p-6 hover:border-[#00FF88]/50 transition-all duration-300">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h3 className="text-base sm:text-lg md:text-xl font-bold text-white">Статистика обучения</h3>
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff00] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00ff00]"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF88] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00FF88]"></span>
           </span>
           <span className="text-xs text-gray-400">Live</span>
         </div>
@@ -33,7 +33,7 @@ export const LearningStats = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
-          const colorClass = "text-[#00ff00]";
+          const colorClass = "text-[#00FF88]";
           const borderColor = "border-gray-800";
           
           return (
@@ -45,10 +45,10 @@ export const LearningStats = () => {
               whileHover={{ y: -5, scale: 1.03 }}
               className="group relative"
             >
-              <div className={`bg-black/40 backdrop-blur-sm border ${borderColor} rounded-xl p-3 sm:p-4 transition-all duration-300 hover:border-[#00ff00]/50`}>
+              <div className={`bg-black/40 backdrop-blur-sm border ${borderColor} rounded-xl p-3 sm:p-4 transition-all duration-300 hover:border-[#00FF88]/50`}>
                 {/* Icon */}
                 <div className="flex items-start justify-between mb-2 sm:mb-3">
-                  <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 border border-[#00ff00]/30">
+                  <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 border border-[#00FF88]/30">
                     <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${colorClass}`} />
                   </div>
                 </div>
@@ -66,9 +66,9 @@ export const LearningStats = () => {
                       initial={{ width: 0 }}
                       animate={{ width: `${stat.progress}%` }}
                       transition={{ duration: 1, delay: index * 0.1 }}
-                      className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] rounded-full"
+                      className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88] rounded-full"
                       style={{
-                        boxShadow: "0 0 8px rgba(0, 255, 0, 0.5)",
+                        boxShadow: "0 0 8px rgba(0, 255, 136, 0.5)",
                       }}
                     />
                   </div>
@@ -77,7 +77,7 @@ export const LearningStats = () => {
 
               {/* Glow effect on hover */}
               <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                <div className="absolute inset-0 bg-[#00ff00]/5 rounded-xl blur-xl" />
+                <div className="absolute inset-0 bg-[#00FF88]/5 rounded-xl blur-xl" />
               </div>
             </motion.div>
           );

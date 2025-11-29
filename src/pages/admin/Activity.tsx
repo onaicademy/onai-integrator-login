@@ -371,7 +371,7 @@ export default function Activity() {
 
   if (!isAdmin) return null;
 
-  const COLORS = ['#00ff00', '#00cc00', '#3b82f6', '#8b5cf6'];
+  const COLORS = ['#00FF88', '#00cc88', '#3b82f6', '#8b5cf6'];
 
   return (
     <TooltipProvider>
@@ -380,8 +380,8 @@ export default function Activity() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 rounded-xl border border-[#00ff00]/30">
-                <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ff00]" />
+              <div className="p-2 sm:p-3 bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 rounded-xl border border-[#00FF88]/30">
+                <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 text-[#00FF88]" />
               </div>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-white font-display">
@@ -398,7 +398,7 @@ export default function Activity() {
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <Button
                   variant="ghost"
-                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
+                  className="gap-1 sm:gap-2 hover:bg-[#00FF88]/10 hover:text-[#00FF88] text-white text-xs sm:text-sm"
                   onClick={() => {
                     // Scroll to overview section or keep default view
                   }}
@@ -408,7 +408,7 @@ export default function Activity() {
                 </Button>
                 <Button
                   variant="ghost"
-                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
+                  className="gap-1 sm:gap-2 hover:bg-[#00FF88]/10 hover:text-[#00FF88] text-white text-xs sm:text-sm"
                   onClick={() => setShowTopStudentsModal(true)}
                 >
                   <Award className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -416,7 +416,7 @@ export default function Activity() {
                 </Button>
                 <Button
                   variant="ghost"
-                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
+                  className="gap-1 sm:gap-2 hover:bg-[#00FF88]/10 hover:text-[#00FF88] text-white text-xs sm:text-sm"
                   onClick={() => {
                     // Can add another modal or section later
                   }}
@@ -426,7 +426,7 @@ export default function Activity() {
                 </Button>
                 <Button
                   variant="ghost"
-                  className="gap-1 sm:gap-2 hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white text-xs sm:text-sm"
+                  className="gap-1 sm:gap-2 hover:bg-[#00FF88]/10 hover:text-[#00FF88] text-white text-xs sm:text-sm"
                   onClick={() => navigate("/admin/ai-curator-chats")}
                 >
                   <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -629,7 +629,7 @@ export default function Activity() {
               <Card className="bg-[#1a1a24] border-gray-800">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
-                    <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00]" />
+                    <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-[#00FF88]" />
                     Источники трафика
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm text-gray-400">Распределение по каналам привлечения</CardDescription>
@@ -694,7 +694,7 @@ export default function Activity() {
                   tooltip="Процент посетителей, ставших активными пользователями"
                   gradientFrom="from-green-500/10"
                   gradientTo="to-green-500/5"
-                  iconColor="text-[#00ff00]"
+                  iconColor="text-[#00FF88]"
                 />
               </div>
             </div>
@@ -706,14 +706,14 @@ export default function Activity() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00]" />
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-[#00FF88]" />
                     Пользователи платформы
                   </CardTitle>
                   <CardDescription className="mt-1 text-xs sm:text-sm text-gray-400">
                     Список всех зарегистрированных пользователей с базовой статистикой
                   </CardDescription>
                 </div>
-                <Badge variant="secondary" className="text-xs sm:text-sm px-3 py-1 bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30">
+                <Badge variant="secondary" className="text-xs sm:text-sm px-3 py-1 bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30">
                   Всего: {users.length}
                 </Badge>
               </div>
@@ -721,8 +721,8 @@ export default function Activity() {
             <CardContent>
               {users.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
-                  <div className="p-4 bg-[#00ff00]/10 rounded-full mb-4 border border-[#00ff00]/30">
-                    <Users className="h-12 w-12 sm:h-16 sm:w-16 text-[#00ff00]" />
+                  <div className="p-4 bg-[#00FF88]/10 rounded-full mb-4 border border-[#00FF88]/30">
+                    <Users className="h-12 w-12 sm:h-16 sm:w-16 text-[#00FF88]" />
                   </div>
                   <p className="text-white text-base sm:text-lg font-medium">Пользователи не найдены</p>
                   <p className="text-gray-400 text-xs sm:text-sm mt-2 text-center max-w-sm">
@@ -743,7 +743,7 @@ export default function Activity() {
                     </TableHeader>
                     <TableBody>
                       {users.map((user) => (
-                        <TableRow key={user.id} className="border-gray-800 hover:bg-[#00ff00]/5 transition-colors">
+                        <TableRow key={user.id} className="border-gray-800 hover:bg-[#00FF88]/5 transition-colors">
                           <TableCell className="font-medium text-white text-xs sm:text-sm">
                             {user.email || 'Не указан'}
                           </TableCell>
@@ -755,7 +755,7 @@ export default function Activity() {
                               variant={user.role === 'admin' ? 'default' : 'secondary'}
                               className={cn(
                                 "text-xs",
-                                user.role === 'admin' ? 'bg-[#00ff00] text-black' : 'bg-gray-700 text-white'
+                                user.role === 'admin' ? 'bg-[#00FF88] text-black' : 'bg-gray-700 text-white'
                               )}
                             >
                               {user.role || 'student'}
@@ -770,7 +770,7 @@ export default function Activity() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="hover:bg-[#00ff00]/10 hover:text-[#00ff00] text-white"
+                                  className="hover:bg-[#00FF88]/10 hover:text-[#00FF88] text-white"
                                   onClick={() => handleViewUser(user)}
                                 >
                                   <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -799,10 +799,10 @@ export default function Activity() {
             {selectedUser && (
               <Tabs defaultValue="overview" className="mt-4">
                 <TabsList className="grid w-full grid-cols-4 bg-black border border-gray-800">
-                  <TabsTrigger value="overview" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
-                  <TabsTrigger value="achievements" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Достижения</TabsTrigger>
-                  <TabsTrigger value="diagnostics" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">Диагностика</TabsTrigger>
-                  <TabsTrigger value="ai-chats" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black text-white text-xs sm:text-sm">AI Чаты</TabsTrigger>
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Обзор</TabsTrigger>
+                  <TabsTrigger value="achievements" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Достижения</TabsTrigger>
+                  <TabsTrigger value="diagnostics" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">Диагностика</TabsTrigger>
+                  <TabsTrigger value="ai-chats" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black text-white text-xs sm:text-sm">AI Чаты</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4 mt-4">
@@ -854,7 +854,7 @@ export default function Activity() {
                   <div className="space-y-3">
                     {userAchievements.length > 0 ? (
                       userAchievements.map((achievement) => (
-                        <div key={achievement.id} className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-800 hover:border-[#00ff00]/30 transition-colors">
+                        <div key={achievement.id} className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-800 hover:border-[#00FF88]/30 transition-colors">
                           <Award className={cn(
                             "h-6 w-6 sm:h-8 sm:w-8",
                             achievement.completed ? "text-yellow-500" : "text-gray-600"
@@ -872,7 +872,7 @@ export default function Activity() {
                             variant={achievement.completed ? "default" : "secondary"}
                             className={cn(
                               "text-xs",
-                              achievement.completed ? "bg-[#00ff00] text-black" : "bg-gray-700 text-white"
+                              achievement.completed ? "bg-[#00FF88] text-black" : "bg-gray-700 text-white"
                             )}
                           >
                             {achievement.completed ? "✓ Получено" : "Не получено"}
@@ -907,7 +907,7 @@ export default function Activity() {
                             variant={userDiagnostics.flag_low_engagement ? "destructive" : "default"}
                             className={cn(
                               "mt-1 text-xs",
-                              userDiagnostics.flag_low_engagement ? "bg-red-600 text-white" : "bg-[#00ff00] text-black"
+                              userDiagnostics.flag_low_engagement ? "bg-red-600 text-white" : "bg-[#00FF88] text-black"
                             )}
                           >
                             {userDiagnostics.flag_low_engagement ? "Да" : "Нет"}
@@ -920,8 +920,8 @@ export default function Activity() {
                           <p className="text-xs sm:text-sm text-white">{userDiagnostics.stuck_lessons.join(', ')}</p>
                         </div>
                       )}
-                      <div className="p-3 sm:p-4 bg-[#00ff00]/10 rounded-lg border border-[#00ff00]/20">
-                        <h4 className="font-medium text-[#00ff00] mb-2 text-sm sm:text-base">Рекомендация AI:</h4>
+                      <div className="p-3 sm:p-4 bg-[#00FF88]/10 rounded-lg border border-[#00FF88]/20">
+                        <h4 className="font-medium text-[#00FF88] mb-2 text-sm sm:text-base">Рекомендация AI:</h4>
                         <p className="text-xs sm:text-sm text-white">{userDiagnostics.recommendation}</p>
                       </div>
                     </div>
@@ -960,7 +960,7 @@ export default function Activity() {
                     <TableHead className="font-semibold text-gray-400 text-xs sm:text-sm">Ученик</TableHead>
                     <TableHead className="text-right font-semibold text-gray-400 text-xs sm:text-sm">
                       <div className="flex items-center justify-end gap-1">
-                        <Zap className="h-3 w-3 text-[#00ff00]" />
+                        <Zap className="h-3 w-3 text-[#00FF88]" />
                         XP
                       </div>
                     </TableHead>
@@ -1022,7 +1022,7 @@ export default function Activity() {
                     return (
                       <TableRow 
                         key={student.id} 
-                        className="border-gray-800 hover:bg-[#00ff00]/5 transition-all duration-200 cursor-pointer group"
+                        className="border-gray-800 hover:bg-[#00FF88]/5 transition-all duration-200 cursor-pointer group"
                         onClick={() => handleViewUser(student)}
                       >
                         <TableCell className="font-medium">
@@ -1060,7 +1060,7 @@ export default function Activity() {
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="outline" className="bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30 text-xs">
+                          <Badge variant="outline" className="bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30 text-xs">
                             {modulesCompleted}
                           </Badge>
                         </TableCell>
@@ -1077,7 +1077,7 @@ export default function Activity() {
                               variant="outline"
                               className={cn(
                                 "text-xs",
-                                productivity >= 90 && "bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30",
+                                productivity >= 90 && "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30",
                                 productivity >= 80 && productivity < 90 && "bg-blue-500/10 text-blue-500 border-blue-500/30",
                                 productivity < 80 && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
                               )}
@@ -1097,7 +1097,7 @@ export default function Activity() {
                             variant="outline"
                             className={cn(
                               "text-xs",
-                              behavior === 'Отличное' && "bg-[#00ff00]/10 text-[#00ff00] border-[#00ff00]/30",
+                              behavior === 'Отличное' && "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30",
                               behavior === 'Хорошее' && "bg-blue-500/10 text-blue-500 border-blue-500/30",
                               behavior === 'Среднее' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
                             )}
@@ -1116,11 +1116,11 @@ export default function Activity() {
             </div>
 
             <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#00ff00]/5 rounded-lg border border-[#00ff00]/20">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#00FF88]/5 rounded-lg border border-[#00FF88]/20">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00]" />
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-[#00FF88]" />
                   <p className="text-xs sm:text-sm font-medium text-white">
-                    Средняя продуктивность топ-15: <span className="text-[#00ff00] font-bold">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.completion_rate || 0), 0) / topStudents.length).toFixed(0) : 0}%</span>
+                    Средняя продуктивность топ-15: <span className="text-[#00FF88] font-bold">{topStudents.length > 0 ? (topStudents.reduce((acc, s) => acc + (s.stats?.completion_rate || 0), 0) / topStudents.length).toFixed(0) : 0}%</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1131,10 +1131,10 @@ export default function Activity() {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 bg-[#00ff00]/10 rounded-lg border border-[#00ff00]/20 text-center">
-                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-[#00ff00] mx-auto mb-1" />
+                <div className="p-2 sm:p-3 bg-[#00FF88]/10 rounded-lg border border-[#00FF88]/20 text-center">
+                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-[#00FF88] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Всего уроков</p>
-                  <p className="text-base sm:text-lg font-bold text-[#00ff00]">{topStudents.reduce((acc, s) => acc + (s.stats?.lessons_completed || 0), 0)}</p>
+                  <p className="text-base sm:text-lg font-bold text-[#00FF88]">{topStudents.reduce((acc, s) => acc + (s.stats?.lessons_completed || 0), 0)}</p>
                 </div>
                 <div className="p-2 sm:p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 text-center">
                   <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mx-auto mb-1" />

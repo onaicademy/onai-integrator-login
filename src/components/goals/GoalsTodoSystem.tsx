@@ -79,8 +79,8 @@ function SortableTask({ task, isCompact, onDelete, onEditDate }: SortableTaskPro
 
   const statusConfig = {
     todo: { icon: Circle, color: 'text-gray-400', bg: 'bg-zinc-900/50', border: 'border-gray-600' },
-    in_progress: { icon: Clock, color: 'text-[#00ff00]', bg: 'bg-[#00ff00]/5', border: 'border-[#00ff00]/30' },
-    done: { icon: CheckCircle, color: 'text-[#00ff00]', bg: 'bg-[#00ff00]/10', border: 'border-[#00ff00]/50' },
+    in_progress: { icon: Clock, color: 'text-[#00FF88]', bg: 'bg-[#00FF88]/5', border: 'border-[#00FF88]/30' },
+    done: { icon: CheckCircle, color: 'text-[#00FF88]', bg: 'bg-[#00FF88]/10', border: 'border-[#00FF88]/50' },
   };
 
   const config = statusConfig[task.status];
@@ -96,8 +96,8 @@ function SortableTask({ task, isCompact, onDelete, onEditDate }: SortableTaskPro
       exit={{ opacity: 0, y: -20 }}
       className={`
         group p-3 rounded-lg border ${config.border} ${config.bg}
-        hover:border-[#00ff00]/40 transition-all duration-200
-        ${isDragging ? 'shadow-2xl shadow-[#00ff00]/30 z-50' : ''}
+        hover:border-[#00FF88]/40 transition-all duration-200
+        ${isDragging ? 'shadow-2xl shadow-[#00FF88]/30 z-50' : ''}
       `}
     >
       <div className="flex items-start gap-3">
@@ -129,7 +129,7 @@ function SortableTask({ task, isCompact, onDelete, onEditDate }: SortableTaskPro
                 type="date"
                 value={task.dueDate}
                 onChange={(e) => onEditDate(task.id, e.target.value)}
-                className="text-xs text-gray-400 bg-transparent border-none outline-none cursor-pointer hover:text-[#00ff00]"
+                className="text-xs text-gray-400 bg-transparent border-none outline-none cursor-pointer hover:text-[#00FF88]"
               />
             </div>
           )}
@@ -236,11 +236,11 @@ export function GoalsTodoSystem() {
   return (
     <>
       {/* 📋 КОМПАКТНЫЙ ВИД - Основная карточка */}
-      <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
+      <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center gap-2">
-              <Star className="w-6 h-6 text-[#00ff00]" />
+              <Star className="w-6 h-6 text-[#00FF88]" />
               Мои цели
               <span className="text-xs text-gray-500 font-normal ml-2">
                 ({tasks.filter(t => t.status !== 'done').length} активных)
@@ -250,7 +250,7 @@ export function GoalsTodoSystem() {
               size="sm"
               variant="ghost"
               onClick={() => setIsKanbanOpen(true)}
-              className="text-[#00ff00] hover:bg-[#00ff00]/10 flex items-center gap-1.5"
+              className="text-[#00FF88] hover:bg-[#00FF88]/10 flex items-center gap-1.5"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Канбан</span>
@@ -280,7 +280,7 @@ export function GoalsTodoSystem() {
 
               {tasks.length > 3 && (
                 <p className="text-xs text-gray-500 text-center py-2">
-                  +{tasks.length - 3} еще... <button onClick={() => setIsKanbanOpen(true)} className="text-[#00ff00] hover:underline">Открыть все</button>
+                  +{tasks.length - 3} еще... <button onClick={() => setIsKanbanOpen(true)} className="text-[#00FF88] hover:underline">Открыть все</button>
                 </p>
               )}
 
@@ -290,13 +290,13 @@ export function GoalsTodoSystem() {
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   placeholder="Добавить новую цель..."
-                  className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white text-sm"
+                  className="flex-1 bg-zinc-900/50 border-[#00FF88]/30 text-white text-sm"
                   onKeyPress={(e) => e.key === 'Enter' && addTask()}
                 />
                 <Button
                   size="icon"
                   onClick={addTask}
-                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black h-9 w-9"
+                  className="bg-[#00FF88] hover:bg-[#00cc88] text-black h-9 w-9"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
@@ -306,7 +306,7 @@ export function GoalsTodoSystem() {
             {/* Drag Overlay */}
             <DragOverlay>
               {activeTask ? (
-                <div className="p-3 rounded-lg border border-[#00ff00]/50 bg-zinc-900 shadow-2xl shadow-[#00ff00]/30">
+                <div className="p-3 rounded-lg border border-[#00FF88]/50 bg-zinc-900 shadow-2xl shadow-[#00FF88]/30">
                   <div className="flex items-center gap-3">
                     <GripVertical className="w-4 h-4 text-gray-500" />
                     <p className="text-white">{activeTask.title}</p>
@@ -320,10 +320,10 @@ export function GoalsTodoSystem() {
 
       {/* 🚀 ПОПАП КАНБАН - Полноэкранный на мобильных, модальный на десктопе */}
       <Dialog open={isKanbanOpen} onOpenChange={setIsKanbanOpen}>
-        <DialogContent className="max-w-7xl h-[90vh] bg-black border-[#00ff00]/30 text-white overflow-hidden p-0">
-          <DialogHeader className="px-6 py-4 border-b border-[#00ff00]/20">
+        <DialogContent className="max-w-7xl h-[90vh] bg-black border-[#00FF88]/30 text-white overflow-hidden p-0">
+          <DialogHeader className="px-6 py-4 border-b border-[#00FF88]/20">
             <DialogTitle className="text-white flex items-center gap-2 text-xl">
-              <Star className="w-6 h-6 text-[#00ff00]" />
+              <Star className="w-6 h-6 text-[#00FF88]" />
               Мои цели - Канбан доска
               <span className="text-sm text-gray-500 font-normal ml-2">
                 ({tasks.length} задач)
@@ -344,13 +344,13 @@ export function GoalsTodoSystem() {
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   placeholder="Добавить новую цель..."
-                  className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                  className="flex-1 bg-zinc-900/50 border-[#00FF88]/30 text-white"
                   onKeyPress={(e) => e.key === 'Enter' && addTask()}
                 />
                 <Button
                   size="icon"
                   onClick={addTask}
-                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
+                  className="bg-[#00FF88] hover:bg-[#00cc88] text-black"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
@@ -360,15 +360,15 @@ export function GoalsTodoSystem() {
               <div className="block lg:hidden">
                 <Tabs defaultValue="in_progress" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50">
-                    <TabsTrigger value="todo" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+                    <TabsTrigger value="todo" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                       <Circle className="w-3 h-3 mr-1.5" />
                       TODO ({tasksByStatus.todo.length})
                     </TabsTrigger>
-                    <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+                    <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                       <Clock className="w-3 h-3 mr-1.5" />
                       В работе ({tasksByStatus.in_progress.length})
                     </TabsTrigger>
-                    <TabsTrigger value="done" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+                    <TabsTrigger value="done" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                       <CheckCircle className="w-3 h-3 mr-1.5" />
                       Done ({tasksByStatus.done.length})
                     </TabsTrigger>
@@ -455,13 +455,13 @@ export function GoalsTodoSystem() {
 
                 {/* IN PROGRESS */}
                 <div className="space-y-2">
-                  <h3 className="text-sm font-semibold text-[#00ff00] flex items-center gap-2 sticky top-0 bg-black py-2">
+                  <h3 className="text-sm font-semibold text-[#00FF88] flex items-center gap-2 sticky top-0 bg-black py-2">
                     <Clock className="w-4 h-4" />
                     В работе ({tasksByStatus.in_progress.length})
                   </h3>
                   <div
                     id="in_progress"
-                    className="min-h-[400px] p-3 rounded-lg border border-dashed border-[#00ff00]/30 bg-[#00ff00]/5 space-y-2"
+                    className="min-h-[400px] p-3 rounded-lg border border-dashed border-[#00FF88]/30 bg-[#00FF88]/5 space-y-2"
                   >
                     <SortableContext items={tasksByStatus.in_progress.map(t => t.id)} strategy={verticalListSortingStrategy}>
                       {tasksByStatus.in_progress.map(task => (
@@ -479,13 +479,13 @@ export function GoalsTodoSystem() {
 
                 {/* DONE */}
                 <div className="space-y-2">
-                  <h3 className="text-sm font-semibold text-[#00ff00] flex items-center gap-2 sticky top-0 bg-black py-2">
+                  <h3 className="text-sm font-semibold text-[#00FF88] flex items-center gap-2 sticky top-0 bg-black py-2">
                     <CheckCircle className="w-4 h-4" />
                     Завершено ({tasksByStatus.done.length})
                   </h3>
                   <div
                     id="done"
-                    className="min-h-[400px] p-3 rounded-lg border border-dashed border-[#00ff00]/50 bg-[#00ff00]/10 space-y-2"
+                    className="min-h-[400px] p-3 rounded-lg border border-dashed border-[#00FF88]/50 bg-[#00FF88]/10 space-y-2"
                   >
                     <SortableContext items={tasksByStatus.done.map(t => t.id)} strategy={verticalListSortingStrategy}>
                       {tasksByStatus.done.map(task => (
@@ -505,7 +505,7 @@ export function GoalsTodoSystem() {
               {/* Drag Overlay */}
               <DragOverlay>
                 {activeTask ? (
-                  <div className="p-3 rounded-lg border border-[#00ff00]/50 bg-zinc-900 shadow-2xl shadow-[#00ff00]/30">
+                  <div className="p-3 rounded-lg border border-[#00FF88]/50 bg-zinc-900 shadow-2xl shadow-[#00FF88]/30">
                     <div className="flex items-center gap-3">
                       <GripVertical className="w-4 h-4 text-gray-500" />
                       <p className="text-white">{activeTask.title}</p>

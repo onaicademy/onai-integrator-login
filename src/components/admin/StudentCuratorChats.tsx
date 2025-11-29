@@ -123,7 +123,7 @@ export function StudentCuratorChats({ userId }: StudentCuratorChatsProps) {
       <Card className="md:col-span-1 bg-zinc-950 border-gray-800">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
-            <MessageSquare className="w-4 h-4 text-[#00ff00]" />
+            <MessageSquare className="w-4 h-4 text-[#00FF88]" />
             Чаты ({threads.length})
           </CardTitle>
           <CardDescription className="text-xs text-gray-500">
@@ -148,7 +148,7 @@ export function StudentCuratorChats({ userId }: StudentCuratorChatsProps) {
                       'w-full text-left p-3 rounded-lg transition-all hover:bg-zinc-900',
                       'border border-transparent',
                       selectedThread?.id === thread.id
-                        ? 'bg-zinc-900 border-[#00ff00]/30'
+                        ? 'bg-zinc-900 border-[#00FF88]/30'
                         : 'hover:border-gray-700'
                     )}
                   >
@@ -167,8 +167,8 @@ export function StudentCuratorChats({ userId }: StudentCuratorChatsProps) {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <div className="px-2 py-0.5 bg-[#00ff00]/10 rounded-full">
-                          <span className="text-xs font-medium text-[#00ff00]">
+                        <div className="px-2 py-0.5 bg-[#00FF88]/10 rounded-full">
+                          <span className="text-xs font-medium text-[#00FF88]">
                             {thread.message_count}
                           </span>
                         </div>
@@ -186,7 +186,7 @@ export function StudentCuratorChats({ userId }: StudentCuratorChatsProps) {
       <Card className="md:col-span-2 bg-zinc-950 border-gray-800">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
-            <MessageCircle className="w-4 h-4 text-[#00ff00]" />
+            <MessageCircle className="w-4 h-4 text-[#00FF88]" />
             {selectedThread ? selectedThread.title : 'Выберите чат'}
           </CardTitle>
           {selectedThread && (
@@ -219,12 +219,12 @@ export function StudentCuratorChats({ userId }: StudentCuratorChatsProps) {
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                         message.role === 'user' 
                           ? 'bg-blue-500/20' 
-                          : 'bg-[#00ff00]/20'
+                          : 'bg-[#00FF88]/20'
                       }`}>
                         {message.role === 'user' ? (
                           <User className="w-4 h-4 text-blue-400" />
                         ) : (
-                          <Bot className="w-4 h-4 text-[#00ff00]" />
+                          <Bot className="w-4 h-4 text-[#00FF88]" />
                         )}
                       </div>
                       
@@ -233,7 +233,7 @@ export function StudentCuratorChats({ userId }: StudentCuratorChatsProps) {
                         <div className={`rounded-lg p-3 ${
                           message.role === 'user'
                             ? 'bg-zinc-900 border border-gray-800'
-                            : 'bg-zinc-900 border border-[#00ff00]/20'
+                            : 'bg-zinc-900 border border-[#00FF88]/20'
                         }`}>
                           <p className={`text-sm whitespace-pre-wrap ${
                             message.role === 'user' ? 'text-white' : 'text-gray-200'

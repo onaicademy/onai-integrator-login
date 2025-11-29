@@ -102,7 +102,7 @@ function SortableTask({ task, isCompact, onDelete, onComplete, onMoveNext, onEdi
   const statusConfig = {
     todo: { icon: Circle, color: 'text-gray-400', bg: 'bg-zinc-900/70', border: 'border-gray-600', glow: '' },
     in_progress: { icon: Clock, color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/40', glow: 'shadow-[0_0_15px_rgba(249,115,22,0.15)]' },
-    done: { icon: CheckCircle, color: 'text-[#00ff00]', bg: 'bg-[#00ff00]/15', border: 'border-[#00ff00]/60', glow: 'shadow-[0_0_20px_rgba(0,255,0,0.2)]' },
+    done: { icon: CheckCircle, color: 'text-[#00FF88]', bg: 'bg-[#00FF88]/15', border: 'border-[#00FF88]/60', glow: 'shadow-[0_0_20px_rgba(0,255,136,0.2)]' },
   };
 
   // ✅ Защита от undefined: используем 'todo' как default
@@ -116,8 +116,8 @@ function SortableTask({ task, isCompact, onDelete, onComplete, onMoveNext, onEdi
       onClick={() => onEdit && onEdit(task)}
       className={`
         group p-3 rounded-lg border-2 ${config.border} ${config.bg} ${config.glow}
-        hover:border-[#00ff00]/60 transition-all duration-200 cursor-pointer
-        ${isDragging ? 'shadow-2xl shadow-[#00ff00]/40 z-50' : ''}
+        hover:border-[#00FF88]/60 transition-all duration-200 cursor-pointer
+        ${isDragging ? 'shadow-2xl shadow-[#00FF88]/40 z-50' : ''}
         ${isCompact ? 'flex items-center gap-3' : ''}
         backdrop-blur-sm
       `}
@@ -131,8 +131,8 @@ function SortableTask({ task, isCompact, onDelete, onComplete, onMoveNext, onEdi
           <GripVertical
             className={`w-5 h-5 transition-all duration-300 ${
               isDragging 
-                ? 'text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.8)] scale-110' 
-                : 'text-gray-400 group-hover:text-[#00ff00] group-hover:drop-shadow-[0_0_6px_rgba(0,255,0,0.5)]'
+                ? 'text-[#00FF88] drop-shadow-[0_0_8px_rgba(0,255,136,0.8)] scale-110' 
+                : 'text-gray-400 group-hover:text-[#00FF88] group-hover:drop-shadow-[0_0_6px_rgba(0,255,136,0.5)]'
             }`}
             strokeWidth={2.5}
           />
@@ -140,9 +140,9 @@ function SortableTask({ task, isCompact, onDelete, onComplete, onMoveNext, onEdi
           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-0.5 pointer-events-none ${
             isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
           }`}>
-            <div className="w-0.5 h-0.5 bg-[#00ff00] rounded-full shadow-[0_0_3px_rgba(0,255,0,0.8)]" />
-            <div className="w-0.5 h-0.5 bg-[#00ff00] rounded-full shadow-[0_0_3px_rgba(0,255,0,0.8)]" />
-            <div className="w-0.5 h-0.5 bg-[#00ff00] rounded-full shadow-[0_0_3px_rgba(0,255,0,0.8)]" />
+            <div className="w-0.5 h-0.5 bg-[#00FF88] rounded-full shadow-[0_0_3px_rgba(0,255,136,0.8)]" />
+            <div className="w-0.5 h-0.5 bg-[#00FF88] rounded-full shadow-[0_0_3px_rgba(0,255,136,0.8)]" />
+            <div className="w-0.5 h-0.5 bg-[#00FF88] rounded-full shadow-[0_0_3px_rgba(0,255,136,0.8)]" />
           </div>
         </div>
         <div className="flex-1 min-w-0">
@@ -180,7 +180,7 @@ function SortableTask({ task, isCompact, onDelete, onComplete, onMoveNext, onEdi
                 onMoveNext(task.id);
               }
             }}
-            className="h-7 w-7 p-0 text-[#00ff00] hover:bg-[#00ff00]/20 hover:scale-110 transition-all"
+            className="h-7 w-7 p-0 text-[#00FF88] hover:bg-[#00FF88]/20 hover:scale-110 transition-all"
             title={task.status === 'todo' ? 'Начать работу' : 'Завершить'}
           >
             <Check className="w-4 h-4" />
@@ -406,19 +406,19 @@ export function GoalsTodoSystemDB() {
 
   if (isLoading) {
     return (
-      <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md h-full flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#00ff00] animate-spin" />
+      <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md h-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#00FF88] animate-spin" />
       </Card>
     );
   }
 
   return (
     <>
-      <Card className="border-[#00ff00]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
+      <Card className="border-[#00FF88]/30 bg-black/50 backdrop-blur-md relative overflow-hidden h-full">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center gap-2">
-              <Star className="w-6 h-6 text-[#00ff00]" />
+              <Star className="w-6 h-6 text-[#00FF88]" />
               Мои цели
               <span className="text-xs text-gray-500 font-normal ml-2">
                 ({goals.filter(g => g.status !== 'done').length} активных)
@@ -428,7 +428,7 @@ export function GoalsTodoSystemDB() {
               size="sm"
               variant="ghost"
               onClick={() => setIsKanbanOpen(true)}
-              className="text-[#00ff00] hover:bg-[#00ff00]/10 flex items-center gap-1.5"
+              className="text-[#00FF88] hover:bg-[#00FF88]/10 flex items-center gap-1.5"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Канбан</span>
@@ -460,7 +460,7 @@ export function GoalsTodoSystemDB() {
 
               {goals.length > 3 && (
                 <p className="text-xs text-gray-500 text-center py-2">
-                  +{goals.length - 3} еще... <button onClick={() => setIsKanbanOpen(true)} className="text-[#00ff00] hover:underline">Открыть все</button>
+                  +{goals.length - 3} еще... <button onClick={() => setIsKanbanOpen(true)} className="text-[#00FF88] hover:underline">Открыть все</button>
                 </p>
               )}
 
@@ -469,13 +469,13 @@ export function GoalsTodoSystemDB() {
                   value={newGoalTitle}
                   onChange={(e) => setNewGoalTitle(e.target.value)}
                   placeholder="Добавить новую цель..."
-                  className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white text-sm"
+                  className="flex-1 bg-zinc-900/50 border-[#00FF88]/30 text-white text-sm"
                   onKeyPress={(e) => e.key === 'Enter' && addGoal()}
                 />
                 <Button
                   size="icon"
                   onClick={addGoal}
-                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black h-9 w-9"
+                  className="bg-[#00FF88] hover:bg-[#00cc88] text-black h-9 w-9"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
@@ -484,9 +484,9 @@ export function GoalsTodoSystemDB() {
 
             <DragOverlay>
               {activeTask ? (
-                <div className="p-3 rounded-lg border border-[#00ff00]/50 bg-zinc-900 shadow-2xl shadow-[#00ff00]/30">
+                <div className="p-3 rounded-lg border border-[#00FF88]/50 bg-zinc-900 shadow-2xl shadow-[#00FF88]/30">
                   <div className="flex items-center gap-3">
-                    <GripVertical className="w-5 h-5 text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.8)]" strokeWidth={2.5} />
+                    <GripVertical className="w-5 h-5 text-[#00FF88] drop-shadow-[0_0_8px_rgba(0,255,136,0.8)]" strokeWidth={2.5} />
                     <p className="text-white">{activeTask.title}</p>
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export function GoalsTodoSystemDB() {
         <motion.div
           initial={{ opacity: 1, y: 0, scale: 1 }}
           animate={{ opacity: 0, y: -100, scale: 1.5 }}
-          className="fixed z-[9999] pointer-events-none text-[#00ff00] font-bold text-3xl"
+          className="fixed z-[9999] pointer-events-none text-[#00FF88] font-bold text-3xl"
           style={{ left: xpAnimation.x, top: xpAnimation.y }}
         >
           +{xpAnimation.amount} XP
@@ -508,19 +508,19 @@ export function GoalsTodoSystemDB() {
       )}
 
       <Dialog open={isKanbanOpen} onOpenChange={setIsKanbanOpen}>
-        <DialogContent className="max-w-7xl h-[90vh] bg-gradient-to-br from-black via-zinc-950 to-black border-[#00ff00]/30 text-white overflow-hidden p-0">
-          <DialogHeader className="px-6 py-4 border-b border-[#00ff00]/20 bg-gradient-to-r from-[#00ff00]/5 to-transparent">
+        <DialogContent className="max-w-7xl h-[90vh] bg-gradient-to-br from-black via-zinc-950 to-black border-[#00FF88]/30 text-white overflow-hidden p-0">
+          <DialogHeader className="px-6 py-4 border-b border-[#00FF88]/20 bg-gradient-to-r from-[#00FF88]/5 to-transparent">
             <DialogTitle className="text-white flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <Star className="w-6 h-6 text-[#00ff00] animate-pulse" />
+                <Star className="w-6 h-6 text-[#00FF88] animate-pulse" />
                 <span className="text-xl font-bold">Мои цели - Канбан доска</span>
                 <span className="text-sm text-gray-500 font-normal">
                   ({goals.length} задач)
                 </span>
               </div>
-              <div className="text-sm text-gray-400 font-normal bg-zinc-900/50 p-3 rounded-lg border border-[#00ff00]/20">
+              <div className="text-sm text-gray-400 font-normal bg-zinc-900/50 p-3 rounded-lg border border-[#00FF88]/20">
                 <p className="mb-2">
-                  <span className="text-[#00ff00] font-semibold">📋 Что это?</span> Канбан - это твой личный планировщик задач!
+                  <span className="text-[#00FF88] font-semibold">📋 Что это?</span> Канбан - это твой личный планировщик задач!
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                   <div className="flex items-center gap-2">
@@ -528,16 +528,16 @@ export function GoalsTodoSystemDB() {
                     <span><b>Запланировано</b> - новые задачи</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-[#00ff00]" />
+                    <Clock className="w-3 h-3 text-[#00FF88]" />
                     <span><b>В работе</b> - делаешь сейчас</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 text-[#00ff00]" />
+                    <CheckCircle className="w-3 h-3 text-[#00FF88]" />
                     <span><b>Завершено</b> - готово! ✅</span>
                   </div>
                 </div>
                 <p className="mt-2 text-xs text-gray-500">
-                  💡 <b>Как пользоваться:</b> Перетаскивай задачи между колонками или нажми галочку для завершения. За первое использование Kanban получишь <span className="text-[#00ff00]">+20 XP</span>!
+                  💡 <b>Как пользоваться:</b> Перетаскивай задачи между колонками или нажми галочку для завершения. За первое использование Kanban получишь <span className="text-[#00FF88]">+20 XP</span>!
                 </p>
               </div>
             </DialogTitle>
@@ -550,19 +550,19 @@ export function GoalsTodoSystemDB() {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="mb-6 space-y-3 p-4 rounded-lg bg-zinc-900/30 border border-[#00ff00]/20">
+              <div className="mb-6 space-y-3 p-4 rounded-lg bg-zinc-900/30 border border-[#00FF88]/20">
                 <div className="flex gap-2">
                   <Input
                     value={newGoalTitle}
                     onChange={(e) => setNewGoalTitle(e.target.value)}
                     placeholder="Название цели..."
-                    className="flex-1 bg-zinc-900/50 border-[#00ff00]/30 text-white"
+                    className="flex-1 bg-zinc-900/50 border-[#00FF88]/30 text-white"
                     onKeyPress={(e) => e.key === 'Enter' && addGoal()}
                   />
                   <Button
                     size="icon"
                     onClick={addGoal}
-                    className="bg-[#00ff00] hover:bg-[#00cc00] text-black"
+                    className="bg-[#00FF88] hover:bg-[#00cc88] text-black"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -576,8 +576,8 @@ export function GoalsTodoSystemDB() {
                         variant="outline"
                         className={`text-sm h-9 ${
                           dueDate 
-                            ? 'text-white bg-zinc-900 border-[#00ff00]/50' 
-                            : 'text-gray-400 bg-zinc-900/50 border-zinc-800 hover:border-[#00ff00]/30'
+                            ? 'text-white bg-zinc-900 border-[#00FF88]/50' 
+                            : 'text-gray-400 bg-zinc-900/50 border-zinc-800 hover:border-[#00FF88]/30'
                         } transition-all`}
                       >
                         <CalendarIcon className="w-4 h-4 mr-2" />
@@ -585,7 +585,7 @@ export function GoalsTodoSystemDB() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-auto p-3 bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-2xl shadow-[#00ff00]/10 pointer-events-auto" 
+                      className="w-auto p-3 bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-zinc-800 shadow-2xl shadow-[#00FF88]/10 pointer-events-auto" 
                       style={{ zIndex: 150000, pointerEvents: 'auto' }}
                       sideOffset={8}
                       align="start"
@@ -605,7 +605,7 @@ export function GoalsTodoSystemDB() {
                         classNames={{
                           months: "space-y-4",
                           month: "space-y-4",
-                          caption: "flex justify-center pt-1 relative items-center text-[#00ff00]",
+                          caption: "flex justify-center pt-1 relative items-center text-[#00FF88]",
                           caption_label: "text-sm font-medium",
                           nav: "space-x-1 flex items-center",
                           nav_button: "h-7 w-7 bg-transparent hover:bg-zinc-800 rounded-md transition-colors",
@@ -616,8 +616,8 @@ export function GoalsTodoSystemDB() {
                           head_cell: "text-gray-500 rounded-md w-9 font-normal text-[0.8rem]",
                           row: "flex w-full mt-2",
                           cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                          day: "h-9 w-9 p-0 font-normal hover:bg-zinc-800 hover:text-[#00ff00] rounded-md transition-all",
-                          day_selected: "bg-[#00ff00] text-black hover:bg-[#00ff00] hover:text-black font-bold",
+                          day: "h-9 w-9 p-0 font-normal hover:bg-zinc-800 hover:text-[#00FF88] rounded-md transition-all",
+                          day_selected: "bg-[#00FF88] text-black hover:bg-[#00FF88] hover:text-black font-bold",
                           day_today: "bg-cyan-500 text-black font-bold",
                           day_outside: "text-gray-600 opacity-50",
                           day_disabled: "text-gray-700 opacity-30",
@@ -636,7 +636,7 @@ export function GoalsTodoSystemDB() {
                       toast.success(`🕐 Время: ${value}`, { duration: 1000 });
                     }}
                   >
-                    <SelectTrigger className="w-32 h-9 text-sm bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00ff00]/50 transition-all">
+                    <SelectTrigger className="w-32 h-9 text-sm bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 hover:border-[#00FF88]/50 transition-all">
                       <Clock className="w-4 h-4 mr-2" />
                       <SelectValue placeholder="12:00" />
                     </SelectTrigger>
@@ -648,7 +648,7 @@ export function GoalsTodoSystemDB() {
                         <SelectItem 
                           key={time} 
                           value={time} 
-                          className="text-white focus:bg-zinc-800 focus:text-[#00ff00] cursor-pointer hover:bg-zinc-800/50 transition-colors"
+                          className="text-white focus:bg-zinc-800 focus:text-[#00FF88] cursor-pointer hover:bg-zinc-800/50 transition-colors"
                         >
                           {time}
                         </SelectItem>
@@ -662,15 +662,15 @@ export function GoalsTodoSystemDB() {
               <div className="block lg:hidden">
                 <Tabs defaultValue="in_progress" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50">
-                    <TabsTrigger value="todo" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+                    <TabsTrigger value="todo" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                       <Circle className="w-3 h-3 mr-1.5" />
                       TODO ({tasksByStatus.todo.length})
                     </TabsTrigger>
-                    <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+                    <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                       <Clock className="w-3 h-3 mr-1.5" />
                       В работе ({tasksByStatus.in_progress.length})
                     </TabsTrigger>
-                    <TabsTrigger value="done" className="data-[state=active]:bg-[#00ff00] data-[state=active]:text-black">
+                    <TabsTrigger value="done" className="data-[state=active]:bg-[#00FF88] data-[state=active]:text-black">
                       <CheckCircle className="w-3 h-3 mr-1.5" />
                       Done ({tasksByStatus.done.length})
                     </TabsTrigger>
@@ -723,10 +723,10 @@ export function GoalsTodoSystemDB() {
                     done: { 
                       title: 'Завершено', 
                       icon: CheckCircle, 
-                      color: 'text-[#00ff00]', 
-                      border: 'border-[#00ff00]/50', 
-                      bg: 'bg-gradient-to-b from-[#00ff00]/15 to-[#00ff00]/10',
-                      headerBg: 'bg-gradient-to-r from-[#00ff00]/30 to-[#00ff00]/20',
+                      color: 'text-[#00FF88]', 
+                      border: 'border-[#00FF88]/50', 
+                      bg: 'bg-gradient-to-b from-[#00FF88]/15 to-[#00FF88]/10',
+                      headerBg: 'bg-gradient-to-r from-[#00FF88]/30 to-[#00FF88]/20',
                       emoji: '🎉'
                     },
                   };
@@ -754,7 +754,7 @@ export function GoalsTodoSystemDB() {
                       </div>
                       <DroppableColumn
                         id={status}
-                        className={`min-h-[450px] p-4 rounded-xl border-2 border-dashed ${config.border} ${config.bg} space-y-3 backdrop-blur-sm transition-all duration-300 hover:border-[#00ff00]/50`}
+                        className={`min-h-[450px] p-4 rounded-xl border-2 border-dashed ${config.border} ${config.bg} space-y-3 backdrop-blur-sm transition-all duration-300 hover:border-[#00FF88]/50`}
                       >
                         <SortableContext items={tasksByStatus[status].map(t => t.id)} strategy={verticalListSortingStrategy}>
                           <AnimatePresence>
@@ -796,9 +796,9 @@ export function GoalsTodoSystemDB() {
 
               <DragOverlay>
                 {activeTask ? (
-                  <div className="p-3 rounded-lg border border-[#00ff00]/50 bg-zinc-900 shadow-2xl shadow-[#00ff00]/30">
+                  <div className="p-3 rounded-lg border border-[#00FF88]/50 bg-zinc-900 shadow-2xl shadow-[#00FF88]/30">
                     <div className="flex items-center gap-3">
-                      <GripVertical className="w-5 h-5 text-[#00ff00] drop-shadow-[0_0_8px_rgba(0,255,0,0.8)]" strokeWidth={2.5} />
+                      <GripVertical className="w-5 h-5 text-[#00FF88] drop-shadow-[0_0_8px_rgba(0,255,136,0.8)]" strokeWidth={2.5} />
                       <p className="text-white">{activeTask.title}</p>
                     </div>
                   </div>

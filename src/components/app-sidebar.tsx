@@ -78,13 +78,13 @@ export function AppSidebar({ role }: AppSidebarProps) {
   return (
     <Sidebar 
       collapsible="offcanvas" 
-      className="border-r border-[#00FF00]/10"
+      className="border-r border-[#00FF88]/10"
       style={{
         background: 'rgb(10, 10, 10)',
       }}
     >
           
-      <SidebarHeader className="border-b border-[#00FF00]/10 px-4 sm:px-6 py-4 sm:py-6">
+      <SidebarHeader className="border-b border-[#00FF88]/10 px-4 sm:px-6 py-4 sm:py-6">
         <div className={cn(
           "flex items-center transition-all duration-300",
           isCollapsed ? "justify-center" : "justify-start gap-3"
@@ -92,7 +92,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
           {/* ЛОГОТИП */}
           <div className="relative">
             {isCollapsed ? (
-              <OnAILogo variant="icon" className="w-12 h-12 text-[#00FF00]" />
+              <OnAILogo variant="icon" className="w-12 h-12 text-[#00FF88]" />
             ) : (
               <OnAILogo variant="full" className="h-10 w-auto text-white" />
             )}
@@ -108,7 +108,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
               isCollapsed && "opacity-0"
             )}
           >
-            <Lightning size={18} weight="fill" className="text-[#00FF00]" />
+            <Lightning size={18} weight="fill" className="text-[#00FF88]" />
             <span>НАВИГАЦИЯ</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -135,8 +135,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
                             cn(
                               "group relative flex items-center gap-3 rounded-xl px-4 py-3.5 transition-all duration-300 overflow-hidden",
                               isActive 
-                                ? "text-[#00FF00] bg-black/50 border border-[#00FF00]/50 shadow-[0_0_12px_rgba(0,255,0,0.4)]"
-                                : "text-gray-400 hover:text-white hover:bg-[#00FF00]/5 hover:scale-[1.02] hover:shadow-[0_0_8px_rgba(0,255,0,0.15)] border border-transparent hover:border-[#00FF00]/20"
+                                ? "text-[#00FF88] bg-black/50 border border-[#00FF88]/50 shadow-[0_0_12px_rgba(0,255,136,0.4)]"
+                                : "text-gray-400 hover:text-white hover:bg-[#00FF88]/5 hover:scale-[1.02] hover:shadow-[0_0_8px_rgba(0,255,136,0.15)] border border-transparent hover:border-[#00FF88]/20"
                             )
                           }
                         >
@@ -152,8 +152,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                     className={cn(
                                       "flex-shrink-0 transition-all duration-300",
                                       isActive 
-                                        ? "drop-shadow-[0_0_8px_rgba(0,255,0,0.8)] scale-110" 
-                                        : "group-hover:scale-105 group-hover:drop-shadow-[0_0_4px_rgba(0,255,0,0.4)]"
+                                        ? "drop-shadow-[0_0_8px_rgba(0,255,136,0.8)] scale-110" 
+                                        : "group-hover:scale-105 group-hover:drop-shadow-[0_0_4px_rgba(0,255,136,0.4)]"
                                     )}
                                   />
                                 ) : (
@@ -163,8 +163,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                     className={cn(
                                       "flex-shrink-0 transition-all duration-300",
                                       isActive 
-                                        ? "drop-shadow-[0_0_8px_rgba(0,255,0,0.8)] scale-110" 
-                                        : "group-hover:scale-105 group-hover:drop-shadow-[0_0_4px_rgba(0,255,0,0.4)]"
+                                        ? "drop-shadow-[0_0_8px_rgba(0,255,136,0.8)] scale-110" 
+                                        : "group-hover:scale-105 group-hover:drop-shadow-[0_0_4px_rgba(0,255,136,0.4)]"
                                     )}
                                   />
                                 )}
@@ -173,7 +173,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                 {!isCollapsed && (
                                   <span className={cn(
                                     "text-sm font-semibold truncate transition-all duration-300",
-                                    isActive && "drop-shadow-[0_0_6px_rgba(0,255,0,0.5)]"
+                                    isActive && "drop-shadow-[0_0_6px_rgba(0,255,136,0.5)]"
                                   )}>
                                     {item.title}
                                   </span>
@@ -183,7 +183,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                 {isActive && (
                                   <>
                                     <motion.div
-                                      className="absolute inset-0 rounded-xl bg-[#00FF00]/5 pointer-events-none"
+                                      className="absolute inset-0 rounded-xl bg-[#00FF88]/5 pointer-events-none"
                                       animate={{
                                         opacity: [0.3, 0.5, 0.3],
                                       }}
@@ -197,14 +197,14 @@ export function AppSidebar({ role }: AppSidebarProps) {
                                     <Sparkle 
                                       size={14} 
                                       weight="fill"
-                                      className="absolute top-2 right-2 text-[#00FF00] animate-pulse"
+                                      className="absolute top-2 right-2 text-[#00FF88] animate-pulse"
                                     />
                                   </>
                                 )}
 
                                 {/* Hover tactile effect */}
                                 <motion.div
-                                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#00FF00]/0 via-[#00FF00]/10 to-[#00FF00]/0 pointer-events-none opacity-0 group-hover:opacity-100"
+                                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#00FF88]/0 via-[#00FF88]/10 to-[#00FF88]/0 pointer-events-none opacity-0 group-hover:opacity-100"
                                   transition={{ duration: 0.3 }}
                                 />
                               </>
@@ -220,7 +220,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-4 sm:px-6 py-4 border-t border-[#00FF00]/10">
+      <SidebarFooter className="px-4 sm:px-6 py-4 border-t border-[#00FF88]/10">
         <AnimatePresence>
           {!isCollapsed && (
             <motion.div
@@ -229,9 +229,9 @@ export function AppSidebar({ role }: AppSidebarProps) {
               exit={{ opacity: 0 }}
               className="space-y-3"
             >
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#00FF00]/5">
-                <div className="w-2 h-2 rounded-full bg-[#00FF00] animate-pulse" />
-                <span className="text-xs font-semibold text-[#00FF00]">СИСТЕМА АКТИВНА</span>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#00FF88]/5">
+                <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
+                <span className="text-xs font-semibold text-[#00FF88]">СИСТЕМА АКТИВНА</span>
               </div>
               
               <p className="text-[11px] text-gray-500 px-3">

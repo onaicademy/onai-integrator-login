@@ -20,13 +20,13 @@ function RotatingBrain() {
       {/* Main brain sphere with distortion effect */}
       <Sphere args={[1, 64, 64]}>
         <MeshDistortMaterial
-          color="#00ff00"
+          color="#00FF88"
           attach="material"
           distort={0.4} // Neural network-like distortion
           speed={2}
           roughness={0.3}
           metalness={0.8}
-          emissive="#00ff00"
+          emissive="#00FF88"
           emissiveIntensity={0.5}
         />
       </Sphere>
@@ -34,7 +34,7 @@ function RotatingBrain() {
       {/* Inner glow sphere */}
       <Sphere args={[0.7, 32, 32]}>
         <meshBasicMaterial
-          color="#00ff00"
+          color="#00FF88"
           transparent
           opacity={0.2}
         />
@@ -44,8 +44,8 @@ function RotatingBrain() {
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[1.3, 0.02, 16, 100]} />
         <meshStandardMaterial
-          color="#00ff00"
-          emissive="#00ff00"
+          color="#00FF88"
+          emissive="#00FF88"
           emissiveIntensity={0.8}
           metalness={1}
         />
@@ -97,6 +97,7 @@ export function NeuroBrainLogo({ size = 80, className = '' }: NeuroBrainLogoProp
     </div>
   );
 }
+
 
 
 

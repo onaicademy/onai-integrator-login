@@ -410,7 +410,7 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#00ff00] animate-spin mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 text-[#00FF88] animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Загрузка профиля...</p>
         </div>
       </div>
@@ -424,21 +424,21 @@ const Profile = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#050505] to-[#000000]"></div>
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            radial-gradient(circle at 30% 20%, rgba(0, 255, 0, 0.06) 0%, transparent 40%),
+            radial-gradient(circle at 30% 20%, rgba(0, 255, 136, 0.06) 0%, transparent 40%),
             radial-gradient(circle at 70% 80%, rgba(0, 200, 0, 0.04) 0%, transparent 50%),
             repeating-linear-gradient(
               0deg,
               transparent,
               transparent 3px,
-              rgba(0, 255, 0, 0.02) 3px,
-              rgba(0, 255, 0, 0.02) 6px
+              rgba(0, 255, 136, 0.02) 3px,
+              rgba(0, 255, 136, 0.02) 6px
             ),
             repeating-linear-gradient(
               90deg,
               transparent,
               transparent 3px,
-              rgba(0, 255, 0, 0.02) 3px,
-              rgba(0, 255, 0, 0.02) 6px
+              rgba(0, 255, 136, 0.02) 3px,
+              rgba(0, 255, 136, 0.02) 6px
             )
           `,
           backgroundSize: '100% 100%, 100% 100%, 60px 60px, 60px 60px'
@@ -446,7 +446,7 @@ const Profile = () => {
         {/* Animated scan line effect */}
         <div className="absolute inset-0 overflow-hidden">
           <div 
-            className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-[#00FF00]/30 to-transparent"
+            className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-[#00FF88]/30 to-transparent"
             style={{
               animation: 'scanLine 8s linear infinite'
             }}
@@ -459,7 +459,7 @@ const Profile = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="relative bg-gradient-to-b from-[#00ff00]/5 via-black/80 to-black/80 border-b border-[#00FF00]/20 backdrop-blur-sm"
+          className="relative bg-gradient-to-b from-[#00FF88]/5 via-black/80 to-black/80 border-b border-[#00FF88]/20 backdrop-blur-sm"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             {/* Profile Header */}
@@ -476,9 +476,9 @@ const Profile = () => {
                   <svg className="absolute -inset-2 w-[calc(100%+16px)] h-[calc(100%+16px)]" viewBox="0 0 200 200">
                     <defs>
                       <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#00ff00" />
-                        <stop offset="50%" stopColor="#00cc00" />
-                        <stop offset="100%" stopColor="#00ff00" />
+                        <stop offset="0%" stopColor="#00FF88" />
+                        <stop offset="50%" stopColor="#00cc88" />
+                        <stop offset="100%" stopColor="#00FF88" />
                       </linearGradient>
                     </defs>
                     <motion.circle
@@ -497,12 +497,12 @@ const Profile = () => {
                   </svg>
                   
                   {/* Avatar */}
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-black shadow-2xl shadow-[#00ff00]/20">
+                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-black shadow-2xl shadow-[#00FF88]/20">
                     {profileData?.profile?.avatar_url ? (
                       <img src={profileData.profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 flex items-center justify-center">
-                        <span className="text-5xl sm:text-6xl font-bold text-[#00ff00]">{avatarLetter}</span>
+                      <div className="w-full h-full bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 flex items-center justify-center">
+                        <span className="text-5xl sm:text-6xl font-bold text-[#00FF88]">{avatarLetter}</span>
                       </div>
                     )}
                   </div>
@@ -512,7 +512,7 @@ const Profile = () => {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.5, type: "spring" }}
-                    className="absolute -bottom-2 -right-2 bg-gradient-to-br from-[#00ff00] to-[#00cc00] text-black font-bold rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center border-4 border-black shadow-lg"
+                    className="absolute -bottom-2 -right-2 bg-gradient-to-br from-[#00FF88] to-[#00cc88] text-black font-bold rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center border-4 border-black shadow-lg"
                   >
                     <span className="text-lg sm:text-xl">{profileData?.profile?.level || 1}</span>
                   </motion.div>
@@ -532,13 +532,13 @@ const Profile = () => {
                       {profileData?.profile?.full_name || 'Студент'}
                     </h1>
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                      <span className="px-3 py-1 bg-[#00ff00]/20 border border-[#00ff00]/30 rounded-full text-sm font-medium text-[#00ff00]">
+                      <span className="px-3 py-1 bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-full text-sm font-medium text-[#00FF88]">
                         Интегратор {['I', 'II', 'III', 'IV', 'V'][(profileData?.profile?.level || 1) - 1] || 'I'}
                       </span>
                       <span className="text-gray-400 text-sm">•</span>
                       <span className="text-gray-400 text-sm">Уровень {profileData?.profile?.level || 1}</span>
                       <span className="text-gray-400 text-sm">•</span>
-                      <span className="text-[#00ff00] text-sm font-medium">
+                      <span className="text-[#00FF88] text-sm font-medium">
                         {(profileData?.profile?.xp || 0).toLocaleString()} XP
                       </span>
                     </div>
@@ -555,8 +555,8 @@ const Profile = () => {
                         initial={{ width: 0 }}
                         animate={{ width: `${xpProgress}%` }}
                         transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-                        className="h-full bg-gradient-to-r from-[#00ff00] to-[#00cc00] rounded-full relative"
-                        style={{ boxShadow: "0 0 10px rgba(0, 255, 0, 0.5)" }}
+                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88] rounded-full relative"
+                        style={{ boxShadow: "0 0 10px rgba(0, 255, 136, 0.5)" }}
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
                       </motion.div>
@@ -580,7 +580,7 @@ const Profile = () => {
                 </div>
                 <div className="w-px bg-gray-800" />
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-[#00ff00] mb-1">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#00FF88] mb-1">
                     {profileData?.stats?.avg_video_progress || 0}%
                   </div>
                   <div className="text-xs text-gray-400">Прогресс</div>
@@ -638,11 +638,11 @@ const Profile = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -5 }}
-                className="bg-[#1a1a24] border border-gray-800 rounded-xl p-4 hover:border-[#00ff00]/50 transition-all duration-300 cursor-pointer group"
+                className="bg-[#1a1a24] border border-gray-800 rounded-xl p-4 hover:border-[#00FF88]/50 transition-all duration-300 cursor-pointer group"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-2xl">{stat.icon}</span>
-                  <div className="w-2 h-2 rounded-full bg-[#00ff00] animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
                 </div>
                 <div className="text-xl sm:text-2xl font-bold text-white mb-1">{stat.value}</div>
                 <div className="text-xs text-gray-400">{stat.label}</div>
@@ -671,19 +671,19 @@ const Profile = () => {
             
             <div className="space-y-6">
               {/* Аватар */}
-              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Camera className="w-5 h-5 text-[#00ff00]" />
+                    <Camera className="w-5 h-5 text-[#00FF88]" />
                     Аватар
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-6">
                     <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-                      <Avatar className="w-24 h-24 border-4 border-[#00ff00]/30">
+                      <Avatar className="w-24 h-24 border-4 border-[#00FF88]/30">
                         {avatarUrl ? <AvatarImage src={avatarUrl} alt="Avatar" /> : null}
-                        <AvatarFallback className="bg-gradient-to-br from-[#00ff00]/20 to-[#00cc00]/10 text-2xl font-bold text-white">
+                        <AvatarFallback className="bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 text-2xl font-bold text-white">
                           {fullName ? getInitials(fullName) : avatarLetter}
                         </AvatarFallback>
                       </Avatar>
@@ -703,7 +703,7 @@ const Profile = () => {
                           variant="outline"
                           onClick={() => document.getElementById("avatar-upload")?.click()}
                           disabled={profileLoading}
-                          className="bg-transparent border-[#00ff00] text-[#00ff00] hover:bg-[#00ff00]/10"
+                          className="bg-transparent border-[#00FF88] text-[#00FF88] hover:bg-[#00FF88]/10"
                         >
                           <Camera className="w-4 h-4 mr-2" />
                           {profileLoading ? "Загрузка..." : "Загрузить фото"}
@@ -715,10 +715,10 @@ const Profile = () => {
               </Card>
 
               {/* Основная информация */}
-              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <User className="w-5 h-5 text-[#00ff00]" />
+                    <User className="w-5 h-5 text-[#00FF88]" />
                     Основная информация
                   </CardTitle>
                 </CardHeader>
@@ -731,7 +731,7 @@ const Profile = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Иван Иванов"
                       disabled={isLoading}
-                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                     />
                   </div>
                   <div>
@@ -743,13 +743,13 @@ const Profile = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="email@example.com"
                       disabled={isLoading}
-                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                     />
                   </div>
                   <Button 
                     onClick={handleUpdateProfile} 
                     disabled={profileLoading || isLoading || !hasProfileChanges}
-                    className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     {profileLoading ? (
                       <>
@@ -764,7 +764,7 @@ const Profile = () => {
                     )}
                   </Button>
                   {hasProfileChanges && !profileLoading && (
-                    <p className="text-xs text-[#00ff00] mt-2">
+                    <p className="text-xs text-[#00FF88] mt-2">
                       ✓ Обнаружены изменения - нажмите для сохранения
                     </p>
                   )}
@@ -772,10 +772,10 @@ const Profile = () => {
               </Card>
 
               {/* Смена пароля */}
-              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Key className="w-5 h-5 text-[#00ff00]" />
+                    <Key className="w-5 h-5 text-[#00FF88]" />
                     Смена пароля
                   </CardTitle>
                 </CardHeader>
@@ -788,7 +788,7 @@ const Profile = () => {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Минимум 6 символов"
-                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                     />
                   </div>
                   <div>
@@ -799,13 +799,13 @@ const Profile = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Повторите пароль"
-                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00ff00]"
+                      className="bg-black/40 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#00FF88]"
                     />
                   </div>
                   <Button 
                     onClick={handleChangePassword} 
                     disabled={passwordLoading || !canChangePassword}
-                    className="bg-[#00ff00] text-black hover:bg-[#00cc00] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     {passwordLoading ? (
                       <>
@@ -823,7 +823,7 @@ const Profile = () => {
                   {newPassword && confirmPassword && (
                     <div className="mt-2">
                       {passwordsMatch ? (
-                        <p className="text-xs text-[#00ff00]">✓ Пароли совпадают</p>
+                        <p className="text-xs text-[#00FF88]">✓ Пароли совпадают</p>
                       ) : (
                         <p className="text-xs text-red-500">✗ Пароли не совпадают</p>
                       )}
@@ -869,10 +869,10 @@ const Profile = () => {
               </Card>
 
               {/* Уведомления */}
-              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00ff00]/30 transition-all">
+              <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Mail className="w-5 h-5 text-[#00ff00]" />
+                    <Mail className="w-5 h-5 text-[#00FF88]" />
                     Уведомления
                   </CardTitle>
                 </CardHeader>
@@ -895,7 +895,7 @@ const Profile = () => {
         >
           <div className="max-w-7xl mx-auto px-4">
             <h3 className="text-lg font-bold mb-2">
-              <span className="text-[#00ff00]">onAI</span>
+              <span className="text-[#00FF88]">onAI</span>
               <span className="text-white"> Academy</span>
             </h3>
             <p className="text-xs text-gray-400">

@@ -38,7 +38,7 @@ function NeuralSphere() {
       {/* 1. WIREFRAME SPHERE (Outer shell) */}
       <Sphere args={[1, 32, 32]}>
         <meshBasicMaterial
-          color="#00FF00"
+          color="#00FF88"
           wireframe
           transparent
           opacity={0.4}
@@ -49,7 +49,7 @@ function NeuralSphere() {
       <lineSegments ref={wireframeRef}>
         <edgesGeometry args={[new THREE.SphereGeometry(1, 32, 32)]} />
         <lineBasicMaterial
-          color="#00FF00"
+          color="#00FF88"
           transparent
           opacity={0.6}
           linewidth={2}
@@ -60,10 +60,10 @@ function NeuralSphere() {
       <mesh ref={pulsingCoreRef}>
         <sphereGeometry args={[0.7, 32, 32]} />
         <meshStandardMaterial
-          color="#00FF00"
+          color="#00FF88"
           transparent
           opacity={0.3}
-          emissive="#00FF00"
+          emissive="#00FF88"
           emissiveIntensity={0.8}
           roughness={0.3}
           metalness={0.5}
@@ -74,7 +74,7 @@ function NeuralSphere() {
       <mesh>
         <sphereGeometry args={[0.4, 16, 16]} />
         <meshBasicMaterial
-          color="#00FF00"
+          color="#00FF88"
           transparent
           opacity={0.6}
         />
@@ -94,7 +94,7 @@ function NeuralSphere() {
             ]}
           >
             <sphereGeometry args={[0.03, 8, 8]} />
-            <meshBasicMaterial color="#00FF00" />
+            <meshBasicMaterial color="#00FF88" />
           </mesh>
         );
       })}
@@ -128,16 +128,16 @@ export function LivingNeuralNetwork({ size = 80, className = '' }: LivingNeuralN
         }}
       >
         {/* LIGHTING SETUP - Neon Green Glow */}
-        <ambientLight intensity={0.3} color="#00FF00" />
+        <ambientLight intensity={0.3} color="#00FF88" />
         
         {/* Main light from top */}
-        <pointLight position={[3, 3, 3]} intensity={1.5} color="#00FF00" />
+        <pointLight position={[3, 3, 3]} intensity={1.5} color="#00FF88" />
         
         {/* Fill light from bottom for depth */}
-        <pointLight position={[-3, -3, -3]} intensity={0.8} color="#00FF00" />
+        <pointLight position={[-3, -3, -3]} intensity={0.8} color="#00FF88" />
         
         {/* Rim light for edge glow */}
-        <pointLight position={[0, 0, -5]} intensity={1} color="#00FF00" />
+        <pointLight position={[0, 0, -5]} intensity={1} color="#00FF88" />
         
         {/* The Living Neural Network */}
         <NeuralSphere />
