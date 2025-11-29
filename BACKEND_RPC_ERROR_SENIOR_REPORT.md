@@ -436,3 +436,4 @@ Backend: Express + ts-node
 
 Спасибо за помощь! 🙏 Это hardcore проблема которая требует deep knowledge Supabase RPC механизма.
 
+

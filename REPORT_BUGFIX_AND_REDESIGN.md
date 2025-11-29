@@ -211,3 +211,4 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
 **Статус:** ✅ PRODUCTION READY
 
 
+

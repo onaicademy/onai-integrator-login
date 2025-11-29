@@ -52,3 +52,4 @@
 User will click the upload area. If file dialog opens → **SUCCESS**! If not → deeper debugging required (z-index, overlay, browser security).
 
 
+

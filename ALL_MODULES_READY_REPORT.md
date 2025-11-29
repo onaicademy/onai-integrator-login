@@ -95,3 +95,4 @@ const videoInputRef = useRef<HTMLInputElement>(null);
 4. Настроить CDN для быстрой доставки контента
 
 
+
