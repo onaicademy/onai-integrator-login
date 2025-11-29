@@ -8,8 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { tripwireLoginSchema, type TripwireLoginFormData } from '@/lib/validation';
 import { useTripwireAuth } from '@/hooks/useTripwireAuth';
-import { getRememberedEmail } from '@/lib/tripwire-api';
 import type { ButtonState } from '@/types/tripwire';
+
+// Helper function to get remembered email from localStorage
+const getRememberedEmail = (): string | null => {
+  return localStorage.getItem('tripwire_remembered_email');
+};
 
 interface TripwireLoginFormProps {
   onForgotPassword: () => void;

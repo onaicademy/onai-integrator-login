@@ -85,6 +85,30 @@ export async function apiRequest<T = any>(
       const errorMessage = errorData.error || errorData.message || `HTTP Error ${response.status}`;
       
       console.error(`❌ API Error: ${errorMessage}`, errorData);
+      
+      // 🚨 CRITICAL SECURITY: Force logout on 401 Unauthorized
+      if (response.status === 401) {
+        console.error('🚨 401 UNAUTHORIZED: Принудительный выход из системы');
+        
+        // Clear all auth data
+        localStorage.removeItem('supabase_token');
+        localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token');
+        sessionStorage.clear();
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          const currentPath = window.location.pathname;
+          const returnUrl = encodeURIComponent(currentPath);
+          
+          // Check if it's a Tripwire route
+          if (currentPath.startsWith('/tripwire')) {
+            window.location.href = `/tripwire/login?returnUrl=${returnUrl}`;
+          } else {
+            window.location.href = '/login';
+          }
+        }, 500);
+      }
+      
       throw new Error(errorMessage);
     }
     

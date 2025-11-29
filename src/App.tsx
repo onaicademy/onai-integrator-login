@@ -35,6 +35,7 @@ import TripwireProductPage from "./pages/tripwire/TripwireProductPage";
 import TripwireLogin from "./pages/tripwire/TripwireLogin";
 import TripwireLesson from "./pages/tripwire/TripwireLesson";
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
+import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 
 const queryClient = new QueryClient();
 
@@ -132,22 +133,31 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Tripwire (Trial Version - Public Access) */}
+      {/* Tripwire (Trial Version - Now Requires Real Authentication) */}
+      {/* Public: Login page */}
       <Route path="/tripwire/login" element={<TripwireLogin />} />
+      
+      {/* Protected: All other Tripwire routes require authentication */}
       <Route path="/tripwire" element={
-        <TripwireLayout>
-          <TripwireProductPage />
-        </TripwireLayout>
+        <TripwireGuard>
+          <TripwireLayout>
+            <TripwireProductPage />
+          </TripwireLayout>
+        </TripwireGuard>
       } />
       <Route path="/tripwire/module/:moduleId/lesson/:lessonId" element={
-        <TripwireLayout>
-          <TripwireLesson />
-        </TripwireLayout>
+        <TripwireGuard>
+          <TripwireLayout>
+            <TripwireLesson />
+          </TripwireLayout>
+        </TripwireGuard>
       } />
       <Route path="/tripwire/profile" element={
-        <TripwireLayout>
-          <div className="text-white">Profile Page (Coming Soon)</div>
-        </TripwireLayout>
+        <TripwireGuard>
+          <TripwireLayout>
+            <div className="text-white">Profile Page (Coming Soon)</div>
+          </TripwireLayout>
+        </TripwireGuard>
       } />
       
       {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}

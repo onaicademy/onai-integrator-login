@@ -333,13 +333,21 @@ router.get('/video/:videoId/status', async (req: Request, res: Response) => {
     
     // Bunny Stream status codes:
     // 0 = queued, 1 = processing, 2 = encoding, 3 = finished, 4 = error
+    // BUT: Sometimes status 4 appears even when video is fully encoded (Bunny bug)
+    // So we check encodeProgress as the source of truth
     const bunnyStatus = videoData.status;
     const encodeProgress = videoData.encodeProgress || 0;
+    const hasResolutions = videoData.availableResolutions && videoData.availableResolutions.length > 0;
 
     let status: 'checking' | 'processing' | 'finished' | 'error';
     let progress = 0;
 
-    if (bunnyStatus === 0 || bunnyStatus === 1 || bunnyStatus === 2) {
+    // ✅ If encodeProgress is 100% and resolutions exist, video is ready (regardless of status)
+    if (encodeProgress === 100 && hasResolutions) {
+      status = 'finished';
+      progress = 100;
+      console.log(`✅ [POLLING] Video ${videoId} is finished! (encodeProgress: 100%, resolutions: ${videoData.availableResolutions})`);
+    } else if (bunnyStatus === 0 || bunnyStatus === 1 || bunnyStatus === 2) {
       // Queued, Processing, or Encoding
       status = 'processing';
       progress = encodeProgress;
@@ -350,10 +358,10 @@ router.get('/video/:videoId/status', async (req: Request, res: Response) => {
       progress = 100;
       console.log(`✅ [POLLING] Video ${videoId} is finished!`);
     } else {
-      // Error (status 4 or unknown)
+      // Error (status 4 with no progress)
       status = 'error';
       progress = 0;
-      console.log(`❌ [POLLING] Video ${videoId} has error status: ${bunnyStatus}`);
+      console.log(`❌ [POLLING] Video ${videoId} has error status: ${bunnyStatus}, progress: ${encodeProgress}%`);
     }
 
     return res.json({

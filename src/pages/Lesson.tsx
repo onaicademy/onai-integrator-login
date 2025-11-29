@@ -23,7 +23,9 @@ import {
 } from "lucide-react";
 import { LessonEditDialog } from "@/components/admin/LessonEditDialog";
 import { MaterialPreviewDialog } from "@/components/MaterialPreviewDialog";
-import { VideoPlayer } from "@/components/VideoPlayer";
+import { SmartVideoPlayer } from "@/components/SmartVideoPlayer";
+import { VideoTelemetry } from "@/components/VideoPlayer/BunnyPlayer";
+import { useProgressUpdate } from "@/hooks/useProgressUpdate";
 
 const Lesson = () => {
   const { id, moduleId, lessonId } = useParams();
@@ -71,6 +73,16 @@ const Lesson = () => {
   const [seeksCount, setSeeksCount] = useState(0);  // ✅ Счетчик перемоток
   const [pausesCount, setPausesCount] = useState(0); // ✅ Счетчик пауз
   const [maxSecondReached, setMaxSecondReached] = useState(0); // ✅ Максимальная секунда просмотра
+
+  // 📊 SECURE Progress Update Hook (saves to backend for AI Mentor)
+  // 🔒 userId берётся из JWT на backend, НЕ отправляется отсюда!
+  const { sendProgressUpdate } = useProgressUpdate({
+    lessonId: Number(lessonId),
+    videoId: video?.bunny_video_id,
+    onProgressChange: (percentage, qualifiedForCompletion) => {
+      console.log('📊 [Lesson] Advanced telemetry saved:', { percentage, qualifiedForCompletion });
+    }
+  });
 
   useEffect(() => {
     if (moduleId) {
@@ -930,15 +942,40 @@ const Lesson = () => {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2 space-y-6"
           >
-            {/* 🎥 BunnyCDN Video Player */}
+            {/* 🎥 SMART VIDEO PLAYER - DIRECT HLS STREAMING (Plyr + HLS.js) */}
             {video?.bunny_video_id ? (
-              <VideoPlayer 
-                videoId={video.bunny_video_id}
-                title={lesson?.title || 'Lesson Video'}
-                onTimeUpdate={handleTimeUpdate}
-                onEnded={handleEnded}
-                autoPlay={false}
-              />
+              <div className="space-y-3">
+                <SmartVideoPlayer 
+                  videoId={video.bunny_video_id}
+                  lessonId={Number(lessonId)}
+                  hlsUrl={`https://video.onai.academy/${video.bunny_video_id}/playlist.m3u8`}
+                  captions={[]}
+                  onTimeUpdate={(data) => {
+                    // Convert to VideoTelemetry format for compatibility
+                    const telemetry: VideoTelemetry = {
+                      currentTime: data.currentTime,
+                      duration: data.duration,
+                      percentage: data.percentage,
+                      watchedSegments: [[0, data.currentTime]],
+                      totalPlayTime: data.currentTime,
+                      seekForwardCount: 0,
+                      seekBackwardCount: 0,
+                      playbackSpeedAvg: 1.0,
+                      maxPositionReached: data.currentTime,
+                    };
+                    
+                    // Update local UI state
+                    setCurrentTime(telemetry.currentTime);
+                    setDuration(telemetry.duration);
+                    setMaxSecondReached(Math.max(maxSecondReached, telemetry.currentTime));
+                    
+                    // 🔥 Send telemetry to backend
+                    sendProgressUpdate(telemetry);
+                  }}
+                  onEnded={handleEnded}
+                  autoPlay={false}
+                />
+              </div>
             ) : (
               <div className="relative rounded-2xl overflow-hidden border border-[#00FF88]/20 shadow-lg shadow-[#00FF88]/10">
                 <div className="aspect-video bg-[#0a0a0f] flex items-center justify-center">

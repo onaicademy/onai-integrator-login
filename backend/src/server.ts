@@ -73,6 +73,7 @@ import tripwireRouter from './routes/tripwire';
 import tripwireLessonsRouter from './routes/tripwire-lessons';
 import videoUploadRouter from './routes/videoUpload';
 import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW)
+import progressRouter from './routes/progress'; // ✅ Video Progress Tracking for AI Mentor
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 
@@ -197,6 +198,7 @@ app.use('/api/courses', coursesRouter);
 app.use('/api/modules', modulesRouter);
 app.use('/api/lessons', lessonsRouter);
 app.use('/api', videoUploadRouter); // 🐰 BunnyCDN Video Upload
+app.use('/api/progress', progressRouter); // 📊 Video Progress Tracking
 
 // 404 обработка
 app.use((req, res) => {

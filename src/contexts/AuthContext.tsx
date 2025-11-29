@@ -112,6 +112,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 🔄 Обновить состояние из сессии
   const updateAuthState = async (session: Session | null) => {
     if (session) {
+      // Validate token expiration
+      if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+        console.error('🚨 AuthContext: Токен истек, очищаем сессию');
+        localStorage.removeItem('supabase_token');
+        localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token');
+        setSession(null);
+        setUser(null);
+        setUserRole(null);
+        setIsInitialized(true);
+        setIsLoading(false);
+        return;
+      }
+      
       console.log('✅ Сессия активна:', session.user.email);
       
       setSession(session);
@@ -136,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('🔑 JWT токен сохранён для API запросов');
       }
     } else {
-      console.log('❌ Сессия отсутствует');
+      console.log('❌ Сессия отсутствует - очищаем состояние');
       setSession(null);
       setUser(null);
       setUserRole(null);
@@ -149,6 +162,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Т.к. эта функция вызывается и из initializeAuth и из onAuthStateChange
     setIsInitialized(true);
     setIsLoading(false);
+    
+    console.log('📊 AuthContext: updateAuthState завершён', {
+      hasSession: !!session,
+      hasUser: session ? true : false,
+      isInitialized: true,
+      isLoading: false,
+    });
   };
 
   useEffect(() => {

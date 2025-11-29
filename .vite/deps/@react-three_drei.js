@@ -89923,7 +89923,7 @@ var IS_BROWSER = ((_window$document2, _window$navigator2) => typeof window !== "
 var _HLSModule = null;
 async function getHls(...args) {
   var _HLSModule2;
-  (_HLSModule2 = _HLSModule) !== null && _HLSModule2 !== void 0 ? _HLSModule2 : _HLSModule = await import("./hls-S22UZVHB.js");
+  (_HLSModule2 = _HLSModule) !== null && _HLSModule2 !== void 0 ? _HLSModule2 : _HLSModule = await import("./hls__js.js");
   const Ctor = _HLSModule.default;
   if (Ctor.isSupported()) {
     return new Ctor(...args);

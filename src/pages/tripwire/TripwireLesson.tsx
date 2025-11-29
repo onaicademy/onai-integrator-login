@@ -24,9 +24,11 @@ import {
 } from "lucide-react";
 import { TripwireLessonEditDialog } from "@/components/tripwire/TripwireLessonEditDialog";
 import { MaterialPreviewDialog } from "@/components/MaterialPreviewDialog";
-import { VideoPlayer } from "@/components/VideoPlayer";
+import { SmartVideoPlayer } from "@/components/SmartVideoPlayer";
 import { useVideoTracking } from "@/hooks/useVideoTracking";
+import { useProgressUpdate } from "@/hooks/useProgressUpdate";
 import { useAuth } from "@/contexts/AuthContext";
+import { VideoTelemetry } from "@/components/VideoPlayer/BunnyPlayer";
 import confetti from "canvas-confetti";
 
 const TripwireLesson = () => {
@@ -44,18 +46,33 @@ const TripwireLesson = () => {
     return userId;
   });
   
-  // 🎥 Video Tracking Hook
-  const { progress: videoProgress, isCompleted: isVideoCompleted, handleTimeUpdate: trackVideoTime } = useVideoTracking(
-    Number(lessonId), 
-    user?.id
-  );
-  
   // 🔧 Admin check for debug panel
   const [isAdmin, setIsAdmin] = useState(false);
   
   // Lesson data
   const [lesson, setLesson] = useState<any>(null);
   const [video, setVideo] = useState<any>(null);
+  
+  // 🎥 Video Tracking Hook (local state for UI)
+  const { progress: videoProgress, isCompleted: isVideoCompleted, handleTimeUpdate: trackVideoTime } = useVideoTracking(
+    Number(lessonId), 
+    user?.id
+  );
+  
+  // 📊 Progress Update Hook (saves to backend for AI Mentor)
+  // 🔒 SECURE: userId берётся из JWT на backend, НЕ отправляется отсюда!
+  const { sendProgressUpdate } = useProgressUpdate({
+    lessonId: Number(lessonId),
+    videoId: video?.bunny_video_id, // Bunny video GUID (will be null initially)
+    onProgressChange: (percentage, qualifiedForCompletion) => {
+      console.log('📊 [TripwireLesson] Progress updated:', { percentage, qualifiedForCompletion });
+      
+      // Auto-enable "Complete Lesson" button when 80% reached
+      if (qualifiedForCompletion && !isCompleted) {
+        console.log('✅ [TripwireLesson] Video 80% complete - ready to finish lesson!');
+      }
+    }
+  });
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -510,14 +527,36 @@ const TripwireLesson = () => {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2 space-y-6"
           >
-            {/* 🎥 ЗАЩИЩЁННЫЙ ВИДЕО-ПЛЕЕР С ТРЕКИНГОМ (BunnyCDN Iframe) */}
+            {/* 🎥 SMART VIDEO PLAYER - DIRECT HLS STREAMING (Plyr + HLS.js) */}
             {video?.bunny_video_id ? (
               <div className="space-y-3">
-                <VideoPlayer 
+                <SmartVideoPlayer 
                   videoId={video.bunny_video_id}
-                  title={lesson?.title || 'Lesson Video'}
-                  onTimeUpdate={trackVideoTime}
-                  autoPlay={false}
+                  hlsUrl={`https://video.onai.academy/${video.bunny_video_id}/playlist.m3u8`}
+                  captions={[]}
+                  onTimeUpdate={(data) => {
+                    // Convert to VideoTelemetry format for compatibility
+                    const telemetry: VideoTelemetry = {
+                      currentTime: data.currentTime,
+                      duration: data.duration,
+                      percentage: data.percentage,
+                      watchedSegments: [[0, data.currentTime]],
+                      totalPlayTime: data.currentTime,
+                      seekForwardCount: 0,
+                      seekBackwardCount: 0,
+                      playbackSpeedAvg: 1.0,
+                      maxPositionReached: data.currentTime,
+                    };
+                    
+                    // Update local UI state (for immediate visual feedback)
+                    trackVideoTime(telemetry.currentTime, telemetry.duration);
+                    
+                    // 🔥 Send telemetry to backend
+                    sendProgressUpdate(telemetry);
+                  }}
+                  onPlay={() => console.log('▶️ Video started')}
+                  onPause={() => console.log('⏸️ Video paused')}
+                  onEnded={() => console.log('🏁 Video ended')}
                 />
                 
                 {/* 🔧 Debug панель - ТОЛЬКО ДЛЯ АДМИНОВ */}

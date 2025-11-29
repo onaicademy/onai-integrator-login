@@ -1,6 +1,9 @@
 /* 🎨 CYBER-ARCHITECTURE: Infinite Depth Background */
 @import './styles/graphite-background.css';
 
+/* 🎬 VIDEO PLAYER: Custom Plyr Theme (Neon Green) */
+@import './styles/plyr-custom.css';
+
 /* 🎯 CYBER-ARCHITECTURE: 3-Font System (Display + Body + Mono) */
 
 @tailwind base;

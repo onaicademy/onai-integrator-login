@@ -31,7 +31,7 @@ SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 // 🚀 PERFORMANCE FIX: Optimized for mobile - reduced duration, hardware-accelerated transforms
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 shadow-lg transition-transform ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300 will-change-transform",
+  "fixed z-[100] gap-4 bg-background p-6 shadow-lg transition-transform ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300 will-change-transform pointer-events-auto",
   {
     variants: {
       side: {
