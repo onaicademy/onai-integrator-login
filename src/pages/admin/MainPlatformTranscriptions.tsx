@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { getAuthToken } from '@/utils/apiClient';
+import { getAuthToken, apiRequest } from '@/utils/apiClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAuthToken } from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -36,13 +35,9 @@ export default function MainPlatformTranscriptions() {
   const { data: lessons, isLoading } = useQuery({
     queryKey: ['admin', 'transcriptions', 'main-platform'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/transcriptions/lessons', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
+      const data = await apiRequest('/api/admin/transcriptions/lessons', {
+        method: 'GET'
       });
-      if (!response.ok) throw new Error('Failed to fetch lessons');
-      const data = await response.json();
       return data.lessons as Lesson[];
     }
   });
@@ -50,14 +45,9 @@ export default function MainPlatformTranscriptions() {
   // Транскрибировать все
   const transcribeAllMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/admin/transcriptions/transcribe-all', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
+      return await apiRequest('/api/admin/transcriptions/transcribe-all', {
+        method: 'POST'
       });
-      if (!response.ok) throw new Error('Failed to start batch transcription');
-      return response.json();
     },
     onSuccess: (data) => {
       toast.success(`Запущена транскрибация ${data.total_lessons} уроков`);
