@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { getAuthToken } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
+import { getAuthToken } from '@/utils/apiClient';
 import { ArrowLeft, Mail, Calendar, Clock, Search, User } from 'lucide-react';
 import { useState } from 'react';
 
@@ -22,7 +24,7 @@ export default function TripwireStudents() {
       queryFn: async () => {
       const response = await fetch('/api/tripwire/admin/students', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       if (!response.ok) throw new Error('Failed to fetch students');

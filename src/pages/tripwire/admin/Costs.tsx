@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { getAuthToken } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
+import { getAuthToken } from '@/utils/apiClient';
 import { ArrowLeft, DollarSign, Calendar, Zap, MessageSquare, Mic, Video } from 'lucide-react';
 
 // ✅ НОВЫЙ интерфейс для tripwire_ai_costs
@@ -52,7 +54,7 @@ export default function TripwireCosts() {
     queryFn: async () => {
       const response = await fetch('/api/tripwire/admin/costs', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       if (!response.ok) throw new Error('Failed to fetch costs');

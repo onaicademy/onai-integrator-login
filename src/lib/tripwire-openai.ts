@@ -1,5 +1,7 @@
 import { api } from '@/utils/apiClient';
+import { getAuthToken } from '@/utils/apiClient';
 import { logTokenUsage, logWhisperUsage } from './token-tracker';
+import { getAuthToken } from '@/utils/apiClient';
 import {
   getChatHistory as getSupabaseChatHistory,
   saveMessagePair,
@@ -359,7 +361,7 @@ export async function transcribeAudioToText(audioBlob: Blob, userId?: string, th
         formData.append('language', 'ru');
         formData.append('prompt', 'Это голосовое сообщение студента на русском языке для AI-куратора.');
         
-        const token = localStorage.getItem('supabase_token');
+        const token = getAuthToken();
         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
         const response = await fetch(`${baseUrl}/api/openai/audio/transcriptions`, {

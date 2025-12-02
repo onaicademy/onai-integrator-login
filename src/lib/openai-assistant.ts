@@ -1,5 +1,7 @@
 import { api } from '@/utils/apiClient';
+import { getAuthToken } from '@/utils/apiClient';
 import { getUserAchievementsForAI, formatAchievementsForAI } from './achievements-api';
+import { getAuthToken } from '@/utils/apiClient';
 import { logTokenUsage, logWhisperUsage } from './token-tracker';
 import {
   getChatHistory as getSupabaseChatHistory,
@@ -511,7 +513,7 @@ export async function transcribeAudioToText(audioBlob: Blob, userId?: string, th
     console.log("📤 Отправляем в Backend Whisper API...");
 
     // Получаем токен и базовый URL
-    const token = localStorage.getItem('supabase_token');
+    const token = getAuthToken();
     if (!token) {
       throw new Error("Отсутствует JWT токен. Авторизуйтесь заново.");
     }

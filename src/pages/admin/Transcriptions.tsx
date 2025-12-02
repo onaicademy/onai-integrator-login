@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { getAuthToken } from '@/utils/apiClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAuthToken } from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -37,7 +39,7 @@ export default function Transcriptions() {
     queryFn: async () => {
       const response = await fetch('/api/tripwire/admin/transcriptions/lessons', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       if (!response.ok) throw new Error('Failed to fetch lessons');
@@ -52,7 +54,7 @@ export default function Transcriptions() {
       const response = await fetch('/api/tripwire/admin/transcriptions/transcribe-all', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       if (!response.ok) throw new Error('Failed to start batch transcription');

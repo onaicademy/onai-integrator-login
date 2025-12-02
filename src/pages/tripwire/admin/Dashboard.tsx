@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Activity
 } from 'lucide-react'
+import { apiRequest } from '@/utils/apiClient'
 
 interface DashboardStats {
   total_students: number
@@ -23,13 +24,7 @@ interface DashboardStats {
 export default function TripwireAdminDashboard() {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['tripwire', 'admin', 'stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/tripwire/admin/stats', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('supabase_token')}` }
-      })
-      if (!response.ok) throw new Error('Failed')
-      return response.json()
-    },
+    queryFn: async () => apiRequest<DashboardStats>('/api/tripwire/admin/stats'),
     refetchInterval: 30000
   })
 
