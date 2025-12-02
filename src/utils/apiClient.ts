@@ -11,6 +11,29 @@ interface ApiRequestOptions extends RequestInit {
 }
 
 /**
+ * ✅ Helper: Get JWT token from localStorage (correct key)
+ */
+export function getAuthToken(): string | null {
+  // Try old key first (for backward compatibility)
+  let token = localStorage.getItem('supabase_token');
+  
+  // If not found, get from Supabase session
+  if (!token) {
+    const sessionData = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
+    if (sessionData) {
+      try {
+        const parsed = JSON.parse(sessionData);
+        token = parsed?.access_token || null;
+      } catch (e) {
+        console.error('Failed to parse Supabase token:', e);
+      }
+    }
+  }
+  
+  return token;
+}
+
+/**
  * Базовая функция для выполнения HTTP запросов к Backend API
  */
 export async function apiRequest<T = any>(
