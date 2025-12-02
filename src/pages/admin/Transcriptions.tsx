@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { getAuthToken } from '@/utils/apiClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAuthToken } from '@/utils/apiClient';
 import { toast } from 'sonner';
+import { apiRequest } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
@@ -37,28 +36,15 @@ export default function Transcriptions() {
   const { data: lessons, isLoading } = useQuery({
     queryKey: ['tripwire', 'admin', 'transcriptions'],
     queryFn: async () => {
-      const response = await fetch('/api/tripwire/admin/transcriptions/lessons', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch lessons');
-      const data = await response.json();
-      return data.lessons as Lesson[];
+      const data = await apiRequest<{ lessons: Lesson[] }>('/api/tripwire/admin/transcriptions/lessons');
+      return data.lessons;
     }
   });
 
   // Транскрибировать все
   const transcribeAllMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/tripwire/admin/transcriptions/transcribe-all', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to start batch transcription');
-      return response.json();
+      return apiRequest('/api/tripwire/admin/transcriptions/transcribe-all', { method: 'POST' });
     },
     onSuccess: (data) => {
       toast.success(`Запущена транскрибация ${data.total_lessons} уроков`);
