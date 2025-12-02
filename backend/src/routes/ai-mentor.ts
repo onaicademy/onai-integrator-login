@@ -5,7 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import { triggerManualMotivationCheck, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
-import { authMiddleware } from '../middleware/authMiddleware';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 

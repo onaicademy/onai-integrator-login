@@ -151,9 +151,15 @@ XP: ${student.xp}
       content: context,
     });
 
-    const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
+    let run = await openai.beta.threads.runs.create(thread.id, {
       assistant_id: ASSISTANT_ID,
     });
+
+    // Polling loop (вместо createAndPoll для совместимости со старыми версиями SDK)
+    while (run.status === 'queued' || run.status === 'in_progress') {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      run = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    }
 
     if (run.status !== 'completed') {
       console.error(`❌ [AI Mentor] Run failed for ${student.fullName}: ${run.status}`);
