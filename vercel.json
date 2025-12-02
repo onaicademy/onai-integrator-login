@@ -1,5 +1,4 @@
 {
-  "version": 2,
   "rewrites": [
     {
       "source": "/(.*)",
@@ -13,31 +12,11 @@
         {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "Pragma",
-          "value": "no-cache"
-        },
-        {
-          "key": "Expires",
-          "value": "0"
         }
       ]
     }
   ],
-  "github": {
-    "enabled": true,
-    "silent": false,
-    "autoAlias": true
-  },
-  "build": {
-    "env": {
-      "NODE_VERSION": "20"
-    }
-  },
-  "buildCommand": "rm -rf .vite dist node_modules/.vite && npm ci && npm run build",
-  "framework": "vite",
-  "cleanUrls": true,
-  "installCommand": "npm ci"
+  "buildCommand": "npm run build",
+  "framework": "vite"
 }
 
