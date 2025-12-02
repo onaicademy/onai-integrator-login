@@ -1,7 +1,5 @@
-import { api } from '@/utils/apiClient';
-import { getAuthToken } from '@/utils/apiClient';
+import { api, getAuthToken } from '@/utils/apiClient';
 import { getUserAchievementsForAI, formatAchievementsForAI } from './achievements-api';
-import { getAuthToken } from '@/utils/apiClient';
 import { logTokenUsage, logWhisperUsage } from './token-tracker';
 import {
   getChatHistory as getSupabaseChatHistory,

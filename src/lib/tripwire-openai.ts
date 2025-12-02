@@ -1,7 +1,5 @@
-import { api } from '@/utils/apiClient';
-import { getAuthToken } from '@/utils/apiClient';
+import { api, getAuthToken } from '@/utils/apiClient';
 import { logTokenUsage, logWhisperUsage } from './token-tracker';
-import { getAuthToken } from '@/utils/apiClient';
 import {
   getChatHistory as getSupabaseChatHistory,
   saveMessagePair,
