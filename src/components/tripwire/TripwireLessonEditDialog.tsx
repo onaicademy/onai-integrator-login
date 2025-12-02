@@ -299,9 +299,10 @@ export function TripwireLessonEditDialog({
       // ✅ Перезагружаем данные НОВОГО урока
       await loadLessonData(newLessonId);
       
-      if (onSave) {
-        onSave();
-      }
+      // ❌ НЕ вызываем onSave при создании - урок УЖЕ создан выше!
+      // if (onSave) {
+      //   onSave();
+      // }
 
       // ✅ ЗАКРЫВАЕМ диалог сразу после создания
       setIsUploading(false);

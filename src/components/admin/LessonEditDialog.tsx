@@ -302,9 +302,10 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
       // ✅ Перезагружаем данные НОВОГО урока
       await loadLessonData(newLessonId);
       
-      if (onSave) {
-        await onSave({ title, description });
-      }
+      // ❌ НЕ вызываем onSave при создании - урок УЖЕ создан выше!
+      // if (onSave) {
+      //   await onSave({ title, description });
+      // }
 
       // ✅ ЗАКРЫВАЕМ диалог сразу после создания
       setIsUploading(false);
