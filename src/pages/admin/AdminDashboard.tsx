@@ -161,7 +161,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Карточки */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Карточка 1: Управление студентами (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
           <AdminCard
             title="Управление студентами"
@@ -259,11 +259,11 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
       whileTap={{ scale: 0.98 }}
     >
       <Card
-        className="relative p-6 cursor-pointer bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF88]/10 overflow-hidden group"
+        className="relative p-8 cursor-pointer bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF88]/10 overflow-hidden group h-full"
         onClick={onClick}
       >
         {/* Иконка */}
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-4 mb-6">
           <motion.div
             whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
             transition={{ duration: 0.3 }}
@@ -281,15 +281,15 @@ function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps)
         </div>
 
         {/* Текст */}
-        <h2 className="text-2xl font-bold text-white mb-2 font-display">
+        <h2 className="text-2xl font-bold text-white mb-3 font-display">
           {title}
         </h2>
-        <p className="text-gray-400 text-sm mb-6">
+        <p className="text-gray-400 text-sm mb-8 leading-relaxed">
           {description}
         </p>
 
         {/* Статистика */}
-        <div className="space-y-2 pt-4 border-t border-gray-800">
+        <div className="space-y-3 pt-6 border-t border-gray-800">
           {stats.map((stat, i) => (
             <div
               key={i}
