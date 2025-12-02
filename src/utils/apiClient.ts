@@ -18,7 +18,7 @@ export async function apiRequest<T = any>(
   options: ApiRequestOptions = {}
 ): Promise<T> {
   // Получаем JWT токен из localStorage (сохраняется после авторизации)
-  const token = localStorage.getItem('supabase_token');
+  const token = getAuthToken();
   
   // Формируем URL для запроса
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';

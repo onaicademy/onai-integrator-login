@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, Users, Award, TrendingDown } from 'lucide-react';
+import { apiRequest } from '@/utils/apiClient';
 
 interface DashboardStats {
   total_students: number;
@@ -25,28 +26,12 @@ interface FunnelData {
 export default function TripwireAnalytics() {
   const { data: stats, isLoading: isLoadingStats } = useQuery<DashboardStats>({
     queryKey: ['tripwire', 'admin', 'stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/tripwire/admin/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      return response.json();
-    }
+    queryFn: async () => apiRequest<DashboardStats>('/api/tripwire/admin/stats')
   });
 
   const { data: funnelData, isLoading: isLoadingFunnel } = useQuery<FunnelData>({
     queryKey: ['tripwire', 'admin', 'funnel'],
-    queryFn: async () => {
-      const response = await fetch('/api/tripwire/admin/funnel', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch funnel');
-      return response.json();
-    },
+    queryFn: async () => apiRequest<FunnelData>('/api/tripwire/admin/funnel'),
     refetchInterval: 30000
   });
 
