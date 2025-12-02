@@ -660,6 +660,108 @@ const Profile = () => {
             <CourseModules />
           </motion.div>
 
+          {/* 🏆 ДОСТИЖЕНИЯ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65 }}
+            className="mb-8"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6 font-display flex items-center gap-3">
+              <span className="text-3xl">🏆</span>
+              Мои достижения
+            </h2>
+            
+            {profileData?.achievements && profileData.achievements.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {profileData.achievements.map((achievement: any, index: number) => (
+                  <motion.div
+                    key={achievement.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7 + index * 0.05 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    className={`relative bg-gradient-to-br ${
+                      achievement.rarity === 'legendary' ? 'from-[#FFD700]/20 to-[#FFA500]/10 border-[#FFD700]' :
+                      achievement.rarity === 'epic' ? 'from-[#9D4EDD]/20 to-[#7B2CBF]/10 border-[#9D4EDD]' :
+                      achievement.rarity === 'rare' ? 'from-[#00A8E8]/20 to-[#007EA7]/10 border-[#00A8E8]' :
+                      'from-[#00FF88]/20 to-[#00cc88]/10 border-[#00FF88]/50'
+                    } border-2 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden`}
+                  >
+                    {/* Background gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      {/* Icon & Rarity Badge */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`text-5xl ${achievement.is_completed ? '' : 'grayscale opacity-30'}`}>
+                          {achievement.icon || '🏆'}
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-bold ${
+                          achievement.rarity === 'legendary' ? 'bg-[#FFD700]/20 text-[#FFD700]' :
+                          achievement.rarity === 'epic' ? 'bg-[#9D4EDD]/20 text-[#9D4EDD]' :
+                          achievement.rarity === 'rare' ? 'bg-[#00A8E8]/20 text-[#00A8E8]' :
+                          'bg-[#00FF88]/20 text-[#00FF88]'
+                        }`}>
+                          {achievement.rarity === 'legendary' ? 'ЛЕГЕНДА' :
+                           achievement.rarity === 'epic' ? 'ЭПИК' :
+                           achievement.rarity === 'rare' ? 'РЕДКОЕ' :
+                           'ОБЫЧНОЕ'}
+                        </span>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className={`text-lg font-bold mb-2 ${achievement.is_completed ? 'text-white' : 'text-gray-500'}`}>
+                        {achievement.title}
+                      </h3>
+                      
+                      {/* Description */}
+                      <p className={`text-sm mb-4 ${achievement.is_completed ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {achievement.description}
+                      </p>
+                      
+                      {/* Progress Bar */}
+                      {!achievement.is_completed && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-500">Прогресс</span>
+                            <span className="text-[#00FF88] font-bold">
+                              {achievement.current_value || 0} / {achievement.required_value}
+                            </span>
+                          </div>
+                          <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-[#00FF88] to-[#00cc88] transition-all duration-500"
+                              style={{ width: `${Math.min(((achievement.current_value || 0) / achievement.required_value) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Completion badge */}
+                      {achievement.is_completed && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-[#00FF88]">✅</span>
+                          <span className="text-gray-400">
+                            {new Date(achievement.completed_at).toLocaleDateString('ru-RU')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-[#1a1a24] border border-gray-800 rounded-xl p-12 text-center">
+                <div className="text-6xl mb-4">🏆</div>
+                <p className="text-gray-400 text-lg">
+                  Пока нет достижений. Завершите уроки, чтобы разблокировать их!
+                </p>
+              </div>
+            )}
+          </motion.div>
+
           {/* НАСТРОЙКИ ПРОФИЛЯ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

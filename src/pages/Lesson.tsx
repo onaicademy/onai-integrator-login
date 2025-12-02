@@ -29,6 +29,8 @@ import { VideoTelemetry } from "@/components/VideoPlayer/BunnyPlayer";
 import { useProgressUpdate } from "@/hooks/useProgressUpdate";
 import { useHonestVideoTracking } from "@/hooks/useHonestVideoTracking";
 import { AIChatDialog } from "@/components/profile/v2/AIChatDialog";
+import { AchievementUnlockModal } from "@/components/AchievementUnlockModal";
+import { ModuleUnlockModal } from "@/components/ModuleUnlockModal";
 
 const Lesson = () => {
   const { id, moduleId, lessonId } = useParams();
@@ -58,6 +60,10 @@ const Lesson = () => {
   
   // AI Curator Chat (onAI Platform)
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  
+  // 🏆 Achievements & Module Unlocks
+  const [newAchievements, setNewAchievements] = useState<any[]>([]);
+  const [unlockedModule, setUnlockedModule] = useState<any>(null);
   
   // Material preview dialog
   const [previewMaterial, setPreviewMaterial] = useState<any>(null);
@@ -597,21 +603,28 @@ const Lesson = () => {
         trackEvent('lesson_complete');
         console.log('✅ Урок успешно завершен');
         
-        // Показываем уведомление
-        // TODO: Добавить toast уведомление
+        // 🏆 Проверяем достижения
+        if (response.achievements && response.achievements.length > 0) {
+          console.log('🎉 Разблокированы достижения:', response.achievements);
+          setNewAchievements(response.achievements);
+        }
+        
+        // 🔓 Проверяем разблокировку модуля
+        if (response.unlocked_module) {
+          console.log('🔓 Разблокирован модуль:', response.unlocked_module);
+          setUnlockedModule(response.unlocked_module);
+        }
       } else {
         console.error('❌ Ошибка завершения урока:', response);
-        // TODO: Показать ошибку пользователю
+        alert('Не удалось завершить урок. Попробуйте еще раз.');
       }
     } catch (error: any) {
       console.error('❌ Ошибка завершения урока:', error);
       
       // Проверяем, есть ли домашнее задание
       if (error?.response?.data?.error?.includes('домашнее задание')) {
-        // TODO: Показать сообщение о необходимости выполнить домашнее задание
         alert('Для завершения урока необходимо выполнить домашнее задание и дождаться проверки куратором.');
       } else {
-        // TODO: Показать общую ошибку
         alert('Не удалось завершить урок. Попробуйте еще раз.');
       }
     }
@@ -1261,6 +1274,28 @@ const Lesson = () => {
         onClose={() => setPreviewMaterial(null)}
         material={previewMaterial}
       />
+      
+      {/* 🏆 Achievement Unlock Modal */}
+      {newAchievements.length > 0 && (
+        <AchievementUnlockModal
+          achievements={newAchievements}
+          onClose={() => {
+            setNewAchievements([]);
+            // Если есть разблокированный модуль, показываем его после закрытия достижений
+            // (модалка модуля покажется автоматически через state)
+          }}
+        />
+      )}
+      
+      {/* 🔓 Module Unlock Modal */}
+      {unlockedModule && newAchievements.length === 0 && (
+        <ModuleUnlockModal
+          moduleName={unlockedModule.module_name}
+          moduleId={unlockedModule.module_id}
+          courseId={unlockedModule.course_id}
+          onClose={() => setUnlockedModule(null)}
+        />
+      )}
     </div>
   );
 };

@@ -35,10 +35,22 @@ interface ProfileStats {
   active_missions: number;
 }
 
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  is_completed: boolean;
+  current_value?: number;
+  required_value?: number;
+  completed_at?: string;
+}
+
 /**
  * Получить полный профиль пользователя
  */
-export async function getUserProfile(userId: string): Promise<{ profile: UserProfile; stats: ProfileStats }> {
+export async function getUserProfile(userId: string): Promise<{ profile: UserProfile; stats: ProfileStats; achievements: Achievement[] }> {
   try {
     console.log('📊 [ProfileService] Получаем профиль для пользователя:', userId);
 
@@ -97,14 +109,42 @@ export async function getUserProfile(userId: string): Promise<{ profile: UserPro
       console.warn('⚠️ Ошибка получения курсов:', coursesError);
     }
 
-    // 5. Получаем количество достижений
-    const { count: achievementsCount, error: achievementsError } = await supabase
+    // 5. Получаем полную информацию о достижениях
+    const { data: userAchievements, error: achievementsError } = await supabase
       .from('user_achievements')
-      .select('*', { count: 'exact', head: true })
+      .select('achievement_id, current_value, required_value, is_completed, completed_at')
       .eq('user_id', userId);
 
     if (achievementsError) {
       console.warn('⚠️ Ошибка получения достижений:', achievementsError);
+    }
+
+    // Получаем детали достижений из справочника
+    let achievementsDetails: any[] = [];
+    const achievementsCount = userAchievements?.length || 0;
+
+    if (userAchievements && userAchievements.length > 0) {
+      const achievementIds = userAchievements.map(a => a.achievement_id);
+      const { data: achDetails } = await supabase
+        .from('achievements')
+        .select('id, title, description, icon, rarity')
+        .in('id', achievementIds);
+
+      // Объединяем данные
+      achievementsDetails = userAchievements.map(ua => {
+        const details = achDetails?.find(d => d.id === ua.achievement_id);
+        return {
+          id: ua.achievement_id,
+          title: details?.title || 'Достижение',
+          description: details?.description || '',
+          icon: details?.icon || '🏆',
+          rarity: details?.rarity || 'common',
+          is_completed: ua.is_completed,
+          current_value: ua.current_value,
+          required_value: ua.required_value,
+          completed_at: ua.completed_at
+        };
+      });
     }
 
     // 6. Получаем активные цели
@@ -142,10 +182,12 @@ export async function getUserProfile(userId: string): Promise<{ profile: UserPro
 
     console.log('✅ [ProfileService] Профиль загружен:', profileData.full_name);
     console.log('📊 [ProfileService] Статистика:', stats);
+    console.log('🏆 [ProfileService] Достижений:', achievementsDetails.length);
 
     return {
       profile: profileData as UserProfile,
       stats,
+      achievements: achievementsDetails,
     };
   } catch (error: any) {
     console.error('❌ [ProfileService] Ошибка получения профиля:', error);

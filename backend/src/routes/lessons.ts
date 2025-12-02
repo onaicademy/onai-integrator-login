@@ -568,10 +568,87 @@ router.post('/:lessonId/complete', async (req: Request, res: Response) => {
     }
 
     console.log('✅ Урок завершен успешно');
+
+    // 5. Проверяем недавно разблокированные достижения (за последние 5 секунд)
+    const { data: newAchievements, error: achievementsError } = await adminSupabase
+      .from('achievement_history')
+      .select('achievement_id, xp_earned')
+      .eq('user_id', userId)
+      .eq('notification_seen', false)
+      .gte('unlocked_at', new Date(Date.now() - 5000).toISOString())
+      .order('unlocked_at', { ascending: false });
+
+    // Получаем детали достижений
+    let achievementsDetails: any[] = [];
+    if (newAchievements && newAchievements.length > 0) {
+      const achievementIds = newAchievements.map(a => a.achievement_id);
+      const { data: achDetails } = await adminSupabase
+        .from('achievements')
+        .select('id, title, description, icon, rarity')
+        .in('id', achievementIds);
+
+      achievementsDetails = newAchievements.map(a => {
+        const details = achDetails?.find(d => d.id === a.achievement_id);
+        return {
+          achievement_id: a.achievement_id,
+          achievement_title: details?.title || 'Достижение',
+          achievement_description: details?.description || '',
+          achievement_icon: details?.icon || '🏆',
+          achievement_rarity: details?.rarity || 'common',
+          xp_reward: a.xp_earned
+        };
+      });
+
+      // Отмечаем уведомления как просмотренные
+      await adminSupabase
+        .from('achievement_history')
+        .update({ notification_seen: true })
+        .in('achievement_id', achievementIds)
+        .eq('user_id', userId);
+    }
+
+    // 6. Проверяем недавно разблокированный модуль
+    const { data: moduleUnlock, error: moduleError } = await adminSupabase
+      .from('module_unlocks')
+      .select('module_id, animation_shown')
+      .eq('user_id', userId)
+      .eq('animation_shown', false)
+      .gte('unlocked_at', new Date(Date.now() - 5000).toISOString())
+      .order('unlocked_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    let unlockedModule: any = null;
+    if (moduleUnlock) {
+      // Получаем информацию о модуле отдельным запросом
+      const { data: moduleData } = await adminSupabase
+        .from('modules')
+        .select('id, title, course_id')
+        .eq('id', moduleUnlock.module_id)
+        .single();
+
+      if (moduleData) {
+        unlockedModule = {
+          module_id: moduleData.id,
+          module_name: moduleData.title,
+          course_id: moduleData.course_id
+        };
+      }
+
+      // Отмечаем анимацию как показанную
+      await adminSupabase
+        .from('module_unlocks')
+        .update({ animation_shown: true })
+        .eq('user_id', userId)
+        .eq('module_id', moduleUnlock.module_id);
+    }
+    
     res.json({ 
       success: true, 
       message: 'Урок успешно завершен',
-      already_completed: false 
+      already_completed: false,
+      achievements: achievementsDetails,
+      unlocked_module: unlockedModule
     });
   } catch (error: any) {
     console.error('❌ Complete lesson error:', error);

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAuthToken } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
-import { getAuthToken } from '@/utils/apiClient';
 import { ArrowLeft, DollarSign, Calendar, Zap, MessageSquare, Mic, Video } from 'lucide-react';
 
 // ✅ НОВЫЙ интерфейс для tripwire_ai_costs

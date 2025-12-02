@@ -33,6 +33,8 @@ import { VideoTelemetry } from "@/components/VideoPlayer/BunnyPlayer";
 import { TripwireAIChatDialog } from "@/components/tripwire/TripwireAIChatDialog";
 import { Bot } from "lucide-react";
 import confetti from "canvas-confetti";
+import AchievementModal from "./components/AchievementModal";
+import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
 
 const TripwireLesson = () => {
   const { moduleId, lessonId } = useParams();
@@ -112,6 +114,11 @@ const TripwireLesson = () => {
   
   // ✅ AI Curator Chat
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  
+  // 🏆 Achievement & Module Unlock
+  const [newAchievement, setNewAchievement] = useState<any>(null);
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [unlockedModuleNumber, setUnlockedModuleNumber] = useState<number | null>(null);
 
   // Video player
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -396,6 +403,26 @@ const TripwireLesson = () => {
         });
 
         console.log('🏆 Achievement unlock result:', achievementResult);
+        
+        // Если достижение только что разблокировано, показываем модалку
+        if (achievementResult?.newly_unlocked && achievementResult?.achievement) {
+          const achievement = achievementResult.achievement;
+          setNewAchievement({
+            title: achievement.title,
+            description: achievement.description,
+            icon: achievement.icon
+          });
+          setShowAchievementModal(true);
+          
+          // Проверяем, нужно ли разблокировать следующий модуль
+          const currentModuleNum = parseInt(moduleId!);
+          if (currentModuleNum < 3) {
+            // Разблокируем следующий модуль с небольшой задержкой после достижения
+            setTimeout(() => {
+              setUnlockedModuleNumber(currentModuleNum + 1);
+            }, 3000);
+          }
+        }
 
         // Если достижение было только что разблокировано
         if (achievementResult?.newly_unlocked && achievementResult?.achievement) {
@@ -963,6 +990,27 @@ const TripwireLesson = () => {
         onClose={() => setPreviewMaterial(null)}
         material={previewMaterial}
       />
+      
+      {/* 🏆 Achievement Modal */}
+      {showAchievementModal && newAchievement && (
+        <AchievementModal
+          achievement={newAchievement}
+          open={showAchievementModal}
+          onClose={() => setShowAchievementModal(false)}
+        />
+      )}
+      
+      {/* 🔓 Module Unlock Animation */}
+      {unlockedModuleNumber && (
+        <ModuleUnlockAnimation
+          moduleNumber={unlockedModuleNumber}
+          onClose={() => setUnlockedModuleNumber(null)}
+          onNavigate={() => {
+            // Navigate to next module
+            navigate(`/tripwire/module/${unlockedModuleNumber}/lesson/${allLessons[0]?.id || 1}`);
+          }}
+        />
+      )}
     </div>
   );
 };

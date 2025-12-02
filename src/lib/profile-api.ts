@@ -30,9 +30,22 @@ interface ProfileStats {
   active_missions: number;
 }
 
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  is_completed: boolean;
+  current_value?: number;
+  required_value?: number;
+  completed_at?: string;
+}
+
 interface ProfileResponse {
   profile: UserProfile;
   stats: ProfileStats;
+  achievements?: Achievement[];
 }
 
 /**

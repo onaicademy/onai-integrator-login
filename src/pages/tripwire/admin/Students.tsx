@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAuthToken } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
-import { getAuthToken } from '@/utils/apiClient';
 import { ArrowLeft, Mail, Calendar, Clock, Search, User } from 'lucide-react';
 import { useState } from 'react';
 

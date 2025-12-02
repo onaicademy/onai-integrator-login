@@ -22,7 +22,7 @@ export async function getProfile(req: Request, res: Response): Promise<void> {
     }
 
     // Получаем профиль
-    const { profile, stats } = await getUserProfile(userId);
+    const { profile, stats, achievements } = await getUserProfile(userId);
 
     // Обновляем последнюю активность (async, не ждём)
     updateLastActivity(userId).catch(err => {
@@ -36,6 +36,7 @@ export async function getProfile(req: Request, res: Response): Promise<void> {
       data: {
         profile,
         stats,
+        achievements,
       },
     });
   } catch (error: any) {
