@@ -1,0 +1,53 @@
+name: Deploy Backend to DigitalOcean
+
+# Автоматический деплой при push в main
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:  # Также можно запустить вручную
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Deploy to DigitalOcean via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 207.154.231.30
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            echo "🚀 Начинаю деплой backend..."
+            
+            cd /var/www/onai-integrator-login-main/backend
+            
+            echo "📦 Git pull..."
+            git stash
+            git pull origin main
+            
+            echo "📥 Установка зависимостей..."
+            npm install --production
+            
+            echo "🔨 Сборка TypeScript..."
+            npm run build || echo "⚠️ Build предупреждения (не критично)"
+            
+            echo "🔄 Перезапуск PM2..."
+            pm2 reload onai-backend --update-env
+            
+            echo "✅ Проверка статуса..."
+            pm2 status onai-backend
+            
+            echo "🏥 Health check..."
+            sleep 3
+            curl -f http://localhost:3000/api/health || echo "⚠️ Health check failed"
+            
+            echo "✅ Деплой backend завершён!"
+

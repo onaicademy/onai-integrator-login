@@ -1,0 +1,30 @@
+[33mcommit 7b8c745f53ed915743febd5b515e7a57e65dc89a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: onAI Academy <saint@onaiacademy.kz>
+Date:   Sun Nov 23 21:10:21 2025 +0500
+
+    save: backup before redesign to lime green (#b2ff2e) with Figma reference
+
+ .claude/settings.local.json                        |  25 [32m+++++[m
+ .cursor/mcp.json                                   |   9 [32m+[m[31m-[m
+ ADD_COURSE_PROGRESS.sql                            |   3 [32m+[m
+ ADD_MISSIONS_AND_GOALS.sql                         |   3 [32m+[m
+ AI_MENTOR_STATUS_REPORT.md                         |   3 [32m+[m
+ AI_REMINDER_AGENT_PLAN.md                          |   3 [32m+[m
+ CHECK_SAINT_DATA.sql                               |   3 [32m+[m
+ CREATE_LESSONS_AND_PROGRESS.sql                    |   3 [32m+[m
+ GOALS_SYSTEM_ARCHITECTURE.md                       |   3 [32m+[m
+ GOALS_TESTING_GUIDE.md                             |   3 [32m+[m
+ GOALS_TODO_SYSTEM_DONE.md                          |   3 [32m+[m
+ IMPLEMENTATION_SUMMARY.md                          |   3 [32m+[m
+ PERPLEXITY_RESEARCH_REQUEST.md                     |   3 [32m+[m
+ PERPLEXITY_TRIGGER_FIX.md                          |   3 [32m+[m
+ PROFILE_UPDATE_FIXED.md                            |   3 [32m+[m
+ VIDEO_TRACKING_FIX_PLAN.md                         |   3 [32m+[m
+ VIDEO_TRACKING_IMPLEMENTED.md                      |   3 [32m+[m
+ analyze_figma.py                                   | 108 [32m+++++++++++++++++++++[m
+ ...0251122_RESTORE_AUTO_PROFILE_WITH_AI_MENTOR.sql |   3 [32m+[m
+ supabase/migrations/20251122_user_goals_FIX.sql    |   3 [32m+[m
+ supabase/migrations/20251122_user_goals_system.sql |   3 [32m+[m
+ .../20251122_user_goals_system_clean.sql           |   3 [32m+[m
+ ...225\320\250\320\225\320\235\320\230\320\257.md" |   3 [32m+[m
+ 23 files changed, 195 insertions(+), 7 deletions(-)

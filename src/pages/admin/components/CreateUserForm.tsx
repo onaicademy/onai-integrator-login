@@ -1,0 +1,220 @@
+import { useState } from 'react';
+import { X, Mail, User, Loader2, CheckCircle } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { supabase } from '@/lib/supabase';
+
+interface CreateUserFormProps {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormProps) {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [generatedEmail, setGeneratedEmail] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('Не авторизован');
+      }
+
+      const response = await fetch('/api/admin/tripwire/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          full_name: fullName,
+          email: email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка создания пользователя');
+      }
+
+      setGeneratedPassword(data.generated_password);
+      setGeneratedEmail(data.email);
+      setSuccess(true);
+      onSuccess();
+
+      // Закрыть через 8 секунд
+      setTimeout(() => {
+        onClose();
+      }, 8000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl bg-[#0A0A0A] border-2 border-[#00FF94]/50 shadow-[0_0_60px_rgba(0,255,148,0.6)] p-0 overflow-hidden">
+        {/* Header */}
+        <div className="relative p-8 border-b border-gray-800">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#00FF94]/10 to-transparent pointer-events-none" />
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h2
+                className="text-3xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"
+                style={{ textShadow: '0 0 30px rgba(0, 255, 148, 0.5)' }}
+              >
+                СОЗДАТЬ АККАУНТ
+              </h2>
+              <p className="text-sm text-[#9CA3AF] font-['JetBrains_Mono'] mt-2">
+                /// NEW TRIPWIRE STUDENT
+              </p>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800
+                       flex items-center justify-center transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-8">
+          {!success ? (
+            // Form
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Full Name */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm text-[#9CA3AF] font-['JetBrains_Mono'] uppercase">
+                  <User className="w-4 h-4" />
+                  <span>ФИО УЧЕНИКА</span>
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Иван Петров"
+                  required
+                  className="w-full h-14 px-4 bg-[#1a1a24] border-2 border-gray-700 
+                           text-white placeholder:text-gray-500 rounded-xl
+                           focus:border-[#00FF94] focus:ring-2 focus:ring-[#00FF94]/20
+                           transition-all outline-none"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm text-[#9CA3AF] font-['JetBrains_Mono'] uppercase">
+                  <Mail className="w-4 h-4" />
+                  <span>EMAIL АДРЕС</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ivan@example.com"
+                  required
+                  className="w-full h-14 px-4 bg-[#1a1a24] border-2 border-gray-700 
+                           text-white placeholder:text-gray-500 rounded-xl
+                           focus:border-[#00FF94] focus:ring-2 focus:ring-[#00FF94]/20
+                           transition-all outline-none"
+                />
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                  <p className="text-red-500 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-16 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
+                         hover:from-[#00CC6A] hover:to-[#00FF94]
+                         text-black font-bold font-['Space_Grotesk'] uppercase tracking-wider
+                         rounded-xl transition-all duration-300 flex items-center justify-center gap-3
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         shadow-[0_0_30px_rgba(0,255,148,0.4)]"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>СОЗДАНИЕ...</span>
+                  </>
+                ) : (
+                  <span>СОЗДАТЬ АККАУНТ</span>
+                )}
+              </button>
+            </form>
+          ) : (
+            // Success State
+            <div className="text-center space-y-6 py-8">
+              <div className="relative inline-block">
+                <div className="absolute inset-0 bg-[#00FF94] blur-3xl opacity-50 animate-pulse" />
+                <div
+                  className="relative w-24 h-24 mx-auto rounded-full bg-[#00FF94]/20 
+                              flex items-center justify-center border-2 border-[#00FF94]/60"
+                >
+                  <CheckCircle className="w-16 h-16 text-[#00FF94]" strokeWidth={2.5} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-3xl font-bold text-white font-['Space_Grotesk'] mb-2">
+                  АККАУНТ СОЗДАН!
+                </h3>
+                <p className="text-[#9CA3AF]">
+                  Учетные данные отправлены на <strong className="text-white">{generatedEmail}</strong>
+                </p>
+              </div>
+
+              {/* Generated Credentials */}
+              <div className="bg-[#00FF94]/10 border-2 border-[#00FF94]/30 rounded-xl p-6 space-y-4">
+                <div className="space-y-2">
+                  <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
+                    LOGIN
+                  </span>
+                  <p className="text-lg font-bold text-white">{generatedEmail}</p>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
+                    PASSWORD
+                  </span>
+                  <p className="text-lg font-bold text-[#00FF94] font-['JetBrains_Mono']">
+                    {generatedPassword}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-sm text-[#9CA3AF]">
+                Окно автоматически закроется через 8 секунд...
+              </p>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+

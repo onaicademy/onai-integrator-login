@@ -1,0 +1,308 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Users, Brain, Sparkles, DollarSign, TrendingUp, Mic } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
+import { api } from "@/utils/apiClient";
+import { supabase } from "@/lib/supabase";
+
+const KZT_RATE = 460; // 1 USD = 460 KZT
+
+export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const [tokenStats, setTokenStats] = useState<any>(null);
+  const [studentStats, setStudentStats] = useState<any>(null);
+  const [tripwireStats, setTripwireStats] = useState<any>(null);
+
+  // Загружаем все статистики при монтировании
+  useEffect(() => {
+    loadTokenStats();
+    loadStudentStats();
+    loadTripwireStats();
+  }, []);
+
+  const loadTokenStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику токенов...');
+      const response = await api.get('/api/tokens/stats/total');
+      const stats = response.data || response;
+      console.log('[AdminDashboard] ✅ Статистика токенов загружена:', stats);
+      setTokenStats(stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки токенов:', error);
+    }
+  };
+
+  const loadStudentStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику студентов...');
+      
+      // Получаем всех пользователей (кроме админов)
+      const { data: allUsers, error } = await supabase
+        .from('users')
+        .select('id, role, created_at')
+        .neq('role', 'admin');
+
+      if (error) {
+        console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
+        return;
+      }
+
+      const totalStudents = allUsers?.length || 0;
+      
+      // Активные = все, у кого role !== 'inactive'
+      const activeStudents = allUsers?.filter(u => u.role !== 'inactive').length || 0;
+      
+      // Новые за неделю = created_at > 7 дней назад
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const newThisWeek = allUsers?.filter(u => new Date(u.created_at) > weekAgo).length || 0;
+
+      const stats = {
+        total: totalStudents,
+        active: activeStudents,
+        newThisWeek: newThisWeek,
+      };
+
+      console.log('[AdminDashboard] ✅ Статистика студентов загружена:', stats);
+      setStudentStats(stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
+    }
+  };
+
+  const loadTripwireStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику Tripwire...');
+      const response = await api.get('/api/admin/tripwire/leaderboard');
+      const data = response.data || response;
+      
+      // Подсчитываем общую статистику
+      const managers = data.managers || [];
+      const totalSales = managers.reduce((sum: number, m: any) => sum + m.total_sales, 0);
+      const totalRevenue = managers.reduce((sum: number, m: any) => sum + m.total_revenue, 0);
+      const thisMonthSales = managers.reduce((sum: number, m: any) => sum + m.this_month_sales, 0);
+
+      setTripwireStats({
+        totalSales,
+        totalRevenue,
+        thisMonthSales,
+        managersCount: managers.length,
+      });
+
+      console.log('[AdminDashboard] ✅ Статистика Tripwire загружена:', { totalSales, totalRevenue });
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки Tripwire:', error);
+    }
+  };
+
+  // Форматирование данных для карточки студентов
+  const formatStudentStats = () => {
+    if (!studentStats) {
+      return [
+        { label: "Всего студентов", value: "..." },
+        { label: "Активных", value: "..." },
+        { label: "Новых за неделю", value: "..." },
+      ];
+    }
+
+    return [
+      { label: "Всего студентов", value: studentStats.total.toString() },
+      { label: "Активных", value: studentStats.active.toString() },
+      { label: "Новых за неделю", value: `+${studentStats.newThisWeek}` },
+    ];
+  };
+
+  // Форматирование данных для карточки токенов
+  const formatTokenStats = () => {
+    if (!tokenStats) {
+      return [
+        { label: "Затраты сегодня", value: "..." },
+        { label: "Всего токенов", value: "..." },
+        { label: "Запросов", value: "..." },
+      ];
+    }
+
+    const totalCostKZT = Math.round((tokenStats.total_cost_usd || 0) * KZT_RATE);
+    const totalTokens = tokenStats.total_tokens || 0;
+    const totalRequests = tokenStats.total_requests || 0;
+
+    // Форматируем токены (125K, 1.2M и т.д.)
+    const formatTokens = (num: number) => {
+      if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+      if (num >= 1000) return `${Math.round(num / 1000)}K`;
+      return num.toString();
+    };
+
+    return [
+      { label: "Затраты сегодня", value: `${totalCostKZT}₸` },
+      { label: "Всего токенов", value: formatTokens(totalTokens) },
+      { label: "Запросов", value: totalRequests.toString() },
+    ];
+  };
+
+  return (
+    <div className="min-h-screen bg-black relative p-6">
+      {/* ===== КОНТЕНТ ===== */}
+      <div className="max-w-7xl mx-auto">
+        {/* Заголовок */}
+        <motion.div
+          className="mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-5xl font-bold text-white mb-4 font-display">
+            Админ-панель
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Выберите раздел для управления платформой
+          </p>
+        </motion.div>
+
+        {/* Карточки */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          {/* Карточка 1: Управление студентами (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
+          <AdminCard
+            title="Управление студентами"
+            description="Добавление, удаление, роли, приглашения"
+            icon={<Users className="w-8 h-8" />}
+            onClick={() => navigate("/admin/students-activity")}
+            stats={formatStudentStats()}
+          />
+
+          {/* Карточка 2: Activity (старая панель) */}
+          <AdminCard
+            title="Activity"
+            description="Общая статистика и метрики платформы"
+            icon={<Sparkles className="w-8 h-8" />}
+            onClick={() => navigate("/admin/activity")}
+            stats={[
+              { label: "Активность", value: "85%" },
+              { label: "Онлайн", value: "47" },
+              { label: "Завершений", value: "234" },
+            ]}
+          />
+
+          {/* Карточка 3: AI-аналитика */}
+          <AdminCard
+            title="AI-аналитика"
+            description="Дашборд AI-куратора, наставника и аналитика"
+            icon={<Brain className="w-8 h-8" />}
+            onClick={() => navigate("/admin/ai-analytics")}
+            stats={[
+              { label: "AI диалогов", value: "89" },
+              { label: "Настроение", value: "😊 7.2/10" },
+              { label: "Проблем выявлено", value: "8" },
+            ]}
+          />
+
+          {/* Карточка 4: Токены AI-агентов (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
+          <AdminCard
+            title="Токены AI-агентов"
+            description="Затраты OpenAI, статистика, бюджет"
+            icon={<DollarSign className="w-8 h-8" />}
+            onClick={() => navigate("/admin/token-usage")}
+            stats={formatTokenStats()}
+          />
+
+          {/* Карточка 5: Sales Manager - Tripwire (НОВАЯ) */}
+          <AdminCard
+            title="Sales Manager - Tripwire"
+            description="Управление продажами, рейтинг менеджеров"
+            icon={<TrendingUp className="w-8 h-8" />}
+            onClick={() => navigate("/admin/tripwire-manager")}
+            stats={[
+              { label: "Всего продаж", value: tripwireStats?.totalSales?.toString() || "0" },
+              { label: "Выручка", value: tripwireStats ? `${tripwireStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },
+              { label: "Этот месяц", value: `+${tripwireStats?.thisMonthSales || 0}` },
+            ]}
+          />
+
+          {/* Карточка 6: Транскрибации уроков */}
+          <AdminCard
+            title="Транскрибации уроков"
+            description="Управление транскрибациями через Groq Whisper"
+            icon={<Mic className="w-8 h-8" />}
+            onClick={() => navigate("/admin/transcriptions")}
+            stats={[
+              { label: "Статус", value: "Groq AI" },
+              { label: "Формат", value: "SRT/VTT" },
+              { label: "Язык", value: "RU" },
+            ]}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===================================
+// КОМПОНЕНТ КАРТОЧКИ С ЭФФЕКТАМИ
+// ===================================
+
+interface AdminCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  stats: { label: string; value: string }[];
+}
+
+function AdminCard({ title, description, icon, onClick, stats }: AdminCardProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card
+        className="relative p-6 cursor-pointer bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF88]/10 overflow-hidden group"
+        onClick={onClick}
+      >
+        {/* Иконка */}
+        <div className="flex items-center gap-4 mb-4">
+          <motion.div
+            whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+            transition={{ duration: 0.3 }}
+            className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#00FF88]/20 to-[#00cc88]/10 flex items-center justify-center border border-[#00FF88]/30"
+          >
+            <div className="text-[#00FF88]">{icon}</div>
+          </motion.div>
+          
+          {/* Индикатор hover */}
+          <motion.div
+            initial={{ width: 0 }}
+            whileHover={{ width: "3px" }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 h-16 bg-[#00FF88] rounded-l-full opacity-0 group-hover:opacity-100 transition-opacity"
+          />
+        </div>
+
+        {/* Текст */}
+        <h2 className="text-2xl font-bold text-white mb-2 font-display">
+          {title}
+        </h2>
+        <p className="text-gray-400 text-sm mb-6">
+          {description}
+        </p>
+
+        {/* Статистика */}
+        <div className="space-y-2 pt-4 border-t border-gray-800">
+          {stats.map((stat, i) => (
+            <div
+              key={i}
+              className="flex justify-between items-center"
+            >
+              <span className="text-sm text-gray-500">{stat.label}</span>
+              <span className="text-base font-bold text-[#00FF88]">{stat.value}</span>
+            </div>
+          ))}
+        </div>
+
+      </Card>
+    </motion.div>
+  );
+}
+

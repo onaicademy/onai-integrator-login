@@ -1,0 +1,246 @@
+/* 🎨 onAI Academy Custom Plyr Theme - Neon Green */
+
+/* ===================================
+   PRIMARY COLOR OVERRIDE
+   =================================== */
+:root {
+  --plyr-color-main: #00FF88;
+  --plyr-video-control-color: #00FF88;
+  --plyr-video-control-color-hover: #00FF88;
+  --plyr-video-control-background-hover: rgba(0, 255, 136, 0.1);
+}
+
+/* ===================================
+   RANGE INPUTS (Progress Bar)
+   =================================== */
+.plyr--full-ui input[type=range] {
+  color: #00FF88;
+}
+
+.plyr__progress__buffer {
+  background: rgba(0, 255, 136, 0.2);
+}
+
+.plyr__progress input[type="range"]::-webkit-slider-thumb {
+  background: #00FF88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.plyr__progress input[type="range"]::-moz-range-thumb {
+  background: #00FF88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+/* ===================================
+   CONTROLS BACKGROUND
+   =================================== */
+.plyr--video .plyr__controls {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  padding: 20px 16px;
+}
+
+/* ===================================
+   BUTTONS & ICONS
+   =================================== */
+.plyr__control:hover {
+  background: rgba(0, 255, 136, 0.15);
+}
+
+.plyr__control--overlaid {
+  background: rgba(128, 128, 128, 0.6);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.plyr__control--overlaid:hover {
+  background: rgba(0, 255, 136, 0.9);
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+}
+
+.plyr__control--overlaid svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ===================================
+   TIME DISPLAY (JetBrains Mono Font)
+   =================================== */
+.plyr__time,
+.plyr__time--current,
+.plyr__time--duration {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-weight: 500;
+  font-size: 13px;
+  color: #00FF88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+/* ===================================
+   VOLUME SLIDER
+   =================================== */
+.plyr__volume input[type="range"]::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.plyr__volume input[type="range"]::-webkit-slider-thumb {
+  background: #00FF88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.plyr__volume input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.plyr__volume input[type="range"]::-moz-range-thumb {
+  background: #00FF88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+/* ===================================
+   TOOLTIP
+   =================================== */
+.plyr__tooltip {
+  background: rgba(0, 0, 0, 0.95);
+  color: #00FF88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+/* ===================================
+   MENU (Settings Dropdown)
+   =================================== */
+.plyr__menu__container {
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.plyr__menu__container [role="menuitem"]:hover {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00FF88;
+}
+
+.plyr__menu__container [role="menuitemradio"][aria-checked="true"]::before {
+  background: #00FF88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.plyr__menu__container .plyr__control {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Inter', sans-serif;
+}
+
+.plyr__menu__container .plyr__control:hover {
+  color: #00FF88;
+}
+
+/* ===================================
+   LOADING SPINNER
+   =================================== */
+.plyr__poster {
+  background: #000000;
+}
+
+.plyr--loading .plyr__poster::after {
+  border-color: rgba(0, 255, 136, 0.3);
+  border-top-color: #00FF88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+/* ===================================
+   FULLSCREEN MODE
+   =================================== */
+.plyr--fullscreen-active .plyr__controls {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.8) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+/* ===================================
+   FOCUS STATES (Accessibility)
+   =================================== */
+.plyr__control:focus {
+  outline: 2px solid #00FF88;
+  outline-offset: 2px;
+}
+
+.plyr__control:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.3);
+}
+
+/* ===================================
+   RESPONSIVE ADJUSTMENTS
+   =================================== */
+@media (max-width: 768px) {
+  .plyr--video .plyr__controls {
+    padding: 16px 12px;
+  }
+
+  .plyr__time {
+    font-size: 12px;
+  }
+
+  .plyr__control--overlaid {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .plyr__control--overlaid {
+    width: 60px;
+    height: 60px;
+  }
+
+  .plyr__time {
+    font-size: 11px;
+  }
+}
+
+/* ===================================
+   SMOOTH TRANSITIONS
+   =================================== */
+.plyr__control,
+.plyr__progress input[type="range"],
+.plyr__volume input[type="range"] {
+  transition: all 0.2s ease;
+}
+
+/* ===================================
+   CONTAINER STYLING
+   =================================== */
+.smart-video-player-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.smart-video-player-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 40px rgba(0, 255, 136, 0.05);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===================================
+   PLAY BUTTON - STATIC (NO ANIMATION)
+   =================================== */
+/* Анимация убрана по запросу пользователя */
+

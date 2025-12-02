@@ -1,0 +1,230 @@
+{
+  "project": "onAI-Academy-Platform-Redesign",
+  "version": "1.0.0",
+  "description": "Элитный редизайн платформы onAI Academy с графитовым фоном, премиум анимациями и 3D эффектами",
+  
+  "design": {
+    "theme": "graphite-premium",
+    "colors": {
+      "primary": "#2d5016",
+      "primaryRGB": "rgb(45, 80, 22)",
+      "primaryRGBA": "rgba(45, 80, 22, 0.1)",
+      "description": "Зелёный - основной цвет платформы",
+      
+      "graphite": "#404040",
+      "graphiteRGB": "rgb(64, 64, 64)",
+      "graphiteRGBA": "rgba(64, 64, 64, 0.1)",
+      "description_graphite": "Графит - премиум серый оттенок",
+      
+      "black": "#0a0a0a",
+      "blackRGB": "rgb(10, 10, 10)",
+      "blackRGBA": "rgba(10, 10, 10, 0.95)",
+      "description_black": "Чёрный - базовый фон",
+      
+      "accent": "#00ff00",
+      "accentRGB": "rgb(0, 255, 0)",
+      "accentRGBA": "rgba(0, 255, 0, 0.3)",
+      "description_accent": "Ярко-зелёный - акценты и подсветка",
+      
+      "darkGreen": "#1a3a0f",
+      "darkGreenRGB": "rgb(26, 58, 15)",
+      "darkGreenRGBA": "rgba(26, 58, 15, 0.08)",
+      "description_darkGreen": "Тёмно-зелёный - дополнительный оттенок"
+    },
+    
+    "gradients": {
+      "background": "linear-gradient(135deg, #0a0a0a 0%, #121212 50%, #0a0a0a 100%)",
+      "sidebar": "linear-gradient(135deg, rgba(45, 80, 22, 0.08) 0%, rgba(64, 64, 64, 0.08) 50%, rgba(10, 10, 10, 0.95) 100%)",
+      "activeButton": "linear-gradient(to right, rgba(0, 255, 0, 0.2), rgba(0, 255, 0, 0.1))",
+      "radialGreen": "radial-gradient(circle at 20% 30%, rgba(45, 80, 22, 0.12) 0%, transparent 50%)",
+      "radialGraphite": "radial-gradient(circle at 80% 70%, rgba(64, 64, 64, 0.15) 0%, transparent 50%)"
+    },
+    
+    "effects": {
+      "blur": "10px",
+      "blurPremium": "12px",
+      "shadowInset": "inset 0 0 30px rgba(45, 80, 22, 0.1)",
+      "shadowGlow": "0 0 10px rgba(0, 255, 0, 0.3)",
+      "shadowCard": "4px 0 20px rgba(0, 0, 0, 0.5)",
+      "noiseOpacity": "0.4"
+    },
+    
+    "textures": {
+      "graphiteNoise": "SVG fractalNoise with baseFrequency=0.85, numOctaves=5",
+      "grainPattern": "repeating-linear-gradient cross-hatch effect"
+    }
+  },
+  
+  "animations": {
+    "gsap": {
+      "enabled": true,
+      "version": "latest",
+      "plugins": ["ScrollTrigger", "Draggable"],
+      "defaults": {
+        "duration": 0.8,
+        "ease": "power3.out"
+      },
+      "effects": {
+        "sidebarEntry": {
+          "from": { "x": -100, "opacity": 0 },
+          "duration": 0.8
+        },
+        "logoSpin": {
+          "from": { "scale": 0, "rotation": -180, "opacity": 0 },
+          "duration": 0.6
+        },
+        "menuItemHover": {
+          "to": { "x": 8, "backgroundColor": "rgba(45, 80, 22, 0.15)", "duration": 0.3 }
+        }
+      }
+    },
+    
+    "motion": {
+      "enabled": true,
+      "library": "framer-motion",
+      "defaultDuration": 0.8,
+      "effects": {
+        "particles": {
+          "animate": {
+            "x": "[0, random(-40, 40), 0]",
+            "y": "[0, random(-40, 40), 0]",
+            "opacity": "[0.3, 0.9, 0.3]",
+            "scale": "[1, 2, 1]"
+          },
+          "transition": {
+            "duration": "2-4s",
+            "repeat": "Infinity"
+          }
+        },
+        "activeButton": {
+          "animate": { "opacity": "[0.8, 1, 0.8]" },
+          "transition": { "duration": 2, "repeat": "Infinity" }
+        }
+      }
+    },
+    
+    "three": {
+      "enabled": true,
+      "library": "@react-three/fiber",
+      "particleCount": 3000,
+      "camera": {
+        "position": "[0, 0, 50]",
+        "fov": 75
+      },
+      "lights": {
+        "ambient": { "intensity": 0.3 },
+        "pointLight1": { "position": "[10, 10, 10]", "intensity": 0.5, "color": "#00ff00" },
+        "pointLight2": { "position": "[-10, -10, -10]", "intensity": 0.3, "color": "#2d5016" }
+      },
+      "particles": {
+        "size": 1.5,
+        "opacity": 0.7,
+        "blending": "AdditiveBlending",
+        "colorDistribution": {
+          "graphite": "50%",
+          "green": "25%",
+          "darkGreen": "15%",
+          "black": "5%",
+          "accent": "5%"
+        }
+      }
+    }
+  },
+  
+  "components": {
+    "GraphiteBackground": {
+      "path": "src/components/backgrounds/GraphiteBackground.tsx",
+      "description": "3D фон с Three.js частицами в графитовой цветовой гамме",
+      "features": [
+        "3000 анимированных частиц",
+        "Интерактивность с курсором",
+        "Волновой эффект",
+        "Смешивание зеленого и графитового цветов"
+      ]
+    },
+    
+    "AppSidebarPremium": {
+      "path": "src/components/app-sidebar-premium.tsx",
+      "description": "Премиум sidebar с GSAP анимациями и графитовым дизайном",
+      "features": [
+        "GSAP timeline анимация появления",
+        "Hover эффекты с GSAP",
+        "Particles вокруг логотипа",
+        "Графитовый градиентный фон с blur",
+        "Светящаяся граница"
+      ]
+    }
+  },
+  
+  "performance": {
+    "willChange": ["transform", "opacity"],
+    "backfaceVisibility": "hidden",
+    "gpuAcceleration": true,
+    "mobileOptimizations": {
+      "particleOpacity": 0.7,
+      "animationDuration": "slower (40s vs 30s)"
+    }
+  },
+  
+  "responsive": {
+    "breakpoints": {
+      "mobile": "768px",
+      "tablet": "1024px",
+      "desktop": "1280px"
+    },
+    "adaptations": {
+      "mobile": [
+        "Reduce particle count",
+        "Slower animations",
+        "Lower blur values",
+        "Simplified gradients"
+      ]
+    }
+  },
+  
+  "usage": {
+    "NeuroHub": {
+      "background": "GraphiteBackground",
+      "colorScheme": "graphite + green + black"
+    },
+    "Sidebar": {
+      "component": "AppSidebarPremium",
+      "animations": "GSAP + Framer Motion",
+      "effects": "backdrop-filter blur, inset shadows, particles"
+    }
+  },
+  
+  "installation": {
+    "dependencies": [
+      "gsap@latest",
+      "three@latest",
+      "@react-three/fiber@8.17.10",
+      "@react-three/drei@latest",
+      "framer-motion@^12.23.24"
+    ],
+    "command": "npm install gsap three @react-three/fiber@8.17.10 @react-three/drei --legacy-peer-deps"
+  },
+  
+  "files": {
+    "stylesheets": [
+      "src/styles/graphite-background.css"
+    ],
+    "components": [
+      "src/components/backgrounds/GraphiteBackground.tsx",
+      "src/components/app-sidebar-premium.tsx"
+    ],
+    "pages": [
+      "src/pages/NeuroHub.tsx"
+    ]
+  },
+  
+  "notes": {
+    "inspiration": "Элитный дизайн за миллионы долларов с ощущением графита, шума и премиум анимаций",
+    "colorPhilosophy": "Графит (#404040) + зеленый (#2d5016) + черный (#0a0a0a) = премиум tech aesthetic",
+    "userExperience": "Плавные анимации, интерактивность, ощущение глубины и качества"
+  }
+}
+
+
+
+

@@ -1,0 +1,342 @@
+/* 🎨 CYBER-ARCHITECTURE: Infinite Depth Background */
+@import './styles/graphite-background.css';
+
+/* 🎬 VIDEO PLAYER: Custom Plyr Theme (Neon Green) */
+@import './styles/plyr-custom.css';
+
+/* 🎯 CYBER-ARCHITECTURE: 3-Font System (Display + Body + Mono) */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Shimmer animation for admin cards */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* 🎯 CYBER-ARCHITECTURE: Backgrounds (Infinite Depth) */
+    --background: 0 0% 1.18%; /* #030303 - Cyber Void */
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 3.92%; /* #0A0A0A - Cyber Surface */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 3.92%;
+    --popover-foreground: 0 0% 100%;
+
+    /* 🎯 CYBER-ARCHITECTURE: Accents (Neon Lights) */
+    --primary: 152 100% 50%; /* #00FF88 - Cyber Neon */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 347 100% 60%; /* #FF3366 - Signal Red */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 3.92%;
+    --muted-foreground: 215 14% 66%; /* #9CA3AF - Tech Gray */
+
+    --accent: 152 100% 50%; /* #00FF88 - Cyber Neon */
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 347 100% 60%; /* #FF3366 - Signal Red */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 152 100% 50%;
+
+    --radius: 1rem;
+
+    --neon: 152 100% 50%; /* #00FF88 - Cyber Neon */
+    --neon-foreground: 0 0% 0%;
+
+    --sidebar-background: 0 0% 1.18%; /* #030303 */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 1.96%;
+    --sidebar-accent: 0 0% 3.92%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 8%;
+    --sidebar-ring: 120 100% 50%;
+  }
+
+  .dark {
+    /* 🎯 CYBER-ARCHITECTURE: Backgrounds (Infinite Depth) */
+    --background: 0 0% 1.18%; /* #030303 - Cyber Void */
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 3.92%; /* #0A0A0A - Cyber Surface */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 3.92%;
+    --popover-foreground: 0 0% 100%;
+
+    /* 🎯 CYBER-ARCHITECTURE: Accents (Neon Lights) */
+    --primary: 152 100% 50%; /* #00FF88 - Cyber Neon */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 347 100% 60%; /* #FF3366 - Signal Red */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 3.92%;
+    --muted-foreground: 215 14% 66%; /* #9CA3AF - Tech Gray */
+
+    --accent: 152 100% 50%; /* #00FF88 - Cyber Neon */
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 347 100% 60%; /* #FF3366 - Signal Red */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 8%;
+    --input: 0 0% 8%;
+    --ring: 152 100% 50%;
+
+    --neon: 152 100% 50%; /* #00FF88 - Cyber Neon */
+    --neon-foreground: 0 0% 0%;
+
+    --sidebar-background: 0 0% 1.18%; /* #030303 */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 1.96%;
+    --sidebar-accent: 0 0% 3.92%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 8%;
+    --sidebar-ring: 152 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* 🌌 INTEGRATOR 3.0: The "Void" Background (Deep, Textured, Premium) */
+  body {
+    background-color: #030303; /* Deep Void Black */
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 255, 136, 0.05) 0px, transparent 50%),
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px; /* Grid Effect */
+    color: #ffffff;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  :root {
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Manrope', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  
+  /* 🎯 DISPLAY HEADERS - Space Grotesk (H1, H2) */
+  h1, h2 {
+    font-family: 'Space Grotesk', var(--font-display), sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  
+  /* 🎯 BODY HEADERS - Manrope (H3, H4, H5, H6) */
+  h3, h4, h5, h6 {
+    font-family: 'Manrope', var(--font-body), sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* 🎨 GLASSMORPHISM для премиум карточек */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 136, 0.2);
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+      0 0 20px 0 rgba(0, 255, 136, 0.1);
+  }
+}
+
+/* AI Marathon Custom Animations */
+@layer utilities {
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
+    }
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes ripple {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  .animate-ripple {
+    animation: ripple 0.6s ease-out;
+  }
+
+  /* Scroll smooth behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Glassmorphism effect */
+  .glass {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Text gradient effect */
+  .text-gradient {
+    background: linear-gradient(135deg, #00FF88, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shake animation for errors */
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+      transform: translateX(5px);
+    }
+  }
+
+  .animate-shake {
+    animation: shake 0.3s ease-in-out;
+  }
+
+  /* 🪟 INTEGRATOR 3.0: Global Glass Material (The "Floating" Effect) */
+  .glass-panel {
+    background: rgba(10, 10, 10, 0.7); /* Darker glass */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 🎯 CYBER-ARCHITECTURE: Glassmorphism 2.0 (Premium Feel) */
+  .glass-panel-cyber {
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* 🎯 CYBER-ARCHITECTURE: Neon Glows (Acid Green) */
+  .neon-shadow {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+  }
+
+  .neon-shadow-strong {
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+  }
+
+  .text-glow-strong {
+    text-shadow: 0 0 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
+  }
+
+  /* 🎯 CYBER-ARCHITECTURE: Signal Red Glows */
+  .signal-glow {
+    box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+  }
+
+  .text-signal-glow {
+    text-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+  }
+}

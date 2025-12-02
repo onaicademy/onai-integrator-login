@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест микрофона</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .info {
+            color: #74c0fc;
+        }
+        .warning {
+            color: #ffd43b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎤 Тест доступа к микрофону</h1>
+    
+    <div class="test-section">
+        <h2>Информация о браузере</h2>
+        <div id="browser-info" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Тест 1: Проверка поддержки API</h2>
+        <button onclick="checkSupport()">Проверить поддержку</button>
+        <div id="support-log" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Тест 2: Запрос доступа к микрофону</h2>
+        <button onclick="requestMicrophone()">Запросить доступ</button>
+        <button onclick="stopRecording()" id="stop-btn" disabled>Остановить</button>
+        <div id="request-log" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Тест 3: Проверка разрешений</h2>
+        <button onclick="checkPermissions()">Проверить разрешения</button>
+        <div id="permissions-log" class="log"></div>
+    </div>
+
+    <script>
+        let mediaStream = null;
+        let mediaRecorder = null;
+
+        // Показываем информацию о браузере
+        function showBrowserInfo() {
+            const info = document.getElementById('browser-info');
+            info.innerHTML = `
+<span class="info">User Agent:</span> ${navigator.userAgent}
+<span class="info">Протокол:</span> ${window.location.protocol}
+<span class="info">Hostname:</span> ${window.location.hostname}
+<span class="info">Port:</span> ${window.location.port}
+<span class="info">navigator.mediaDevices:</span> ${navigator.mediaDevices ? '✅ Доступен' : '❌ Недоступен'}
+<span class="info">navigator.mediaDevices?.getUserMedia:</span> ${navigator.mediaDevices?.getUserMedia ? '✅ Доступен' : '❌ Недоступен'}
+<span class="info">navigator.getUserMedia:</span> ${navigator.getUserMedia ? '✅ Доступен' : '❌ Недоступен'}
+<span class="info">navigator.webkitGetUserMedia:</span> ${navigator.webkitGetUserMedia ? '✅ Доступен' : '❌ Недоступен'}
+<span class="info">navigator.mozGetUserMedia:</span> ${navigator.mozGetUserMedia ? '✅ Доступен' : '❌ Недоступен'}
+            `;
+        }
+
+        // Проверка поддержки
+        function checkSupport() {
+            const log = document.getElementById('support-log');
+            log.innerHTML = '<span class="info">Проверяем поддержку...</span>\n';
+            
+            const checks = [];
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                checks.push('<span class="success">✅ navigator.mediaDevices.getUserMedia - доступен</span>');
+            } else {
+                checks.push('<span class="error">❌ navigator.mediaDevices.getUserMedia - недоступен</span>');
+            }
+            
+            if (navigator.getUserMedia) {
+                checks.push('<span class="success">✅ navigator.getUserMedia - доступен</span>');
+            } else {
+                checks.push('<span class="error">❌ navigator.getUserMedia - недоступен</span>');
+            }
+            
+            if (navigator.webkitGetUserMedia) {
+                checks.push('<span class="success">✅ navigator.webkitGetUserMedia - доступен</span>');
+            } else {
+                checks.push('<span class="error">❌ navigator.webkitGetUserMedia - недоступен</span>');
+            }
+            
+            if (navigator.mozGetUserMedia) {
+                checks.push('<span class="success">✅ navigator.mozGetUserMedia - доступен</span>');
+            } else {
+                checks.push('<span class="error">❌ navigator.mozGetUserMedia - недоступен</span>');
+            }
+            
+            log.innerHTML += checks.join('\n');
+        }
+
+        // Запрос доступа к микрофону
+        async function requestMicrophone() {
+            const log = document.getElementById('request-log');
+            const stopBtn = document.getElementById('stop-btn');
+            
+            log.innerHTML = '<span class="info">🎤 Запрашиваем доступ к микрофону...</span>\n';
+            log.innerHTML += `<span class="info">Протокол: ${window.location.protocol}</span>\n`;
+            log.innerHTML += `<span class="info">Hostname: ${window.location.hostname}</span>\n\n`;
+            
+            try {
+                let stream;
+                
+                // Пробуем современный API
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    log.innerHTML += '<span class="info">✅ Пробуем navigator.mediaDevices.getUserMedia...</span>\n';
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ 
+                            audio: {
+                                echoCancellation: true,
+                                noiseSuppression: true,
+                                sampleRate: 16000,
+                                channelCount: 1,
+                                autoGainControl: true,
+                            } 
+                        });
+                        log.innerHTML += '<span class="success">✅ Успех! Stream получен через navigator.mediaDevices.getUserMedia</span>\n';
+                    } catch (err) {
+                        log.innerHTML += `<span class="error">❌ Ошибка: ${err.name} - ${err.message}</span>\n`;
+                        throw err;
+                    }
+                } else if (navigator.webkitGetUserMedia) {
+                    log.innerHTML += '<span class="info">✅ Пробуем navigator.webkitGetUserMedia...</span>\n';
+                    stream = await new Promise((resolve, reject) => {
+                        navigator.webkitGetUserMedia({ audio: true }, resolve, reject);
+                    });
+                    log.innerHTML += '<span class="success">✅ Успех! Stream получен через webkitGetUserMedia</span>\n';
+                } else if (navigator.mozGetUserMedia) {
+                    log.innerHTML += '<span class="info">✅ Пробуем navigator.mozGetUserMedia...</span>\n';
+                    stream = await new Promise((resolve, reject) => {
+                        navigator.mozGetUserMedia({ audio: true }, resolve, reject);
+                    });
+                    log.innerHTML += '<span class="success">✅ Успех! Stream получен через mozGetUserMedia</span>\n';
+                } else if (navigator.getUserMedia) {
+                    log.innerHTML += '<span class="info">✅ Пробуем navigator.getUserMedia...</span>\n';
+                    stream = await new Promise((resolve, reject) => {
+                        navigator.getUserMedia({ audio: true }, resolve, reject);
+                    });
+                    log.innerHTML += '<span class="success">✅ Успех! Stream получен через getUserMedia</span>\n';
+                } else {
+                    log.innerHTML += '<span class="error">❌ Нет поддержки getUserMedia</span>\n';
+                    return;
+                }
+                
+                mediaStream = stream;
+                log.innerHTML += '<span class="success">✅ Запись начата! Говорите в микрофон...</span>\n';
+                stopBtn.disabled = false;
+                
+                // Показываем информацию о треках
+                const tracks = stream.getAudioTracks();
+                log.innerHTML += `<span class="info">Найдено аудио-треков: ${tracks.length}</span>\n`;
+                tracks.forEach((track, index) => {
+                    log.innerHTML += `<span class="info">Трек ${index + 1}: ${track.label} (${track.kind})</span>\n`;
+                });
+                
+            } catch (err) {
+                log.innerHTML += `\n<span class="error">❌ === ОШИБКА ===</span>\n`;
+                log.innerHTML += `<span class="error">Имя ошибки: ${err.name}</span>\n`;
+                log.innerHTML += `<span class="error">Сообщение: ${err.message}</span>\n`;
+                log.innerHTML += `<span class="error">Код: ${err.code || 'N/A'}</span>\n`;
+                
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    log.innerHTML += `\n<span class="warning">⚠️ Доступ запрещён. Нужно разрешить доступ в настройках браузера.</span>\n`;
+                } else if (err.name === 'NotFoundError') {
+                    log.innerHTML += `\n<span class="warning">⚠️ Микрофон не найден. Проверьте подключение устройства.</span>\n`;
+                } else if (err.name === 'NotReadableError') {
+                    log.innerHTML += `\n<span class="warning">⚠️ Микрофон используется другим приложением.</span>\n`;
+                } else {
+                    log.innerHTML += `\n<span class="warning">⚠️ Неизвестная ошибка. Проверьте консоль браузера для деталей.</span>\n`;
+                }
+            }
+        }
+
+        // Остановка записи
+        function stopRecording() {
+            const log = document.getElementById('request-log');
+            const stopBtn = document.getElementById('stop-btn');
+            
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+                log.innerHTML += '\n<span class="info">⏹️ Запись остановлена</span>\n';
+                stopBtn.disabled = true;
+            }
+        }
+
+        // Проверка разрешений
+        async function checkPermissions() {
+            const log = document.getElementById('permissions-log');
+            log.innerHTML = '<span class="info">Проверяем разрешения...</span>\n';
+            
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const result = await navigator.permissions.query({ name: 'microphone' });
+                    log.innerHTML += `<span class="info">Статус разрешения: ${result.state}</span>\n`;
+                    
+                    result.onchange = () => {
+                        log.innerHTML += `<span class="info">Статус изменился: ${result.state}</span>\n`;
+                    };
+                } catch (err) {
+                    log.innerHTML += `<span class="warning">⚠️ Не удалось проверить разрешения: ${err.message}</span>\n`;
+                }
+            } else {
+                log.innerHTML += '<span class="warning">⚠️ API разрешений не поддерживается</span>\n';
+            }
+        }
+
+        // Инициализация
+        showBrowserInfo();
+    </script>
+</body>
+</html>
+
