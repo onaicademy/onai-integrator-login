@@ -1275,7 +1275,9 @@ const Lesson = () => {
             title: lesson.title || '',
             description: lesson.description || '',
             duration_minutes: lesson.duration_minutes || 0,
-            tip: (lesson as any).tip || ''
+            tip: (lesson as any).tip || '',
+            ai_description: (lesson as any).ai_description || '',
+            ai_tips: (lesson as any).ai_tips || ''
           } : null}
           moduleId={parseInt(moduleId!)}
         />
