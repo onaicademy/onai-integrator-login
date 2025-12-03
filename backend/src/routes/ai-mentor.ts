@@ -4,40 +4,32 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { triggerManualDailyMotivation, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
-import { authMiddleware } from '../middleware/auth';
+import { triggerManualMotivationCheck, triggerManualDailyReport, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
 
 const router = Router();
 
 /**
  * POST /api/ai-mentor/trigger/daily
- * Ручной запуск ежедневной мотивации студентов (для тестирования)
+ * Ручной запуск ежедневного отчета администратору (для тестирования)
  */
-router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response) => {
+router.post('/trigger/daily', async (req: Request, res: Response) => {
   try {
-    console.log('🧪 [AI Mentor API] Manual trigger: daily motivation');
+    console.log('🧪 [AI Mentor API] Manual trigger: daily report');
 
-    // Проверяем, что пользователь - админ
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Доступ запрещен. Требуется роль admin.',
-      });
-    }
-
-    // Запускаем мотивацию асинхронно (не блокируем ответ)
-    triggerManualDailyMotivation().catch(err => {
-      console.error('❌ [AI Mentor API] Error in manual daily motivation:', err);
+    // Запускаем генерацию отчета асинхронно (не блокируем ответ)
+    triggerManualDailyReport().catch(err => {
+      console.error('❌ [AI Mentor API] Error in manual daily report:', err);
     });
 
     res.json({
       success: true,
-      message: 'Отправка ежедневной мотивации студентам запущена в фоне',
+      message: 'Генерация ежедневного отчета запущена в фоне',
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
-    console.error('❌ [AI Mentor API] Error triggering daily motivation:', error);
+    console.error('❌ [AI Mentor API] Error triggering daily report:', error);
     res.status(500).json({
-      error: 'Ошибка запуска ежедневной мотивации',
+      error: 'Ошибка запуска ежедневного отчета',
       details: error.message,
     });
   }
@@ -47,16 +39,9 @@ router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response
  * POST /api/ai-mentor/trigger/weekly
  * Ручной запуск еженедельного отчета (для тестирования)
  */
-router.post('/trigger/weekly', authMiddleware, async (req: Request, res: Response) => {
+router.post('/trigger/weekly', async (req: Request, res: Response) => {
   try {
     console.log('🧪 [AI Mentor API] Manual trigger: weekly report');
-
-    // Проверяем, что пользователь - админ
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Доступ запрещен. Требуется роль admin.',
-      });
-    }
 
     // Запускаем генерацию отчета асинхронно (не блокируем ответ)
     triggerManualWeeklyReport().catch(err => {
@@ -81,7 +66,7 @@ router.post('/trigger/weekly', authMiddleware, async (req: Request, res: Respons
  * GET /api/ai-mentor/status
  * Получить статус AI-наставника
  */
-router.get('/status', authMiddleware, async (req: Request, res: Response) => {
+router.get('/status', async (req: Request, res: Response) => {
   try {
     const assistantId = process.env.OPENAI_ASSISTANT_MENTOR_ID || '';
     const isConfigured = !!assistantId;

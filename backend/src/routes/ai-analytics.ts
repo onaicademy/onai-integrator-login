@@ -5,7 +5,6 @@
 
 import { Router, Request, Response } from 'express';
 import { triggerManualAnalyticsReport } from '../services/aiAnalyticsScheduler';
-import { authMiddleware } from '../middleware/auth';
 import { adminSupabase } from '../config/supabase';
 
 const router = Router();
@@ -14,16 +13,9 @@ const router = Router();
  * POST /api/ai-analytics/trigger/daily
  * Ручной запуск ежедневного отчета AI-аналитики (для тестирования)
  */
-router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response) => {
+router.post('/trigger/daily', async (req: Request, res: Response) => {
   try {
     console.log('🧪 [AI Analytics API] Manual trigger: daily report');
-
-    // Проверяем, что пользователь - админ
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Доступ запрещен. Требуется роль admin.',
-      });
-    }
 
     // Запускаем генерацию отчета асинхронно (не блокируем ответ)
     triggerManualAnalyticsReport().catch(err => {
@@ -48,7 +40,7 @@ router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response
  * GET /api/ai-analytics/status
  * Получить статус AI-аналитики
  */
-router.get('/status', authMiddleware, async (req: Request, res: Response) => {
+router.get('/status', async (req: Request, res: Response) => {
   try {
     const analystAssistantId = process.env.OPENAI_ASSISTANT_ANALYST_ID || '';
     const isAIConfigured = !!analystAssistantId;
@@ -77,16 +69,9 @@ router.get('/status', authMiddleware, async (req: Request, res: Response) => {
  * GET /api/ai-analytics/reports
  * Получить последние отчеты AI-аналитики
  */
-router.get('/reports', authMiddleware, async (req: Request, res: Response) => {
+router.get('/reports', async (req: Request, res: Response) => {
   try {
     console.log('📊 [AI Analytics API] Fetching reports');
-
-    // Проверяем, что пользователь - админ
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Доступ запрещен. Требуется роль admin.',
-      });
-    }
 
     const limit = parseInt(req.query.limit as string) || 10;
     const reportType = req.query.type as string || undefined;
