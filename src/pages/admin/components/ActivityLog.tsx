@@ -12,9 +12,10 @@ interface ActivityItem {
 
 interface ActivityLogProps {
   refreshTrigger: number;
+  dateRange?: { from: Date; to: Date };
 }
 
-export default function ActivityLog({ refreshTrigger }: ActivityLogProps) {
+export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogProps) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 

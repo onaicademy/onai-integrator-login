@@ -18,9 +18,10 @@ interface TripwireUser {
 interface UsersTableProps {
   refreshTrigger: number;
   managerId?: string;
+  dateRange?: { from: Date; to: Date };
 }
 
-export default function UsersTable({ refreshTrigger, managerId }: UsersTableProps) {
+export default function UsersTable({ refreshTrigger, managerId, dateRange }: UsersTableProps) {
   const [users, setUsers] = useState<TripwireUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

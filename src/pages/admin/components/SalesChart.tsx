@@ -22,10 +22,11 @@ interface SalesData {
 
 interface SalesChartProps {
   managerId?: string;
-  period?: 'week' | 'month' | 'year';
+  period?: 'week' | 'month' | 'year' | 'custom';
+  dateRange?: { from: Date; to: Date };
 }
 
-export default function SalesChart({ managerId, period = 'month' }: SalesChartProps) {
+export default function SalesChart({ managerId, period = 'month', dateRange }: SalesChartProps) {
   const [data, setData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +37,12 @@ export default function SalesChart({ managerId, period = 'month' }: SalesChartPr
         const params = new URLSearchParams();
         if (managerId) params.append('manager_id', managerId);
         params.append('period', period);
+
+        // 🎯 ARCHITECT APPROVED: Custom date range
+        if (period === 'custom' && dateRange) {
+          params.append('startDate', dateRange.from.toISOString());
+          params.append('endDate', dateRange.to.toISOString());
+        }
 
         console.log('📊 [SalesChart] API Request:', `/api/admin/tripwire/sales-chart?${params}`);
         const result = await api.get(`/api/admin/tripwire/sales-chart?${params}`);
@@ -49,7 +56,7 @@ export default function SalesChart({ managerId, period = 'month' }: SalesChartPr
     }
 
     loadChartData();
-  }, [managerId, period]);
+  }, [managerId, period, dateRange]);
 
   if (loading) {
     return (
