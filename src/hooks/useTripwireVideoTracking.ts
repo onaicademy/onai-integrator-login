@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 
 /**
  * 🎥 Tripwire Video Tracking Hook
- * Сохраняет прогресс видео в таблицу tripwire_progress (НЕ video_tracking!)
- * Синхронизируется с базой и загружает предыдущий прогресс при входе
+ * 
+ * ✅ ИЗОЛИРОВАННАЯ БАЗА ДАННЫХ: Использует tripwireSupabase
+ * ✅ Сохраняет прогресс видео в таблицу tripwire_progress (отдельная БД)
+ * ✅ Синхронизируется с Tripwire базой и загружает предыдущий прогресс при входе
  */
 export const useTripwireVideoTracking = (lessonId: number, tripwireUserId: string | undefined) => {
   const [progress, setProgress] = useState(0);
@@ -22,7 +24,7 @@ export const useTripwireVideoTracking = (lessonId: number, tripwireUserId: strin
       try {
         console.log('📥 [TripwireTracking] Loading progress for:', { lessonId, tripwireUserId });
         
-        const { data, error } = await supabase
+        const { data, error } = await tripwireSupabase
           .from('tripwire_progress')
           .select('video_progress_percent, last_position_seconds, is_completed')
           .eq('tripwire_user_id', tripwireUserId)
@@ -74,7 +76,7 @@ export const useTripwireVideoTracking = (lessonId: number, tripwireUserId: strin
     console.log('💾 [TripwireTracking] Saving progress:', { percentage, currentTime, totalDuration, qualified });
 
     try {
-      const { error } = await supabase
+      const { error } = await tripwireSupabase
         .from('tripwire_progress')
         .upsert({
           tripwire_user_id: tripwireUserId,

@@ -1,13 +1,15 @@
 /**
  * 💬 TRIPWIRE SUPABASE CHAT API
  * 
- * Работа с таблицами:
+ * ✅ ИЗОЛИРОВАННАЯ БАЗА ДАННЫХ: Использует tripwireSupabase
+ * 
+ * Работа с таблицами (в ОТДЕЛЬНОЙ базе Tripwire):
  * - tripwire_ai_threads (потоки чатов)
  * - tripwire_ai_messages (сообщения)
  * - tripwire_ai_attachments (файлы)
  */
 
-import { supabase } from './supabase';
+import { tripwireSupabase } from './supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 
 // ============================================
 // ТИПЫ
@@ -71,7 +73,7 @@ export interface ChatAttachment {
 export async function getOrCreateThread(userId: string, assistantId?: string, threadId?: string): Promise<ChatThread> {
   try {
     // Проверяем существующий поток
-    const { data: existingThread, error: fetchError } = await supabase
+    const { data: existingThread, error: fetchError } = await tripwireSupabase
       .from('tripwire_ai_threads')
       .select('*')
       .eq('user_id', userId)
@@ -90,7 +92,7 @@ export async function getOrCreateThread(userId: string, assistantId?: string, th
 
     // Создаём новый поток
     console.log('🆕 Создаём новый поток (Tripwire) для user:', userId);
-    const { data: newThread, error: createError } = await supabase
+    const { data: newThread, error: createError } = await tripwireSupabase
       .from('tripwire_ai_threads')
       .insert({
         user_id: userId,
@@ -118,7 +120,7 @@ export async function getOrCreateThread(userId: string, assistantId?: string, th
  */
 export async function updateThreadStats(threadId: string): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await tripwireSupabase
       .from('tripwire_ai_threads')
       .update({
         updated_at: new Date().toISOString(),
@@ -145,7 +147,7 @@ export async function getChatHistory(userId: string, limit: number = 50): Promis
     const thread = await getOrCreateThread(userId);
     
     // Получаем сообщения
-    const { data: messages, error } = await supabase
+    const { data: messages, error } = await tripwireSupabase
       .from('tripwire_ai_messages')
       .select('*')
       .eq('thread_id', thread.id)
@@ -182,7 +184,7 @@ export async function saveMessage(
   }
 ): Promise<ChatMessage | null> {
   try {
-    const { data: message, error } = await supabase
+    const { data: message, error } = await tripwireSupabase
       .from('tripwire_ai_messages')
       .insert({
         thread_id: threadId,
@@ -278,7 +280,7 @@ export async function saveAttachment(
   }
 ): Promise<ChatAttachment | null> {
   try {
-    const { data: attachment, error } = await supabase
+    const { data: attachment, error } = await tripwireSupabase
       .from('tripwire_ai_attachments')
       .insert({
         message_id: messageId,
@@ -295,7 +297,7 @@ export async function saveAttachment(
     if (error) throw error;
 
     // Обновляем счётчик вложений в сообщении
-    await supabase
+    await tripwireSupabase
       .from('tripwire_ai_messages')
       .update({
         has_attachments: true,
@@ -316,7 +318,7 @@ export async function saveAttachment(
  */
 export async function getMessageAttachments(messageId: string): Promise<ChatAttachment[]> {
   try {
-    const { data: attachments, error } = await supabase
+    const { data: attachments, error } = await tripwireSupabase
       .from('tripwire_ai_attachments')
       .select('*')
       .eq('message_id', messageId);

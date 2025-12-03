@@ -6,7 +6,7 @@ import { X, Mail, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { passwordRecoverySchema, type PasswordRecoveryFormData } from '@/lib/validation';
-import { requestPasswordReset } from '@/lib/tripwire-api';
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import { toast } from 'sonner';
 
 interface PasswordRecoveryModalProps {
@@ -31,10 +31,19 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
     setIsLoading(true);
     
     try {
-      await requestPasswordReset(data.email);
+      // ✅ ИЗОЛИРОВАННАЯ БАЗА: Отправляем запрос на сброс пароля через Tripwire Supabase
+      const { error } = await tripwireSupabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/tripwire/update-password`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
       setIsSuccess(true);
       toast.success('Письмо отправлено! Проверьте почту');
     } catch (error: any) {
+      console.error('❌ Tripwire Password Reset Error:', error);
       toast.error(error.message || 'Не удалось отправить письмо');
     } finally {
       setIsLoading(false);

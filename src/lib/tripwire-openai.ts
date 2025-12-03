@@ -6,7 +6,7 @@ import {
   type ChatMessage as SupabaseChatMessage,
 } from './tripwire-chat';
 import { detectConflicts } from './conflict-detector';
-import { supabase } from './supabase';
+import { tripwireSupabase } from './supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 
 // Локальное хранилище для ID Thread (Tripwire specific)
 const THREAD_ID_KEY = "tripwire_openai_thread_id";

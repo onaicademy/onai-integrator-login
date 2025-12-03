@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import type { TripwireLoginRequest, TripwireErrorResponse, ButtonState } from '@/types/tripwire';
 import { toast } from 'sonner';
 
 /**
  * useTripwireAuth - Real Supabase Authentication Hook for Tripwire
  * 
- * Uses Supabase auth instead of cookie-based authentication.
- * This ensures we have a valid JWT token for API calls (video tracking, progress, etc.)
+ * ✅ ИЗОЛИРОВАННАЯ БАЗА ДАННЫХ: Использует tripwireSupabase (отдельный проект Supabase)
+ * ✅ Независимая аутентификация от Main Platform
+ * ✅ JWT токен сохраняется под уникальным ключом 'tripwire_supabase_token'
  */
 export function useTripwireAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,8 +44,8 @@ export function useTripwireAuth() {
     try {
       console.log('🔐 Tripwire: Attempting Supabase login for', data.email);
       
-      // Use Supabase authentication
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      // Use Tripwire Supabase authentication (ISOLATED DATABASE)
+      const { data: authData, error: authError } = await tripwireSupabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
@@ -68,11 +69,11 @@ export function useTripwireAuth() {
         };
       }
 
-      console.log('✅ Supabase login successful:', authData.user.email);
-      console.log('🔑 JWT token received:', authData.session.access_token.substring(0, 20) + '...');
+      console.log('✅ Tripwire Supabase login successful:', authData.user.email);
+      console.log('🔑 Tripwire JWT token received:', authData.session.access_token.substring(0, 20) + '...');
 
-      // Save JWT token for API requests (this is already done in AuthContext, but we do it here too)
-      localStorage.setItem('supabase_token', authData.session.access_token);
+      // Save JWT token with TRIPWIRE prefix to avoid conflicts with Main Platform
+      localStorage.setItem('tripwire_supabase_token', authData.session.access_token);
 
       // Handle "Remember Me"
       if (data.remember) {

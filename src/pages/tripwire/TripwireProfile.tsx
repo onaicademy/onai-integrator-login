@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import { Loader2 } from 'lucide-react';
 import { 
   TripwireUserProfile, 

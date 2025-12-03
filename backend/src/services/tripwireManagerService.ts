@@ -1,9 +1,12 @@
-import { adminSupabase } from '../config/supabase';
+import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import crypto from 'crypto';
 import { sendWelcomeEmail } from './emailService';
 
 /**
  * Sales Manager Service - создание и управление Tripwire пользователями
+ * 
+ * ✅ ИЗОЛИРОВАННАЯ БАЗА ДАННЫХ: Использует tripwireAdminSupabase
+ * ✅ Все операции создания пользователей выполняются в ОТДЕЛЬНОМ Supabase проекте
  */
 
 interface CreateTripwireUserParams {
@@ -42,7 +45,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     console.log(`Creating user ${email} with provided password`);
 
     // 2. Создаем пользователя в Supabase Auth (используем admin client)
-    const { data: newUser, error: authError } = await adminSupabase.auth.admin.createUser({
+    const { data: newUser, error: authError } = await tripwireAdminSupabase.auth.admin.createUser({
       email: email,
       password: userPassword,
       email_confirm: true, // Автоподтверждение email
@@ -65,7 +68,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     console.log(`✅ Created user in auth.users: ${newUser.user.id}`);
 
     // 2.5. Создаем запись в public.users с role='student' и platform='tripwire'
-    const { error: usersError } = await adminSupabase
+    const { error: usersError } = await tripwireAdminSupabase
       .from('users')
       .insert({
         id: newUser.user.id,
@@ -78,14 +81,14 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     if (usersError) {
       console.error('❌ Error inserting to users:', usersError);
       // Откатываем создание пользователя в auth
-      await adminSupabase.auth.admin.deleteUser(newUser.user.id);
+      await tripwireAdminSupabase.auth.admin.deleteUser(newUser.user.id);
       throw new Error(`Users table error: ${usersError.message}`);
     }
 
     console.log(`✅ Created user in public.users with role=student, platform=tripwire`);
 
     // 3. Сохраняем в tripwire_users
-    const { error: dbError } = await adminSupabase
+    const { error: dbError } = await tripwireAdminSupabase
       .from('tripwire_users')
       .insert({
         user_id: newUser.user.id,
@@ -99,7 +102,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     if (dbError) {
       console.error('❌ Error inserting to tripwire_users:', dbError);
       // Откатываем создание пользователя в auth
-      await adminSupabase.auth.admin.deleteUser(newUser.user.id);
+      await tripwireAdminSupabase.auth.admin.deleteUser(newUser.user.id);
       throw new Error(`Database error: ${dbError.message}`);
     }
 
@@ -120,7 +123,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 
     // 5. Обновляем статус отправки email
     if (emailSent) {
-      await adminSupabase
+      await tripwireAdminSupabase
         .from('tripwire_users')
         .update({
           welcome_email_sent: true,
@@ -130,7 +133,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     }
 
     // 6. Логируем действие
-    await adminSupabase.from('sales_activity_log').insert({
+    await tripwireAdminSupabase.from('sales_activity_log').insert({
       manager_id: currentUserId,
       action_type: 'user_created',
       target_user_id: newUser.user.id,
@@ -166,7 +169,7 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
   const { managerId, status, page = 1, limit = 20, startDate, endDate } = params;
 
   try {
-    let query = adminSupabase
+    let query = tripwireAdminSupabase
       .from('tripwire_users')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false });
@@ -220,7 +223,7 @@ export async function getTripwireStats(managerId?: string, startDate?: string, e
   try {
     const TRIPWIRE_PRICE = 5000; // Цена в тенге
 
-    let query = adminSupabase
+    let query = tripwireAdminSupabase
       .from('tripwire_users')
       .select('status, created_at, modules_completed');
 
@@ -273,7 +276,7 @@ export async function updateTripwireUserStatus(
   managerId: string
 ) {
   try {
-    const { error } = await adminSupabase
+    const { error } = await tripwireAdminSupabase
       .from('tripwire_users')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('user_id', userId);
@@ -283,7 +286,7 @@ export async function updateTripwireUserStatus(
     }
 
     // Логируем действие
-    await adminSupabase.from('sales_activity_log').insert({
+    await tripwireAdminSupabase.from('sales_activity_log').insert({
       manager_id: managerId,
       action_type: 'status_changed',
       target_user_id: userId,
@@ -305,7 +308,7 @@ export async function updateTripwireUserStatus(
  */
 export async function getSalesActivityLog(managerId: string, limit = 50, startDate?: string, endDate?: string) {
   try {
-    let query = adminSupabase
+    let query = tripwireAdminSupabase
       .from('sales_activity_log')
       .select('*')
       .eq('manager_id', managerId)
@@ -341,7 +344,7 @@ export async function getSalesLeaderboard() {
     const TRIPWIRE_PRICE = 5000; // Цена Tripwire в тенге
 
     // Получаем всех менеджеров и их статистику
-    const { data, error } = await adminSupabase.from('tripwire_users').select('*');
+    const { data, error } = await tripwireAdminSupabase.from('tripwire_users').select('*');
 
     if (error) {
       throw new Error(`Database error: ${error.message}`);
@@ -409,7 +412,7 @@ export async function getSalesChartData(
   try {
     const TRIPWIRE_PRICE = 5000;
 
-    let query = adminSupabase.from('tripwire_users').select('created_at, granted_by');
+    let query = tripwireAdminSupabase.from('tripwire_users').select('created_at, granted_by');
 
     if (managerId) {
       query = query.eq('granted_by', managerId);
