@@ -70,11 +70,22 @@ export async function createRun(req: Request, res: Response) {
 
     // Обработка финального статуса
     if (runStatus.status === 'completed') {
-      // ✅ TRIPWIRE: Записываем затраты для Tripwire студентов
+      // ✅ ЗАПИСЬ ЗАТРАТ ДЛЯ AI КУРАТОРА (для всех пользователей)
       const userId = (req as any).user?.id;
       if (userId && (runStatus as any).usage) {
         try {
           const { adminSupabase } = await import('../config/supabase');
+          const usage = (runStatus as any).usage;
+          const totalTokens = usage.total_tokens || 0;
+          const promptTokens = usage.prompt_tokens || 0;
+          const completionTokens = usage.completion_tokens || 0;
+          
+          // GPT-4o: $2.50 per 1M input tokens, $10 per 1M output tokens
+          const promptCost = (promptTokens / 1000000) * 2.5;
+          const completionCost = (completionTokens / 1000000) * 10;
+          const totalCost = promptCost + completionCost;
+          
+          // Проверяем, Tripwire ли это пользователь
           const { data: tripwireProfile } = await adminSupabase
             .from('tripwire_user_profile')
             .select('user_id')
@@ -82,30 +93,40 @@ export async function createRun(req: Request, res: Response) {
             .single();
           
           if (tripwireProfile) {
-            const usage = (runStatus as any).usage;
-            const totalTokens = usage.total_tokens || 0;
-            // GPT-4o: $2.50 per 1M input tokens, $10 per 1M output tokens
-            // Упрощённо: $5 per 1M tokens (средняя)
-            const costUsd = (totalTokens / 1000000) * 5;
-            
+            // Tripwire: сохраняем в tripwire_ai_costs
             await adminSupabase.from('tripwire_ai_costs').insert({
               user_id: userId,
               cost_type: 'curator_chat',
               service: 'openai',
               model: 'gpt-4o',
               tokens_used: totalTokens,
-              cost_usd: costUsd,
+              cost_usd: totalCost,
               metadata: { 
                 thread_id: threadId,
                 run_id: run.id,
-                prompt_tokens: usage.prompt_tokens || 0,
-                completion_tokens: usage.completion_tokens || 0
+                prompt_tokens: promptTokens,
+                completion_tokens: completionTokens
               }
             });
-            console.log(`[OpenAI Controller] ✅ Tripwire chat cost записан: $${costUsd.toFixed(6)}`);
+            console.log(`[AI Curator] ✅ Tripwire cost: ${totalTokens} tokens, $${totalCost.toFixed(6)}`);
+          } else {
+            // Main platform: сохраняем в ai_token_usage
+            const tokenService = await import('../services/tokenService');
+            await tokenService.logTokenUsage({
+              userId: userId,
+              assistantType: 'curator',
+              model: 'gpt-4o',
+              promptTokens: promptTokens,
+              completionTokens: completionTokens,
+              totalTokens: totalTokens,
+              openaiThreadId: threadId,
+              openaiRunId: run.id,
+              requestType: 'chat'
+            });
+            console.log(`[AI Curator] ✅ Main platform cost: ${totalTokens} tokens, $${totalCost.toFixed(6)}`);
           }
         } catch (logError: any) {
-          console.error('[OpenAI Controller] ⚠️ Не удалось записать Tripwire cost:', logError.message);
+          console.error('[AI Curator] ⚠️ Не удалось записать cost:', logError.message);
         }
       }
       

@@ -108,45 +108,67 @@ export async function generateTranscription(videoId: string, videoUrl: string): 
     
     console.log(`✅ [Transcription] Completed for ${videoId}`);
     
-    // ✅ TRIPWIRE: Записать затраты если это Tripwire видео
+    // ✅ ЗАПИСЬ ЗАТРАТ НА ТРАНСКРИБАЦИЮ (для всех видео, не только Tripwire)
     try {
-      // Проверяем есть ли урок с этим video_id в Tripwire модулях
-      const { data: tripwireModules } = await supabase
-        .from('modules')
-        .select('id')
-        .eq('course_id', 13); // Tripwire course
-      
-      const tripwireModuleIds = tripwireModules?.map((m: any) => m.id) || [16, 17, 18];
-      
+      // Найти урок по video_id
       const { data: lesson } = await supabase
         .from('lessons')
-        .select('id, module_id')
+        .select('id, module_id, modules!inner(course_id)')
         .eq('bunny_video_id', videoId)
-        .in('module_id', tripwireModuleIds)
         .single();
       
       if (lesson) {
-        // Это Tripwire видео - записываем затраты
-        // Groq Whisper бесплатен, но для трекинга записываем $0.00
+        const courseId = (lesson as any).modules?.course_id;
         const audioDuration = transcription.duration || 0; // секунды
-        await supabase.from('tripwire_ai_costs').insert({
-          user_id: '00000000-0000-0000-0000-000000000000', // System user для транскрибаций
-          cost_type: 'lesson_transcription',
-          service: 'groq',
-          model: 'whisper-large-v3',
-          tokens_used: 0,
-          cost_usd: 0, // Groq Whisper бесплатен
-          metadata: { 
-            video_id: videoId,
-            lesson_id: lesson.id,
-            duration: audioDuration,
-            text_length: plainText.length
-          }
-        });
-        console.log(`✅ [Transcription] Tripwire cost записан для видео ${videoId}`);
+        const isTripwire = courseId === 13;
+        
+        // Groq Whisper бесплатен, но записываем для трекинга
+        // Если бы платили, то $0.006/минуту
+        const costUsd = 0; // Groq Whisper бесплатен
+        
+        if (isTripwire) {
+          // Tripwire: сохраняем в tripwire_ai_costs
+          await supabase.from('tripwire_ai_costs').insert({
+            user_id: '00000000-0000-0000-0000-000000000000', // System
+            cost_type: 'lesson_transcription',
+            service: 'groq',
+            model: 'whisper-large-v3',
+            tokens_used: 0,
+            cost_usd: costUsd,
+            metadata: { 
+              video_id: videoId,
+              lesson_id: lesson.id,
+              duration: audioDuration,
+              text_length: plainText.length
+            }
+          });
+          console.log(`✅ [Transcription] Tripwire cost записан для урока ${lesson.id}`);
+        } else {
+          // Main platform: сохраняем в ai_token_usage
+          await supabase.from('ai_token_usage').insert({
+            user_id: '00000000-0000-0000-0000-000000000000', // System
+            assistant_type: 'curator', // используем как дефолт для транскрибаций
+            model: 'whisper-large-v3',
+            prompt_tokens: 0,
+            completion_tokens: 0,
+            total_tokens: 0,
+            prompt_cost_usd: 0,
+            completion_cost_usd: 0,
+            total_cost_usd: costUsd,
+            request_type: 'video_transcription',
+            audio_duration_seconds: Math.round(audioDuration),
+            metadata: JSON.stringify({
+              video_id: videoId,
+              lesson_id: lesson.id,
+              service: 'groq',
+              text_length: plainText.length
+            })
+          });
+          console.log(`✅ [Transcription] Main platform cost записан для урока ${lesson.id}`);
+        }
       }
     } catch (costError: any) {
-      console.warn(`⚠️ [Transcription] Не удалось записать Tripwire cost:`, costError.message);
+      console.warn(`⚠️ [Transcription] Не удалось записать cost:`, costError.message);
     }
     
     // 🤖 АВТОМАТИЧЕСКИ ТРИГГЕРИМ AI ГЕНЕРАЦИЮ (асинхронно)
