@@ -33,14 +33,13 @@ export async function createTripwireUser(req: Request, res: Response) {
 
     // Получаем данные текущего менеджера
     const currentUser = (req as any).user;
-    console.log('🔍 DEBUG currentUser:', JSON.stringify(currentUser, null, 2));
     
     if (!currentUser) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const currentUserId = currentUser.id;
-    console.log('🔍 DEBUG currentUserId:', currentUserId);
+    // ✅ В JWT токене ID пользователя хранится в поле 'sub' (subject)
+    const currentUserId = currentUser.sub || currentUser.id;
     
     if (!currentUserId) {
       return res.status(400).json({ error: 'User ID not found in token' });
