@@ -123,3 +123,4 @@ router.get('/reports', authMiddleware, async (req: Request, res: Response) => {
 
 export default router;
 
+

@@ -33,46 +33,46 @@ export default function TripwireAdminDashboard() {
       {/* ✅ HEADER */}
       <div className="mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 
+            <div>
+              <h1 
               className="text-2xl lg:text-3xl font-bold text-white tracking-tight" 
-              style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-            >
-              АДМИН-ПАНЕЛЬ TRIPWIRE
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">
-              Центр управления платформой
-            </p>
-          </div>
-
-          {/* ✅ LIVE METRICS */}
-          {!isLoading && stats && (
-            <div className="flex flex-wrap items-center gap-4 lg:gap-8">
-              <div className="flex items-center gap-2">
-                <Users size={18} className="text-[#00FF00]" />
-                <span className="text-sm">
-                  <span className="text-white font-bold text-lg">{stats.total_students}</span>
-                  <span className="text-gray-400 ml-1">студентов</span>
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Activity size={18} className="text-blue-400" />
-                <span className="text-sm">
-                  <span className="text-white font-bold text-lg">{stats.active_students}</span>
-                  <span className="text-gray-400 ml-1">активных</span>
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <TrendingUp size={18} className="text-[#00FF00]" />
-                <span className="text-sm">
-                  <span className="text-white font-bold text-lg">{stats.completion_rate.toFixed(1)}%</span>
-                  <span className="text-gray-400 ml-1">завершили</span>
-                </span>
-              </div>
+                style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+              >
+                АДМИН-ПАНЕЛЬ TRIPWIRE
+              </h1>
+              <p className="text-sm text-gray-400 mt-1">
+                Центр управления платформой
+              </p>
             </div>
-          )}
+
+            {/* ✅ LIVE METRICS */}
+            {!isLoading && stats && (
+            <div className="flex flex-wrap items-center gap-4 lg:gap-8">
+                <div className="flex items-center gap-2">
+                  <Users size={18} className="text-[#00FF00]" />
+                  <span className="text-sm">
+                    <span className="text-white font-bold text-lg">{stats.total_students}</span>
+                    <span className="text-gray-400 ml-1">студентов</span>
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Activity size={18} className="text-blue-400" />
+                  <span className="text-sm">
+                    <span className="text-white font-bold text-lg">{stats.active_students}</span>
+                    <span className="text-gray-400 ml-1">активных</span>
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={18} className="text-[#00FF00]" />
+                  <span className="text-sm">
+                    <span className="text-white font-bold text-lg">{stats.completion_rate.toFixed(1)}%</span>
+                    <span className="text-gray-400 ml-1">завершили</span>
+                  </span>
+                </div>
+              </div>
+            )}
         </div>
       </div>
 
