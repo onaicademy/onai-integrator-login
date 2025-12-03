@@ -67,25 +67,11 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 
     console.log(`✅ Created user in auth.users: ${newUser.user.id}`);
 
-    // 2.5. Создаем запись в public.users с role='student' и platform='tripwire'
-    const { error: usersError } = await tripwireAdminSupabase
-      .from('users')
-      .insert({
-        id: newUser.user.id,
-        email: email,
-        full_name: full_name,
-        role: 'student',
-        platform: 'tripwire', // Важно! Разделяем базы по платформам
-      });
-
-    if (usersError) {
-      console.error('❌ Error inserting to users:', usersError);
-      // Откатываем создание пользователя в auth
-      await tripwireAdminSupabase.auth.admin.deleteUser(newUser.user.id);
-      throw new Error(`Users table error: ${usersError.message}`);
-    }
-
-    console.log(`✅ Created user in public.users with role=student, platform=tripwire`);
+    // 2.5. public.users заполняется АВТОМАТИЧЕСКИ через database trigger
+    // Подождем 500ms чтобы trigger сработал
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    console.log(`✅ public.users will be filled by database trigger automatically`);
 
     // 3. Сохраняем в tripwire_users
     const { error: dbError } = await tripwireAdminSupabase
