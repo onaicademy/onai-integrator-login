@@ -22,10 +22,11 @@ interface SalesData {
 
 interface SalesChartProps {
   managerId?: string;
-  period?: 'week' | 'month' | 'year';
+  period?: 'week' | 'month' | 'year' | 'custom';
+  dateRange?: { from: Date; to: Date };
 }
 
-export default function SalesChart({ managerId, period = 'month' }: SalesChartProps) {
+export default function SalesChart({ managerId, period = 'month', dateRange }: SalesChartProps) {
   const [data, setData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,30 +34,29 @@ export default function SalesChart({ managerId, period = 'month' }: SalesChartPr
     async function loadChartData() {
       try {
         setLoading(true);
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          console.error('No access token');
-          return;
-        }
-
         const params = new URLSearchParams();
         if (managerId) params.append('manager_id', managerId);
         params.append('period', period);
 
+        // 🎯 Если custom period, передаем startDate/endDate
+        if (period === 'custom' && dateRange) {
+          params.append('startDate', dateRange.from.toISOString());
+          params.append('endDate', dateRange.to.toISOString());
+        }
+
+        console.log('📊 [SalesChart] API Request:', `/api/admin/tripwire/sales-chart?${params}`);
         const result = await api.get(`/api/admin/tripwire/sales-chart?${params}`);
+        console.log('📊 [SalesChart] API Response:', result);
         setData(result.data || []);
       } catch (error) {
-        console.error('Error loading chart data:', error);
+        console.error('❌ [SalesChart] Error loading chart data:', error);
       } finally {
         setLoading(false);
       }
     }
 
     loadChartData();
-  }, [managerId, period]);
+  }, [managerId, period, dateRange]);
 
   if (loading) {
     return (

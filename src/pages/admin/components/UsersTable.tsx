@@ -18,9 +18,10 @@ interface TripwireUser {
 interface UsersTableProps {
   refreshTrigger: number;
   managerId?: string;
+  dateRange?: { from: Date; to: Date };
 }
 
-export default function UsersTable({ refreshTrigger, managerId }: UsersTableProps) {
+export default function UsersTable({ refreshTrigger, managerId, dateRange }: UsersTableProps) {
   const [users, setUsers] = useState<TripwireUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -66,6 +67,10 @@ export default function UsersTable({ refreshTrigger, managerId }: UsersTableProp
         if (managerId) {
           params.append('manager_id', managerId);
         }
+        if (dateRange) {
+          params.append('startDate', dateRange.from.toISOString());
+          params.append('endDate', dateRange.to.toISOString());
+        }
 
         const data = await api.get(`/api/admin/tripwire/users?${params}`);
         setUsers(data.users || []);
@@ -78,7 +83,7 @@ export default function UsersTable({ refreshTrigger, managerId }: UsersTableProp
     }
 
     loadUsers();
-  }, [page, refreshTrigger, managerId]);
+  }, [page, refreshTrigger, managerId, dateRange]);
 
   if (loading) {
     return (

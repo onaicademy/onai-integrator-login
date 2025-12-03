@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, UserPlus, Activity, TrendingUp, Filter } from 'lucide-react';
 import { Icon } from '@iconify/react';
+import { startOfMonth } from 'date-fns';
 import { OnAILogo } from '@/components/OnAILogo';
 import { useAuth } from '@/hooks/useAuth';
 import CreateUserForm from './components/CreateUserForm';
@@ -9,6 +10,7 @@ import StatsCards from './components/StatsCards';
 import ActivityLog from './components/ActivityLog';
 import SalesLeaderboard from './components/SalesLeaderboard';
 import SalesChart from './components/SalesChart';
+import { DateRangePicker } from '@/components/DateRangePicker';
 import { api } from '@/utils/apiClient';
 
 interface Stats {
@@ -24,6 +26,10 @@ export default function TripwireManager() {
   const { user } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedManagerId, setSelectedManagerId] = useState<string | undefined>(undefined);
+  const [dateRange, setDateRange] = useState({
+    from: startOfMonth(new Date()),
+    to: new Date(),
+  });
   const [stats, setStats] = useState<Stats>({
     total_users: 0,
     active_users: 0,
@@ -39,7 +45,11 @@ export default function TripwireManager() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const data = await api.get<Stats>('/api/admin/tripwire/stats');
+        const params = new URLSearchParams({
+          startDate: dateRange.from.toISOString(),
+          endDate: dateRange.to.toISOString(),
+        });
+        const data = await api.get<Stats>(`/api/admin/tripwire/stats?${params}`);
         setStats(data);
       } catch (error) {
         console.error('Error loading stats:', error);
@@ -49,7 +59,7 @@ export default function TripwireManager() {
     }
 
     loadStats();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, dateRange]);
 
   // Обработчик успешного создания пользователя
   const handleUserCreated = () => {
@@ -149,7 +159,7 @@ export default function TripwireManager() {
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
                       rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
         >
-          <SalesChart managerId={selectedManagerId} period="month" />
+          <SalesChart managerId={selectedManagerId} period="custom" dateRange={dateRange} />
         </div>
 
         {/* Manager Filter (только для admin) */}
@@ -175,7 +185,7 @@ export default function TripwireManager() {
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
                       rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
         >
-          <UsersTable refreshTrigger={refreshTrigger} managerId={selectedManagerId} />
+          <UsersTable refreshTrigger={refreshTrigger} managerId={selectedManagerId} dateRange={dateRange} />
         </div>
 
         {/* Activity Log */}
@@ -183,7 +193,7 @@ export default function TripwireManager() {
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
                       rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
         >
-          <ActivityLog refreshTrigger={refreshTrigger} />
+          <ActivityLog refreshTrigger={refreshTrigger} dateRange={dateRange} />
         </div>
       </div>
 
