@@ -108,8 +108,14 @@ export async function getTripwireUsers(req: Request, res: Response) {
     const startDate = req.query.startDate as string | undefined;
     const endDate = req.query.endDate as string | undefined;
 
+    // 🔥 FIX: Use currentUser.sub for manager ID
+    const currentUserId = currentUser.sub || currentUser.id;
+    if (!currentUserId && userRole !== 'admin') {
+      return res.status(400).json({ error: 'Invalid user token: missing user ID' });
+    }
+
     // Если не админ, показываем только своих пользователей
-    const finalManagerId = userRole === 'admin' ? managerId : currentUser.id;
+    const finalManagerId = userRole === 'admin' ? managerId : currentUserId;
 
     const result = await tripwireManagerService.getTripwireUsers({
       managerId: finalManagerId,
@@ -148,8 +154,14 @@ export async function getTripwireStats(req: Request, res: Response) {
       });
     }
 
+    // 🔥 FIX: Use currentUser.sub for manager ID
+    const currentUserId = currentUser.sub || currentUser.id;
+    if (!currentUserId && userRole !== 'admin') {
+      return res.status(400).json({ error: 'Invalid user token: missing user ID' });
+    }
+
     // Если не админ, показываем только свою статистику
-    const managerId = userRole === 'admin' ? undefined : currentUser.id;
+    const managerId = userRole === 'admin' ? undefined : currentUserId;
     const startDate = req.query.startDate as string | undefined;
     const endDate = req.query.endDate as string | undefined;
 
@@ -194,10 +206,16 @@ export async function updateTripwireUserStatus(req: Request, res: Response) {
       });
     }
 
+    // 🔥 FIX: Use currentUser.sub for manager ID
+    const currentUserId = currentUser.sub || currentUser.id;
+    if (!currentUserId) {
+      return res.status(400).json({ error: 'Invalid user token: missing user ID' });
+    }
+
     const result = await tripwireManagerService.updateTripwireUserStatus(
       id,
       status,
-      currentUser.id
+      currentUserId
     );
 
     return res.status(200).json(result);
@@ -225,11 +243,18 @@ export async function getSalesActivityLog(req: Request, res: Response) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    // 🔥 FIX: Use currentUser.sub (JWT standard claim for user ID)
+    const currentUserId = currentUser.sub || currentUser.id;
+    if (!currentUserId) {
+      console.error('❌ No user ID in JWT token:', currentUser);
+      return res.status(400).json({ error: 'Invalid user token: missing user ID' });
+    }
+
     const limit = parseInt(req.query.limit as string) || 50;
     const startDate = req.query.startDate as string | undefined;
     const endDate = req.query.endDate as string | undefined;
 
-    const activity = await tripwireManagerService.getSalesActivityLog(currentUser.id, limit, startDate, endDate);
+    const activity = await tripwireManagerService.getSalesActivityLog(currentUserId, limit, startDate, endDate);
 
     return res.status(200).json(activity);
   } catch (error: any) {
