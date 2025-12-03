@@ -81,9 +81,11 @@ import videoRouter from './routes/video'; // ✅ Video Quality & Transcription A
 import transcriptionsRouter from './routes/admin/transcriptions'; // ✅ Admin Transcriptions Management
 import aiLessonGeneratorRouter from './routes/ai-lesson-generator'; // ✅ AI Description & Tips Generator
 import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & Analytics
+import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
+import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -214,6 +216,7 @@ app.use('/api', videoRouter); // 🎬 Video Quality & Transcription API
 app.use('/api/admin/transcriptions', transcriptionsRouter); // 🎙️ Admin Transcriptions Management
 app.use('/api/ai', aiLessonGeneratorRouter); // 🤖 AI Lesson Description & Tips Generator
 app.use('/api/ai-mentor', aiMentorRouter); // 🤖 AI Mentor Scheduler & Analytics
+app.use('/api/ai-analytics', aiAnalyticsRouter); // 📊 AI Analytics Reports
 
 // 404 обработка
 app.use((req, res) => {
@@ -269,8 +272,11 @@ const server = app.listen(PORT, () => {
   // Start reminder scheduler
   startReminderScheduler();
   
-  // Start AI Mentor scheduler
+  // Start AI Mentor scheduler (ежедневные отчеты в 9:00)
   startAIMentorScheduler();
+  
+  // Start AI Analytics scheduler (ежедневные отчеты в 9:00)
+  startAIAnalyticsScheduler();
 });
 
 // Graceful shutdown для сервера (SIGTERM)

@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { triggerManualMotivationCheck, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
+import { triggerManualMotivationCheck, triggerManualDailyReport, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
 import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
@@ -38,6 +38,40 @@ router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response
     console.error('❌ [AI Mentor API] Error triggering daily check:', error);
     res.status(500).json({
       error: 'Ошибка запуска ежедневной проверки',
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * POST /api/ai-mentor/trigger/daily-report
+ * Ручной запуск ежедневного отчета администратору (для тестирования)
+ */
+router.post('/trigger/daily-report', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    console.log('🧪 [AI Mentor API] Manual trigger: daily report');
+
+    // Проверяем, что пользователь - админ
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({
+        error: 'Доступ запрещен. Требуется роль admin.',
+      });
+    }
+
+    // Запускаем генерацию отчета асинхронно (не блокируем ответ)
+    triggerManualDailyReport().catch(err => {
+      console.error('❌ [AI Mentor API] Error in manual daily report:', err);
+    });
+
+    res.json({
+      success: true,
+      message: 'Генерация ежедневного отчета запущена в фоне',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    console.error('❌ [AI Mentor API] Error triggering daily report:', error);
+    res.status(500).json({
+      error: 'Ошибка запуска ежедневного отчета',
       details: error.message,
     });
   }
@@ -96,8 +130,8 @@ router.get('/status', authMiddleware, async (req: Request, res: Response) => {
         telegram_notifications: !!process.env.TELEGRAM_MENTOR_BOT_TOKEN,
       },
       schedule: {
-        daily: '8:00 AM Almaty time (2:00 AM UTC)',
-        weekly: 'Monday 9:00 AM Almaty time (3:00 AM UTC)',
+        daily_report: '9:00 AM каждый день Almaty time (3:00 AM UTC)',
+        weekly_report: 'Monday 9:00 AM Almaty time (3:00 AM UTC)',
       },
     });
   } catch (error: any) {
