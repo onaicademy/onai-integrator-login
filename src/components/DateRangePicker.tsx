@@ -139,7 +139,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
                 if (range?.from) {
                   setTempRange({
                     from: range.from,
-                    to: range.to || range.from, // Fallback to from if to is undefined
+                    to: range.to || range.from,
                   });
                 }
               }}
@@ -165,4 +165,3 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
     </Popover>
   );
 }
-
