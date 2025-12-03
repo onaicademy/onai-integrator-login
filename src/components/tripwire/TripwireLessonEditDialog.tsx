@@ -57,8 +57,9 @@ export function TripwireLessonEditDialog({
     
     if (lesson && lesson.id) {
       setTitle(lesson.title);
-      setDescription(lesson.description || '');
-      setTip(lesson.tip || '');
+      // ✅ Приоритет: ai_description/ai_tips (сгенерированные AI) → description/tip (старые)
+      setDescription((lesson as any).ai_description || lesson.description || '');
+      setTip((lesson as any).ai_tips || lesson.tip || '');
       setSavedLessonId(lesson.id);
       
       if (typeof lesson.id === 'number' && lesson.id > 0) {

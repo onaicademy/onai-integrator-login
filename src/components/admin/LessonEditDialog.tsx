@@ -52,8 +52,9 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
     
     if (lesson && lesson.id) {
       setTitle(lesson.title);
-      setDescription(lesson.description || '');
-      setTip((lesson as any).tip || '');
+      // ✅ Приоритет: ai_description/ai_tips (сгенерированные AI) → description/tip (старые)
+      setDescription((lesson as any).ai_description || lesson.description || '');
+      setTip((lesson as any).ai_tips || (lesson as any).tip || '');
       setSavedLessonId(lesson.id);
       
       if (typeof lesson.id === 'number' && lesson.id > 0) {

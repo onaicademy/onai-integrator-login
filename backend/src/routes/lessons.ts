@@ -300,13 +300,19 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
+    if (description !== undefined) {
+      updateData.description = description;
+      updateData.ai_description = description; // ✅ Синхронизация: обновляем оба поля
+    }
     if (content !== undefined) updateData.content = content;
     if (lesson_type !== undefined) updateData.lesson_type = lesson_type;
     if (duration_minutes !== undefined) updateData.duration_minutes = duration_minutes;
     if (order_index !== undefined) updateData.order_index = order_index;
     if (is_preview !== undefined) updateData.is_preview = is_preview;
-    if (tip !== undefined) updateData.tip = tip; // ✅ Совет по уроку
+    if (tip !== undefined) {
+      updateData.tip = tip; // ✅ Совет по уроку
+      updateData.ai_tips = tip; // ✅ Синхронизация: обновляем оба поля
+    }
     
     // ✅ updated_at removed - column doesn't exist in lessons table
 
