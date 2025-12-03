@@ -351,3 +351,4 @@ curl https://api.onai.academy/api/health
 - ✅ Health endpoint отвечает
 - ✅ DevTools Console без ошибок
 
+

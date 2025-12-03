@@ -36,26 +36,13 @@ async function getStudentsProgress(): Promise<StudentProgress[]> {
   try {
     console.log('📊 [AI Mentor] Fetching students progress...');
 
-    // Получаем всех пользователей с их профилями и прогрессом
+    // Получаем всех пользователей-студентов с их прогрессом
     const { data: users, error: usersError } = await adminSupabase
       .from('users')
-      .select(`
-        id,
-        email,
-        profiles (
-          full_name,
-          telegram_chat_id,
-          current_streak,
-          xp,
-          level
-        ),
-        student_progress (
-          is_completed,
-          updated_at
-        )
-      `)
+      .select('*')
       .eq('role', 'student')
-      .not('profiles', 'is', null);
+      .eq('telegram_connected', true)
+      .not('telegram_chat_id', 'is', null);
 
     if (usersError) {
       console.error('❌ [AI Mentor] Error fetching users:', usersError);
@@ -72,35 +59,46 @@ async function getStudentsProgress(): Promise<StudentProgress[]> {
       .from('lessons')
       .select('*', { count: 'exact', head: true });
 
-    const studentsProgress: StudentProgress[] = users.map((user: any) => {
-      const profile = user.profiles?.[0] || {};
-      const completedLessons = user.student_progress?.filter((p: any) => p.is_completed).length || 0;
-      const totalLessons = totalLessonsCount || 0;
-      const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+    // Получаем прогресс для каждого студента
+    const studentsProgress: StudentProgress[] = await Promise.all(
+      users.map(async (user: any) => {
+        // Получаем прогресс студента
+        const { data: progress } = await adminSupabase
+          .from('student_progress')
+          .select('is_completed, updated_at')
+          .eq('user_id', user.id);
 
-      // Определяем последнюю активность
-      const lastActivityDate = user.student_progress?.[0]?.updated_at || null;
-      const daysInactive = lastActivityDate
-        ? Math.floor((Date.now() - new Date(lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
-        : 999;
+        const completedLessons = progress?.filter((p: any) => p.is_completed).length || 0;
+        const totalLessons = totalLessonsCount || 0;
+        const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
-      return {
-        userId: user.id,
-        fullName: profile.full_name || 'Студент',
-        email: user.email,
-        telegramChatId: profile.telegram_chat_id,
-        totalLessons,
-        completedLessons,
-        progressPercentage,
-        lastActivityDate,
-        currentStreak: profile.current_streak || 0,
-        xp: profile.xp || 0,
-        level: profile.level || 1,
-        daysInactive,
-      };
-    });
+        // Определяем последнюю активность
+        const sortedProgress = progress?.sort((a: any, b: any) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
+        const lastActivityDate = sortedProgress?.[0]?.updated_at || user.last_login_at || null;
+        const daysInactive = lastActivityDate
+          ? Math.floor((Date.now() - new Date(lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
+          : 999;
 
-    console.log(`✅ [AI Mentor] Found ${studentsProgress.length} students`);
+        return {
+          userId: user.id,
+          fullName: user.full_name || 'Студент',
+          email: user.email,
+          telegramChatId: user.telegram_chat_id?.toString() || null,
+          totalLessons,
+          completedLessons,
+          progressPercentage,
+          lastActivityDate,
+          currentStreak: 0, // TODO: Вычислять из student_progress
+          xp: user.total_xp || 0,
+          level: user.level || 1,
+          daysInactive,
+        };
+      })
+    );
+
+    console.log(`✅ [AI Mentor] Found ${studentsProgress.length} students with Telegram connected`);
     return studentsProgress;
   } catch (error: any) {
     console.error('❌ [AI Mentor] Error in getStudentsProgress:', error);
@@ -366,23 +364,23 @@ export function startAIMentorScheduler() {
     return;
   }
 
-  // ⏰ ЕЖЕДНЕВНАЯ МОТИВАЦИЯ студентам в 9:00 утра (UTC+6 Almaty time)
-  // В cron это будет 3:00 UTC (9:00 - 6 часов)
-  cron.schedule('0 3 * * *', () => {
-    console.log('⏰ [AI Mentor] Daily motivation trigger (9:00 AM Almaty time)');
+  // ⏰ ЕЖЕДНЕВНАЯ МОТИВАЦИЯ студентам в 13:00 (UTC+6 Almaty time)
+  // В cron это будет 7:00 UTC (13:00 - 6 часов)
+  cron.schedule('0 7 * * *', () => {
+    console.log('⏰ [AI Mentor] Daily motivation trigger (13:00 Almaty time)');
     sendDailyMotivationToStudents();
   });
 
-  // Еженедельный отчет каждый понедельник в 9:00 утра (3:00 UTC)
-  cron.schedule('0 3 * * 1', () => {
-    console.log('⏰ [AI Mentor] Weekly report trigger (9:00 Monday Almaty time)');
+  // Еженедельный отчет каждый понедельник в 13:00 (7:00 UTC)
+  cron.schedule('0 7 * * 1', () => {
+    console.log('⏰ [AI Mentor] Weekly report trigger (13:00 Monday Almaty time)');
     generateWeeklyReport();
   });
 
   console.log('✅ [AI Mentor Scheduler] Started successfully');
   console.log('📅 Schedule:');
-  console.log('  - Daily motivation to students: 9:00 AM каждый день (Almaty time)');
-  console.log('  - Weekly report: Monday 9:00 AM (Almaty time)');
+  console.log('  - Daily motivation to students: 13:00 (1:00 PM) каждый день (Almaty time)');
+  console.log('  - Weekly report: Monday 13:00 (1:00 PM) (Almaty time)');
   console.log('💡 Students will receive personalized motivation messages if Telegram is connected');
 }
 
