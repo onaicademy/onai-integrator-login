@@ -7,12 +7,19 @@ import * as tripwireManagerService from '../services/tripwireManagerService';
  */
 export async function createTripwireUser(req: Request, res: Response) {
   try {
-    const { full_name, email } = req.body;
+    const { full_name, email, password } = req.body;
 
     // Валидация входных данных
     if (!full_name || !email) {
       return res.status(400).json({
         error: 'Full name and email are required',
+      });
+    }
+
+    // Валидация пароля
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        error: 'Password must be at least 6 characters',
       });
     }
 
@@ -46,6 +53,7 @@ export async function createTripwireUser(req: Request, res: Response) {
     const result = await tripwireManagerService.createTripwireUser({
       full_name,
       email,
+      password, // Передаем пароль из формы
       currentUserId,
       currentUserEmail,
       currentUserName,

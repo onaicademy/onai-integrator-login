@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Mail, User, Loader2, CheckCircle } from 'lucide-react';
+import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 
@@ -8,9 +8,21 @@ interface CreateUserFormProps {
   onSuccess: () => void;
 }
 
+// Генератор случайного пароля
+function generatePassword(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%&';
+  const length = 12;
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
+
 export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -40,6 +52,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
         body: JSON.stringify({
           full_name: fullName,
           email: email,
+          password: password, // Отправляем пароль на backend
         }),
       });
 
@@ -138,6 +151,38 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
                 />
               </div>
 
+              {/* Password */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm text-[#9CA3AF] font-['JetBrains_Mono'] uppercase">
+                  <Key className="w-4 h-4" />
+                  <span>ПАРОЛЬ</span>
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Введите или сгенерируйте пароль"
+                    required
+                    className="flex-1 h-14 px-4 bg-[#1a1a24] border-2 border-gray-700 
+                             text-white placeholder:text-gray-500 rounded-xl font-['JetBrains_Mono']
+                             focus:border-[#00FF94] focus:ring-2 focus:ring-[#00FF94]/20
+                             transition-all outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPassword(generatePassword())}
+                    className="h-14 px-6 bg-[#1a1a24] border-2 border-[#00FF94]/50 
+                             hover:bg-[#00FF94]/10 text-[#00FF94] rounded-xl
+                             flex items-center gap-2 transition-all font-['JetBrains_Mono']
+                             hover:border-[#00FF94] hover:shadow-[0_0_20px_rgba(0,255,148,0.3)]"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                    <span className="font-semibold">ГЕНЕРИРОВАТЬ</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Error */}
               {error && (
                 <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
@@ -151,7 +196,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
                 disabled={loading}
                 className="w-full h-16 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
                          hover:from-[#00CC6A] hover:to-[#00FF94]
-                         text-black font-bold font-['Space_Grotesk'] uppercase tracking-wider
+                         text-black font-bold font-['JetBrains_Mono'] uppercase tracking-wider
                          rounded-xl transition-all duration-300 flex items-center justify-center gap-3
                          disabled:opacity-50 disabled:cursor-not-allowed
                          shadow-[0_0_30px_rgba(0,255,148,0.4)]"

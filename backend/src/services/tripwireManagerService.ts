@@ -9,6 +9,7 @@ import nodemailer from 'nodemailer';
 interface CreateTripwireUserParams {
   full_name: string;
   email: string;
+  password: string; // Пароль из формы или автогенерированный
   currentUserId: string;
   currentUserEmail?: string;
   currentUserName?: string;
@@ -210,17 +211,17 @@ async function sendWelcomeEmail(params: {
  * Создает нового Tripwire пользователя
  */
 export async function createTripwireUser(params: CreateTripwireUserParams) {
-  const { full_name, email, currentUserId, currentUserEmail, currentUserName } = params;
+  const { full_name, email, password, currentUserId, currentUserEmail, currentUserName } = params;
 
   try {
-    // 1. Генерируем временный пароль
-    const generatedPassword = generateTemporaryPassword();
-    console.log(`Generated password for ${email}: ${generatedPassword}`);
+    // 1. Используем пароль из формы (уже сгенерирован на фронте)
+    const userPassword = password;
+    console.log(`Creating user ${email} with provided password`);
 
     // 2. Создаем пользователя в Supabase Auth (используем admin client)
     const { data: newUser, error: authError } = await adminSupabase.auth.admin.createUser({
       email: email,
-      password: generatedPassword,
+      password: userPassword,
       email_confirm: true, // Автоподтверждение email
       user_metadata: {
         granted_by: currentUserId,
@@ -269,7 +270,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
         email: email,
         granted_by: currentUserId,
         manager_name: currentUserName || currentUserEmail || 'Unknown Manager',
-        generated_password: generatedPassword, // В production хэшировать!
+        generated_password: userPassword, // Сохраняем пароль для отправки по email
       });
 
     if (dbError) {
@@ -286,7 +287,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       to: email,
       full_name: full_name,
       email: email,
-      password: generatedPassword,
+      password: userPassword,
     });
 
     // 5. Обновляем статус отправки email
@@ -319,7 +320,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       success: true,
       user_id: newUser.user.id,
       email: email,
-      generated_password: generatedPassword,
+      generated_password: userPassword,
       welcome_email_sent: emailSent,
       message: 'Пользователь успешно создан',
     };
