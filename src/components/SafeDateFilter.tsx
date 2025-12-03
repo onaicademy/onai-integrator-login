@@ -23,14 +23,10 @@ interface SafeDateFilterProps {
 type PresetKey = 'today' | 'yesterday' | 'week' | 'month' | 'all' | 'custom';
 
 export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
-  console.log('📅 SafeDateFilter: Render started', { value });
-  
   const [activePreset, setActivePreset] = useState<PresetKey>('month');
   const [showCustomInputs, setShowCustomInputs] = useState(false);
   const [customFrom, setCustomFrom] = useState(format(value.from, 'yyyy-MM-dd'));
   const [customTo, setCustomTo] = useState(format(value.to, 'yyyy-MM-dd'));
-  
-  console.log('📅 SafeDateFilter State:', { activePreset, showCustomInputs, customFrom, customTo });
 
   const presets = [
     {

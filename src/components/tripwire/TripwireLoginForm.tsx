@@ -5,15 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+// Checkbox removed - auto-fill from email URL param
 import { tripwireLoginSchema, type TripwireLoginFormData } from '@/lib/validation';
 import { useTripwireAuth } from '@/hooks/useTripwireAuth';
 import type { ButtonState } from '@/types/tripwire';
 
-// Helper function to get remembered email from localStorage
-const getRememberedEmail = (): string | null => {
-  return localStorage.getItem('tripwire_remembered_email');
-};
+// Auto-fill email from URL params (from welcome email link)
 
 interface TripwireLoginFormProps {
   onForgotPassword: () => void;
@@ -32,19 +29,20 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
   } = useForm<TripwireLoginFormData>({
     resolver: zodResolver(tripwireLoginSchema),
     defaultValues: {
-      email: getRememberedEmail() || '',
+      email: '',
       password: '',
-      remember: !!getRememberedEmail(),
+      remember: false,
     },
   });
 
-  const rememberValue = watch('remember');
-
   useEffect(() => {
-    const rememberedEmail = getRememberedEmail();
-    if (rememberedEmail) {
-      setValue('email', rememberedEmail);
-      setValue('remember', true);
+    // Автоматически заполняем email из URL параметра (из welcome письма)
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailFromUrl = urlParams.get('email');
+    
+    if (emailFromUrl) {
+      setValue('email', emailFromUrl);
+      console.log('✅ Email автоматически заполнен из ссылки:', emailFromUrl);
     }
   }, [setValue]);
 
@@ -210,22 +208,9 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="flex items-center justify-between"
+        className="flex items-center justify-end"
       >
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="remember"
-            checked={rememberValue}
-            onCheckedChange={(checked) => setValue('remember', !!checked)}
-            className="border-gray-600 data-[state=checked]:bg-[#00FF88] data-[state=checked]:border-[#00FF88]"
-          />
-          <label
-            htmlFor="remember"
-            className="text-sm text-gray-400 cursor-pointer select-none"
-          >
-            Запомнить
-          </label>
-        </div>
+        {/* Remember checkbox removed - auto-fill from URL */}
 
         <button
           type="button"

@@ -98,22 +98,56 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
             <div class="highlight-box">
               <div class="label">Ваш логин:</div>
               <div style="margin-bottom: 20px;">
-                  <span class="value">${params.toEmail}</span>
+                  <span class="value" style="font-size: 18px;">${params.toEmail}</span>
               </div>
 
               <div class="label">Ваш пароль:</div>
-              <div style="margin-bottom: 15px;">
-                  <span class="value">${params.password}</span>
+              <div style="margin-bottom: 15px; position: relative;">
+                  <span class="value" id="password-text" style="font-size: 18px;">${params.password}</span>
+                  <button onclick="copyPassword()" style="margin-left: 10px; background: rgba(0, 255, 148, 0.15); border: 1px solid #00FF94; color: #00FF94; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                    📋 КОПИРОВАТЬ
+                  </button>
               </div>
               
-              <p style="text-align: center; margin-top: 25px; margin-bottom: 0;">
-                <span class="save-data-badge">Сохраните эти данные в надежном месте</span>
+              <p style="text-align: center; margin-top: 25px; margin-bottom: 0; color: #888888; font-size: 14px;">
+                💡 Скопируйте пароль и вставьте на платформе
               </p>
             </div>
 
             <div style="text-align: center; margin-top: 35px; margin-bottom: 20px;">
-                  <a href="https://onai.academy/tripwire/login" class="btn">ВОЙТИ В ПЛАТФОРМУ</a>
+                  <a href="https://onai.academy/tripwire/login?email=${encodeURIComponent(params.toEmail)}" class="btn">ВОЙТИ В ПЛАТФОРМУ</a>
             </div>
+            
+            <script>
+              function copyPassword() {
+                const password = '${params.password}';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(password).then(function() {
+                    alert('✅ Пароль скопирован в буфер обмена!');
+                  }).catch(function(err) {
+                    fallbackCopy(password);
+                  });
+                } else {
+                  fallbackCopy(password);
+                }
+              }
+              
+              function fallbackCopy(text) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                  document.execCommand('copy');
+                  alert('✅ Пароль скопирован в буфер обмена!');
+                } catch (err) {
+                  alert('❌ Не удалось скопировать. Скопируйте вручную: ' + text);
+                }
+                document.body.removeChild(textArea);
+              }
+            </script>
           </div>
 
           <div class="footer">

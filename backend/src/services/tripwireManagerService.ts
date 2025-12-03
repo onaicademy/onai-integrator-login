@@ -1,6 +1,6 @@
 import { adminSupabase } from '../config/supabase';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { sendWelcomeEmail } from './emailService';
 
 /**
  * Sales Manager Service - создание и управление Tripwire пользователями
@@ -28,183 +28,6 @@ interface GetTripwireUsersParams {
 function generateTemporaryPassword(): string {
   // Генерируем 12 случайных символов
   return crypto.randomBytes(6).toString('hex'); // Например: "a7b3c9d1e5f2"
-}
-
-/**
- * Отправляет Welcome Email с учетными данными
- */
-async function sendWelcomeEmail(params: {
-  to: string;
-  full_name: string;
-  email: string;
-  password: string;
-}): Promise<boolean> {
-  try {
-    // Проверяем наличие SMTP настроек
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-      console.warn('SMTP credentials not configured, skipping email send');
-      return false;
-    }
-
-    // Настройка SMTP транспорта
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
-
-    // HTML шаблон письма
-    const htmlTemplate = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body {
-            font-family: 'Arial', sans-serif;
-            background: #030303;
-            color: #FFFFFF;
-            margin: 0;
-            padding: 0;
-          }
-          .container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: linear-gradient(135deg, #0A0A0A 0%, #1a1a1a 100%);
-            border: 2px solid rgba(0, 255, 148, 0.3);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 0 60px rgba(0, 255, 148, 0.2);
-          }
-          .logo {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 32px;
-            font-weight: bold;
-            color: #00FF94;
-            text-shadow: 0 0 20px rgba(0, 255, 148, 0.6);
-          }
-          .title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #00FF94;
-            text-align: center;
-            text-shadow: 0 0 20px rgba(0, 255, 148, 0.6);
-            margin-bottom: 20px;
-          }
-          .credentials-box {
-            background: rgba(0, 255, 148, 0.1);
-            border: 1px solid rgba(0, 255, 148, 0.3);
-            border-radius: 12px;
-            padding: 24px;
-            margin: 30px 0;
-          }
-          .credential-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .credential-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-          }
-          .label {
-            color: #9CA3AF;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
-          .value {
-            color: #00FF94;
-            font-weight: bold;
-            font-size: 18px;
-          }
-          .button {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #00FF94, #00CC6A);
-            color: #000000;
-            text-align: center;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 12px;
-            margin: 30px 0;
-            box-shadow: 0 0 30px rgba(0, 255, 148, 0.4);
-          }
-          .footer {
-            text-align: center;
-            color: #9CA3AF;
-            font-size: 14px;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="logo">onAI Academy</div>
-          
-          <h1 class="title">ДОБРО ПОЖАЛОВАТЬ!</h1>
-          
-          <p style="text-align: center; color: #9CA3AF; margin-bottom: 30px;">
-            Привет, <strong style="color: #FFFFFF;">${params.full_name}</strong>!<br>
-            Для вас создан аккаунт на платформе <strong>onAI Academy</strong>.<br>
-            Начните обучение прямо сейчас!
-          </p>
-          
-          <div class="credentials-box">
-            <div class="credential-row">
-              <span class="label">Login (Email)</span>
-              <span class="value">${params.email}</span>
-            </div>
-            <div class="credential-row">
-              <span class="label">Password</span>
-              <span class="value">${params.password}</span>
-            </div>
-          </div>
-          
-          <a href="https://onai.academy/tripwire/login" class="button">
-            ВОЙТИ В TRIPWIRE →
-          </a>
-          
-          <p style="text-align: center; color: #9CA3AF; font-size: 14px;">
-            ⚠️ <strong>Важно:</strong> Рекомендуем сменить пароль после первого входа в настройках профиля.
-          </p>
-          
-          <div class="footer">
-            <p>© 2025 onAI Academy • Tripwire Course</p>
-            <p>Если у вас возникли вопросы, напишите нам: 
-              <a href="mailto:support@onaiacademy.kz" style="color: #00FF94;">support@onaiacademy.kz</a>
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    // Отправка email
-    await transporter.sendMail({
-      from: '"onAI Academy" <support@onaiacademy.kz>',
-      to: params.to,
-      subject: '🎓 Добро пожаловать в onAI Academy - Ваши учетные данные',
-      html: htmlTemplate,
-    });
-
-    console.log(`✅ Welcome email sent to ${params.to}`);
-    return true;
-  } catch (error: any) {
-    console.error('❌ Error sending welcome email:', error.message);
-    return false;
-  }
 }
 
 /**
@@ -282,13 +105,18 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 
     console.log(`✅ Saved to tripwire_users table`);
 
-    // 4. Отправляем Welcome Email
-    const emailSent = await sendWelcomeEmail({
-      to: email,
-      full_name: full_name,
-      email: email,
-      password: userPassword,
-    });
+    // 4. Отправляем Welcome Email (используем новый emailService)
+    let emailSent = false;
+    try {
+      emailSent = await sendWelcomeEmail({
+        toEmail: email,
+        name: full_name,
+        password: userPassword,
+      });
+    } catch (emailError: any) {
+      console.error(`⚠️ Email sending failed, but user created successfully:`, emailError.message);
+      // Не бросаем ошибку - пользователь создан, просто email не отправился
+    }
 
     // 5. Обновляем статус отправки email
     if (emailSent) {
