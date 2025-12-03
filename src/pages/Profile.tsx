@@ -13,8 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tantml:parameter>
-</invoke>
+import { useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
   const { user } = useAuth();
