@@ -36,7 +36,6 @@ export default function TripwireManager() {
     from: startOfMonth(new Date()),
     to: new Date(),
   });
-  console.log('📅 DateRange State:', dateRange);
   
   const [stats, setStats] = useState<Stats>({
     total_users: 0,
@@ -48,29 +47,21 @@ export default function TripwireManager() {
   });
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
-  console.log('📊 Component State:', { loading, refreshTrigger, showCreateForm });
 
   // Загрузка статистики
   useEffect(() => {
-    console.log('⚡ useEffect triggered! Dependencies:', { refreshTrigger, dateRange });
-    
     async function loadStats() {
       try {
-        console.log('🔄 loadStats: Starting API call...');
         const params = new URLSearchParams({
           startDate: dateRange.from.toISOString(),
           endDate: dateRange.to.toISOString(),
         });
-        console.log('📤 API Request params:', params.toString());
         
         const data = await api.get<Stats>(`/api/admin/tripwire/stats?${params}`);
-        console.log('✅ API Response received:', data);
         setStats(data);
       } catch (error) {
-        console.error('❌ Error loading stats:', error);
+        console.error('Error loading stats:', error);
       } finally {
-        console.log('🏁 loadStats: Complete, setting loading=false');
         setLoading(false);
       }
     }
@@ -80,11 +71,8 @@ export default function TripwireManager() {
 
   // Обработчик успешного создания пользователя
   const handleUserCreated = () => {
-    console.log('👥 handleUserCreated: Refreshing data...');
     setRefreshTrigger((prev) => prev + 1);
   };
-
-  console.log('🎨 TripwireManager: About to render JSX');
 
   return (
     <div className="min-h-screen bg-[#030303] relative overflow-hidden">
