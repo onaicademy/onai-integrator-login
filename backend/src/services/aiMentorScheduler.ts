@@ -36,23 +36,25 @@ async function getStudentsProgress(): Promise<StudentProgress[]> {
   try {
     console.log('📊 [AI Mentor] Fetching students progress...');
 
-    // Получаем всех пользователей-студентов с их прогрессом
+    // Получаем всех пользователей-студентов (включая админов для тестирования) с их прогрессом
     const { data: users, error: usersError } = await adminSupabase
       .from('users')
       .select('*')
-      .eq('role', 'student')
       .eq('telegram_connected', true)
       .not('telegram_chat_id', 'is', null);
 
     if (usersError) {
       console.error('❌ [AI Mentor] Error fetching users:', usersError);
+      console.error('[AI Mentor] Error details:', JSON.stringify(usersError, null, 2));
       return [];
     }
 
     if (!users || users.length === 0) {
-      console.log('⚠️ [AI Mentor] No students found');
+      console.log('⚠️ [AI Mentor] No users with Telegram found');
       return [];
     }
+    
+    console.log(`✅ [AI Mentor] Found ${users.length} user(s) with Telegram connected`);
 
     // Получаем общее количество уроков
     const { count: totalLessonsCount } = await adminSupabase
