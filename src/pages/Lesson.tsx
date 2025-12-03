@@ -1163,24 +1163,6 @@ const Lesson = () => {
               </motion.div>
             )}
 
-            {/* AI Description Card */}
-            {lesson?.ai_description && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-[#1a1a24] border border-gray-800 rounded-2xl p-6"
-              >
-                <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-                  <span className="text-xl">📝</span>
-                  Описание урока
-                </h3>
-                <p className="text-sm text-gray-300 leading-relaxed">
-                  {lesson.ai_description}
-                </p>
-              </motion.div>
-            )}
-
             {/* AI Tips Card - с пульсирующей лампочкой */}
             {lesson?.ai_tips && (
               <motion.div
