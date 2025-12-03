@@ -110,6 +110,15 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
         setUploadStatus('💾 Сохраняем изменения...');
         setUploadProgress(10);
         
+        console.log('📝 [SAVE LESSON] Sending UPDATE request:', {
+          lessonId: lesson.id,
+          title,
+          descriptionLength: (description || '').length,
+          tipLength: (tip || '').length,
+          description: description?.substring(0, 100) + '...',
+          tip: tip?.substring(0, 100) + '...'
+        });
+        
         // Обновить урок
         await api.put(`/api/lessons/${lesson.id}`, {
           title,
