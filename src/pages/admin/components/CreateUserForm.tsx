@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { api } from '@/utils/apiClient';
+import { supabase } from '@/lib/supabase';
 
 interface CreateUserFormProps {
   onClose: () => void;
