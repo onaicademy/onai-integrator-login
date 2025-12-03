@@ -43,7 +43,8 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
         throw new Error('Не авторизован');
       }
 
-      const response = await fetch('/api/admin/tripwire/users', {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+      const response = await fetch(`${API_URL}/api/admin/tripwire/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
