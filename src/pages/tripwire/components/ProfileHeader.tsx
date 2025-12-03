@@ -43,16 +43,50 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                 }}>
               {cleanName}
               <span className="block text-2xl lg:text-3xl text-[#00FF94] mt-2 font-['JetBrains_Mono'] tracking-wider">
-                CEO
+                ДИРЕКТОР
               </span>
             </h1>
             
             <div className="flex flex-col gap-2">
               <p className="text-[#9CA3AF] text-lg lg:text-xl font-['Manrope']">{profile.email}</p>
               <div className="flex flex-wrap items-center gap-4">
-                <span className="text-xs font-['JetBrains_Mono'] text-[#00FF94] uppercase tracking-widest">
-                  /// USER ID: {profile.user_id.slice(0, 8).toUpperCase()}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-['JetBrains_Mono'] text-[#00FF94] uppercase tracking-widest">
+                    /// ID ПОЛЬЗОВАТЕЛЯ: {profile.user_id.slice(0, 8).toUpperCase()}
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(profile.user_id);
+                      // Simple toast feedback
+                      const toast = document.createElement('div');
+                      toast.textContent = '✅ ID скопирован';
+                      toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #00FF94; color: #000; padding: 12px 20px; border-radius: 8px; font-family: JetBrains Mono; font-weight: bold; z-index: 9999; animation: slideIn 0.3s ease-out;';
+                      document.body.appendChild(toast);
+                      setTimeout(() => {
+                        toast.style.animation = 'slideOut 0.3s ease-in';
+                        setTimeout(() => document.body.removeChild(toast), 300);
+                      }, 2000);
+                    }}
+                    className="p-1.5 rounded-md bg-[#00FF94]/10 border border-[#00FF94]/30 hover:bg-[#00FF94]/20 transition-all duration-200 group"
+                    title="Скопировать полный ID"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="14" 
+                      height="14" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      className="text-[#00FF94] group-hover:scale-110 transition-transform"
+                    >
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                    </svg>
+                  </button>
+                </div>
                 <span className="text-xs text-gray-500 font-['JetBrains_Mono'] uppercase tracking-wider">
                   В СИСТЕМЕ С {new Date(profile.created_at).toLocaleDateString('ru-RU')}
                 </span>

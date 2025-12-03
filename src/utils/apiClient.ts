@@ -43,9 +43,26 @@ export async function apiRequest<T = any>(
   // Получаем JWT токен из localStorage (сохраняется после авторизации)
   const token = getAuthToken();
   
-  // 🏗️ АРХИТЕКТУРНОЕ РЕШЕНИЕ: Единая точка правды для API URL
-  // Production fallback утвержден архитектором (Вариант A)
-  const baseUrl = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+  // 🏗️ АРХИТЕКТУРНОЕ РЕШЕНИЕ: Умный fallback в зависимости от окружения
+  // Development: localhost:3000, Production: api.onai.academy
+  const isDevelopment = import.meta.env.DEV; // Vite встроенная переменная
+  const defaultApiUrl = isDevelopment 
+    ? 'http://localhost:3000'      // localhost для development
+    : 'https://api.onai.academy';  // production для prod
+  
+  const baseUrl = import.meta.env.VITE_API_URL || defaultApiUrl;
+  
+  // 🔌 Логирование для отладки (только при первом вызове)
+  if (!window.__apiClientInitialized) {
+    console.log('🔌 API Client initialized with URL:', baseUrl);
+    console.log('📍 Mode:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
+    console.log('🔧 import.meta.env.DEV:', import.meta.env.DEV);
+    console.log('🔧 import.meta.env.PROD:', import.meta.env.PROD);
+    console.log('🔧 import.meta.env.MODE:', import.meta.env.MODE);
+    console.log('🔧 VITE_API_URL:', import.meta.env.VITE_API_URL);
+    window.__apiClientInitialized = true;
+  }
+  
   const url = `${baseUrl}${endpoint}`;
   
   // ✅ Проверяем тип body (FormData или JSON)

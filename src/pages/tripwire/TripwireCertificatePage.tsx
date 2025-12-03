@@ -1,42 +1,87 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { TripwireUserProfile } from '@/lib/tripwire-utils';
-import { Eye, Lock } from 'lucide-react';
-
-interface CertificatePreviewProps {
-  profile: TripwireUserProfile;
-  isLocked?: boolean;
-  certificateNumber?: string;
-  issuedAt?: string;
-}
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
+import { Loader2 } from 'lucide-react';
 
 /**
- * Профессиональный шаблон сертификата в Cyber-Architecture стиле
- * Готов к конвертации в PDF через Puppeteer
+ * 📜 TRIPWIRE CERTIFICATE PAGE - PRINT/DOWNLOAD VIEW
+ * Полноэкранная страница сертификата для печати и сохранения в PDF
  */
-export function CertificatePreview({ 
-  profile, 
-  isLocked = false,
-  certificateNumber = 'ONAI-TW-2025-XXXXXX',
-  issuedAt 
-}: CertificatePreviewProps) {
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const displayName = profile.full_name || 'Имя Фамилия';
-  const displayDate = issuedAt 
-    ? new Date(issuedAt).toLocaleDateString('ru-RU', { 
+export default function TripwireCertificatePage() {
+  const { certificateNumber } = useParams<{ certificateNumber: string }>();
+  const [certificate, setCertificate] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadCertificate();
+  }, [certificateNumber]);
+
+  const loadCertificate = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Загружаем сертификат по номеру
+      const { data, error: fetchError } = await supabase
+        .from('tripwire_certificates')
+        .select('*')
+        .eq('certificate_number', certificateNumber)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!data) throw new Error('Сертификат не найден');
+
+      setCertificate(data);
+
+      // Обновляем счетчик скачиваний
+      await supabase
+        .from('tripwire_certificates')
+        .update({ 
+          download_count: (data.download_count || 0) + 1,
+          downloaded_at: new Date().toISOString() 
+        })
+        .eq('id', data.id);
+
+    } catch (err: any) {
+      console.error('Error loading certificate:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#030303]">
+        <Loader2 className="h-12 w-12 animate-spin text-[#00FF94]" />
+      </div>
+    );
+  }
+
+  if (error || !certificate) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#030303]">
+        <div className="text-center">
+          <h1 className="text-2xl text-white mb-4">Сертификат не найден</h1>
+          <p className="text-gray-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const displayName = certificate.full_name || 'Имя Фамилия';
+  const displayDate = certificate.issued_at 
+    ? new Date(certificate.issued_at).toLocaleDateString('ru-RU', { 
         day: '2-digit', 
         month: 'long', 
         year: 'numeric' 
       })
     : '01 декабря 2025 г.';
 
-  // Если нажали "Открыть", то блокировка снимается визуально
-  const showLockOverlay = isLocked && !isPreviewOpen;
-
   return (
-    <div className="relative w-full">
-      {/* A4 Landscape Container */}
-      <div className="relative w-full aspect-[1.414/1] bg-gradient-to-br from-[#030303] via-[#0A0A0A] to-[#050505] rounded-xl overflow-hidden shadow-2xl">
+    <div className="min-h-screen bg-[#030303] flex items-center justify-center p-8">
+      {/* A4 Landscape Container - Optimized for Print */}
+      <div className="w-full max-w-[297mm] aspect-[1.414/1] bg-gradient-to-br from-[#030303] via-[#0A0A0A] to-[#050505] rounded-xl overflow-hidden shadow-2xl print:shadow-none print:rounded-none">
         <svg 
           width="100%" 
           height="100%" 
@@ -88,36 +133,36 @@ export function CertificatePreview({
           {/* Сетка фона */}
           <rect width="1200" height="848" fill="url(#grid)" opacity="0.3" />
 
-          {/* Декоративные угловые элементы - ПРЯМО ПО УГЛАМ */}
+          {/* Декоративные угловые элементы */}
           {/* Верхний левый угол */}
           <g opacity="0.8">
-            <line x1="20" y1="20" x2="20" y2="100" stroke="#00FF94" strokeWidth="3" />
-            <line x1="20" y1="20" x2="100" y2="20" stroke="#00FF94" strokeWidth="3" />
-            <circle cx="20" cy="20" r="4" fill="#00FF94" />
+            <line x1="60" y1="60" x2="60" y2="140" stroke="#00FF94" strokeWidth="3" />
+            <line x1="60" y1="60" x2="140" y2="60" stroke="#00FF94" strokeWidth="3" />
+            <circle cx="60" cy="60" r="4" fill="#00FF94" />
           </g>
 
           {/* Верхний правый угол */}
           <g opacity="0.8">
-            <line x1="1180" y1="20" x2="1180" y2="100" stroke="#00FF94" strokeWidth="3" />
-            <line x1="1180" y1="20" x2="1100" y2="20" stroke="#00FF94" strokeWidth="3" />
-            <circle cx="1180" cy="20" r="4" fill="#00FF94" />
+            <line x1="1140" y1="60" x2="1140" y2="140" stroke="#00FF94" strokeWidth="3" />
+            <line x1="1140" y1="60" x2="1060" y2="60" stroke="#00FF94" strokeWidth="3" />
+            <circle cx="1140" cy="60" r="4" fill="#00FF94" />
           </g>
 
           {/* Нижний левый угол */}
           <g opacity="0.8">
-            <line x1="20" y1="828" x2="20" y2="748" stroke="#00FF94" strokeWidth="3" />
-            <line x1="20" y1="828" x2="100" y2="828" stroke="#00FF94" strokeWidth="3" />
-            <circle cx="20" cy="828" r="4" fill="#00FF94" />
+            <line x1="60" y1="788" x2="60" y2="708" stroke="#00FF94" strokeWidth="3" />
+            <line x1="60" y1="788" x2="140" y2="788" stroke="#00FF94" strokeWidth="3" />
+            <circle cx="60" cy="788" r="4" fill="#00FF94" />
           </g>
 
           {/* Нижний правый угол */}
           <g opacity="0.8">
-            <line x1="1180" y1="828" x2="1180" y2="748" stroke="#00FF94" strokeWidth="3" />
-            <line x1="1180" y1="828" x2="1100" y2="828" stroke="#00FF94" strokeWidth="3" />
-            <circle cx="1180" cy="828" r="4" fill="#00FF94" />
+            <line x1="1140" y1="788" x2="1140" y2="708" stroke="#00FF94" strokeWidth="3" />
+            <line x1="1140" y1="788" x2="1060" y2="788" stroke="#00FF94" strokeWidth="3" />
+            <circle cx="1140" cy="788" r="4" fill="#00FF94" />
           </g>
 
-          {/* Логотип onAI Academy - ПРАВИЛЬНЫЙ SVG из OnAILogo.tsx */}
+          {/* Логотип onAI Academy */}
           <g transform="translate(30, 40) scale(0.08)">
             {/* Контур кнопки с вырезом (рамка) */}
             <path
@@ -126,7 +171,7 @@ export function CertificatePreview({
               d="M542.885 252.305H316.89C242.085 252.305 181.292 314.133 181.292 390.211C181.292 466.288 242.085 528.116 316.89 528.116H542.885C617.689 528.116 678.482 466.288 678.482 390.211C678.482 314.133 617.689 252.305 542.885 252.305ZM542.885 482.148H316.89C266.945 482.148 226.491 441.006 226.491 390.211C226.491 339.415 266.945 298.274 316.89 298.274H542.885C592.829 298.274 633.283 339.415 633.283 390.211C633.283 441.006 592.829 482.148 542.885 482.148Z"
               fill="#00FF88"
             />
-            {/* Внутренний круг - toggle button */}
+            {/* Внутренний круг */}
             <circle cx="542.885" cy="390.211" r="60" fill="#00FF88" stroke="#00FF88" strokeWidth="5" />
             {/* Буква N */}
             <path
@@ -142,30 +187,6 @@ export function CertificatePreview({
               fill="#FFFFFF"
             />
             <path d="M2015.73 153.979L2015.73 531.927" stroke="#FFFFFF" strokeWidth="15.6024" />
-          </g>
-          
-          {/* Удаленная старая версия - теперь здесь правильный SVG */}
-          <g transform="translate(300, 60)" opacity="0">
-            <text 
-              x="98" 
-              y="16" 
-              fill="#666666" 
-              fontSize="8" 
-              fontFamily="JetBrains Mono, monospace" 
-              letterSpacing="1"
-            >
-              DIGITAL
-            </text>
-            <text 
-              x="98" 
-              y="26" 
-              fill="#666666" 
-              fontSize="8" 
-              fontFamily="JetBrains Mono, monospace" 
-              letterSpacing="1"
-            >
-              ACADEMY
-            </text>
           </g>
 
           {/* Светящийся круг в центре (декоративный) */}
@@ -270,9 +291,7 @@ export function CertificatePreview({
             работы с нейросетями и AI-инструментами
           </text>
 
-          {/* Печать УБРАНА по запросу пользователя */}
-
-          {/* Подписи директоров */}
+          {/* Подписи Директоров */}
           <g transform="translate(120, 650)">
             <line x1="0" y1="0" x2="160" y2="0" stroke="#333333" strokeWidth="1.5" />
             <text 
@@ -297,7 +316,7 @@ export function CertificatePreview({
             </text>
           </g>
 
-          {/* Вторая подпись директора */}
+          {/* Вторая подпись Директора */}
           <g transform="translate(920, 650)">
             <line x1="0" y1="0" x2="160" y2="0" stroke="#333333" strokeWidth="1.5" />
             <text 
@@ -358,51 +377,27 @@ export function CertificatePreview({
             fontFamily="JetBrains Mono, monospace"
             letterSpacing="2"
           >
-            {certificateNumber}
+            {certificate.certificate_number}
           </text>
-
-          {/* QR код удален по запросу пользователя */}
-          {/* <g transform="translate(1050, 710)"> ... </g> */}
         </svg>
-
-        {/* Overlay для заблокированного состояния */}
-        {showLockOverlay && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md z-10">
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center">
-              <div className="flex items-center gap-4 mb-4">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <div>
-                  <h3 className="text-xl text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider mb-1">
-                    Сертификат заблокирован
-                  </h3>
-                  <p className="text-sm text-gray-400 font-['Manrope']">
-                    Завершите все модули для получения доступа
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 font-['JetBrains_Mono'] uppercase mb-6">
-                <span>/// ПРОГРЕСС:</span>
-                <span className="text-[#00FF94]">{profile.modules_completed}/3 модулей</span>
-              </div>
-
-              {/* Кнопка просмотра (временная) */}
-              <button
-                onClick={() => setIsPreviewOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/10 
-                         hover:bg-white/20 hover:border-[#00FF94]/50 transition-all duration-300 group"
-              >
-                <Eye className="w-4 h-4 text-[#00FF94] group-hover:scale-110 transition-transform" />
-                <span className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wide text-sm">
-                  ОТКРЫТЬ СЕРТИФИКАТ
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Print Styles */}
+      <style>{`
+        @media print {
+          body {
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+          
+          @page {
+            size: A4 landscape;
+            margin: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
+

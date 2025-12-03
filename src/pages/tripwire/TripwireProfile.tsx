@@ -58,6 +58,16 @@ export default function TripwireProfile() {
     }
   };
 
+  // Оптимистичное обновление email
+  const handleEmailUpdate = (newEmail: string) => {
+    if (profile) {
+      setProfile({
+        ...profile,
+        email: newEmail,
+      });
+    }
+  };
+
   const loadProfileData = async () => {
     if (!user) return;
 
@@ -338,6 +348,8 @@ export default function TripwireProfile() {
         <AccountSettings
           email={profile.email || ''}
           created_at={profile.created_at}
+          full_name={profile.full_name}
+          onEmailUpdate={handleEmailUpdate}
         />
       </div>
     </div>

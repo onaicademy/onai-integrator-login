@@ -40,7 +40,7 @@ export function TelegramConnect() {
       const data = await res.json();
       
       if (data.success) {
-        setIsConnected(data.connected || false);
+      setIsConnected(data.connected || false);
         if (data.bot_username) {
           setBotUsername(data.bot_username);
         }
@@ -158,11 +158,11 @@ export function TelegramConnect() {
     <Card className="bg-[#1a1a24] border-gray-800 hover:border-[#00FF88]/30 transition-all">
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
             <div className={`w-12 h-12 rounded-full ${isConnected ? 'bg-[#00FF88]/20 border-[#00FF88]/30' : 'bg-[#0088cc]/20 border-[#0088cc]/30'} flex items-center justify-center border`}>
               <MessageCircle className={`w-6 h-6 ${isConnected ? 'text-[#00FF88]' : 'text-[#0088cc]'}`} />
-            </div>
-            <div>
+          </div>
+          <div>
               <CardTitle className="text-white flex items-center gap-2">
                 AI-Наставник в Telegram
                 {isConnected && (
@@ -178,9 +178,9 @@ export function TelegramConnect() {
                   </span>
                 )}
               </CardTitle>
-              <CardDescription className="text-gray-400">
+            <CardDescription className="text-gray-400">
                 {isConnected ? 'Получаешь персональные мотивационные сообщения' : 'Подключи для получения мотивации и напоминаний'}
-              </CardDescription>
+            </CardDescription>
             </div>
           </div>
         </div>

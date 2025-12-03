@@ -17,3 +17,4 @@ WHERE email = 'rakhat@onaiacademy.kz';
 -- Verify
 SELECT email, role, created_at FROM auth.users WHERE email IN ('amina@onaiacademy.kz', 'rakhat@onaiacademy.kz');
 
+

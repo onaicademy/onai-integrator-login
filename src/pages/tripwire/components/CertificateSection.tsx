@@ -29,8 +29,19 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
   const progress = data.total_modules > 0 ? (data.modules_completed / data.total_modules) * 100 : 0;
 
   const handleDownload = () => {
-    if (certificate?.certificate_url) {
-      window.open(certificate.certificate_url, '_blank');
+    // Открываем страницу сертификата и автоматически запускаем print dialog
+    const certificateWindow = window.open(
+      `/tripwire/certificate/${certificate?.certificate_number}`, 
+      '_blank'
+    );
+    
+    // Ждем загрузки страницы и автоматически открываем диалог печати
+    if (certificateWindow) {
+      certificateWindow.addEventListener('load', () => {
+        setTimeout(() => {
+          certificateWindow.print();
+        }, 500);
+      });
     }
   };
 
@@ -75,7 +86,7 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
               <button 
                 onClick={handleDownload}
                 className="w-full h-14 bg-[#00FF94] text-black hover:bg-[#00CC6A] 
-                           font-bold font-['Space_Grotesk'] uppercase tracking-wider
+                           font-bold font-['JetBrains_Mono'] uppercase tracking-wider
                            rounded-xl transition-all duration-300 flex items-center justify-center gap-3
                            shadow-[0_0_30px_rgba(0,255,148,0.3)]"
               >

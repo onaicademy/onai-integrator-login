@@ -5,17 +5,20 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Shield, Mail, Key, User } from 'lucide-react';
+import { api } from '@/utils/apiClient'; // ✅ Используем apiClient с fallback
 
 interface AccountSettingsProps {
   email: string;
   created_at: string;
+  full_name?: string;
+  onEmailUpdate?: (newEmail: string) => void;
 }
 
 /**
  * ⚙️ ACCOUNT SETTINGS - PREMIUM CYBER REDESIGN
  * Настройки аккаунта в стиле Cyber-Architecture
  */
-export default function AccountSettings({ email, created_at }: AccountSettingsProps) {
+export default function AccountSettings({ email, created_at, full_name, onEmailUpdate }: AccountSettingsProps) {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -33,11 +36,34 @@ export default function AccountSettings({ email, created_at }: AccountSettingsPr
       return;
     }
 
+    // Валидация email формата
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      toast({
+        title: "Ошибка",
+        description: "Введите корректный email адрес (например: example@gmail.com)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Сохраняем старый email для отката в случае ошибки
+    const oldEmail = email;
+    
+    // ОПТИМИСТИЧНОЕ ОБНОВЛЕНИЕ: сразу обновляем UI
+    if (onEmailUpdate) {
+      onEmailUpdate(newEmail);
+    }
+
     setIsUpdatingEmail(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      // 🔥 BACKEND-FIRST: apiClient автоматически добавит JWT токен и fallback URL
+      const result = await api.post('/api/users/update-email', {
+        newEmail,
+        userName: full_name || 'Пользователь',
+      });
 
-      if (error) throw error;
+      console.log('✅ Email успешно обновлен через backend:', result);
 
       toast({
         title: "Email обновлен",
@@ -45,6 +71,13 @@ export default function AccountSettings({ email, created_at }: AccountSettingsPr
       });
       setNewEmail('');
     } catch (error: any) {
+      // Откатываем email назад в случае ошибки
+      if (onEmailUpdate) {
+        onEmailUpdate(oldEmail);
+      }
+      
+      console.error('❌ Ошибка обновления email:', error);
+      
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось обновить email",
@@ -65,10 +98,10 @@ export default function AccountSettings({ email, created_at }: AccountSettingsPr
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       toast({
         title: "Ошибка",
-        description: "Пароль должен содержать минимум 6 символов",
+        description: "Пароль должен содержать минимум 8 символов",
         variant: "destructive",
       });
       return;
@@ -85,18 +118,23 @@ export default function AccountSettings({ email, created_at }: AccountSettingsPr
 
     setIsUpdatingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      // 🔥 BACKEND-FIRST: apiClient автоматически добавит JWT токен и fallback URL
+      const result = await api.post('/api/users/update-password', {
+        newPassword,
+        userName: full_name || 'Пользователь',
+      });
 
-      if (error) throw error;
+      console.log('✅ Пароль успешно обновлен через backend:', result);
 
       toast({
         title: "Пароль изменен",
         description: "Ваш пароль успешно обновлен",
-        variant: "destructive",
       });
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
+      console.error('❌ Ошибка обновления пароля:', error);
+      
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось изменить пароль",
@@ -117,7 +155,7 @@ export default function AccountSettings({ email, created_at }: AccountSettingsPr
           НАСТРОЙКИ АККАУНТА
         </h2>
         <p className="text-sm text-[#9CA3AF] font-['JetBrains_Mono']">
-          /// SECURITY & PREFERENCES
+          /// БЕЗОПАСНОСТЬ И НАСТРОЙКИ
         </p>
       </div>
 
@@ -140,11 +178,11 @@ export default function AccountSettings({ email, created_at }: AccountSettingsPr
               
               <div className="space-y-4">
                 <div className="p-4 bg-black/40 rounded-xl border border-gray-800">
-                  <span className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] block mb-1">EMAIL ADDRESS</span>
+                  <span className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] block mb-1">АДРЕС ЭЛЕКТРОННОЙ ПОЧТЫ</span>
                   <p className="text-white font-mono">{email}</p>
                 </div>
                 <div className="p-4 bg-black/40 rounded-xl border border-gray-800">
-                  <span className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] block mb-1">MEMBER SINCE</span>
+                  <span className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] block mb-1">В СИСТЕМЕ С</span>
                   <p className="text-white font-mono">
                     {new Date(created_at).toLocaleDateString('ru-RU', {
                       year: 'numeric',

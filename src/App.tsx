@@ -44,6 +44,7 @@ import TripwireProductPage from "./pages/tripwire/TripwireProductPage";
 import TripwireLogin from "./pages/tripwire/TripwireLogin";
 import TripwireLesson from "./pages/tripwire/TripwireLesson";
 import TripwireProfile from "./pages/tripwire/TripwireProfile";
+import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 // Tripwire Admin pages
@@ -164,6 +165,9 @@ const AppRoutes = () => {
       {/* Tripwire (Trial Version - Now Requires Real Authentication) */}
       {/* Public: Login page */}
       <Route path="/tripwire/login" element={<TripwireLogin />} />
+      
+      {/* Public: Certificate page (no auth required for sharing) */}
+      <Route path="/tripwire/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
       
       {/* Protected: All other Tripwire routes require authentication */}
       <Route path="/tripwire" element={

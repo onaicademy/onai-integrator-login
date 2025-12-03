@@ -30,5 +30,8 @@ router.get('/leaderboard', authenticateJWT, tripwireManagerController.getSalesLe
 // GET /api/admin/tripwire/sales-chart - Получить данные для графика продаж
 router.get('/sales-chart', authenticateJWT, tripwireManagerController.getSalesChartData);
 
+// GET /api/admin/tripwire/my-stats - Получить МОЮ статистику (для конкретного user_id)
+router.get('/my-stats', authenticateJWT, tripwireManagerController.getMyStats);
+
 export default router;
 

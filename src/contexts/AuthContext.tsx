@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
@@ -27,6 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // 🔥 THROTTLE для TOKEN_REFRESHED (защита от 429)
+  const lastRefreshTime = useRef<number>(0);
+  const MIN_REFRESH_INTERVAL = 10000; // 10 секунд между обновлениями
 
   // 📋 Загрузить данные профиля из profiles (С КЭШЕМ И TTL!)
   const loadUserProfile = async (userId: string, forceRefresh = false): Promise<ExtendedUser | null> => {
@@ -201,6 +205,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         if (error) {
+          // 🔥 ОБРАБОТКА 429: не пытаемся retry, просто используем текущее состояние
+          if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+            console.error('🚨 RATE LIMIT (429)! Используем текущее состояние сессии из памяти.');
+            await updateAuthState(null); // Безопасно устанавливаем null
+            return;
+          }
           console.error('❌ Ошибка getSession():', error);
         }
         
@@ -268,7 +278,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('🚪 SIGNED_OUT');
           updateAuthState(null);
         } else if (event === 'TOKEN_REFRESHED') {
-          console.log('🔄 TOKEN_REFRESHED');
+          // 🔥 THROTTLE: игнорируем слишком частые обновления
+          const now = Date.now();
+          const timeSinceLastRefresh = now - lastRefreshTime.current;
+          
+          if (timeSinceLastRefresh < MIN_REFRESH_INTERVAL) {
+            console.warn(`⏱️ TOKEN_REFRESHED проигнорирован (прошло ${Math.round(timeSinceLastRefresh / 1000)}s, нужно ${MIN_REFRESH_INTERVAL / 1000}s)`);
+            return;
+          }
+          
+          console.log('🔄 TOKEN_REFRESHED (разрешено)');
+          lastRefreshTime.current = now;
           updateAuthState(newSession);
         } else if (event === 'INITIAL_SESSION') {
           console.log('🎬 INITIAL_SESSION');

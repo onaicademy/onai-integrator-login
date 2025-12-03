@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as tripwireManagerService from '../services/tripwireManagerService';
+import { supabase } from '../config/supabase';
 
 /**
  * POST /api/admin/tripwire/users
@@ -318,6 +319,73 @@ export async function getSalesChartData(req: Request, res: Response) {
     return res.status(200).json(chartData);
   } catch (error: any) {
     console.error('❌ Error in getSalesChartData:', error);
+    return res.status(500).json({
+      error: error.message || 'Internal server error',
+    });
+  }
+}
+
+/**
+ * Получить МОЮ статистику продаж (для конкретного пользователя)
+ * GET /api/admin/tripwire/my-stats
+ * Возвращает: мои продажи, моя выручка, мои клиенты (привязаны к моему user_id)
+ */
+export async function getMyStats(req: Request, res: Response) {
+  try {
+    const currentUser = (req as any).user;
+    if (!currentUser) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Получаем user_id текущего пользователя
+    const userId = currentUser.sub || currentUser.id;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID not found' });
+    }
+
+    console.log(`📊 Getting personal stats for user_id: ${userId}`);
+
+    // Получаем всех пользователей, добавленных ЭТИМ менеджером
+    const { data: myUsers, error: usersError } = await supabase
+      .from('tripwire_user_profile')
+      .select('*')
+      .eq('added_by_manager_id', userId);
+
+    if (usersError) {
+      console.error('❌ Error fetching my users:', usersError);
+      throw usersError;
+    }
+
+    const totalUsers = myUsers?.length || 0;
+    
+    // Считаем активных (есть хотя бы 1 просмотренный урок)
+    const activeUsers = myUsers?.filter((u: any) => (u.lessons_watched || 0) > 0).length || 0;
+
+    // Считаем выручку: totalUsers * 2490 тенге
+    const revenuePerUser = 2490;
+    const totalRevenue = totalUsers * revenuePerUser;
+
+    // Продажи за этот месяц
+    const currentMonth = new Date().toISOString().slice(0, 7); // "2025-12"
+    const thisMonthSales = myUsers?.filter((u: any) => {
+      const createdAt = new Date(u.created_at).toISOString().slice(0, 7);
+      return createdAt === currentMonth;
+    }).length || 0;
+
+    const stats = {
+      totalSales: totalUsers,
+      totalRevenue,
+      activeUsers,
+      thisMonthSales,
+      userId, // Для отладки
+    };
+
+    console.log('✅ My personal stats:', stats);
+
+    return res.status(200).json(stats);
+  } catch (error: any) {
+    console.error('❌ Error in getMyStats:', error);
     return res.status(500).json({
       error: error.message || 'Internal server error',
     });

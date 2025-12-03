@@ -71,32 +71,32 @@ async function getStudentsProgress(): Promise<StudentProgress[]> {
           .eq('user_id', user.id);
 
         const completedLessons = progress?.filter((p: any) => p.is_completed).length || 0;
-        const totalLessons = totalLessonsCount || 0;
-        const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+      const totalLessons = totalLessonsCount || 0;
+      const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
-        // Определяем последнюю активность
+      // Определяем последнюю активность
         const sortedProgress = progress?.sort((a: any, b: any) => 
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
         );
         const lastActivityDate = sortedProgress?.[0]?.updated_at || user.last_login_at || null;
-        const daysInactive = lastActivityDate
-          ? Math.floor((Date.now() - new Date(lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
-          : 999;
+      const daysInactive = lastActivityDate
+        ? Math.floor((Date.now() - new Date(lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
+        : 999;
 
-        return {
-          userId: user.id,
+      return {
+        userId: user.id,
           fullName: user.full_name || 'Студент',
-          email: user.email,
+        email: user.email,
           telegramChatId: user.telegram_chat_id?.toString() || null,
-          totalLessons,
-          completedLessons,
-          progressPercentage,
-          lastActivityDate,
+        totalLessons,
+        completedLessons,
+        progressPercentage,
+        lastActivityDate,
           currentStreak: 0, // TODO: Вычислять из student_progress
           xp: user.total_xp || 0,
           level: user.level || 1,
-          daysInactive,
-        };
+        daysInactive,
+      };
       })
     );
 

@@ -128,20 +128,20 @@ export async function generateTranscription(videoId: string, videoUrl: string): 
         
         if (isTripwire) {
           // Tripwire: сохраняем в tripwire_ai_costs
-          await supabase.from('tripwire_ai_costs').insert({
+        await supabase.from('tripwire_ai_costs').insert({
             user_id: '00000000-0000-0000-0000-000000000000', // System
-            cost_type: 'lesson_transcription',
-            service: 'groq',
-            model: 'whisper-large-v3',
-            tokens_used: 0,
+          cost_type: 'lesson_transcription',
+          service: 'groq',
+          model: 'whisper-large-v3',
+          tokens_used: 0,
             cost_usd: costUsd,
-            metadata: { 
-              video_id: videoId,
-              lesson_id: lesson.id,
-              duration: audioDuration,
-              text_length: plainText.length
-            }
-          });
+          metadata: { 
+            video_id: videoId,
+            lesson_id: lesson.id,
+            duration: audioDuration,
+            text_length: plainText.length
+          }
+        });
           console.log(`✅ [Transcription] Tripwire cost записан для урока ${lesson.id}`);
         } else {
           // Main platform: сохраняем в ai_token_usage

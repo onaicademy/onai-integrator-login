@@ -13,12 +13,14 @@ export default function AdminDashboard() {
   const [tokenStats, setTokenStats] = useState<any>(null);
   const [studentStats, setStudentStats] = useState<any>(null);
   const [tripwireStats, setTripwireStats] = useState<any>(null);
+  const [myStats, setMyStats] = useState<any>(null);
 
   // Загружаем все статистики при монтировании
   useEffect(() => {
     loadTokenStats();
     loadStudentStats();
     loadTripwireStats();
+    loadMyStats();
   }, []);
 
   const loadTokenStats = async () => {
@@ -93,6 +95,20 @@ export default function AdminDashboard() {
       console.log('[AdminDashboard] ✅ Статистика Tripwire загружена:', { totalSales, totalRevenue });
     } catch (error) {
       console.error('[AdminDashboard] ❌ Ошибка загрузки Tripwire:', error);
+    }
+  };
+
+  const loadMyStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем МОЮ статистику...');
+      const response = await api.get('/api/admin/tripwire/my-stats');
+      const stats = response.data || response;
+      
+      setMyStats(stats);
+
+      console.log('[AdminDashboard] ✅ МОЯ статистика загружена:', stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки МОЕй статистики:', error);
     }
   };
 
@@ -206,12 +222,25 @@ export default function AdminDashboard() {
             stats={formatTokenStats()}
           />
 
-          {/* Карточка 5: Sales Manager - Tripwire (НОВАЯ) */}
+          {/* Карточка 5: Мой отдел продаж (ЛИЧНАЯ ПАНЕЛЬ ДЛЯ ДИРЕКТОРА) */}
+          <AdminCard
+            title="Мой отдел продаж"
+            description="Мои продажи, мои клиенты, добавление пользователей"
+            icon={<TrendingUp className="w-8 h-8" />}
+            onClick={() => navigate("/admin/tripwire-manager")}
+            stats={[
+              { label: "Мои продажи", value: myStats?.totalSales?.toString() || "0" },
+              { label: "Моя выручка", value: myStats ? `${myStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },
+              { label: "Этот месяц", value: `+${myStats?.thisMonthSales || 0}` },
+            ]}
+          />
+
+          {/* Карточка 6: Sales Manager - Tripwire (ГЛОБАЛЬНАЯ СТАТИСТИКА) */}
           <AdminCard
             title="Sales Manager - Tripwire"
             description="Управление продажами, рейтинг менеджеров"
             icon={<TrendingUp className="w-8 h-8" />}
-            onClick={() => navigate("/admin/tripwire-manager")}
+            onClick={() => navigate("/admin/tripwire-sales-global")}
             stats={[
               { label: "Всего продаж", value: tripwireStats?.totalSales?.toString() || "0" },
               { label: "Выручка", value: tripwireStats ? `${tripwireStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },
@@ -219,7 +248,7 @@ export default function AdminDashboard() {
             ]}
           />
 
-          {/* Карточка 6: Транскрибации уроков */}
+          {/* Карточка 7: Транскрибации уроков */}
           <AdminCard
             title="Транскрибации уроков"
             description="Управление транскрибациями через Groq Whisper"

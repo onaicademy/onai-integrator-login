@@ -246,7 +246,7 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
                 © 2025 onAI Academy
               </p>
               <p className="text-[10px] font-mono font-medium text-gray-600 tracking-wide">
-                PREMIUM LEARNING PLATFORM
+                ПРЕМИУМ ПЛАТФОРМА ОБУЧЕНИЯ
               </p>
             </div>
           </motion.div>

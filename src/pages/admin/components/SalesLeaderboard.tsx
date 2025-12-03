@@ -28,7 +28,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
       try {
         setLoading(true);
         const data = await api.get('/api/admin/tripwire/leaderboard');
-        setManagers(data.managers || []);
+          setManagers(data.managers || []);
       } catch (error) {
         console.error('Error loading leaderboard:', error);
       } finally {
