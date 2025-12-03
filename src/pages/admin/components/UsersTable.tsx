@@ -25,6 +25,7 @@ export default function UsersTable({ refreshTrigger, managerId }: UsersTableProp
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [filteredManagerName, setFilteredManagerName] = useState<string | null>(null);
   const limit = 20;
 
   const statusConfig: Record<
@@ -90,7 +91,19 @@ export default function UsersTable({ refreshTrigger, managerId }: UsersTableProp
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" id="users-table-section">
+      {/* 🎯 ARCHITECT SOLUTION #2: Visual feedback при фильтрации */}
+      {managerId && (
+        <div className="flex items-center justify-between bg-[#00FF94]/10 border border-[#00FF94]/30 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <Eye className="w-5 h-5 text-[#00FF94]" />
+            <span className="text-white font-['JetBrains_Mono']">
+              Показаны ученики выбранного менеджера
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <h2
           className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"

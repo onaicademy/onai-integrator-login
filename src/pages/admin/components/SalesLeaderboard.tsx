@@ -197,6 +197,11 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                         onClick={(e) => {
                           e.stopPropagation();
                           onManagerSelect(manager.manager_id);
+                          // 🎯 ARCHITECT SOLUTION #2: Scroll to users table
+                          setTimeout(() => {
+                            const usersSection = document.getElementById('users-table-section');
+                            usersSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
                         }}
                         className="px-4 py-2 bg-[#00FF94]/10 hover:bg-[#00FF94]/20 border border-[#00FF94]/30 
                                  rounded-lg text-sm font-['JetBrains_Mono'] text-[#00FF94] transition-colors"

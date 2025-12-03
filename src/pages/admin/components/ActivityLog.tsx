@@ -52,6 +52,12 @@ export default function ActivityLog({ refreshTrigger }: ActivityLogProps) {
       iconifyIcon: 'solar:trash-bin-trash-bold',
       color: '#EF4444',
     },
+    course_completed: {
+      label: 'Завершил курс',
+      icon: Activity,
+      iconifyIcon: 'solar:medal-star-bold',
+      color: '#FFD700',
+    },
   };
 
   useEffect(() => {
@@ -59,9 +65,11 @@ export default function ActivityLog({ refreshTrigger }: ActivityLogProps) {
       try {
         setLoading(true);
         const data = await api.get('/api/admin/tripwire/activity?limit=20');
+        console.log('📜 [ActivityLog] Raw data from API:', data);
+        console.log('📜 [ActivityLog] Data type:', typeof data, Array.isArray(data));
         setActivities(data || []);
       } catch (error) {
-        console.error('Error loading activity:', error);
+        console.error('❌ [ActivityLog] Error loading activity:', error);
       } finally {
         setLoading(false);
       }

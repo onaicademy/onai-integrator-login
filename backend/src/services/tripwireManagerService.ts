@@ -332,9 +332,10 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 
 /**
  * Получает список Tripwire пользователей
+ * 🎯 ARCHITECT SOLUTION #3: Поддержка startDate/endDate фильтрации
  */
-export async function getTripwireUsers(params: GetTripwireUsersParams) {
-  const { managerId, status, page = 1, limit = 20 } = params;
+export async function getTripwireUsers(params: GetTripwireUsersParams & { startDate?: string; endDate?: string }) {
+  const { managerId, status, page = 1, limit = 20, startDate, endDate } = params;
 
   try {
     let query = adminSupabase
@@ -350,6 +351,14 @@ export async function getTripwireUsers(params: GetTripwireUsersParams) {
     // Фильтр по статусу
     if (status) {
       query = query.eq('status', status);
+    }
+
+    // Фильтр по датам
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
     }
 
     // Пагинация
@@ -377,8 +386,9 @@ export async function getTripwireUsers(params: GetTripwireUsersParams) {
 
 /**
  * Получает статистику по Tripwire пользователям для менеджера
+ * 🎯 ARCHITECT SOLUTION #3: Поддержка startDate/endDate фильтрации
  */
-export async function getTripwireStats(managerId?: string) {
+export async function getTripwireStats(managerId?: string, startDate?: string, endDate?: string) {
   try {
     const TRIPWIRE_PRICE = 5000; // Цена в тенге
 
@@ -388,6 +398,14 @@ export async function getTripwireStats(managerId?: string) {
 
     if (managerId) {
       query = query.eq('granted_by', managerId);
+    }
+
+    // Применяем фильтр по датам если указаны
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
     }
 
     const { data, error } = await query;
@@ -455,15 +473,26 @@ export async function updateTripwireUserStatus(
 
 /**
  * Получает историю действий менеджера
+ * 🎯 ARCHITECT SOLUTION #3: Поддержка startDate/endDate фильтрации
  */
-export async function getSalesActivityLog(managerId: string, limit = 50) {
+export async function getSalesActivityLog(managerId: string, limit = 50, startDate?: string, endDate?: string) {
   try {
-    const { data, error } = await adminSupabase
+    let query = adminSupabase
       .from('sales_activity_log')
       .select('*')
       .eq('manager_id', managerId)
       .order('created_at', { ascending: false })
       .limit(limit);
+
+    // Фильтр по датам
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`Database error: ${error.message}`);
@@ -543,7 +572,12 @@ export async function getSalesLeaderboard() {
 /**
  * Получает данные для графика продаж
  */
-export async function getSalesChartData(managerId?: string, period: string = 'month') {
+export async function getSalesChartData(
+  managerId?: string,
+  period: string = 'month',
+  customStartDate?: string,
+  customEndDate?: string
+) {
   try {
     const TRIPWIRE_PRICE = 5000;
 
@@ -553,24 +587,32 @@ export async function getSalesChartData(managerId?: string, period: string = 'mo
       query = query.eq('granted_by', managerId);
     }
 
-    // Определяем период
+    // 🎯 ARCHITECT SOLUTION #3: Support custom date range
     const now = new Date();
     let startDate: Date;
+    let endDate: Date = now;
 
-    switch (period) {
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'year':
-        startDate = new Date(now.getFullYear(), 0, 1);
-        break;
-      case 'month':
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
+    if (customStartDate && customEndDate) {
+      startDate = new Date(customStartDate);
+      endDate = new Date(customEndDate);
+    } else {
+      switch (period) {
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          break;
+        case 'month':
+        default:
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+      }
     }
 
-    query = query.gte('created_at', startDate.toISOString());
+    query = query
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString());
 
     const { data, error } = await query.order('created_at', { ascending: true });
 
@@ -578,29 +620,48 @@ export async function getSalesChartData(managerId?: string, period: string = 'mo
       throw new Error(`Database error: ${error.message}`);
     }
 
-    // Группируем по датам
-    const salesByDate = new Map<string, number>();
+    // 🎯 ARCHITECT SOLUTION #2: Backend-side Interpolation
+    // Генерируем ПОЛНЫЙ массив дат в диапазоне
+    const allDates: Array<{ date: string; displayDate: string; sales: number; revenue: number }> = [];
+    const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    const finalDate = new Date(endDate);
+    finalDate.setHours(23, 59, 59, 999);
 
+    // Группируем продажи по датам (ISO формат)
+    const salesByISODate = new Map<string, number>();
     for (const user of data || []) {
       const date = new Date(user.created_at);
-      const dateKey =
-        period === 'week'
-          ? date.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' })
-          : period === 'year'
-          ? date.toLocaleDateString('ru-RU', { month: 'short' })
-          : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-
-      salesByDate.set(dateKey, (salesByDate.get(dateKey) || 0) + 1);
+      const isoDateKey = date.toISOString().split('T')[0]; // "2025-12-03"
+      salesByISODate.set(isoDateKey, (salesByISODate.get(isoDateKey) || 0) + 1);
     }
 
-    // Преобразуем в массив для графика
-    const chartData = Array.from(salesByDate.entries()).map(([date, sales]) => ({
-      date,
-      sales,
-      revenue: sales * TRIPWIRE_PRICE,
-    }));
+    // Генерируем массив со ВСЕМИ датами (заполняя пропуски нулями)
+    while (currentDate <= finalDate) {
+      const isoDate = currentDate.toISOString().split('T')[0];
+      const sales = salesByISODate.get(isoDate) || 0;
 
-    return { data: chartData };
+      let displayDate: string;
+      if (period === 'week') {
+        displayDate = currentDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
+      } else if (period === 'year') {
+        displayDate = currentDate.toLocaleDateString('ru-RU', { month: 'short' });
+      } else {
+        displayDate = currentDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+      }
+
+      allDates.push({
+        date: isoDate,
+        displayDate,
+        sales,
+        revenue: sales * TRIPWIRE_PRICE,
+      });
+
+      // Переходим к следующему дню
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return { data: allDates };
   } catch (error: any) {
     console.error('❌ Error fetching sales chart data:', error);
     throw error;

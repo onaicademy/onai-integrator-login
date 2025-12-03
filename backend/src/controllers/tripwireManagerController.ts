@@ -105,6 +105,8 @@ export async function getTripwireUsers(req: Request, res: Response) {
     const status = req.query.status as string | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
 
     // Если не админ, показываем только своих пользователей
     const finalManagerId = userRole === 'admin' ? managerId : currentUser.id;
@@ -114,6 +116,8 @@ export async function getTripwireUsers(req: Request, res: Response) {
       status,
       page,
       limit,
+      startDate,
+      endDate,
     });
 
     return res.status(200).json(result);
@@ -146,8 +150,10 @@ export async function getTripwireStats(req: Request, res: Response) {
 
     // Если не админ, показываем только свою статистику
     const managerId = userRole === 'admin' ? undefined : currentUser.id;
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
 
-    const stats = await tripwireManagerService.getTripwireStats(managerId);
+    const stats = await tripwireManagerService.getTripwireStats(managerId, startDate, endDate);
 
     return res.status(200).json(stats);
   } catch (error: any) {
@@ -220,8 +226,10 @@ export async function getSalesActivityLog(req: Request, res: Response) {
     }
 
     const limit = parseInt(req.query.limit as string) || 50;
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
 
-    const activity = await tripwireManagerService.getSalesActivityLog(currentUser.id, limit);
+    const activity = await tripwireManagerService.getSalesActivityLog(currentUser.id, limit, startDate, endDate);
 
     return res.status(200).json(activity);
   } catch (error: any) {
@@ -277,8 +285,10 @@ export async function getSalesChartData(req: Request, res: Response) {
 
     const managerId = req.query.manager_id as string | undefined;
     const period = (req.query.period as string) || 'month';
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
 
-    const chartData = await tripwireManagerService.getSalesChartData(managerId, period);
+    const chartData = await tripwireManagerService.getSalesChartData(managerId, period, startDate, endDate);
 
     return res.status(200).json(chartData);
   } catch (error: any) {

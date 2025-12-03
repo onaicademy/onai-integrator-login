@@ -184,6 +184,12 @@ router.post('/complete', async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
+    // 🎯 ARCHITECT SOLUTION #1: Check if course is completed after marking lesson
+    const { checkTripwireCompletion } = require('../services/tripwireCompletionService');
+    checkTripwireCompletion(tripwire_user_id).catch((err: any) => {
+      console.error('❌ Error checking completion:', err);
+    });
+
     res.json({ success: true, message: 'Lesson marked as complete', progress: data });
   } catch (error: any) {
     console.error('❌ Unexpected error:', error);
