@@ -4,32 +4,32 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { triggerManualDailyReport, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
+import { triggerManualDailyMotivation, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
 
 const router = Router();
 
 /**
  * POST /api/ai-mentor/trigger/daily
- * Ручной запуск ежедневного отчета администратору (для тестирования)
+ * Ручной запуск ежедневной мотивации студентов (для тестирования)
  */
 router.post('/trigger/daily', async (req: Request, res: Response) => {
   try {
-    console.log('🧪 [AI Mentor API] Manual trigger: daily report');
+    console.log('🧪 [AI Mentor API] Manual trigger: daily motivation');
 
-    // Запускаем генерацию отчета асинхронно (не блокируем ответ)
-    triggerManualDailyReport().catch(err => {
-      console.error('❌ [AI Mentor API] Error in manual daily report:', err);
+    // Запускаем мотивацию асинхронно (не блокируем ответ)
+    triggerManualDailyMotivation().catch((err: any) => {
+      console.error('❌ [AI Mentor API] Error in manual daily motivation:', err);
     });
 
     res.json({
       success: true,
-      message: 'Генерация ежедневного отчета запущена в фоне',
+      message: 'Отправка ежедневной мотивации студентам запущена в фоне',
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
-    console.error('❌ [AI Mentor API] Error triggering daily report:', error);
+    console.error('❌ [AI Mentor API] Error triggering daily motivation:', error);
     res.status(500).json({
-      error: 'Ошибка запуска ежедневного отчета',
+      error: 'Ошибка запуска ежедневной мотивации',
       details: error.message,
     });
   }
@@ -44,7 +44,7 @@ router.post('/trigger/weekly', async (req: Request, res: Response) => {
     console.log('🧪 [AI Mentor API] Manual trigger: weekly report');
 
     // Запускаем генерацию отчета асинхронно (не блокируем ответ)
-    triggerManualWeeklyReport().catch(err => {
+    triggerManualWeeklyReport().catch((err: any) => {
       console.error('❌ [AI Mentor API] Error in manual weekly report:', err);
     });
 
