@@ -137,6 +137,17 @@ export default function Login() {
         console.log('📋 Онбординг завершён:', userData?.onboarding_completed);
 
         // ✅ ОНБОРДИНГ ТОЛЬКО ДЛЯ СТУДЕНТОВ
+        // 🔥 AUTO-REDIRECT: Sales менеджеры → Sales Manager Panel
+        if (userData?.role === 'sales') {
+          console.log('👨‍💼 Sales менеджер, редирект на /admin/tripwire-manager');
+          toast({
+            title: '✅ Добро пожаловать!',
+            description: 'Панель управления продажами Tripwire',
+          });
+          navigate('/admin/tripwire-manager', { replace: true });
+          return;
+        }
+
         if (userData?.role === 'student' && !userData?.onboarding_completed) {
           console.log('🎯 Студент не прошёл онбординг, редирект на /welcome');
           toast({
