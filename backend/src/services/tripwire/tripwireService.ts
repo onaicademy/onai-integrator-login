@@ -6,7 +6,7 @@
  * ✅ Отдельный проект Supabase для полной изоляции
  */
 
-import { tripwireAdminSupabase } from '../config/supabase-tripwire';
+import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
 
 /**
  * Создать нового Tripwire пользователя
