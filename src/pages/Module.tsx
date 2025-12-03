@@ -379,7 +379,8 @@ const Module = () => {
     );
   }
 
-  if (moduleError || !module) {
+  // ✅ Показываем ошибку ТОЛЬКО после завершения загрузки
+  if (!loading && (moduleError || !module)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center max-w-md">

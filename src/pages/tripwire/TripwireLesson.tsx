@@ -512,7 +512,8 @@ const TripwireLesson = () => {
     );
   }
 
-  if (!lesson) {
+  // ✅ Показываем ошибку ТОЛЬКО после завершения загрузки
+  if (!loading && !lesson) {
     return (
       <div className="min-h-screen bg-[#030303] flex items-center justify-center">
         <div className="text-white font-['Space_Grotesk'] text-xl">Урок не найден</div>

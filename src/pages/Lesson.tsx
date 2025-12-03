@@ -686,7 +686,8 @@ const Lesson = () => {
     );
   }
 
-  if (!lesson) {
+  // ✅ Показываем ошибку ТОЛЬКО после завершения загрузки
+  if (!loading && !lesson) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-center">

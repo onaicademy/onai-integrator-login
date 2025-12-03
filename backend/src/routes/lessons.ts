@@ -389,7 +389,22 @@ router.delete('/:id', async (req: Request, res: Response) => {
     // 3. Аналитика
     await adminSupabase.from('video_analytics').delete().eq('lesson_id', lessonId); // ✅ ИСПРАВЛЕНО
     
-    // 4. Удалить урок
+    // 4. Удалить транскрибации (по bunny_video_id)
+    const { data: lessonData } = await adminSupabase
+      .from('lessons')
+      .select('bunny_video_id')
+      .eq('id', lessonId)
+      .single();
+    
+    if (lessonData?.bunny_video_id) {
+      console.log('🗑️ Удаление транскрибации для видео:', lessonData.bunny_video_id);
+      await adminSupabase
+        .from('video_transcriptions')
+        .delete()
+        .eq('video_id', lessonData.bunny_video_id);
+    }
+    
+    // 5. Удалить урок (ai_description и ai_tips удалятся автоматически)
     const { error: deleteError } = await adminSupabase
       .from('lessons')
       .delete()
