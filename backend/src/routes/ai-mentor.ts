@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { triggerManualMotivationCheck, triggerManualDailyReport, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
+import { triggerManualDailyReport, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
 
 const router = Router();
 
