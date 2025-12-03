@@ -181,6 +181,10 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
             // Получить базовый URL из apiClient
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             xhr.open('POST', `${baseUrl}/api/stream/upload`);
+            
+            // ✅ Устанавливаем CORS заголовки явно
+            xhr.withCredentials = false; // Multipart не требует credentials
+            
             xhr.send(formData);
           });
         } else {
@@ -270,6 +274,10 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
           // Получить базовый URL из apiClient
           const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
           xhr.open('POST', `${baseUrl}/api/stream/upload`);
+          
+          // ✅ Устанавливаем CORS заголовки явно
+          xhr.withCredentials = false; // Multipart не требует credentials
+          
           xhr.send(formData);
         });
       } else {

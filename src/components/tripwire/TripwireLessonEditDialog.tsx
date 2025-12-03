@@ -211,6 +211,10 @@ export function TripwireLessonEditDialog({
             
             const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             xhr.open('POST', `${uploadApiUrl}/api/stream/upload`);
+            
+            // ✅ Устанавливаем CORS заголовки явно
+            xhr.withCredentials = false; // Multipart не требует credentials
+            
             xhr.send(formData);
           });
         } else {
