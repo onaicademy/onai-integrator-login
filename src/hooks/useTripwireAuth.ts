@@ -90,14 +90,12 @@ export function useTripwireAuth() {
       const userData = authData.user.user_metadata;
       const userRole = userData?.role;
 
-      // ❌ Sales managers НЕ должны логиниться на Tripwire платформе!
-      // Tripwire = только для учеников (students)
-      // Sales managers логинятся на основной платформе (/login) и идут на /admin/tripwire-manager
+      // ✅ Sales managers логинятся на Tripwire и редиректятся на Sales Manager Dashboard
       if (userRole === 'sales') {
-        console.log('❌ Sales manager tried to access Tripwire, signing out...');
-        await supabase.auth.signOut();
-        toast.error('Используйте основную платформу для входа');
-        navigate('/login', { replace: true });
+        console.log('✅ Sales manager logged in, redirecting to Sales Manager Dashboard...');
+        setTimeout(() => {
+          navigate('/admin/tripwire-manager', { replace: true });
+        }, 500);
         return;
       }
 
