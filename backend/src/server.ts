@@ -84,6 +84,7 @@ import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & An
 import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
+import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -237,6 +238,7 @@ app.use('/api/ai-mentor', aiMentorRouter); // 🤖 AI Mentor Scheduler & Analyti
 app.use('/api/ai-analytics', aiAnalyticsRouter); // 📊 AI Analytics Reports
 app.use('/api/telegram-connection', telegramConnectionRouter); // 📱 Telegram Connection Management
 app.use('/api/webhooks', webhooksRouter); // 🔗 BunnyCDN & External Webhooks (для video transcoding events)
+app.use('/api/admin', adminResetPasswordRouter); // 🔑 TEMPORARY: Admin Password Reset
 
 // 404 обработка
 app.use((req, res) => {

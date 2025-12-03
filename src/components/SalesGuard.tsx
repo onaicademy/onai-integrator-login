@@ -31,11 +31,11 @@ export function SalesGuard({ children }: SalesGuardProps) {
     );
   }
 
-  // ШАГ 2: Если не авторизован - редирект на Tripwire Login
+  // ШАГ 2: Если не авторизован - редирект на ОСНОВНОЙ Login (НЕ Tripwire!)
   const { user } = useAuth();
   if (isInitialized && !user) {
-    console.log('❌ SalesGuard: Не авторизован, редирект на /tripwire/login');
-    return <Navigate to="/tripwire/login" replace />;
+    console.log('❌ SalesGuard: Не авторизован, редирект на /login');
+    return <Navigate to="/login" replace />;
   }
 
   // ШАГ 3: Если авторизован НО роль не admin/sales - редирект на access-denied
