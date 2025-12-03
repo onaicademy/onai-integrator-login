@@ -223,10 +223,10 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       password: generatedPassword,
       email_confirm: true, // Автоподтверждение email
       user_metadata: {
-        role: 'tripwire',
         granted_by: currentUserId,
         created_by_manager: true,
         full_name: full_name,
+        platform: 'tripwire', // Платформа для разделения баз
       },
     });
 
@@ -239,6 +239,26 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     }
 
     console.log(`✅ Created user in auth.users: ${newUser.user.id}`);
+
+    // 2.5. Создаем запись в public.users с role='student' и platform='tripwire'
+    const { error: usersError } = await adminSupabase
+      .from('users')
+      .insert({
+        id: newUser.user.id,
+        email: email,
+        full_name: full_name,
+        role: 'student',
+        platform: 'tripwire', // Важно! Разделяем базы по платформам
+      });
+
+    if (usersError) {
+      console.error('❌ Error inserting to users:', usersError);
+      // Откатываем создание пользователя в auth
+      await adminSupabase.auth.admin.deleteUser(newUser.user.id);
+      throw new Error(`Users table error: ${usersError.message}`);
+    }
+
+    console.log(`✅ Created user in public.users with role=student, platform=tripwire`);
 
     // 3. Сохраняем в tripwire_users
     const { error: dbError } = await adminSupabase
