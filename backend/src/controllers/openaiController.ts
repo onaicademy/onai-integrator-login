@@ -4,9 +4,44 @@ import * as tokenService from '../services/tokenService'; // ✅ Добавле�
 import { getAssistantId, AssistantType } from '../config/assistants';
 import multer from 'multer';
 import { toFile } from 'openai/uploads'; // ✅ Для создания File объекта в Node.js
+import ffmpeg from 'fluent-ffmpeg';
+import stream from 'stream';
 
 // Multer для обработки multipart/form-data (загрузка файлов)
 const upload = multer({ storage: multer.memoryStorage() });
+
+/**
+ * Конвертирует WebM audio buffer в MP3
+ * @param webmBuffer - Buffer с WebM данными
+ * @returns Promise<Buffer> - Buffer с MP3 данными
+ */
+async function convertWebmToMp3(webmBuffer: Buffer): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(webmBuffer);
+
+    const chunks: Buffer[] = [];
+    const outputStream = new stream.PassThrough();
+
+    outputStream.on('data', (chunk) => chunks.push(chunk));
+    outputStream.on('end', () => resolve(Buffer.concat(chunks)));
+    outputStream.on('error', reject);
+
+    ffmpeg(bufferStream)
+      .toFormat('mp3')
+      .audioBitrate('128k')
+      .audioChannels(1) // Mono для уменьшения размера
+      .audioFrequency(16000) // 16kHz достаточно для речи
+      .on('error', (err) => {
+        console.error('[FFmpeg] ❌ Conversion error:', err.message);
+        reject(new Error(`FFmpeg conversion failed: ${err.message}`));
+      })
+      .on('end', () => {
+        console.log('[FFmpeg] ✅ Conversion completed');
+      })
+      .pipe(outputStream);
+  });
+}
 
 /**
  * POST /api/openai/threads/:threadId/runs
@@ -298,29 +333,41 @@ export async function transcribeAudio(req: Request, res: Response) {
       userId: userId,
     });
 
-    // ✅ Создаём File объект из Buffer (используя toFile из openai/uploads)
-    // Groq Whisper требует правильное расширение файла!
-    let filename = req.file.originalname || 'recording.webm';
+    // ✅ Конвертируем WebM в MP3 для совместимости с Groq Whisper
+    let audioBuffer = req.file.buffer;
+    let mimeType = req.file.mimetype || 'audio/webm';
+    let filename = 'recording.mp3';
     
-    // Если mimetype содержит "webm", убедимся что расширение .webm
-    if (req.file.mimetype && req.file.mimetype.includes('webm') && !filename.endsWith('.webm')) {
-      filename = 'recording.webm';
+    // Убираем ;codecs=opus из MIME type
+    if (mimeType.includes(';')) {
+      mimeType = mimeType.split(';')[0];
     }
     
-    // ✅ Убираем ;codecs=opus из MIME type (Groq может отклонять это)
-    let mimeType = req.file.mimetype || 'audio/webm';
-    if (mimeType.includes(';')) {
-      mimeType = mimeType.split(';')[0]; // audio/webm;codecs=opus → audio/webm
+    // Если файл WebM - конвертируем в MP3
+    if (mimeType.includes('webm') || mimeType.includes('ogg')) {
+      console.log('[OpenAI Controller] 🔄 Converting WebM/OGG to MP3...');
+      try {
+        audioBuffer = await convertWebmToMp3(req.file.buffer);
+        mimeType = 'audio/mp3';
+        filename = 'recording.mp3';
+        console.log(`[OpenAI Controller] ✅ Converted to MP3, size: ${audioBuffer.length} bytes`);
+      } catch (convErr: any) {
+        console.error('[OpenAI Controller] ❌ Conversion failed:', convErr.message);
+        return res.status(500).json({ 
+          error: 'Audio conversion failed',
+          details: convErr.message
+        });
+      }
     }
     
     console.log(`[OpenAI Controller] Creating audio file:`);
     console.log(`  - Filename: ${filename}`);
     console.log(`  - MIME Type: ${mimeType}`);
     console.log(`  - Original MIME: ${req.file.mimetype}`);
-    console.log(`  - Size: ${req.file.size} bytes`);
+    console.log(`  - Size: ${audioBuffer.length} bytes`);
     
-    const audioFile = await toFile(req.file.buffer, filename, {
-      type: mimeType, // Используем очищенный MIME type без codecs
+    const audioFile = await toFile(audioBuffer, filename, {
+      type: mimeType,
     });
 
     const transcription = await openaiService.transcribeAudio(audioFile, language, prompt);
