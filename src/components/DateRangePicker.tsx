@@ -136,12 +136,14 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
                 to: tempRange.to,
               }}
               onSelect={(range) => {
-                if (range?.from && range?.to) {
-                  setTempRange({ from: range.from, to: range.to });
+                if (range?.from) {
+                  setTempRange({
+                    from: range.from,
+                    to: range.to || range.from, // Fallback to from if to is undefined
+                  });
                 }
               }}
               numberOfMonths={2}
-              locale={ru}
               className="rounded-md"
             />
             <div className="flex items-center justify-between pt-3 border-t border-white/10 mt-3">
