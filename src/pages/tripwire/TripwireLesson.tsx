@@ -782,12 +782,6 @@ const TripwireLesson = () => {
                     {lesson.duration_minutes || 0} мин
                   </span>
                 </div>
-
-                {lesson.tip && (
-                  <div className="p-4 bg-[#00FF88]/5 border border-[#00FF88]/20 rounded-lg backdrop-blur-sm">
-                    <p className="text-sm text-gray-300 font-['Manrope'] leading-relaxed">💡 {lesson.tip}</p>
-                  </div>
-                )}
               </div>
             </motion.div>
 
