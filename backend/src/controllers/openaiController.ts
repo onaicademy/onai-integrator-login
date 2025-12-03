@@ -299,8 +299,28 @@ export async function transcribeAudio(req: Request, res: Response) {
     });
 
     // ✅ Создаём File объект из Buffer (используя toFile из openai/uploads)
-    const audioFile = await toFile(req.file.buffer, req.file.originalname || 'recording.webm', {
-      type: req.file.mimetype,
+    // Groq Whisper требует правильное расширение файла!
+    let filename = req.file.originalname || 'recording.webm';
+    
+    // Если mimetype содержит "webm", убедимся что расширение .webm
+    if (req.file.mimetype && req.file.mimetype.includes('webm') && !filename.endsWith('.webm')) {
+      filename = 'recording.webm';
+    }
+    
+    // ✅ Убираем ;codecs=opus из MIME type (Groq может отклонять это)
+    let mimeType = req.file.mimetype || 'audio/webm';
+    if (mimeType.includes(';')) {
+      mimeType = mimeType.split(';')[0]; // audio/webm;codecs=opus → audio/webm
+    }
+    
+    console.log(`[OpenAI Controller] Creating audio file:`);
+    console.log(`  - Filename: ${filename}`);
+    console.log(`  - MIME Type: ${mimeType}`);
+    console.log(`  - Original MIME: ${req.file.mimetype}`);
+    console.log(`  - Size: ${req.file.size} bytes`);
+    
+    const audioFile = await toFile(req.file.buffer, filename, {
+      type: mimeType, // Используем очищенный MIME type без codecs
     });
 
     const transcription = await openaiService.transcribeAudio(audioFile, language, prompt);
