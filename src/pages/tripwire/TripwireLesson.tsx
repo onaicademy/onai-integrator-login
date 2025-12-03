@@ -60,6 +60,9 @@ const TripwireLesson = () => {
   // 🔧 Admin check for debug panel
   const [isAdmin, setIsAdmin] = useState(false);
   
+  // Module data
+  const [module, setModule] = useState<any>(null);
+  
   // Lesson data
   const [lesson, setLesson] = useState<any>(null);
   const [video, setVideo] = useState<any>(null);
@@ -133,6 +136,7 @@ const TripwireLesson = () => {
 
   useEffect(() => {
     if (moduleId) {
+      loadModuleData();
       loadAllLessons();
     }
   }, [moduleId]);
@@ -158,6 +162,19 @@ const TripwireLesson = () => {
       setIsAdmin(false);
     }
   }, [userRole]);
+
+  const loadModuleData = async () => {
+    if (!moduleId) return;
+    
+    try {
+      const response = await api.get(`/api/modules/${moduleId}`);
+      if (response?.module) {
+        setModule(response.module);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка загрузки модуля:', error);
+    }
+  };
 
   const loadAllLessons = async () => {
     if (!moduleId) return;
@@ -550,7 +567,7 @@ const TripwireLesson = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 }}
               >
-                МОДУЛЬ {moduleId} • УРОК {currentLessonIndex + 1} / {allLessons.length}
+                МОДУЛЬ {module?.order_index !== undefined ? module.order_index + 1 : moduleId} • УРОК {currentLessonIndex + 1} / {allLessons.length}
               </motion.p>
               <motion.h1 
                 className="text-5xl lg:text-6xl font-bold text-white font-sans uppercase mb-4 leading-tight tracking-wide"
