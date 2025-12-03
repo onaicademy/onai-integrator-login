@@ -301,8 +301,9 @@ router.put('/:id', async (req: Request, res: Response) => {
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) {
-      updateData.description = description;
-      updateData.ai_description = description; // ✅ Синхронизация: обновляем оба поля
+      // ✅ КРИТИЧНО: Обновляем ТОЛЬКО ai_description (основное поле для AI контента)
+      updateData.ai_description = description;
+      updateData.description = description; // legacy fallback
     }
     if (content !== undefined) updateData.content = content;
     if (lesson_type !== undefined) updateData.lesson_type = lesson_type;
@@ -310,11 +311,16 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (order_index !== undefined) updateData.order_index = order_index;
     if (is_preview !== undefined) updateData.is_preview = is_preview;
     if (tip !== undefined) {
-      updateData.tip = tip; // ✅ Совет по уроку
-      updateData.ai_tips = tip; // ✅ Синхронизация: обновляем оба поля
+      // ✅ КРИТИЧНО: Обновляем ТОЛЬКО ai_tips (основное поле для AI контента)
+      updateData.ai_tips = tip;
+      updateData.tip = tip; // legacy fallback
     }
     
-    // ✅ updated_at removed - column doesn't exist in lessons table
+    console.log(`📝 [UPDATE LESSON ${id}] Updating with:`, {
+      title: updateData.title,
+      ai_description_length: updateData.ai_description?.length || 0,
+      ai_tips_length: updateData.ai_tips?.length || 0
+    });
 
     const { data: lesson, error } = await adminSupabase
       .from('lessons')
@@ -328,6 +334,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Ошибка обновления урока' });
     }
 
+    console.log(`✅ [UPDATE LESSON ${id}] Successfully updated`);
     res.json({ lesson });
   } catch (error) {
     console.error('Update lesson error:', error);

@@ -387,12 +387,20 @@ router.put('/lessons/:id', async (req, res) => {
       return res.status(400).json({ error: 'title is required' });
     }
 
+    console.log(`📝 [TRIPWIRE UPDATE LESSON ${id}] Updating with:`, {
+      title,
+      description_length: description?.length || 0,
+      tip_length: tip?.length || 0
+    });
+
     const { data: lesson, error } = await adminSupabase
       .from('lessons')
       .update({
         title,
         description: description || '',
         tip: tip || '',
+        ai_description: description || '', // ✅ КРИТИЧНО: Синхронизация
+        ai_tips: tip || '', // ✅ КРИТИЧНО: Синхронизация
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -404,7 +412,7 @@ router.put('/lessons/:id', async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log('✅ Lesson updated:', lesson.id);
+    console.log(`✅ [TRIPWIRE UPDATE LESSON ${id}] Successfully updated`);
     res.json({ lesson });
   } catch (error: any) {
     console.error('❌ Unexpected error:', error);
