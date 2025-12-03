@@ -67,6 +67,10 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
         if (managerId) {
           params.append('manager_id', managerId);
         }
+        if (dateRange) {
+          params.append('startDate', dateRange.from.toISOString());
+          params.append('endDate', dateRange.to.toISOString());
+        }
 
         const data = await api.get(`/api/admin/tripwire/users?${params}`);
         setUsers(data.users || []);
@@ -79,7 +83,7 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
     }
 
     loadUsers();
-  }, [page, refreshTrigger, managerId]);
+  }, [page, refreshTrigger, managerId, dateRange]);
 
   if (loading) {
     return (

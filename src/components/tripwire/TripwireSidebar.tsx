@@ -40,7 +40,7 @@ const menuItems: MenuItem[] = [
   { title: "Достижения", url: "/achievements", icon: Trophy, locked: true },
   { title: "onAIgram", url: "/messages", icon: GridNine, locked: true },
   { title: "Админ панель", url: "/tripwire/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
-  { title: "Sales Manager", url: "/admin/tripwire-manager", icon: ChartBar, locked: false, salesOnly: true }, // ✅ admin + sales
+  // ❌ Sales Manager НЕ должен быть в Tripwire сайдбаре! Только в основной админ-панели
 ];
 
 interface TripwireSidebarProps {

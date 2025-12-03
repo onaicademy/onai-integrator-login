@@ -65,8 +65,14 @@ export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogPr
     async function loadActivity() {
       try {
         setLoading(true);
-        console.log('📜 [ActivityLog] API Request:', '/api/admin/tripwire/activity?limit=20');
-        const data = await api.get('/api/admin/tripwire/activity?limit=20');
+        const params = new URLSearchParams({ limit: '20' });
+        if (dateRange) {
+          params.append('startDate', dateRange.from.toISOString());
+          params.append('endDate', dateRange.to.toISOString());
+        }
+
+        console.log('📜 [ActivityLog] API Request:', `/api/admin/tripwire/activity?${params}`);
+        const data = await api.get(`/api/admin/tripwire/activity?${params}`);
         console.log('📜 [ActivityLog] Raw data from API:', data);
         console.log('📜 [ActivityLog] Data type:', typeof data, Array.isArray(data));
         setActivities(data || []);
@@ -78,7 +84,7 @@ export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogPr
     }
 
     loadActivity();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, dateRange]);
 
   if (loading) {
     return (
