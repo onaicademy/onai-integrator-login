@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Activity, UserPlus, Mail, Edit, Trash2 } from 'lucide-react';
 import { Icon } from '@iconify/react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/utils/apiClient';
 
 interface ActivityItem {
   id: string;
@@ -58,26 +58,8 @@ export default function ActivityLog({ refreshTrigger }: ActivityLogProps) {
     async function loadActivity() {
       try {
         setLoading(true);
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          console.error('No access token');
-          return;
-        }
-
-        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-        const response = await fetch(`${API_URL}/api/admin/tripwire/activity?limit=20`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setActivities(data || []);
-        }
+        const data = await api.get('/api/admin/tripwire/activity?limit=20');
+        setActivities(data || []);
       } catch (error) {
         console.error('Error loading activity:', error);
       } finally {

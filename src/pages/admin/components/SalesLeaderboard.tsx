@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Trophy, TrendingUp, User } from 'lucide-react';
 import { Icon } from '@iconify/react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/utils/apiClient';
 
 interface ManagerStats {
   manager_id: string;
@@ -27,26 +27,8 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
     async function loadLeaderboard() {
       try {
         setLoading(true);
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          console.error('No access token');
-          return;
-        }
-
-        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-        const response = await fetch(`${API_URL}/api/admin/tripwire/leaderboard`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setManagers(data.managers || []);
-        }
+        const data = await api.get('/api/admin/tripwire/leaderboard');
+        setManagers(data.managers || []);
       } catch (error) {
         console.error('Error loading leaderboard:', error);
       } finally {

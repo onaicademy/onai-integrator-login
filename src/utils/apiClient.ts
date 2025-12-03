@@ -43,8 +43,9 @@ export async function apiRequest<T = any>(
   // Получаем JWT токен из localStorage (сохраняется после авторизации)
   const token = getAuthToken();
   
-  // Формируем URL для запроса
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  // 🏗️ АРХИТЕКТУРНОЕ РЕШЕНИЕ: Единая точка правды для API URL
+  // Production fallback утвержден архитектором (Вариант A)
+  const baseUrl = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
   const url = `${baseUrl}${endpoint}`;
   
   // ✅ Проверяем тип body (FormData или JSON)

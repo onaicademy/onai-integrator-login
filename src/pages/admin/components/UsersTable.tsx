@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Eye, Mail, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/utils/apiClient';
 
 interface TripwireUser {
   id: string;
@@ -61,35 +61,14 @@ export default function UsersTable({ refreshTrigger, managerId }: UsersTableProp
     async function loadUsers() {
       try {
         setLoading(true);
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          console.error('No access token');
-          return;
-        }
-
         const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
         if (managerId) {
           params.append('manager_id', managerId);
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-        const response = await fetch(
-          `${API_URL}/api/admin/tripwire/users?${params}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setUsers(data.users || []);
-          setTotal(data.total || 0);
-        }
+        const data = await api.get(`/api/admin/tripwire/users?${params}`);
+        setUsers(data.users || []);
+        setTotal(data.total || 0);
       } catch (error) {
         console.error('Error loading users:', error);
       } finally {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, TrendingUp } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/utils/apiClient';
 import {
   LineChart,
   Line,
@@ -46,17 +46,8 @@ export default function SalesChart({ managerId, period = 'month' }: SalesChartPr
         if (managerId) params.append('manager_id', managerId);
         params.append('period', period);
 
-        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-        const response = await fetch(`${API_URL}/api/admin/tripwire/sales-chart?${params}`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setData(result.data || []);
-        }
+        const result = await api.get(`/api/admin/tripwire/sales-chart?${params}`);
+        setData(result.data || []);
       } catch (error) {
         console.error('Error loading chart data:', error);
       } finally {

@@ -9,7 +9,7 @@ import StatsCards from './components/StatsCards';
 import ActivityLog from './components/ActivityLog';
 import SalesLeaderboard from './components/SalesLeaderboard';
 import SalesChart from './components/SalesChart';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/utils/apiClient';
 
 interface Stats {
   total_users: number;
@@ -39,26 +39,8 @@ export default function TripwireManager() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          console.error('No access token');
-          return;
-        }
-
-        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-        const response = await fetch(`${API_URL}/api/admin/tripwire/stats`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
+        const data = await api.get<Stats>('/api/admin/tripwire/stats');
+        setStats(data);
       } catch (error) {
         console.error('Error loading stats:', error);
       } finally {
