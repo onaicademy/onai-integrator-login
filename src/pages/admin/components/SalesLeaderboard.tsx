@@ -36,7 +36,8 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
           return;
         }
 
-        const response = await fetch('/api/admin/tripwire/leaderboard', {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+        const response = await fetch(`${API_URL}/api/admin/tripwire/leaderboard`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },

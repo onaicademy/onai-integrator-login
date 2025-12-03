@@ -75,8 +75,9 @@ export default function UsersTable({ refreshTrigger, managerId }: UsersTableProp
           params.append('manager_id', managerId);
         }
 
+        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
         const response = await fetch(
-          `/api/admin/tripwire/users?${params}`,
+          `${API_URL}/api/admin/tripwire/users?${params}`,
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,

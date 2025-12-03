@@ -46,7 +46,8 @@ export default function SalesChart({ managerId, period = 'month' }: SalesChartPr
         if (managerId) params.append('manager_id', managerId);
         params.append('period', period);
 
-        const response = await fetch(`/api/admin/tripwire/sales-chart?${params}`, {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+        const response = await fetch(`${API_URL}/api/admin/tripwire/sales-chart?${params}`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },

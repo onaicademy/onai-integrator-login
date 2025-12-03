@@ -67,7 +67,8 @@ export default function ActivityLog({ refreshTrigger }: ActivityLogProps) {
           return;
         }
 
-        const response = await fetch('/api/admin/tripwire/activity?limit=20', {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+        const response = await fetch(`${API_URL}/api/admin/tripwire/activity?limit=20`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
