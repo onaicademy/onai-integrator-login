@@ -1,24 +1,14 @@
 /**
- * Safe Date Filter Component
- * 🎯 ARCHITECT APPROVED: No react-day-picker, only safe presets + native inputs
+ * Safe Date Filter Component - ULTRA SIMPLE VERSION
+ * 🎯 ARCHITECT APPROVED: NO Radix UI, NO Dialog, NO Popover
  * 
- * Избегаем проблем с Calendar/Popover/Invariant failed
+ * Только чистый HTML + Tailwind для исключения Invariant failed
  */
 
 import { useState } from 'react';
-import { Calendar, Settings } from 'lucide-react';
+import { Calendar, Settings, X } from 'lucide-react';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 
 interface DateRange {
   from: Date;
@@ -30,11 +20,11 @@ interface SafeDateFilterProps {
   onChange: (range: DateRange) => void;
 }
 
-type PresetKey = 'today' | 'yesterday' | 'week' | 'month' | 'all';
+type PresetKey = 'today' | 'yesterday' | 'week' | 'month' | 'all' | 'custom';
 
 export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
-  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [activePreset, setActivePreset] = useState<PresetKey>('month');
+  const [showCustomInputs, setShowCustomInputs] = useState(false);
   const [customFrom, setCustomFrom] = useState(format(value.from, 'yyyy-MM-dd'));
   const [customTo, setCustomTo] = useState(format(value.to, 'yyyy-MM-dd'));
 
@@ -91,6 +81,12 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
     const range = preset.getValue();
     onChange(range);
     setActivePreset(preset.key);
+    setShowCustomInputs(false); // Закрываем кастомные инпуты
+  };
+
+  const handleCustomClick = () => {
+    setShowCustomInputs(!showCustomInputs);
+    setActivePreset('custom');
   };
 
   const handleCustomApply = () => {
@@ -100,55 +96,79 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
     toDate.setHours(23, 59, 59, 999);
 
     onChange({ from: fromDate, to: toDate });
-    setActivePreset('all'); // Reset active preset
-    setIsCustomDialogOpen(false);
+    setShowCustomInputs(false);
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Preset Pills */}
-      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
-        {presets.map((preset) => (
-          <button
-            key={preset.key}
-            onClick={() => handlePresetClick(preset)}
-            className={`
-              px-3 py-1.5 rounded-md text-xs font-['JetBrains_Mono'] transition-all
-              ${
-                activePreset === preset.key
-                  ? 'bg-[#00FF94] text-black shadow-[0_0_10px_rgba(0,255,148,0.3)]'
-                  : 'text-white hover:bg-white/10'
-              }
-            `}
-          >
-            {preset.label}
-          </button>
-        ))}
+    <div className="relative">
+      <div className="flex items-center gap-2">
+        {/* Preset Pills */}
+        <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
+          {presets.map((preset) => (
+            <button
+              key={preset.key}
+              onClick={() => handlePresetClick(preset)}
+              className={`
+                px-3 py-1.5 rounded-md text-xs font-['JetBrains_Mono'] transition-all
+                ${
+                  activePreset === preset.key
+                    ? 'bg-[#00FF94] text-black shadow-[0_0_10px_rgba(0,255,148,0.3)]'
+                    : 'text-white hover:bg-white/10'
+                }
+              `}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Custom Button */}
+        <button
+          onClick={handleCustomClick}
+          className={`
+            px-3 py-1.5 rounded-lg text-xs font-['JetBrains_Mono'] transition-all
+            flex items-center gap-2 border
+            ${
+              activePreset === 'custom'
+                ? 'bg-[#00FF94] text-black border-[#00FF94]'
+                : 'bg-white/5 border-white/10 hover:border-[#00FF94]/50 text-white'
+            }
+          `}
+        >
+          <Settings className="w-4 h-4" />
+          Кастом
+        </button>
+
+        {/* Current Range Display */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
+          <Calendar className="w-3.5 h-3.5 text-[#00FF94]" />
+          <span className="text-xs font-['JetBrains_Mono'] text-white">
+            {format(value.from, 'dd MMM', { locale: ru })} -{' '}
+            {format(value.to, 'dd MMM yyyy', { locale: ru })}
+          </span>
+        </div>
       </div>
 
-      {/* Custom Range Dialog */}
-      <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-white/5 border-white/10 hover:border-[#00FF94]/50 text-white"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            <span className="font-['JetBrains_Mono'] text-xs">Кастом</span>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="bg-[#0A0A0A] border-white/20">
-          <DialogHeader>
-            <DialogTitle className="font-['Space_Grotesk'] text-white">
+      {/* Custom Date Inputs (Conditional Render - NO DIALOG!) */}
+      {showCustomInputs && (
+        <div className="absolute top-full left-0 mt-2 z-50 w-[400px]
+                        bg-[#0A0A0A] border border-white/20 rounded-xl p-6
+                        shadow-[0_0_40px_rgba(0,255,148,0.2)]">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-['Space_Grotesk'] text-white font-bold">
               Выберите диапазон дат
-            </DialogTitle>
-            <DialogDescription className="font-['JetBrains_Mono'] text-gray-400">
-              Используйте нативные инпуты для выбора дат
-            </DialogDescription>
-          </DialogHeader>
+            </h3>
+            <button
+              onClick={() => setShowCustomInputs(false)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-          <div className="space-y-4 py-4">
+          {/* Date Inputs */}
+          <div className="space-y-4">
             {/* From Date */}
             <div className="space-y-2">
               <label className="text-sm font-['Space_Grotesk'] text-white">
@@ -192,33 +212,36 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCustomDialogOpen(false)}
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+          {/* Actions */}
+          <div className="flex items-center gap-3 mt-6">
+            <button
+              onClick={() => setShowCustomInputs(false)}
+              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg
+                         text-white font-['JetBrains_Mono'] text-sm
+                         hover:bg-white/10 transition-colors"
             >
               Отмена
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleCustomApply}
-              className="bg-[#00FF94] hover:bg-[#00FF94]/80 text-black font-['JetBrains_Mono']"
+              className="flex-1 px-4 py-2 bg-[#00FF94] rounded-lg
+                         text-black font-['JetBrains_Mono'] text-sm font-bold
+                         hover:bg-[#00FF94]/80 transition-colors
+                         shadow-[0_0_20px_rgba(0,255,148,0.3)]"
             >
               Применить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Current Range Display */}
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-        <Calendar className="w-3.5 h-3.5 text-[#00FF94]" />
-        <span className="text-xs font-['JetBrains_Mono'] text-white">
-          {format(value.from, 'dd MMM', { locale: ru })} -{' '}
-          {format(value.to, 'dd MMM yyyy', { locale: ru })}
-        </span>
-      </div>
+      {/* Backdrop for closing custom inputs */}
+      {showCustomInputs && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowCustomInputs(false)}
+        />
+      )}
     </div>
   );
 }
-
