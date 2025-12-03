@@ -28,6 +28,8 @@ interface MenuItem {
   url: string;
   icon: Icon;
   locked?: boolean;
+  adminOnly?: boolean; // Только для admin
+  salesOnly?: boolean; // Для admin и sales
 }
 
 // 🎯 EXACT menu items from main platform (Russian names)
@@ -37,7 +39,8 @@ const menuItems: MenuItem[] = [
   { title: "Мой профиль", url: "/tripwire/profile", icon: User, locked: false },
   { title: "Достижения", url: "/achievements", icon: Trophy, locked: true },
   { title: "onAIgram", url: "/messages", icon: GridNine, locked: true },
-  { title: "Админ панель", url: "/tripwire/admin", icon: ChartBar, locked: false }, // ✅ Доступна только для saint@
+  { title: "Админ панель", url: "/tripwire/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
+  { title: "Sales Manager", url: "/admin/tripwire-manager", icon: ChartBar, locked: false, salesOnly: true }, // ✅ admin + sales
 ];
 
 interface TripwireSidebarProps {
@@ -53,10 +56,11 @@ interface TripwireSidebarProps {
  * - Glassmorphism matching main platform
  */
 export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarProps) {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   
-  // 🔒 SECURITY: Only saint@onaiacademy.kz can see Admin Panel
-  const showAdminPanel = user?.email === 'saint@onaiacademy.kz';
+  // 🔒 SECURITY: Role-based access
+  const isAdmin = userRole === 'admin';
+  const isSales = userRole === 'sales' || isAdmin;
   
   return (
     <div 
@@ -88,10 +92,9 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
               {menuItems.map((item, index) => {
                 const Icon = item.icon;
                 
-                // 🔒 SECURITY CHECK: Hide Admin Panel if not super-user
-                if (item.title === "Админ панель" && !showAdminPanel) {
-                  return null;
-                }
+                // 🔒 SECURITY CHECK: Hide based on role
+                if (item.adminOnly && !isAdmin) return null;
+                if (item.salesOnly && !isSales) return null;
                 
                 // Show locked items with shake animation
                 if (item.locked) {
