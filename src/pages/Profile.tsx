@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Loader2, User, Mail, Key, Camera, Save, LogOut } from "lucide-react";
 import { CourseModules } from "@/components/profile/v2/CourseModules";
+import { TelegramConnect } from "@/components/profile/TelegramConnect";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserProfile } from "@/lib/profile-api";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tantml:parameter>
+</invoke>
 
 const Profile = () => {
   const { user } = useAuth();
@@ -936,6 +938,15 @@ const Profile = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Telegram подключение AI-наставника */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <TelegramConnect />
+              </motion.div>
 
               {/* Выход из аккаунта */}
               <Card className="bg-[#1a1a24] border-red-900/30 hover:border-red-500/50 transition-all">

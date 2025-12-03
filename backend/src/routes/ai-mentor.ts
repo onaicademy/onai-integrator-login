@@ -4,18 +4,18 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { triggerManualMotivationCheck, triggerManualDailyReport, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
+import { triggerManualDailyMotivation, triggerManualWeeklyReport } from '../services/aiMentorScheduler';
 import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
 /**
  * POST /api/ai-mentor/trigger/daily
- * Ручной запуск ежедневной проверки мотивации студентов (для тестирования)
+ * Ручной запуск ежедневной мотивации студентов (для тестирования)
  */
 router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response) => {
   try {
-    console.log('🧪 [AI Mentor API] Manual trigger: daily motivation check');
+    console.log('🧪 [AI Mentor API] Manual trigger: daily motivation');
 
     // Проверяем, что пользователь - админ
     if (req.user?.role !== 'admin') {
@@ -24,54 +24,20 @@ router.post('/trigger/daily', authMiddleware, async (req: Request, res: Response
       });
     }
 
-    // Запускаем проверку асинхронно (не блокируем ответ)
-    triggerManualMotivationCheck().catch(err => {
-      console.error('❌ [AI Mentor API] Error in manual daily check:', err);
+    // Запускаем мотивацию асинхронно (не блокируем ответ)
+    triggerManualDailyMotivation().catch(err => {
+      console.error('❌ [AI Mentor API] Error in manual daily motivation:', err);
     });
 
     res.json({
       success: true,
-      message: 'Ежедневная проверка мотивации запущена в фоне',
+      message: 'Отправка ежедневной мотивации студентам запущена в фоне',
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
-    console.error('❌ [AI Mentor API] Error triggering daily check:', error);
+    console.error('❌ [AI Mentor API] Error triggering daily motivation:', error);
     res.status(500).json({
-      error: 'Ошибка запуска ежедневной проверки',
-      details: error.message,
-    });
-  }
-});
-
-/**
- * POST /api/ai-mentor/trigger/daily-report
- * Ручной запуск ежедневного отчета администратору (для тестирования)
- */
-router.post('/trigger/daily-report', authMiddleware, async (req: Request, res: Response) => {
-  try {
-    console.log('🧪 [AI Mentor API] Manual trigger: daily report');
-
-    // Проверяем, что пользователь - админ
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Доступ запрещен. Требуется роль admin.',
-      });
-    }
-
-    // Запускаем генерацию отчета асинхронно (не блокируем ответ)
-    triggerManualDailyReport().catch(err => {
-      console.error('❌ [AI Mentor API] Error in manual daily report:', err);
-    });
-
-    res.json({
-      success: true,
-      message: 'Генерация ежедневного отчета запущена в фоне',
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error: any) {
-    console.error('❌ [AI Mentor API] Error triggering daily report:', error);
-    res.status(500).json({
-      error: 'Ошибка запуска ежедневного отчета',
+      error: 'Ошибка запуска ежедневной мотивации',
       details: error.message,
     });
   }
@@ -125,14 +91,15 @@ router.get('/status', authMiddleware, async (req: Request, res: Response) => {
       status: isConfigured ? 'active' : 'not_configured',
       assistant_id: isConfigured ? assistantId : null,
       features: {
-        daily_motivation: isConfigured,
+        daily_motivation_to_students: isConfigured,
         weekly_reports: isConfigured,
         telegram_notifications: !!process.env.TELEGRAM_MENTOR_BOT_TOKEN,
       },
       schedule: {
-        daily_report: '9:00 AM каждый день Almaty time (3:00 AM UTC)',
+        daily_motivation: '9:00 AM каждый день Almaty time (3:00 AM UTC) - отправка студентам',
         weekly_report: 'Monday 9:00 AM Almaty time (3:00 AM UTC)',
       },
+      description: 'AI-Наставник отправляет персональные мотивационные сообщения КАЖДОМУ студенту с подключенным Telegram',
     });
   } catch (error: any) {
     console.error('❌ [AI Mentor API] Error getting status:', error);

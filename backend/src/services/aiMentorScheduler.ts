@@ -248,111 +248,44 @@ async function checkAndMotivateStudents() {
 }
 
 /**
- * Генерировать ежедневный отчет для администратора
+ * Отправить ежедневные мотивационные сообщения ВСЕМ студентам
  */
-async function generateDailyReport() {
+async function sendDailyMotivationToStudents() {
   try {
-    console.log('📊 [AI Mentor] Generating daily report...');
+    console.log('🚀 [AI Mentor] Starting daily motivation for all students...');
 
     const students = await getStudentsProgress();
 
     if (students.length === 0) {
-      console.log('⚠️ [AI Mentor] No students for daily report');
-      // Отправляем отчет даже если нет студентов
-      const reportText = `📊 *ЕЖЕДНЕВНЫЙ ОТЧЁТ AI-НАСТАВНИКА*\n\n⚠️ Студентов пока нет\n\n_${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}_`;
-      await sendAdminNotification(reportText);
+      console.log('⚠️ [AI Mentor] No students to motivate');
       return;
     }
 
-    // Статистика за вчера (с 00:00 до 23:59)
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    console.log(`📋 [AI Mentor] Found ${students.length} students`);
 
-    // Завершенные уроки за вчера
-    const { data: yesterdayProgress } = await adminSupabase
-      .from('student_progress')
-      .select('user_id')
-      .gte('completed_at', `${yesterdayStr}T00:00:00`)
-      .lte('completed_at', `${yesterdayStr}T23:59:59`)
-      .eq('is_completed', true);
+    let sentCount = 0;
+    let skippedCount = 0;
 
-    const completedLessonsYesterday = yesterdayProgress?.length || 0;
+    // Обрабатываем студентов по очереди (чтобы не перегрузить OpenAI API)
+    for (const student of students) {
+      // Отправляем мотивацию только студентам с подключенным Telegram
+      if (!student.telegramChatId) {
+        skippedCount++;
+        console.log(`⏭️ [AI Mentor] Skipping ${student.fullName} (no Telegram connected)`);
+        continue;
+      }
 
-    // Активные студенты за вчера (были на платформе)
-    const { data: activeYesterday } = await adminSupabase
-      .from('video_watch_sessions')
-      .select('user_id')
-      .gte('created_at', `${yesterdayStr}T00:00:00`)
-      .lte('created_at', `${yesterdayStr}T23:59:59`);
+      // Анализируем и отправляем персонализированную мотивацию
+      await analyzeAndMotivateStudent(student);
+      sentCount++;
 
-    const uniqueActiveStudents = new Set(activeYesterday?.map(s => s.user_id) || []);
-    const activeStudentsYesterday = uniqueActiveStudents.size;
+      // Задержка между запросами к OpenAI (rate limiting)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
 
-    // Новые регистрации за вчера
-    const { data: newUsers } = await adminSupabase
-      .from('users')
-      .select('id')
-      .gte('created_at', `${yesterdayStr}T00:00:00`)
-      .lte('created_at', `${yesterdayStr}T23:59:59`)
-      .eq('role', 'student');
-
-    const newRegistrations = newUsers?.length || 0;
-
-    // Общая статистика
-    const totalStudents = students.length;
-    const activeStudents = students.filter(s => s.daysInactive < 7).length;
-    const avgProgress = Math.round(
-      students.reduce((sum, s) => sum + s.progressPercentage, 0) / totalStudents
-    );
-
-    // Студенты с проблемами
-    const strugglingStudents = students.filter(s => s.daysInactive >= 3 && s.progressPercentage > 0).length;
-    const inactiveStudents = students.filter(s => s.daysInactive >= 7).length;
-
-    const reportText = `
-📊 *ЕЖЕДНЕВНЫЙ ОТЧЁТ AI-НАСТАВНИКА*
-_${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty', dateStyle: 'long' })}_
-
-*📅 Активность за вчера:*
-👥 Активных студентов: ${activeStudentsYesterday}
-✅ Завершено уроков: ${completedLessonsYesterday}
-🆕 Новых регистраций: ${newRegistrations}
-
-*📊 Общая статистика:*
-👥 Всего студентов: ${totalStudents}
-🔥 Активных (за неделю): ${activeStudents} (${Math.round((activeStudents / totalStudents) * 100)}%)
-📈 Средний прогресс: ${avgProgress}%
-
-*⚠️ Требуют внимания:*
-😴 Неактивны 3+ дня: ${strugglingStudents}
-🚫 Неактивны 7+ дней: ${inactiveStudents}
-
-_Следующий отчет: завтра в 9:00_
-`;
-
-    console.log('📊 Daily Report:\n', reportText);
-
-    // Сохраняем отчет в базу данных
-    await adminSupabase.from('ai_mentor_advice_log').insert({
-      user_id: null,
-      advice_type: 'daily_report',
-      advice_text: reportText,
-      context: JSON.stringify({
-        totalStudents,
-        activeStudentsYesterday,
-        completedLessonsYesterday,
-        newRegistrations,
-      }),
-      sent_via: 'telegram',
-    });
-
-    // Отправляем отчет админу через Telegram
-    await sendAdminNotification(reportText);
-
-    console.log('✅ [AI Mentor] Daily report generated and sent');
+    console.log(`✅ [AI Mentor] Daily motivation completed: ${sentCount} sent, ${skippedCount} skipped (no Telegram)`);
   } catch (error: any) {
-    console.error('❌ [AI Mentor] Error generating daily report:', error);
+    console.error('❌ [AI Mentor] Error in daily motivation:', error);
   }
 }
 
@@ -433,11 +366,11 @@ export function startAIMentorScheduler() {
     return;
   }
 
-  // ⏰ ЕЖЕДНЕВНЫЙ ОТЧЁТ администратору в 9:00 утра (UTC+6 Almaty time)
+  // ⏰ ЕЖЕДНЕВНАЯ МОТИВАЦИЯ студентам в 9:00 утра (UTC+6 Almaty time)
   // В cron это будет 3:00 UTC (9:00 - 6 часов)
   cron.schedule('0 3 * * *', () => {
-    console.log('⏰ [AI Mentor] Daily report trigger (9:00 AM Almaty time)');
-    generateDailyReport();
+    console.log('⏰ [AI Mentor] Daily motivation trigger (9:00 AM Almaty time)');
+    sendDailyMotivationToStudents();
   });
 
   // Еженедельный отчет каждый понедельник в 9:00 утра (3:00 UTC)
@@ -448,24 +381,17 @@ export function startAIMentorScheduler() {
 
   console.log('✅ [AI Mentor Scheduler] Started successfully');
   console.log('📅 Schedule:');
-  console.log('  - Daily report: 9:00 AM каждый день (Almaty time)');
+  console.log('  - Daily motivation to students: 9:00 AM каждый день (Almaty time)');
   console.log('  - Weekly report: Monday 9:00 AM (Almaty time)');
+  console.log('💡 Students will receive personalized motivation messages if Telegram is connected');
 }
 
 /**
- * Ручной запуск проверки (для тестирования)
+ * Ручной запуск ежедневной мотивации (для тестирования)
  */
-export async function triggerManualMotivationCheck() {
-  console.log('🧪 [AI Mentor] Manual trigger: checking students...');
-  await checkAndMotivateStudents();
-}
-
-/**
- * Ручной запуск ежедневного отчета (для тестирования)
- */
-export async function triggerManualDailyReport() {
-  console.log('🧪 [AI Mentor] Manual trigger: generating daily report...');
-  await generateDailyReport();
+export async function triggerManualDailyMotivation() {
+  console.log('🧪 [AI Mentor] Manual trigger: sending daily motivation...');
+  await sendDailyMotivationToStudents();
 }
 
 /**
