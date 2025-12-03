@@ -151,68 +151,396 @@ git push origin main
 
 #### 4.1 Автоматический деплой
 
+Vercel автоматически деплоит после `git push origin main`. Процесс занимает 2-3 минуты.
+
+**КАК РАБОТАЕТ:**
+1. GitHub webhook → Vercel получает уведомление о push
+2. Vercel клонирует репозиторий (последний коммит из `main`)
+3. Vercel запускает `npm run build` (Vite собирает frontend)
+4. Vercel деплоит собранные файлы на CDN
+5. Домен `onai.academy` автоматически обновляется
+
+**ПРОВЕРКА СТАТУСА:**
 ```bash
-# Vercel автоматически деплоит после git push
-# Проверь статус на https://vercel.com/dashboard
+# Открой Vercel Dashboard
+open https://vercel.com/dashboard
+
+# Или проверь через CLI (если установлен)
+vercel ls
 ```
 
-#### 4.2 Проверка Environment Variables на Vercel
+#### 4.2 ВАЖНО: Проверка правильности деплоя
 
-1. Зайди на https://vercel.com/dashboard
-2. Открой проект `onai-integrator-login`
-3. Settings → Environment Variables
-4. Убедись, что установлены:
-   - `VITE_API_URL` = `https://api.onai.academy`
-   - `VITE_SUPABASE_URL` = `https://arqhkacellqbhjhbebfh.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` = `<ключ>`
+**1. Открой Vercel Dashboard:**
+- https://vercel.com/dashboard
+- Найди проект `onai-integrator-login` (или как он называется у тебя)
+- Кликни на проект
 
-#### 4.3 Force Redeploy (если нужно)
+**2. Проверь последний deployment:**
+```
+Deployments (вкладка сверху)
+└─ Последний deployment должен быть:
+   ├─ Status: Ready ✅ (зелёный)
+   ├─ Commit: <ТВОЙ ПОСЛЕДНИЙ КОММИТ>
+   ├─ Branch: main
+   └─ Time: недавно (последние 5 минут)
+```
+
+**3. Сверь Git SHA с Vercel:**
+```bash
+# Локально - получи SHA последнего коммита
+git log -1 --format="%H"
+# Выведет: 38c4e9a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7
+
+# На Vercel Dashboard:
+# Deployments → Latest → Git SHA должен совпадать!
+```
+
+**❌ Если SHA НЕ совпадает:**
+- Vercel задеплоил СТАРЫЙ коммит
+- Нужен Force Redeploy (см. ниже)
+
+**✅ Если SHA совпадает:**
+- Всё ОК, правильный код задеплоен
+- Переходи к проверке production
+
+#### 4.3 Проверка Environment Variables на Vercel
+
+**КРИТИЧНО:** Vercel использует свои ENV переменные, НЕ из локального `.env`!
 
 ```bash
-# Если автодеплой не сработал
-# 1. Зайди на Vercel Dashboard
-# 2. Deployments → Latest deployment
-# 3. Нажми три точки → Redeploy
-# 4. Выбери "Use existing Build Cache" → NO
+# 1. Открой проект на Vercel
+https://vercel.com/dashboard
+
+# 2. Settings → Environment Variables
+# 3. Проверь что установлены ВСЕ переменные для Production:
+```
+
+| Variable | Value | Environment |
+|----------|-------|-------------|
+| `VITE_API_URL` | `https://api.onai.academy` | Production |
+| `VITE_SUPABASE_URL` | `https://arqhkacellqbhjhbebfh.supabase.co` | Production |
+| `VITE_SUPABASE_ANON_KEY` | `<твой ключ>` | Production |
+
+**⚠️ ВАЖНО:**
+- Environment должен быть **Production** (не Preview!)
+- После изменения переменных нужен Redeploy!
+- Переменные с `VITE_` префиксом встраиваются в build
+
+**Как добавить/изменить переменную:**
+1. Settings → Environment Variables
+2. Add New → Name: `VITE_API_URL`, Value: `https://api.onai.academy`
+3. Select: ✅ Production, ❌ Preview, ❌ Development
+4. Save
+5. **ОБЯЗАТЕЛЬНО:** Redeploy проект (см. ниже)
+
+#### 4.4 Force Redeploy (если нужно)
+
+**Когда нужен Force Redeploy:**
+- ❌ Vercel показывает старый коммит
+- ❌ Изменил Environment Variables
+- ❌ Frontend работает некорректно после деплоя
+- ❌ Кэш Vercel сломан
+
+**Способ 1: Через Vercel Dashboard (рекомендуется)**
+```bash
+# 1. Открой проект на Vercel
+https://vercel.com/dashboard
+
+# 2. Deployments → Latest deployment (самый верхний)
+# 3. Справа три точки ⋮ → Redeploy
+# 4. ❌ НЕ ставь галочку "Use existing Build Cache"
+# 5. Redeploy → подтверди
+```
+
+**Способ 2: Через Vercel CLI**
+```bash
+# Установи Vercel CLI (если нет)
+npm install -g vercel
+
+# Войди в аккаунт
+vercel login
+
+# Force redeploy
+cd /Users/miso/onai-integrator-login
+vercel --prod --force
+```
+
+**Способ 3: Через Git (dummy commit)**
+```bash
+# Если Vercel совсем не реагирует на push
+git commit --allow-empty -m "DEPLOY: Force Vercel redeploy"
+git push origin main
+```
+
+#### 4.5 Проверка что Vercel задеплоил правильный код
+
+**После деплоя ОБЯЗАТЕЛЬНО проверь:**
+
+```bash
+# 1. Открой сайт в ИНКОГНИТО (Ctrl+Shift+N / Cmd+Shift+N)
+open -na "Google Chrome" --args --incognito https://onai.academy
+
+# 2. Открой DevTools (F12) → Console
+# 3. Проверь что API запросы идут на правильный URL:
+```
+
+**В Console должно быть:**
+```javascript
+// ✅ Правильно:
+Request URL: https://api.onai.academy/api/...
+
+// ❌ Неправильно:
+Request URL: http://localhost:3000/api/...  // Это значит VITE_API_URL не настроен!
+```
+
+**4. Проверь версию кода:**
+```javascript
+// В Console выполни:
+console.log(import.meta.env.VITE_API_URL)
+// Должно вывести: https://api.onai.academy
+
+// Если выводит undefined или localhost - ENV переменные не настроены!
+```
+
+**5. Проверь Network (вкладка в DevTools):**
+- Все запросы к `api.onai.academy` должны возвращать **200 OK**
+- Если **CORS error** → проблема на Backend (см. STEP 5)
+- Если **401 Unauthorized** → проблема с JWT токеном
+
+#### 4.6 Типичные проблемы Vercel и решения
+
+**Проблема 1: "Vercel деплоит, но показывает старый код"**
+
+```bash
+# Решение 1: Hard Refresh в браузере (очистка кэша)
+# Chrome/Edge: Ctrl+Shift+R (Windows) / Cmd+Shift+R (Mac)
+# Firefox: Ctrl+F5 / Cmd+Shift+R
+
+# Решение 2: Проверь что Vercel задеплоил правильный commit
+# Dashboard → Deployments → Git SHA должен совпадать с git log
+
+# Решение 3: Force Redeploy без кэша (см. 4.4)
+```
+
+**Проблема 2: "Build failed на Vercel"**
+
+```bash
+# Открой Vercel Dashboard → Deployments → Failed deployment → View Logs
+
+# Частые причины:
+# - TypeScript ошибки (исправь локально, проверь npm run build)
+# - Отсутствует package в package.json
+# - Неправильный node version (проверь package.json → engines)
+```
+
+**Проблема 3: "ENV переменные не применяются"**
+
+```bash
+# После изменения ENV переменных ОБЯЗАТЕЛЬНО:
+# 1. Settings → Environment Variables → Сохрани изменения
+# 2. Deployments → Redeploy (без кэша!)
+# 3. Подожди 2-3 минуты пока билд завершится
+# 4. Hard Refresh в браузере (Ctrl+Shift+R)
+```
+
+**Проблема 4: "Vercel не деплоит автоматически"**
+
+```bash
+# Проверь GitHub Integration:
+# 1. Vercel Dashboard → Settings → Git
+# 2. Убедись что подключен правильный репозиторий
+# 3. Production Branch должен быть: main
+
+# Если не помогает:
+# Settings → Git → Disconnect → Reconnect Repository
 ```
 
 ---
 
 ### ШАГ 5: DIGITALOCEAN DEPLOY (BACKEND)
 
-#### 5.1 Стандартный деплой
+#### 5.1 Полный деплой Backend (пошагово)
 
+**ВАЖНО:** Backend НЕ деплоится автоматически! Нужно вручную через SSH.
+
+**ШАГ 1: Подключись к серверу**
 ```bash
-# Подключись к серверу
 ssh root@207.154.231.30
 
-# Перейди в папку проекта
-cd /var/www/onai-integrator-login-main
-
-# Забери изменения из GitHub
-git pull origin main
-
-# Если возникает конфликт:
-git fetch origin
-git reset --hard origin/main
-
-# Перейди в backend
-cd backend
-
-# Установи зависимости (если были изменения)
-npm install --production
-
-# Собери проект
-npm run build
-
-# Перезапусти PM2 с обновлением env
-pm2 restart onai-backend --update-env
-
-# Проверь логи (ОБЯЗАТЕЛЬНО!)
-pm2 logs onai-backend --lines 50
+# Если спрашивает пароль - введи пароль от сервера
+# Если ошибка "Permission denied" - проверь SSH ключи
 ```
 
-#### 5.2 Проверка здоровья Backend
+**ШАГ 2: Перейди в папку проекта**
+```bash
+cd /var/www/onai-integrator-login-main
+
+# Проверь что ты в правильной папке:
+pwd
+# Должно вывести: /var/www/onai-integrator-login-main
+```
+
+**ШАГ 3: Забери изменения из GitHub**
+```bash
+git pull origin main
+
+# ✅ Успешно если видишь:
+# Fast-forward
+# backend/src/... | 10 +++++-----
+# X files changed, Y insertions(+), Z deletions(-)
+
+# ❌ Если ошибка "Your local changes would be overwritten":
+git fetch origin
+git reset --hard origin/main
+# Это УДАЛИТ локальные изменения на сервере и загрузит чистую версию с GitHub
+```
+
+**ШАГ 4: Проверь что правильный коммит подтянулся**
+```bash
+git log -1 --oneline
+
+# Сверь с локальной машиной:
+# Локально: git log -1 --oneline
+# На сервере: должен быть ТАКОЙ ЖЕ коммит!
+
+# Пример:
+# 38c4e9a HOTFIX: Использование правильных названий функций
+```
+
+**ШАГ 5: Перейди в backend папку**
+```bash
+cd backend
+pwd
+# Должно вывести: /var/www/onai-integrator-login-main/backend
+```
+
+**ШАГ 6: Установи зависимости**
+```bash
+# ВАЖНО: НЕ используй --production флаг! 
+# Нужны dev зависимости для сборки (typescript, @types/*)
+npm install
+
+# ⏳ Ждём 10-20 секунд...
+# ✅ Успешно если видишь:
+# added X packages, and audited Y packages in Zs
+```
+
+**ШАГ 7: Собери TypeScript проект**
+```bash
+npm run build
+
+# ✅ Успешно если НЕТ ошибок:
+# > backend@1.0.0 build
+# > tsc
+# (пустой вывод = успех)
+
+# ❌ Если ошибка компиляции TypeScript:
+# - Исправь ошибку локально
+# - git commit + push
+# - Вернись к ШАГ 3 (git pull)
+```
+
+**ШАГ 8: Перезапусти PM2 с обновлением ENV**
+```bash
+pm2 restart onai-backend --update-env
+
+# ✅ Успешно если видишь:
+# [PM2] [onai-backend](0) ✓
+# status: online
+```
+
+**ШАГ 9: ОБЯЗАТЕЛЬНО проверь логи!**
+```bash
+pm2 logs onai-backend --lines 50 --nostream
+
+# ✅ ЧТО ДОЛЖНО БЫТЬ в логах:
+# ✅ Backend запущен на http://localhost:3000
+# ✅ AI Mentor Scheduler: Started successfully
+# ✅ AI Analytics Scheduler: Started successfully
+# ✅ Telegram config module loaded
+
+# ❌ Если видишь ошибки:
+# Error: Cannot find module '...' → npm install не установил зависимости
+# Error: MODULE_NOT_FOUND → проблема с импортами (проверь код)
+# ECONNREFUSED → Supabase/OpenAI недоступны (проверь .env)
+```
+
+**ШАГ 10: Проверь health endpoint**
+```bash
+# На сервере:
+curl http://localhost:3000/api/health
+
+# ✅ Должно вывести:
+# {"status":"ok","timestamp":"2025-12-03T..."}
+
+# С локальной машины (открой новый терминал):
+curl https://api.onai.academy/api/health
+
+# ✅ Тоже должно вывести:
+# {"status":"ok","timestamp":"..."}
+```
+
+#### 5.2 БЫСТРАЯ команда деплоя (одна строка)
+
+**Используй ТОЛЬКО если уверен что всё работает:**
+
+```bash
+ssh root@207.154.231.30 "cd /var/www/onai-integrator-login-main && git pull origin main && cd backend && npm install && npm run build && pm2 restart onai-backend --update-env && pm2 logs onai-backend --lines 30 --nostream"
+```
+
+**Что делает эта команда:**
+1. SSH подключение к серверу
+2. `cd` в папку проекта
+3. `git pull` - скачивает изменения
+4. `cd backend` - переходит в backend
+5. `npm install` - устанавливает зависимости
+6. `npm run build` - собирает TypeScript
+7. `pm2 restart` - перезапускает процесс
+8. `pm2 logs` - показывает последние 30 строк логов
+
+**❌ Минусы:**
+- Не видишь промежуточных результатов
+- Если ошибка на каком-то шаге - не понятно где
+
+**✅ Плюсы:**
+- Быстро (1 команда вместо 10)
+- Удобно для мелких изменений
+
+#### 5.3 Проверка Environment Variables на сервере
+
+**ВАЖНО:** Backend использует `.env` файл на сервере, НЕ из GitHub!
+
+```bash
+# На сервере проверь .env:
+cd /var/www/onai-integrator-login-main/backend
+cat .env | head -20
+
+# ✅ Должны быть установлены:
+NODE_ENV=production
+SUPABASE_URL=https://arqhkacellqbhjhbebfh.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=...
+OPENAI_API_KEY=sk-proj-...
+TELEGRAM_ADMIN_BOT_TOKEN=...
+TELEGRAM_ADMIN_CHAT_ID=...
+FRONTEND_URL=https://onai.academy
+```
+
+**Если переменной нет:**
+```bash
+# Редактируй .env на сервере:
+nano /var/www/onai-integrator-login-main/backend/.env
+
+# Добавь переменную:
+TELEGRAM_ADMIN_CHAT_ID=123456789
+
+# Сохрани: Ctrl+X → Y → Enter
+
+# ОБЯЗАТЕЛЬНО перезапусти PM2 с --update-env:
+pm2 restart onai-backend --update-env
+```
+
+#### 5.4 Проверка здоровья Backend
 
 ```bash
 # На сервере
@@ -230,17 +558,7 @@ curl https://api.onai.academy/api/health
 }
 ```
 
-#### 5.3 Проверка environment variables на сервере
-
-```bash
-# На сервере
-cd /var/www/onai-integrator-login-main/backend
-cat .env | grep -v "SECRET\|KEY" | head -20
-
-# Убедись, что NODE_ENV=production
-```
-
-#### 5.4 Если PM2 не запускается
+#### 5.5 Если PM2 не запускается
 
 ```bash
 # Убей процесс
