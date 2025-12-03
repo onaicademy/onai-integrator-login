@@ -208,7 +208,8 @@ export async function getThreadRun(threadId: string, runId: string) {
 }
 
 /**
- * Транскрипция аудио через Whisper
+ * Транскрипция аудио через Groq Whisper (БЕСПЛАТНО!)
+ * ✅ Groq Whisper быстрее и бесплатнее OpenAI Whisper
  */
 export async function transcribeAudio(
   audioFile: any, // FileLike из openai/uploads (Buffer в Node.js)
@@ -216,20 +217,27 @@ export async function transcribeAudio(
   prompt?: string
 ) {
   try {
-    console.log(`[OpenAI] Transcribing audio...`);
+    console.log(`[Groq Whisper] Transcribing audio via Groq...`);
     
-    const transcription = await openai.audio.transcriptions.create({
+    // ✅ Создаём Groq client для транскрибации
+    const groq = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY || '',
+      baseURL: 'https://api.groq.com/openai/v1'
+    });
+    
+    const transcription = await groq.audio.transcriptions.create({
       file: audioFile,
-      model: 'whisper-1',
+      model: 'whisper-large-v3', // Groq использует whisper-large-v3
       language: language,
       response_format: 'text',
       prompt: prompt || 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы.',
+      temperature: 0.0, // Для максимальной точности
     });
     
-    console.log(`✅ Audio transcribed: ${(transcription as unknown as string).length} characters`);
+    console.log(`✅ [Groq Whisper] Audio transcribed: ${(transcription as unknown as string).length} characters`);
     return transcription as unknown as string;
   } catch (error: any) {
-    console.error('[OpenAI] Failed to transcribe audio:', error.message);
+    console.error('[Groq Whisper] ❌ Failed to transcribe audio:', error.message);
     throw new Error(`Failed to transcribe audio: ${error.message}`);
   }
 }
