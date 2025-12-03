@@ -998,18 +998,6 @@ const Lesson = () => {
                   enableAutoSubtitles={true}
                 />
                 
-                {/* 📝 ОПИСАНИЕ УРОКА - ПОД ВИДЕО */}
-                {lesson?.ai_description && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-[#0A0A0A]/60 backdrop-blur-xl border border-white/10 rounded-xl p-4"
-                  >
-                    <p className="text-sm text-gray-300 leading-relaxed font-['Manrope']">
-                      {lesson.ai_description.slice(0, 230)}{lesson.ai_description.length > 230 ? '...' : ''}
-                    </p>
-                  </motion.div>
-                )}
               </div>
             ) : (
               <div className="relative rounded-2xl overflow-hidden border border-[#00FF88]/20 shadow-lg shadow-[#00FF88]/10">
