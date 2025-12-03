@@ -48,6 +48,12 @@ console.log('=========================================\n');
 /**
  * 🎯 ОЖИДАНИЕ ГОТОВНОСТИ ВИДЕО И АВТОЗАПУСК ТРАНСКРИБАЦИИ
  * 
+ * ⚠️ FALLBACK MECHANISM: Используется если BunnyCDN webhook не настроен
+ * 
+ * Recommended approach: Configure BunnyCDN webhook instead!
+ * Webhook URL: https://api.onai.academy/api/webhooks/bunnycdn
+ * Events: VideoEncoded (status 4)
+ * 
  * 1. Ждет пока Bunny завершит транскодинг (status = 4)
  * 2. Запускает Groq Whisper транскрибацию
  * 3. Автоматически генерирует описание и советы
@@ -57,6 +63,7 @@ async function waitForVideoReadyAndTranscribe(videoId: string): Promise<void> {
   const CHECK_INTERVAL = 10000; // Проверка каждые 10 секунд
   
   console.log(`⏳ [Auto-Pipeline] Waiting for video ${videoId} to finish transcoding...`);
+  console.log(`💡 [Auto-Pipeline] TIP: Configure BunnyCDN webhook for faster processing!`);
   
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
