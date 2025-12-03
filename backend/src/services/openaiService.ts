@@ -218,7 +218,10 @@ export async function transcribeAudio(
   prompt?: string
 ) {
   try {
-    console.log(`[Groq Whisper] Transcribing audio via Groq...`);
+    console.log(`[Groq Whisper] === НАЧАЛО ТРАНСКРИПЦИИ ===`);
+    console.log(`[Groq Whisper] File name: ${audioFile.name}`);
+    console.log(`[Groq Whisper] File type: ${audioFile.type}`);
+    console.log(`[Groq Whisper] File size: ${audioFile.size} bytes`);
     
     // ✅ Создаём Groq client для транскрибации
     const groq = new OpenAI({
@@ -230,15 +233,29 @@ export async function transcribeAudio(
       file: audioFile,
       model: 'whisper-large-v3', // Groq использует whisper-large-v3
       language: language,
-      response_format: 'text',
-      prompt: prompt || 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы.',
+      response_format: 'verbose_json', // ✅ Для детальной диагностики
+      prompt: prompt || 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы. Транскрибируй текст с правильной пунктуацией и заглавными буквами.',
       temperature: 0.0, // Для максимальной точности
     });
     
-    console.log(`✅ [Groq Whisper] Audio transcribed: ${(transcription as unknown as string).length} characters`);
-    return transcription as unknown as string;
+    console.log(`✅ [Groq Whisper] Transcription successful:`);
+    console.log(`   - Text length: ${(transcription as any).text?.length || 0} characters`);
+    console.log(`   - Duration: ${(transcription as any).duration || 'N/A'} seconds`);
+    console.log(`   - Language: ${(transcription as any).language || 'N/A'}`);
+    
+    return (transcription as any).text as string;
   } catch (error: any) {
-    console.error('[Groq Whisper] ❌ Failed to transcribe audio:', error.message);
+    console.error('[Groq Whisper] ❌ === ОШИБКА ТРАНСКРИПЦИИ ===');
+    console.error('[Groq Whisper] Error message:', error.message);
+    console.error('[Groq Whisper] Error name:', error.name);
+    console.error('[Groq Whisper] Error status:', error.status);
+    console.error('[Groq Whisper] Error code:', error.code);
+    console.error('[Groq Whisper] Full error:', JSON.stringify(error, null, 2));
+    
+    // ✅ Передаём детальную ошибку во frontend
+    if (error.status) {
+      throw new Error(`${error.status} ${error.message || 'Unknown Groq Whisper error'}`);
+    }
     throw new Error(`Failed to transcribe audio: ${error.message}`);
   }
 }
