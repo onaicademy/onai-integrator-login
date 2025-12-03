@@ -86,7 +86,20 @@ export function useTripwireAuth() {
       setButtonState('success');
       toast.success('✓ Добро пожаловать!');
 
-      // Get returnUrl from query params (or default to /tripwire)
+      // 🔥 AUTO-REDIRECT: Check user role and redirect accordingly
+      const userData = authData.user.user_metadata;
+      const userRole = userData?.role;
+
+      // Sales managers → Sales Manager Panel
+      if (userRole === 'sales') {
+        console.log('👨‍💼 Sales manager detected, redirecting to /admin/tripwire-manager');
+        setTimeout(() => {
+          navigate('/admin/tripwire-manager', { replace: true });
+        }, 500);
+        return;
+      }
+
+      // Students and others → Get returnUrl from query params (or default to /tripwire)
       const returnUrl = searchParams.get('returnUrl') || '/tripwire';
       const decodedReturnUrl = decodeURIComponent(returnUrl);
       
