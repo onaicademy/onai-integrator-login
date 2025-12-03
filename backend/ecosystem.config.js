@@ -5,9 +5,9 @@ module.exports = {
     instances: 1,
     exec_mode: 'fork',
     
-    // 🚀 УВЕЛИЧЕННЫЕ ЛИМИТЫ для загрузки больших видео
-    node_args: '--max-old-space-size=2048', // 2GB heap для Node.js
-    max_memory_restart: '2G', // Рестарт если память > 2GB
+    // 🚀 МАКСИМАЛЬНЫЕ ЛИМИТЫ для массовой загрузки видео
+    node_args: '--max-old-space-size=6144', // 6GB heap для Node.js (из 7.8GB RAM)
+    max_memory_restart: '6G', // Рестарт если память > 6GB
     
     // 📊 Логирование
     error_file: '/root/.pm2/logs/onai-backend-error.log',
@@ -27,8 +27,8 @@ module.exports = {
     },
     
     // 📈 Мониторинг
-    listen_timeout: 10000,
-    kill_timeout: 5000,
+    listen_timeout: 30000, // 30 секунд
+    kill_timeout: 10000, // 10 секунд
   }]
 };
 

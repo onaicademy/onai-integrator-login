@@ -133,12 +133,12 @@ app.use(cors({
   maxAge: 600
 }));
 
-// Увеличиваем timeout для больших загрузок видео
+// Увеличиваем timeout для массовой загрузки видео
 app.use((req, res, next) => {
-  // Увеличиваем timeout до 30 минут для /api/stream/upload
+  // МАКСИМАЛЬНЫЙ timeout 60 минут для /api/stream/upload
   if (req.path.includes('/stream/upload')) {
-    req.setTimeout(1800000); // 30 минут
-    res.setTimeout(1800000);
+    req.setTimeout(3600000); // 60 минут
+    res.setTimeout(3600000);
   }
   next();
 });
@@ -171,7 +171,7 @@ app.options('/api/stream/upload', cors());
 // ✅ КРИТИЧНО: Conditional type filter - игнорирует multipart/form-data
 // ============================================
 app.use(express.json({
-  limit: '50mb', // Увеличиваем лимит для больших запросов
+  limit: '100mb', // МАКСИМАЛЬНЫЙ лимит для массовой загрузки
   type: (req) => {
     const contentType = req.headers['content-type'] || '';
     // Пропускаем multipart - оставляем для Multer
@@ -180,7 +180,7 @@ app.use(express.json({
 }));
 
 app.use(express.urlencoded({ 
-  limit: '50mb',
+  limit: '100mb',
   extended: true 
 }));
 

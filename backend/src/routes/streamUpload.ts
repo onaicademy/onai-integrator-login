@@ -7,14 +7,15 @@ import path from 'path';
 
 const router = express.Router();
 
-// 📦 Multer для временного хранения файла
+// 📦 Multer для временного хранения файла (МАКСИМАЛЬНЫЕ ЛИМИТЫ)
 const upload = multer({
   dest: 'uploads/temp/',
   limits: {
-    fileSize: 5 * 1024 * 1024 * 1024, // 5GB max
+    fileSize: 10 * 1024 * 1024 * 1024, // 10GB max для массовой загрузки
+    files: 10, // Максимум 10 файлов одновременно
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+    const allowedMimes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm'];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
