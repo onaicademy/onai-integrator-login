@@ -154,7 +154,6 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
                 name="Выручка (₸)"
-                yAxisId="right"
               />
             </AreaChart>
           </ResponsiveContainer>
