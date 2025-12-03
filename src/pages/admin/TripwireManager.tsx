@@ -22,6 +22,14 @@ interface Stats {
   monthly_revenue: number;
 }
 
+interface MyStats {
+  total_students: number;
+  active_students: number;
+  completed_students: number;
+  total_revenue: number;
+  avg_completion_rate: number;
+}
+
 export default function TripwireManager() {
   console.log('🚀 TripwireManager: Render started');
   
@@ -45,10 +53,21 @@ export default function TripwireManager() {
     total_revenue: 0,
     monthly_revenue: 0,
   });
+  
+  // 🎯 МОИ ПРОДАЖИ - личная статистика менеджера
+  const [myStats, setMyStats] = useState<MyStats>({
+    total_students: 0,
+    active_students: 0,
+    completed_students: 0,
+    total_revenue: 0,
+    avg_completion_rate: 0,
+  });
+  const [myStatsLoading, setMyStatsLoading] = useState(true);
+  
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Загрузка статистики
+  // Загрузка общей статистики
   useEffect(() => {
     async function loadStats() {
       try {
@@ -68,6 +87,24 @@ export default function TripwireManager() {
 
     loadStats();
   }, [refreshTrigger, dateRange]);
+
+  // 🎯 Загрузка МОИХ продаж (только для текущего менеджера)
+  useEffect(() => {
+    async function loadMyStats() {
+      if (!user?.id) return;
+      
+      try {
+        const data = await api.get<MyStats>('/api/admin/tripwire/my-stats');
+        setMyStats(data);
+      } catch (error) {
+        console.error('Error loading my stats:', error);
+      } finally {
+        setMyStatsLoading(false);
+      }
+    }
+
+    loadMyStats();
+  }, [refreshTrigger, user?.id]);
 
   // Обработчик успешного создания пользователя
   const handleUserCreated = () => {
@@ -139,6 +176,104 @@ export default function TripwireManager() {
             <span>ДОБАВИТЬ УЧЕНИКА</span>
           </button>
         </div>
+
+        {/* 🎯 МОИ ПРОДАЖИ - Персональная статистика менеджера */}
+        {myStatsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-[#00FF94] text-lg font-['JetBrains_Mono']">
+              ЗАГРУЗКА ВАШИХ ПРОДАЖ...
+            </div>
+          </div>
+        ) : (
+          <div
+            className="relative bg-gradient-to-br from-[#00FF94]/20 via-[rgba(15,15,15,0.8)] to-[rgba(15,15,15,0.6)]
+                       backdrop-blur-xl border-2 border-[#00FF94]/50 rounded-3xl p-8 
+                       shadow-[0_0_80px_rgba(0,255,148,0.4)]"
+          >
+            {/* Заголовок секции */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-[#00FF94] rounded-xl">
+                <TrendingUp className="w-6 h-6 text-black" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider">
+                  МОИ ПРОДАЖИ
+                </h2>
+                <p className="text-[#9CA3AF] text-sm font-['JetBrains_Mono']">
+                  /// ВАША ЛИЧНАЯ СТАТИСТИКА
+                </p>
+              </div>
+            </div>
+
+            {/* Карточки статистики */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Всего студентов */}
+              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-5 h-5 text-[#00FF94]" />
+                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
+                    Всего студентов
+                  </p>
+                </div>
+                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                  {myStats.total_students}
+                </p>
+              </div>
+
+              {/* Активные */}
+              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Activity className="w-5 h-5 text-blue-400" />
+                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
+                    Активные
+                  </p>
+                </div>
+                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                  {myStats.active_students}
+                </p>
+              </div>
+
+              {/* Завершили */}
+              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon icon="mdi:certificate" className="w-5 h-5 text-[#00FF94]" />
+                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
+                    Завершили
+                  </p>
+                </div>
+                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                  {myStats.completed_students}
+                </p>
+              </div>
+
+              {/* Общий доход */}
+              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon icon="mdi:currency-usd" className="w-5 h-5 text-yellow-400" />
+                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
+                    Общий доход
+                  </p>
+                </div>
+                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                  ₸{myStats.total_revenue.toLocaleString()}
+                </p>
+              </div>
+
+              {/* Процент завершения */}
+              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon icon="mdi:chart-line" className="w-5 h-5 text-purple-400" />
+                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
+                    Завершаемость
+                  </p>
+                </div>
+                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                  {myStats.avg_completion_rate.toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         {loading ? (
