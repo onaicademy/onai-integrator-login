@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { tripwireSupabase } from '@/lib/supabase-tripwire';
 
 interface SalesGuardProps {
   children: ReactNode;
@@ -8,19 +8,57 @@ interface SalesGuardProps {
 
 /**
  * SalesGuard - защита для Sales Manager Dashboard
+ * Проверяет Tripwire Supabase auth (отдельная база данных)
  * Разрешает доступ только admin и sales ролям
  */
 export function SalesGuard({ children }: SalesGuardProps) {
-  const { isInitialized, userRole, isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
-  console.log('🔐 SalesGuard: Проверка авторизации...');
-  console.log('  isInitialized:', isInitialized);
-  console.log('  userRole:', userRole);
-  console.log('  isLoading:', isLoading);
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
-  // ШАГ 1: Пока инициализируется - показываем загрузку
-  if (isLoading || !isInitialized) {
-    console.log('⏳ SalesGuard: Ожидание инициализации...');
+  const checkAuth = async () => {
+    try {
+      console.log('🔐 SalesGuard: Проверка Tripwire auth...');
+      
+      const { data: { session }, error } = await tripwireSupabase.auth.getSession();
+
+      if (error || !session) {
+        console.log('❌ SalesGuard: Нет сессии в Tripwire');
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Получаем роль из user_metadata
+      const role = session.user.user_metadata?.role || null;
+      setUserRole(role);
+
+      console.log('✅ SalesGuard: Пользователь:', session.user.email);
+      console.log('  Роль:', role);
+
+      // Разрешаем доступ только admin и sales
+      if (role === 'admin' || role === 'sales') {
+        console.log('✅ SalesGuard: Доступ разрешён');
+        setIsAuthorized(true);
+      } else {
+        console.log('❌ SalesGuard: Доступ запрещён. Роль:', role);
+        setIsAuthorized(false);
+      }
+
+    } catch (err) {
+      console.error('❌ SalesGuard: Ошибка проверки auth:', err);
+      setIsAuthorized(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ШАГ 1: Загрузка
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#030303]">
         <div className="text-center">
@@ -32,20 +70,18 @@ export function SalesGuard({ children }: SalesGuardProps) {
   }
 
   // ШАГ 2: Если не авторизован - редирект на Tripwire Login
-  const { user } = useAuth();
-  if (isInitialized && !user) {
-    console.log('❌ SalesGuard: Не авторизован, редирект на /tripwire/login');
+  if (!isAuthorized || !userRole) {
+    console.log('❌ SalesGuard: Редирект на /tripwire/login');
     return <Navigate to="/tripwire/login" replace />;
   }
 
-  // ШАГ 3: Если авторизован НО роль не admin/sales - редирект на access-denied
-  if (isInitialized && user && userRole !== 'admin' && userRole !== 'sales') {
-    console.log('❌ SalesGuard: Доступ запрещён. userRole:', userRole);
+  // ШАГ 3: Проверяем роль
+  if (userRole !== 'admin' && userRole !== 'sales') {
+    console.log('❌ SalesGuard: Доступ запрещён. Роль:', userRole);
     return <Navigate to="/access-denied" replace />;
   }
 
-  // ШАГ 4: Admin или Sales авторизован - показываем контент
-  console.log('✅ SalesGuard: Admin или Sales авторизован');
+  // ШАГ 4: Доступ разрешён
   return <>{children}</>;
 }
 

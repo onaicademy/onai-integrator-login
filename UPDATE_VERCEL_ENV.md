@@ -18,7 +18,11 @@
 5. **Добавить новое значение:**
    ```
    Key: VITE_TRIPWIRE_SUPABASE_ANON_KEY
-   Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXZ4ZWN5a3lzZnJ6cHBkY3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3OTUzMDgsImV4cCI6MjA4MDM3MTMwOH0.LN6aLfPA25cwevm-kQ6KttxRjhnTfA2QfiGtPWDWlBI
+   Value: Братан, всё, я везде нужные ключи заменил. Смотри, у меня вот такие ошибки в логах. 
+
+Пиздец, курсор тупит ужасно, не понимает, как решить эту проблему. Он ещё дебил, берёт деплойт короче сразу на сервер, и ни хера у него не получается. 
+
+Почему-то на процессах ещё зависает. 
    Environments: Production, Preview, Development
    ```
 

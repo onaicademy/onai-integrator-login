@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { tripwireSupabase } from '@/lib/supabase-tripwire';
 
 interface TripwireGuardProps {
   children: React.ReactNode;
@@ -9,27 +10,69 @@ interface TripwireGuardProps {
 /**
  * TripwireGuard - Authentication Guard for Tripwire Routes
  * 
- * Ensures users are authenticated before accessing Tripwire content.
- * If not authenticated, redirects to /tripwire/login with returnUrl.
+ * Проверяет Tripwire Supabase auth (отдельная база данных)
+ * Если не авторизован, редиректит на /tripwire/login
  */
 export function TripwireGuard({ children }: TripwireGuardProps) {
-  const { user, isInitialized, isLoading, session } = useAuth();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  // 🔒 CRITICAL SECURITY: Detailed logging for debugging
-  console.log('🔒 TripwireGuard Check:', {
-    path: location.pathname,
-    user: user?.email || null,
-    isInitialized,
-    isLoading,
-    hasSession: !!session,
-    timestamp: new Date().toISOString(),
-  });
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
-  // STEP 1: Show loading spinner while auth is initializing
-  // CRITICAL: Do NOT render children until fully initialized!
-  if (!isInitialized || isLoading) {
-    console.log('⏳ TripwireGuard: Ожидание инициализации Auth...');
+  const checkAuth = async () => {
+    try {
+      console.log('🔒 TripwireGuard: Проверка Tripwire auth...');
+      console.log('  Path:', location.pathname);
+      
+      const { data: { session }, error } = await tripwireSupabase.auth.getSession();
+
+      if (error) {
+        console.error('❌ TripwireGuard: Ошибка получения сессии:', error);
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!session) {
+        console.log('❌ TripwireGuard: Нет сессии');
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Проверяем срок действия токена
+      const expiresAt = session.expires_at * 1000;
+      const now = Date.now();
+      
+      if (expiresAt < now) {
+        console.error('❌ TripwireGuard: Токен истек');
+        localStorage.removeItem('tripwire_supabase_token');
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('✅ TripwireGuard: Сессия валидна');
+      console.log('  Email:', session.user.email);
+      console.log('  Expires:', new Date(expiresAt).toLocaleString());
+      
+      setUserEmail(session.user.email);
+      setIsAuthorized(true);
+
+    } catch (err) {
+      console.error('❌ TripwireGuard: Ошибка проверки auth:', err);
+      setIsAuthorized(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // STEP 1: Loading
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#030303]">
         <div className="text-center space-y-4">
@@ -41,16 +84,10 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
     );
   }
 
-  // STEP 2: CRITICAL SECURITY CHECK - Block access if no user OR no session
-  if (!user || !session) {
-    console.error('❌ TripwireGuard: ДОСТУП ЗАПРЕЩЕН!', {
-      hasUser: !!user,
-      hasSession: !!session,
-      reason: !user ? 'No user' : 'No session',
-    });
-    
-    // Save current path as returnUrl
+  // STEP 2: Not authorized - redirect to login
+  if (!isAuthorized) {
     const returnUrl = encodeURIComponent(location.pathname + location.search);
+    console.log('❌ TripwireGuard: Редирект на /tripwire/login');
     
     return (
       <Navigate 
@@ -60,32 +97,8 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
     );
   }
 
-  // STEP 3: Additional validation - Check token expiration
-  if (session.expires_at) {
-    const expiresAt = session.expires_at * 1000; // Convert to milliseconds
-    const now = Date.now();
-    
-    if (expiresAt < now) {
-      console.error('❌ TripwireGuard: Токен истек!', {
-        expiresAt: new Date(expiresAt).toISOString(),
-        now: new Date(now).toISOString(),
-      });
-      
-      // Clear expired session
-      localStorage.removeItem('supabase_token');
-      localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token');
-      
-      return (
-        <Navigate 
-          to="/tripwire/login?returnUrl=${encodeURIComponent(location.pathname)}" 
-          replace 
-        />
-      );
-    }
-  }
-
-  // STEP 4: User is authenticated and session is valid - render children
-  console.log('✅ TripwireGuard: Доступ разрешён для', user.email, '(токен действителен)');
+  // STEP 3: Authorized - render children
+  console.log('✅ TripwireGuard: Доступ разрешён для', userEmail);
   return <>{children}</>;
 }
 

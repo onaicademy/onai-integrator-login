@@ -205,3 +205,4 @@ VITE_SUPABASE_ANON_KEY=eyJhbG...
 **Статус:** 🟢 Backend Online | 🟡 Frontend Deploying
 
 
+

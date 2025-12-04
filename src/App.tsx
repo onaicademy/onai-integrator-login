@@ -7,10 +7,14 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { AdminGuard as OldAdminGuard } from "./components/AdminGuard";
-import { AdminGuard } from "./components/guards/AdminGuard"; // ✅ Admin Guard
-import { SalesGuard } from "./components/SalesGuard"; // ✅ Guard для admin & sales
+import { AdminGuard } from "./components/guards/AdminGuard"; // ✅ Admin Guard (основная платформа)
+import { SalesGuard } from "./components/SalesGuard"; // ✅ Guard для admin & sales (Tripwire)
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+// Tripwire Guards
+import { TripwireGuard } from "./components/tripwire/TripwireGuard";
+import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Tripwire)
+import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGuard"; // ✅ Admin Guard (Tripwire)
 import Login from "./pages/Login";
 import AccessDenied from "./pages/AccessDenied";
 import Profile from "./pages/Profile";
@@ -47,7 +51,6 @@ import TripwireProfile from "./pages/tripwire/TripwireProfile";
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
-import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 // Tripwire Admin pages
 import TripwireAdminDashboard from "./pages/tripwire/admin/Dashboard";
 import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
@@ -173,74 +176,64 @@ const AppRoutes = () => {
       {/* Public: Certificate page (no auth required for sharing) */}
       <Route path="/tripwire/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
       
-      {/* Protected: All other Tripwire routes require authentication */}
+      {/* STUDENT ROUTES: Tripwire студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/tripwire" element={
-        <TripwireGuard>
+        <StudentGuard>
           <TripwireLayout>
             <TripwireProductPage />
           </TripwireLayout>
-        </TripwireGuard>
+        </StudentGuard>
       } />
       <Route path="/tripwire/module/:moduleId/lesson/:lessonId" element={
-        <TripwireGuard>
+        <StudentGuard>
           <TripwireLayout>
             <TripwireLesson />
           </TripwireLayout>
-        </TripwireGuard>
+        </StudentGuard>
       } />
       <Route path="/tripwire/profile" element={
-        <TripwireGuard>
+        <StudentGuard>
           <TripwireLayout>
             <TripwireProfile />
           </TripwireLayout>
-        </TripwireGuard>
+        </StudentGuard>
       } />
       
-      {/* Tripwire Admin Routes - ТОЛЬКО для saint@onaiacademy.kz */}
+      {/* ADMIN ROUTES: Tripwire админские маршруты - ТОЛЬКО для admin роли */}
       <Route path="/tripwire/admin" element={
-        <TripwireGuard>
-          <AdminGuard>
-            <TripwireLayout>
-              <TripwireAdminDashboard />
-            </TripwireLayout>
-          </AdminGuard>
-        </TripwireGuard>
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <TripwireAdminDashboard />
+          </TripwireLayout>
+        </TripwireAdminGuard>
       } />
       <Route path="/tripwire/admin/analytics" element={
-        <TripwireGuard>
-          <AdminGuard>
-            <TripwireLayout>
-              <TripwireAnalytics />
-            </TripwireLayout>
-          </AdminGuard>
-        </TripwireGuard>
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <TripwireAnalytics />
+          </TripwireLayout>
+        </TripwireAdminGuard>
       } />
       <Route path="/tripwire/admin/students" element={
-        <TripwireGuard>
-          <AdminGuard>
-            <TripwireLayout>
-              <TripwireStudents />
-            </TripwireLayout>
-          </AdminGuard>
-        </TripwireGuard>
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <TripwireStudents />
+          </TripwireLayout>
+        </TripwireAdminGuard>
       } />
       <Route path="/tripwire/admin/costs" element={
-        <TripwireGuard>
-          <AdminGuard>
-            <TripwireLayout>
-              <TripwireCosts />
-            </TripwireLayout>
-          </AdminGuard>
-        </TripwireGuard>
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <TripwireCosts />
+          </TripwireLayout>
+        </TripwireAdminGuard>
       } />
       <Route path="/tripwire/admin/transcriptions" element={
-        <TripwireGuard>
-          <AdminGuard>
-            <TripwireLayout>
-              <Transcriptions />
-            </TripwireLayout>
-          </AdminGuard>
-        </TripwireGuard>
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <Transcriptions />
+          </TripwireLayout>
+        </TripwireAdminGuard>
       } />
       
       {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}
