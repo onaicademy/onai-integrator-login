@@ -3,7 +3,7 @@ import { Users, UserPlus, Activity, TrendingUp, Filter } from 'lucide-react';
 import { Icon } from '@iconify/react';
 import { startOfMonth } from 'date-fns';
 import { OnAILogo } from '@/components/OnAILogo';
-import { useAuth } from '@/hooks/useAuth';
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 TRIPWIRE AUTH!
 import CreateUserForm from './components/CreateUserForm';
 import UsersTable from './components/UsersTable';
 import StatsCards from './components/StatsCards';
@@ -14,27 +14,38 @@ import { SafeDateFilter } from '@/components/SafeDateFilter';
 import { api } from '@/utils/apiClient';
 
 interface Stats {
-  total_users: number;
-  active_users: number;
-  completed_users: number;
-  this_month: number;
-  total_revenue: number;
-  monthly_revenue: number;
+  total_students: number; // 🔥 FIX: Changed from total_users
+  active_students: number; // 🔥 FIX: Changed from active_users
+  completed_students: number;
+  students_this_month: number; // 🔥 FIX: Changed from this_month
+  total_revenue: string | number; // 🔥 FIX: Can be string from RPC
+  revenue_this_month: string | number; // 🔥 FIX: Changed from monthly_revenue
 }
 
 interface MyStats {
-  total_students: number;
-  active_students: number;
-  completed_students: number;
-  total_revenue: number;
-  avg_completion_rate: number;
+  totalSales: number;       // 🔥 BACKEND returns totalSales, not total_students!
+  activeUsers: number;      // 🔥 activeUsers, not active_students!
+  thisMonthSales: number;   // 🔥 thisMonthSales
+  totalRevenue: number;     // 🔥 totalRevenue
+  userId?: string;          // 🔥 Debug field
 }
 
 export default function TripwireManager() {
   console.log('🚀 TripwireManager: Render started');
   
-  const { user } = useAuth();
-  console.log('👤 Auth User:', user, 'User ID:', user?.id);
+  // 🔥 TRIPWIRE AUTH: Get user from Tripwire Supabase session
+  const [tripwireUser, setTripwireUser] = useState<any>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true); // 🔥 FIX: Track loading state
+  
+  useEffect(() => {
+    tripwireSupabase.auth.getSession().then(({ data: { session } }) => {
+      setTripwireUser(session?.user || null);
+      setIsUserLoading(false); // 🔥 FIX: Mark as loaded
+      console.log('✅ Tripwire User Loaded:', session?.user?.email, 'User ID:', session?.user?.id);
+    });
+  }, []);
+  
+  console.log('👤 Current Tripwire User State:', tripwireUser?.email, 'User ID:', tripwireUser?.id, 'Loading:', isUserLoading);
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedManagerId, setSelectedManagerId] = useState<string | undefined>(undefined);
@@ -42,26 +53,20 @@ export default function TripwireManager() {
   // 🎯 ARCHITECT APPROVED: Safe Date Filter (no react-day-picker)
   const [dateRange, setDateRange] = useState({
     from: startOfMonth(new Date()),
-    to: new Date(),
+    to: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // +1 день вперед чтобы включить сегодня
   });
   
   const [stats, setStats] = useState<Stats>({
-    total_users: 0,
-    active_users: 0,
-    completed_users: 0,
-    this_month: 0,
-    total_revenue: 0,
-    monthly_revenue: 0,
+    total_students: 0, // 🔥 FIX: Changed from total_users
+    active_students: 0, // 🔥 FIX: Changed from active_users
+    completed_students: 0,
+    students_this_month: 0, // 🔥 FIX: Changed from this_month
+    total_revenue: "0",
+    revenue_this_month: "0", // 🔥 FIX: Changed from monthly_revenue
   });
   
   // 🎯 МОИ ПРОДАЖИ - личная статистика менеджера
-  const [myStats, setMyStats] = useState<MyStats>({
-    total_students: 0,
-    active_students: 0,
-    completed_students: 0,
-    total_revenue: 0,
-    avg_completion_rate: 0,
-  });
+  const [myStats, setMyStats] = useState<MyStats | null>(null);
   const [myStatsLoading, setMyStatsLoading] = useState(true);
   
   const [loading, setLoading] = useState(true);
@@ -91,7 +96,7 @@ export default function TripwireManager() {
   // 🎯 Загрузка МОИХ продаж (только для текущего менеджера)
   useEffect(() => {
     async function loadMyStats() {
-      if (!user?.id) return;
+      if (!tripwireUser?.id) return;
       
       try {
         const data = await api.get<MyStats>('/api/admin/tripwire/my-stats');
@@ -104,7 +109,7 @@ export default function TripwireManager() {
     }
 
     loadMyStats();
-  }, [refreshTrigger, user?.id]);
+  }, [refreshTrigger, tripwireUser?.id]);
 
   // Обработчик успешного создания пользователя
   const handleUserCreated = () => {
@@ -153,7 +158,6 @@ export default function TripwireManager() {
               <h1
                 className="text-4xl lg:text-5xl font-bold text-white font-['Space_Grotesk'] 
                            uppercase tracking-wider mb-2"
-                style={{ textShadow: '0 0 40px rgba(0, 255, 148, 0.5)' }}
               >
                 SALES MANAGER
               </h1>
@@ -169,111 +173,13 @@ export default function TripwireManager() {
             className="group relative px-8 py-4 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
                      hover:from-[#00CC6A] hover:to-[#00FF94]
                      text-black font-bold font-['JetBrains_Mono'] uppercase tracking-wider
-                     rounded-xl transition-all duration-300 flex items-center gap-3
-                     shadow-[0_0_40px_rgba(0,255,148,0.6)]"
+                     rounded-xl transition-all duration-300 flex items-center gap-3"
           >
             <UserPlus className="w-6 h-6 group-hover:scale-110 transition-transform" />
             <span>ДОБАВИТЬ УЧЕНИКА</span>
           </button>
         </div>
 
-        {/* 🎯 МОИ ПРОДАЖИ - Персональная статистика менеджера */}
-        {myStatsLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-[#00FF94] text-lg font-['JetBrains_Mono']">
-              ЗАГРУЗКА ВАШИХ ПРОДАЖ...
-            </div>
-          </div>
-        ) : (
-          <div
-            className="relative bg-gradient-to-br from-[#00FF94]/20 via-[rgba(15,15,15,0.8)] to-[rgba(15,15,15,0.6)]
-                       backdrop-blur-xl border-2 border-[#00FF94]/50 rounded-3xl p-8 
-                       shadow-[0_0_80px_rgba(0,255,148,0.4)]"
-          >
-            {/* Заголовок секции */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center justify-center w-12 h-12 bg-[#00FF94] rounded-xl">
-                <TrendingUp className="w-6 h-6 text-black" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider">
-                  МОИ ПРОДАЖИ
-                </h2>
-                <p className="text-[#9CA3AF] text-sm font-['JetBrains_Mono']">
-                  /// ВАША ЛИЧНАЯ СТАТИСТИКА
-                </p>
-              </div>
-            </div>
-
-            {/* Карточки статистики */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* Всего студентов */}
-              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Users className="w-5 h-5 text-[#00FF94]" />
-                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
-                    Всего студентов
-                  </p>
-                </div>
-                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
-                  {myStats.total_students}
-                </p>
-              </div>
-
-              {/* Активные */}
-              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Activity className="w-5 h-5 text-blue-400" />
-                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
-                    Активные
-                  </p>
-                </div>
-                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
-                  {myStats.active_students}
-                </p>
-              </div>
-
-              {/* Завершили */}
-              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Icon icon="mdi:certificate" className="w-5 h-5 text-[#00FF94]" />
-                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
-                    Завершили
-                  </p>
-                </div>
-                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
-                  {myStats.completed_students}
-                </p>
-              </div>
-
-              {/* Общий доход */}
-              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Icon icon="mdi:currency-usd" className="w-5 h-5 text-yellow-400" />
-                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
-                    Общий доход
-                  </p>
-                </div>
-                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
-                  ₸{myStats.total_revenue.toLocaleString()}
-                </p>
-              </div>
-
-              {/* Процент завершения */}
-              <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Icon icon="mdi:chart-line" className="w-5 h-5 text-purple-400" />
-                  <p className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] uppercase tracking-wider">
-                    Завершаемость
-                  </p>
-                </div>
-                <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
-                  {myStats.avg_completion_rate.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Stats Cards */}
         {loading ? (
@@ -289,10 +195,10 @@ export default function TripwireManager() {
         {/* Sales Leaderboard - Рейтинг менеджеров */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
+                      rounded-3xl p-8"
         >
           <SalesLeaderboard
-            currentManagerId={user?.id}
+            currentManagerId={tripwireUser?.id}
             onManagerSelect={(managerId) => setSelectedManagerId(managerId)}
           />
         </div>
@@ -300,13 +206,13 @@ export default function TripwireManager() {
         {/* Sales Chart - График продаж */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
+                      rounded-3xl p-8"
         >
           <SalesChart managerId={selectedManagerId} period="custom" dateRange={dateRange} />
         </div>
 
         {/* Manager Filter (только для admin) */}
-        {user?.user_metadata?.role === 'admin' && selectedManagerId && (
+        {tripwireUser?.user_metadata?.role === 'admin' && selectedManagerId && (
           <div className="flex items-center justify-between bg-[#00FF94]/10 border border-[#00FF94]/30 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <Filter className="w-5 h-5 text-[#00FF94]" />
@@ -326,7 +232,7 @@ export default function TripwireManager() {
         {/* Users Table */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
+                      rounded-3xl p-8"
         >
           <UsersTable refreshTrigger={refreshTrigger} managerId={selectedManagerId} dateRange={dateRange} />
         </div>
@@ -334,7 +240,7 @@ export default function TripwireManager() {
         {/* Activity Log */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8 shadow-[0_0_60px_rgba(0,255,148,0.15)]"
+                      rounded-3xl p-8"
         >
           <ActivityLog refreshTrigger={refreshTrigger} dateRange={dateRange} />
         </div>

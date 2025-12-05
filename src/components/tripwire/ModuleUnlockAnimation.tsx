@@ -1,14 +1,20 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Unlock, Zap, Sparkles } from "lucide-react";
+import { Unlock, Zap, Sparkles, Rocket, Target, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 
 interface ModuleUnlockAnimationProps {
-  moduleName: string;
-  moduleIcon: any;
-  isVisible: boolean;
-  onComplete: () => void;
+  moduleNumber: number;
+  onClose: () => void;
+  onNavigate: () => void;
 }
+
+// 🎯 Tripwire Modules Config
+const TRIPWIRE_MODULES = {
+  16: { name: "Введение в холодный трафик", icon: Rocket },
+  17: { name: "Инструменты и стратегии", icon: Target },
+  18: { name: "Монетизация и масштабирование", icon: Trophy }
+};
 
 /**
  * 🎮 GAMIFICATION: Module Unlock Animation
@@ -21,16 +27,22 @@ interface ModuleUnlockAnimationProps {
  * - 💚 Cyber-themed particles
  */
 export function ModuleUnlockAnimation({
-  moduleName,
-  moduleIcon: Icon,
-  isVisible,
-  onComplete
+  moduleNumber,
+  onClose,
+  onNavigate
 }: ModuleUnlockAnimationProps) {
   const [stage, setStage] = useState<'lock' | 'unlock' | 'glow' | 'complete'>('lock');
+  
+  // Получаем данные модуля из конфига
+  const moduleData = TRIPWIRE_MODULES[moduleNumber as keyof typeof TRIPWIRE_MODULES] || {
+    name: `Модуль ${moduleNumber}`,
+    icon: Unlock
+  };
+  
+  const moduleName = moduleData.name;
+  const Icon = moduleData.icon;
 
   useEffect(() => {
-    if (!isVisible) return;
-
     // 🎬 STAGE 1: Замочек трясётся (0.5s)
     const timer1 = setTimeout(() => setStage('unlock'), 500);
 
@@ -68,20 +80,12 @@ export function ModuleUnlockAnimation({
     // 🎬 STAGE 3: Glow effect (1.5s)
     const timer3 = setTimeout(() => setStage('complete'), 2500);
 
-    // 🎬 STAGE 4: Завершение (3s)
-    const timer4 = setTimeout(() => {
-      onComplete();
-    }, 3500);
-
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
-      clearTimeout(timer4);
     };
-  }, [isVisible, onComplete]);
-
-  if (!isVisible) return null;
+  }, []);
 
   return (
     <AnimatePresence>
@@ -213,7 +217,7 @@ export function ModuleUnlockAnimation({
               transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
               className="text-[#00FF88] text-sm font-mono font-bold uppercase tracking-wider"
             >
-              /// MODULE UNLOCKED
+              /// МОДУЛЬ РАЗБЛОКИРОВАН
             </motion.div>
             
             <motion.h2
@@ -254,11 +258,47 @@ export function ModuleUnlockAnimation({
             <span>СИСТЕМА АКТИВИРОВАНА</span>
             <Zap className="w-4 h-4 animate-pulse" />
           </motion.div>
+
+          {/* Action Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.5 }}
+            className="flex flex-col sm:flex-row gap-3 mt-8 pointer-events-auto"
+          >
+            <motion.button
+              onClick={onNavigate}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 px-6 py-3 bg-[#00FF88] text-black font-bold uppercase tracking-wider rounded-lg hover:shadow-[0_0_30px_rgba(0,255,136,0.6)] transition-all duration-300"
+              style={{ transform: 'skewX(-5deg)' }}
+            >
+              <span className="flex items-center justify-center gap-2" style={{ transform: 'skewX(5deg)' }}>
+                <Unlock className="w-5 h-5" />
+                <span>Перейти к модулю</span>
+              </span>
+            </motion.button>
+            
+            <motion.button
+              onClick={onClose}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-transparent border-2 border-[#00FF88]/30 text-[#00FF88] font-bold uppercase tracking-wider rounded-lg hover:bg-[#00FF88]/10 hover:border-[#00FF88] transition-all duration-300"
+              style={{ transform: 'skewX(-5deg)' }}
+            >
+              <span className="flex items-center justify-center gap-2" style={{ transform: 'skewX(5deg)' }}>
+                <span>Позже</span>
+              </span>
+            </motion.button>
+          </motion.div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
 }
+
+
+
 
 
 

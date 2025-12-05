@@ -1,6 +1,7 @@
 import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import crypto from 'crypto';
 import { sendWelcomeEmail } from './emailService';
+import { tripwirePool } from '../config/tripwire-db'; // 🔥 DIRECT POSTGRES CONNECTION!
 
 /**
  * Sales Manager Service - создание и управление Tripwire пользователями
@@ -35,101 +36,174 @@ function generateTemporaryPassword(): string {
 
 /**
  * Создает нового Tripwire пользователя
+ * 🔥 DIRECT DB VERSION - БЕЗ TRIGGERS!
  */
 export async function createTripwireUser(params: CreateTripwireUserParams) {
   const { full_name, email, password, currentUserId, currentUserEmail, currentUserName } = params;
 
   try {
-    // 1. Используем пароль из формы (уже сгенерирован на фронте)
-    const userPassword = password;
-    console.log(`Creating user ${email} with provided password`);
+    console.log(`🚀 [DIRECT DB] Creating Tripwire user: ${email}`);
 
-    // 2. Создаем пользователя в Supabase Auth (используем admin client)
+    // 1️⃣ CREATE USER IN auth.users
     const { data: newUser, error: authError } = await tripwireAdminSupabase.auth.admin.createUser({
       email: email,
-      password: userPassword,
-      email_confirm: true, // Автоподтверждение email
+      password: password,
+      email_confirm: true,
       user_metadata: {
-        granted_by: currentUserId,
-        created_by_manager: true,
         full_name: full_name,
-        platform: 'tripwire', // Платформа для разделения баз
+        role: 'student',
+      },
+      app_metadata: {
+        role: 'student',
       },
     });
 
-    if (authError) {
-      throw new Error(`Auth error: ${authError.message}`);
+    if (authError || !newUser?.user) {
+      throw new Error(`Auth error: ${authError?.message || 'No user returned'}`);
     }
 
-    if (!newUser || !newUser.user) {
-      throw new Error('Failed to create user in auth.users');
+    const userId = newUser.user.id;
+    console.log(`✅ [DIRECT DB] User created in auth.users: ${userId}`);
+
+    // 2️⃣ DIRECT DB INSERT - ВСЕ ТАБЛИЦЫ
+    const client = await tripwirePool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // ✅ public.users
+      await client.query(`
+        INSERT INTO public.users (id, email, full_name, role, created_at, updated_at)
+        VALUES ($1, $2, $3, 'student', NOW(), NOW())
+        ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, updated_at = NOW()
+      `, [userId, email, full_name]);
+
+      // ✅ tripwire_users
+      await client.query(`
+        INSERT INTO public.tripwire_users (
+          id, user_id, email, full_name, granted_by, manager_name,
+          status, modules_completed, price, created_at
+        )
+        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, 'active', 0, 5000, NOW())
+        ON CONFLICT (user_id) DO NOTHING
+      `, [userId, email, full_name, currentUserId, currentUserName || currentUserEmail || 'Unknown Manager']);
+
+      // ✅ tripwire_user_profile
+      await client.query(`
+        INSERT INTO public.tripwire_user_profile (
+          id, user_id, total_modules, modules_completed, created_at
+        )
+        VALUES (gen_random_uuid(), $1, 3, 0, NOW())
+        ON CONFLICT (user_id) DO NOTHING
+      `, [userId]);
+
+      // ✅ module_unlocks (открываем Module 16)
+      await client.query(`
+        INSERT INTO public.module_unlocks (id, user_id, module_id, unlocked_at)
+        VALUES (gen_random_uuid(), $1, 16, NOW())
+        ON CONFLICT (user_id, module_id) DO NOTHING
+      `, [userId]);
+
+      // ✅ student_progress (ТОЛЬКО для Module 16 - первый модуль!)
+      // Остальные модули откроются после завершения предыдущего
+      // Используем WHERE NOT EXISTS вместо ON CONFLICT (нет UNIQUE constraint)
+      await client.query(`
+        INSERT INTO public.student_progress (
+          id, user_id, module_id, lesson_id, status, created_at
+        )
+        SELECT gen_random_uuid(), $1, 16, 67, 'not_started', NOW()
+        WHERE NOT EXISTS (
+          SELECT 1 FROM public.student_progress 
+          WHERE user_id = $1 AND lesson_id = 67
+        )
+      `, [userId]);
+
+      // ✅ user_achievements (4 достижения для Tripwire)
+      const achievements = [
+        'first_module_complete',
+        'second_module_complete',
+        'third_module_complete',
+        'tripwire_graduate'
+      ];
+
+      for (const achievement of achievements) {
+        await client.query(`
+          INSERT INTO public.user_achievements (
+            id, user_id, achievement_id, current_value, required_value, is_completed, created_at
+          )
+          VALUES (gen_random_uuid(), $1, $2, 0, 1, false, NOW())
+          ON CONFLICT (user_id, achievement_id) DO NOTHING
+        `, [userId, achievement]);
     }
 
-    console.log(`✅ Created user in auth.users: ${newUser.user.id}`);
+      // ✅ user_statistics
+      await client.query(`
+        INSERT INTO public.user_statistics (
+          user_id, lessons_completed, total_time_spent, created_at
+        )
+        VALUES ($1, 0, 0, NOW())
+        ON CONFLICT (user_id) DO NOTHING
+      `, [userId]);
 
-    // 2.5. public.users заполняется АВТОМАТИЧЕСКИ через database trigger
-    // Подождем 500ms чтобы trigger сработал
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    console.log(`✅ public.users will be filled by database trigger automatically`);
+      // ✅ sales_activity_log
+      const tripwireUserResult = await client.query(`
+        SELECT id FROM public.tripwire_users WHERE user_id = $1
+      `, [userId]);
 
-    // 3. Сохраняем в tripwire_users И логируем через RPC (обход Schema Cache)
-    const { data: tripwireUserData, error: dbError } = await tripwireAdminSupabase
-      .rpc('rpc_create_tripwire_user_full', {
-        p_user_id: newUser.user.id,
-        p_full_name: full_name,
-        p_email: email,
-        p_granted_by: currentUserId,
-        p_manager_name: currentUserName || currentUserEmail || 'Unknown Manager',
-        p_generated_password: userPassword,
-        p_welcome_email_sent: false, // Будет обновлено после отправки email
-      });
+      if (tripwireUserResult.rows.length > 0) {
+        await client.query(`
+          INSERT INTO public.sales_activity_log (
+            id, manager_id, action_type, target_user_id, details, created_at
+          )
+          VALUES (gen_random_uuid(), $1, 'user_created', $2, $3, NOW())
+        `, [
+          currentUserId,
+          userId,
+          JSON.stringify({ email, full_name })
+        ]);
+      }
 
-    if (dbError) {
-      console.error('❌ RPC rpc_create_tripwire_user_full failed:', dbError);
-      // Откатываем создание пользователя в auth
-      await tripwireAdminSupabase.auth.admin.deleteUser(newUser.user.id);
-      throw new Error(`Database RPC error: ${dbError.message}`);
+      await client.query('COMMIT');
+      console.log(`✅ [DIRECT DB] All tables initialized for ${email}`);
+
+    } catch (dbError) {
+      await client.query('ROLLBACK');
+      console.error('❌ [DIRECT DB] Transaction failed:', dbError);
+      throw dbError;
+    } finally {
+      client.release();
     }
 
-    console.log(`✅ Saved to tripwire_users and logged to sales_activity_log via RPC`);
-
-    // 4. Отправляем Welcome Email (используем новый emailService)
+    // 3️⃣ SEND WELCOME EMAIL
     let emailSent = false;
     try {
       emailSent = await sendWelcomeEmail({
         toEmail: email,
         name: full_name,
-        password: userPassword,
+        password: password,
       });
-    } catch (emailError: any) {
-      console.error(`⚠️ Email sending failed, but user created successfully:`, emailError.message);
-      // Не бросаем ошибку - пользователь создан, просто email не отправился
-    }
 
-    // 5. Обновляем статус отправки email через RPC
     if (emailSent) {
-      const { error: updateError } = await tripwireAdminSupabase.rpc('rpc_update_email_status', {
-        p_user_id: newUser.user.id,
-        p_email_sent: true,
-      });
+        await tripwireAdminSupabase
+        .from('tripwire_users')
+          .update({
+            welcome_email_sent: true,
+            welcome_email_sent_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
 
-      if (updateError) {
-        console.warn('⚠️ Failed to update email status via RPC:', updateError.message);
-        // Не критичная ошибка, продолжаем
-      } else {
-        console.log(`✅ Updated email status via RPC`);
+        console.log(`✅ Welcome email sent to ${email}`);
       }
-    }
+    } catch (emailError: any) {
+      console.warn(`⚠️ Email sending failed: ${emailError.message}`);
+      }
 
-    // 6. Возвращаем результат
     return {
       success: true,
-      user_id: newUser.user.id,
+      user_id: userId,
       email: email,
-      generated_password: userPassword,
+      generated_password: password,
       welcome_email_sent: emailSent,
-      message: 'Пользователь успешно создан (via RPC)',
+      message: '✅ User created successfully (Direct DB)',
     };
   } catch (error: any) {
     console.error('❌ Error creating tripwire user:', error);
@@ -138,52 +212,73 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 }
 
 /**
- * Получает список Tripwire пользователей (via RPC)
- * 🎯 ARCHITECT SOLUTION #3: Поддержка startDate/endDate фильтрации
+ * Получает список Tripwire пользователей
+ * 🔥 DIRECT POSTGRES CONNECTION - обход PostgREST/Kong cache!
  */
 export async function getTripwireUsers(params: GetTripwireUsersParams & { startDate?: string; endDate?: string }) {
   const { managerId, status, page = 1, limit = 20, startDate, endDate } = params;
 
   try {
-    const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_tripwire_users', {
-      p_manager_id: managerId || null,
-      p_status: status || null,
-      p_page: page,
-      p_limit: limit,
-      p_start_date: startDate || null,
-      p_end_date: endDate || null,
-    });
+    console.log(`🔌 [DIRECT] getTripwireUsers called with manager=${managerId}, status=${status}`);
 
-    if (error) {
-      throw new Error(`RPC error: ${error.message}`);
+    // 🔥 DIRECT PostgreSQL connection
+    const client = await tripwirePool.connect();
+    try {
+      const result = await client.query(`
+        SELECT * FROM public.rpc_get_tripwire_users(
+          p_end_date := $1,
+          p_limit := $2,
+          p_manager_id := $3,
+          p_page := $4,
+          p_start_date := $5,
+          p_status := $6
+        )
+      `, [
+        endDate || null,
+        limit,
+        managerId || null,
+        page,
+        startDate || null,
+        status || null
+      ]);
+
+      console.log(`✅ [DIRECT] Found ${result.rows.length} users`);
+      return result.rows;
+    } finally {
+      client.release();
     }
-
-    return data;
   } catch (error: any) {
-    console.error('❌ Error fetching tripwire users via RPC:', error);
+    console.error('❌ [DIRECT] Error fetching tripwire users:', error);
     throw error;
   }
 }
 
 /**
- * Получает статистику по Tripwire пользователям для менеджера (via RPC)
- * 🎯 ARCHITECT SOLUTION #3: Поддержка startDate/endDate фильтрации
+ * Получает статистику по Tripwire пользователям для менеджера
+ * 🔥 DIRECT POSTGRES CONNECTION - обход PostgREST/Kong cache!
  */
 export async function getTripwireStats(managerId?: string, startDate?: string, endDate?: string) {
   try {
-    const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_tripwire_stats', {
-      p_manager_id: managerId || null,
-      p_start_date: startDate || null,
-      p_end_date: endDate || null,
-    });
+    console.log(`🔌 [DIRECT] getTripwireStats called for manager=${managerId}`);
 
-    if (error) {
-      throw new Error(`RPC error: ${error.message}`);
+    // 🔥 DIRECT PostgreSQL connection
+    const client = await tripwirePool.connect();
+    try {
+      const result = await client.query(`
+        SELECT * FROM public.rpc_get_tripwire_stats(
+          p_end_date := $1,
+          p_manager_id := $2,
+          p_start_date := $3
+        )
+      `, [endDate || null, managerId || null, startDate || null]);
+
+      console.log(`✅ [DIRECT] Stats:`, result.rows[0]);
+      return result.rows[0];
+    } finally {
+      client.release();
     }
-
-    return data;
   } catch (error: any) {
-    console.error('❌ Error fetching tripwire stats via RPC:', error);
+    console.error('❌ [DIRECT] Error fetching tripwire stats:', error);
     throw error;
   }
 }
@@ -201,7 +296,7 @@ export async function updateTripwireUserStatus(
       p_user_id: userId,
       p_status: status,
       p_manager_id: managerId,
-    });
+      });
 
     if (error) {
       throw new Error(`RPC error: ${error.message}`);
@@ -296,6 +391,53 @@ export async function getSalesChartData(
     return data;
   } catch (error: any) {
     console.error('❌ Error fetching sales chart data via RPC:', error);
+    throw error;
+  }
+}
+
+/**
+ * Удаляет Tripwire студента
+ * 🔥 ONLY FOR ADMIN (smmmcwin@gmail.com)
+ * ✅ Удаляет из auth.users, tripwire_users, sales_activity_log, tripwire_user_profile, public.users
+ */
+export async function deleteTripwireUser(userId: string) {
+  try {
+    console.log(`🗑️ [DELETE] Deleting user: ${userId}`);
+
+    // 1. Вызываем RPC для удаления из DB tables (через DIRECT connection)
+    const client = await tripwirePool.connect();
+    try {
+      const result = await client.query(`
+        SELECT * FROM public.rpc_delete_tripwire_user(p_user_id := $1)
+      `, [userId]);
+
+      const rpcResult = result.rows[0];
+      console.log('✅ [DELETE] RPC result:', rpcResult);
+
+      if (!rpcResult || !rpcResult.success) {
+        throw new Error(rpcResult?.error || 'Failed to delete user from database');
+      }
+
+      // 2. Удаляем из auth.users через Admin API
+      const { error: authError } = await tripwireAdminSupabase.auth.admin.deleteUser(userId);
+      
+      if (authError) {
+        console.error('⚠️ [DELETE] Auth deletion error:', authError.message);
+        // Не критичная ошибка, продолжаем
+      } else {
+        console.log('✅ [DELETE] Deleted from auth.users');
+      }
+
+      return {
+        success: true,
+        email: rpcResult.email,
+        full_name: rpcResult.full_name,
+      };
+    } finally {
+      client.release();
+    }
+  } catch (error: any) {
+    console.error('❌ [DELETE] Error deleting user:', error);
     throw error;
   }
 }

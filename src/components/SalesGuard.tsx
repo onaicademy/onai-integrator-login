@@ -22,6 +22,7 @@ export function SalesGuard({ children }: SalesGuardProps) {
 
   const checkAuth = async () => {
     try {
+      console.log('🔥🔥🔥 SALESGUARD VERSION 2.0 - DIRECT POSTGRES - DEC 4 01:40 🔥🔥🔥');
       console.log('🔐 SalesGuard: Проверка Tripwire auth...');
       
       const { data: { session }, error } = await tripwireSupabase.auth.getSession();

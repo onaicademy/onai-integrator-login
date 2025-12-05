@@ -5,6 +5,10 @@
  * Использует независимую базу данных.
  */
 
+// ✅ Загружаем .env для scripts (в production через pm2 ecosystem)
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { createClient } from '@supabase/supabase-js';
 
 const tripwireUrl = process.env.TRIPWIRE_SUPABASE_URL!;
@@ -28,6 +32,9 @@ export const tripwireAdminSupabase = createClient(tripwireUrl, tripwireServiceRo
   auth: {
     autoRefreshToken: false,
     persistSession: false
+  },
+  db: {
+    schema: 'public'  // ← Явно указываем схему для PostgREST
   },
   global: {
     headers: {

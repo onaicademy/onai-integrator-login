@@ -2,12 +2,12 @@ import { Users, UserCheck, Trophy, TrendingUp } from 'lucide-react';
 import { Icon } from '@iconify/react';
 
 interface Stats {
-  total_users: number;
-  active_users: number;
-  completed_users: number;
-  this_month: number;
-  total_revenue?: number; // Новое: общая выручка в тенге
-  monthly_revenue?: number; // Новое: выручка за месяц
+  total_students: number; // 🔥 FIX: Changed from total_users
+  active_students: number; // 🔥 FIX: Changed from active_users
+  completed_students: number;
+  students_this_month: number; // 🔥 FIX: Changed from this_month
+  total_revenue?: string | number; // 🔥 FIX: Can be string from RPC
+  revenue_this_month?: string | number; // 🔥 FIX: Changed from monthly_revenue
 }
 
 interface StatsCardsProps {
@@ -27,8 +27,8 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     {
       title: 'ВСЕГО ПРОДАЖ',
-      value: stats.total_users,
-      subtitle: stats.total_revenue ? formatCurrency(stats.total_revenue) : '0 ₸',
+      value: stats.total_students, // 🔥 FIX: Changed from total_users
+      subtitle: stats.total_revenue ? formatCurrency(Number(stats.total_revenue)) : '0 ₸',
       icon: Users,
       iconifyIcon: 'solar:users-group-rounded-bold-duotone',
       color: '#00FF94',
@@ -36,7 +36,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'АКТИВНЫХ',
-      value: stats.active_users,
+      value: stats.active_students, // 🔥 FIX: Changed from active_users
       icon: UserCheck,
       iconifyIcon: 'solar:user-check-rounded-bold-duotone',
       color: '#3B82F6',
@@ -44,7 +44,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'ЗАВЕРШИЛИ КУРС',
-      value: stats.completed_users,
+      value: stats.completed_students,
       icon: Trophy,
       iconifyIcon: 'solar:cup-star-bold-duotone',
       color: '#F59E0B',
@@ -52,8 +52,8 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'ЭТОТ МЕСЯЦ',
-      value: stats.this_month,
-      subtitle: stats.monthly_revenue ? formatCurrency(stats.monthly_revenue) : '0 ₸',
+      value: stats.students_this_month, // 🔥 FIX: Changed from this_month
+      subtitle: stats.revenue_this_month ? formatCurrency(Number(stats.revenue_this_month)) : '0 ₸',
       icon: TrendingUp,
       iconifyIcon: 'solar:graph-up-bold-duotone',
       color: '#8B5CF6',
@@ -75,7 +75,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
           <div
             className="relative bg-[rgba(10,10,10,0.9)] backdrop-blur-xl border-2 border-white/10 
                         rounded-2xl p-6 hover:border-[#00FF94]/60 transition-all duration-300
-                        shadow-[0_0_40px_rgba(0,255,148,0.2)]"
+                        shadow-[0_0_40px_rgba(0,255,148,0.015)]"
           >
             <div className="flex items-start justify-between mb-4">
               <div>

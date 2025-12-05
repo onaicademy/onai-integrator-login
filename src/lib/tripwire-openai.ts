@@ -131,6 +131,7 @@ export async function processFile(
 
 /**
  * Отправить сообщение AI-ассистенту (Tripwire версия)
+ * ✅ PHASE 3: Использует новый /api/tripwire/ai/chat endpoint
  */
 export async function sendMessageToAI(
   message: string,
@@ -139,179 +140,55 @@ export async function sendMessageToAI(
   assistantType: AssistantType = 'curator'
 ): Promise<string> {
   try {
-    const startTime = Date.now();
+    console.log(`🤖 [Phase 3] Отправляем сообщение в Tripwire AI Chat`);
+    
+    // Получаем userId если не передан
+    let finalUserId = userId;
+    if (!finalUserId) {
+      const { data: { user } } = await tripwireSupabase.auth.getUser();
+      if (user?.id) {
+        finalUserId = user.id;
+      } else {
+        throw new Error('Не удалось получить userId');
+      }
+    }
 
-    // Получаем или создаём Thread
-    const threadId = await getOrCreateThread();
-
-    console.log(`🤖 Используем ${assistantType} assistant (Tripwire)`);
-
-    // Обработка файлов
+    // Обработка файлов (пока placeholder, TODO: добавить в Phase 3+)
     let finalMessage = message;
     if (attachments && attachments.length > 0) {
-      for (const attachment of attachments) {
-        if (attachment.file) {
-          try {
-            const processed = await processFile(attachment.file, message, userId, threadId);
-            
-            if (processed.type === 'image') {
-              finalMessage = message 
-                ? `${message}\n\n[Анализ изображения: ${processed.analysis}]`
-                : `[Анализ изображения: ${processed.analysis}]`;
-            } else {
-              finalMessage = message
-                ? `${message}\n\n[Содержимое документа "${attachment.name}":\n${processed.content}]`
-                : `[Содержимое документа "${attachment.name}":\n${processed.content}]`;
-            }
-          } catch (error) {
-            console.error(`❌ Не удалось обработать файл ${attachment.name}:`, error);
-          }
-        }
-      }
+      console.log(`📎 Обработка ${attachments.length} файлов...`);
+      // TODO Phase 3+: Обработать файлы через Vision API
+      finalMessage += `\n\n[Прикреплено файлов: ${attachments.length}]`;
     }
 
-    // Добавляем сообщение в thread через Backend
-    await api.post(`/api/openai/threads/${threadId}/messages`, {
-      content: finalMessage,
-      role: 'user',
+    // ✅ НОВЫЙ ENDPOINT: /api/tripwire/ai/chat
+    const response = await api.post<{
+      success: boolean;
+      data: {
+        message: string;
+        timestamp: string;
+      };
+    }>('/api/tripwire/ai/chat', {
+      user_id: finalUserId,
+      message: finalMessage,
     });
 
-    // Запускаем Run через Backend
-    const runResponse = await api.post<{ id: string; status: string }>(
-      `/api/openai/threads/${threadId}/runs`,
-      {
-        assistant_type: assistantType,
-        temperature: 0.4,
-        top_p: 0.8,
-      }
-    );
-    
-    const runId = runResponse.id;
-    
-    // Polling
-    let runStatus = runResponse.status;
-    let pollCount = 0;
-    const maxPolls = 60;
-    let tokenUsage: any = null;
-
-    while (runStatus === "queued" || runStatus === "in_progress" || runStatus === "requires_action") {
-      if (pollCount >= maxPolls) {
-        throw new Error("Превышено время ожидания ответа от AI");
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      const statusResponse = await api.get<{ status: string; usage?: any }>(
-        `/api/openai/threads/${threadId}/runs/${runId}`
-      );
-      
-      runStatus = statusResponse.status;
-      if (statusResponse.usage) tokenUsage = statusResponse.usage;
-      
-      pollCount++;
-      
-      if (runStatus === "requires_action") {
-        console.warn("⚠️ Function calling пока не поддерживается через Backend");
-        break;
-      }
+    if (!response.success || !response.data?.message) {
+      throw new Error('Не получен ответ от AI');
     }
 
-    if (runStatus === "completed") {
-      // Получаем финальный Run для usage
-      const finalRunResponse = await api.get<{ usage?: any }>(
-        `/api/openai/threads/${threadId}/runs/${runId}`
-      );
-      if (finalRunResponse.usage) tokenUsage = finalRunResponse.usage;
+    console.log("✅ Получен ответ от Tripwire AI");
+    return response.data.message;
 
-      // Получаем последнее сообщение
-      const messagesResponse = await api.get<{ data: any[] }>(
-        `/api/openai/threads/${threadId}/messages?limit=1&order=desc`
-      );
-
-      const assistantMessage = messagesResponse.data[0];
-
-      if (!assistantMessage || assistantMessage.role !== "assistant") {
-        throw new Error("Не получен ответ от Assistant");
-      }
-
-      if (
-        assistantMessage.content &&
-        assistantMessage.content.length > 0 &&
-        assistantMessage.content[0].type === "text"
-      ) {
-        const responseText = assistantMessage.content[0].text.value;
-        const responseTime = Date.now() - startTime;
-        console.log("✅ Получен ответ от Assistant (Tripwire)");
-
-        // Сохраняем диалог в Supabase (Tripwire tables)
-        if (userId) {
-          console.log("💾 Сохраняем диалог в Tripwire Tables...");
-          try {
-            // ИСПОЛЬЗУЕМ tripwire-chat.ts вместо backend API
-            await saveMessagePair(
-              userId,
-              message, // Сохраняем исходное сообщение юзера, не finalMessage
-              responseText,
-              {
-                response_time_ms: responseTime,
-                model_used: 'gpt-4o',
-                openai_message_id: assistantMessage.id,
-                openai_run_id: runId,
-              }
-            );
-            console.log("✅ Диалог сохранён в Tripwire Tables");
-
-            // Логируем токены (аналитика общая, можно использовать тот же endpoint)
-            if (tokenUsage) {
-               try {
-                await api.post('/api/tokens/log', {
-                  userId,
-                  assistantType: assistantType,
-                  promptTokens: tokenUsage.prompt_tokens || 0,
-                  completionTokens: tokenUsage.completion_tokens || 0,
-                  totalTokens: tokenUsage.total_tokens || 0,
-                  modelUsed: 'gpt-4o',
-                  openaiThreadId: threadId,
-                  openaiMessageId: assistantMessage.id,
-                  openaiRunId: runId,
-                });
-              } catch (tokenError) {
-                console.error("⚠️ Не удалось залогировать токены:", tokenError);
-              }
-            }
-
-            // Конфликты (опционально)
-            const conflicts = await detectConflicts({
-              userMessage: message,
-              aiResponse: responseText,
-              threadId,
-              userId,
-              responseTime,
-              tokenCount: undefined,
-              model: 'gpt-4o',
-            });
-            if (conflicts.length > 0) console.warn(`⚠️ Обнаружено конфликтов: ${conflicts.length}`);
-
-          } catch (saveError) {
-            console.error("⚠️ Не удалось сохранить в Tripwire Tables:", saveError);
-          }
-        }
-
-        return responseText;
-      } else {
-        throw new Error("Неожиданный формат ответа от Assistant");
-      }
-    } else {
-      throw new Error(`Run завершился со статусом: ${runStatus}`);
-    }
-  } catch (error) {
-    console.error("❌ Ошибка при отправке сообщения (Tripwire):", error);
+  } catch (error: any) {
+    console.error("❌ Ошибка при отправке сообщения (Tripwire Phase 3):", error);
     throw error;
   }
 }
 
 /**
  * Получить историю сообщений из Supabase (Tripwire)
+ * ✅ PHASE 3: Использует новый /api/tripwire/ai/history endpoint
  */
 export async function getChatHistory(userId?: string): Promise<ChatMessage[]> {
   try {
@@ -319,17 +196,32 @@ export async function getChatHistory(userId?: string): Promise<ChatMessage[]> {
       return [];
     }
 
-    const supabaseMessages = await getSupabaseChatHistory(userId, 100);
+    console.log(`📚 [Phase 3] Загружаем историю чата из Tripwire DB`);
     
-    const chatMessages: ChatMessage[] = supabaseMessages.map((msg) => ({
+    // ✅ НОВЫЙ ENDPOINT: /api/tripwire/ai/history
+    const response = await api.get<{
+      success: boolean;
+      data: Array<{
+        role: 'user' | 'assistant' | 'system';
+        content: string;
+        created_at: string;
+      }>;
+    }>(`/api/tripwire/ai/history?user_id=${userId}&limit=100`);
+
+    if (!response.success || !response.data) {
+      return [];
+    }
+    
+    const chatMessages: ChatMessage[] = response.data.map((msg) => ({
       role: msg.role,
       content: msg.content,
       file_ids: [],
     }));
 
+    console.log(`✅ Загружено ${chatMessages.length} сообщений из истории`);
     return chatMessages;
   } catch (error) {
-    console.error("❌ Ошибка при получении истории:", error);
+    console.error("❌ Ошибка при получении истории (Phase 3):", error);
     return [];
   }
 }

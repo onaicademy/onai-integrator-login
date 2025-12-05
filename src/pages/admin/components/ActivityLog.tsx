@@ -168,13 +168,16 @@ export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogPr
                     </div>
 
                     <span className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] whitespace-nowrap">
-                      {new Date(activity.created_at).toLocaleString('ru-RU', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {activity.created_at 
+                        ? new Date(activity.created_at).toLocaleString('ru-RU', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : 'Нет данных'
+                      }
                     </span>
                   </div>
                 </div>

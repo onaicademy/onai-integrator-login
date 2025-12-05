@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { api } from '@/utils/apiClient';
-import { supabase } from '@/lib/supabase';
+import { tripwireSupabase } from '@/lib/supabase-tripwire';
 
 interface CreateUserFormProps {
   onClose: () => void;
@@ -38,7 +38,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await tripwireSupabase.auth.getSession();
 
       if (!session?.access_token) {
         throw new Error('Не авторизован');

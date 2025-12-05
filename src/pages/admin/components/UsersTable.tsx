@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Eye, Mail, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Eye, Mail, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { api } from '@/utils/apiClient';
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 Get current user email
 
 interface TripwireUser {
   id: string;
@@ -27,7 +28,16 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [filteredManagerName, setFilteredManagerName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null); // 🔥 Current user email
+  const [isDeleting, setIsDeleting] = useState<string | null>(null); // User ID being deleted
   const limit = 20;
+
+  // 🔥 Load current user email
+  useEffect(() => {
+    tripwireSupabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUserEmail(session?.user?.email || null);
+    });
+  }, []);
 
   const statusConfig: Record<
     string,
@@ -84,6 +94,34 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
 
     loadUsers();
   }, [page, refreshTrigger, managerId, dateRange]);
+
+  // 🔥 DELETE HANDLER (только для smmmcwin@gmail.com)
+  const handleDelete = async (userId: string, email: string) => {
+    if (!window.confirm(`Удалить студента ${email}?\n\nЭто действие нельзя отменить!`)) {
+      return;
+    }
+
+    try {
+      setIsDeleting(userId);
+      console.log(`🗑️ Deleting user: ${userId}`);
+      
+      await api.delete(`/api/admin/tripwire/users/${userId}`);
+      
+      console.log('✅ User deleted successfully');
+      
+      // Обновляем список (удаляем из UI мгновенно)
+      setUsers(users.filter(u => u.id !== userId));
+      setTotal(total - 1);
+      
+      // Показываем success message
+      alert(`Студент ${email} успешно удален!`);
+    } catch (error: any) {
+      console.error('❌ Error deleting user:', error);
+      alert(`Ошибка при удалении: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -153,6 +191,12 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                   <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
                     ДОБАВЛЕН
                   </th>
+                  {/* 🔥 ДЕЙСТВИЯ - только для admin */}
+                  {currentUserEmail === 'smmmcwin@gmail.com' && (
+                    <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
+                      ДЕЙСТВИЯ
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -203,6 +247,27 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                           {new Date(user.created_at).toLocaleDateString('ru-RU')}
                         </span>
                       </td>
+                      {/* 🔥 DELETE BUTTON - только для smmmcwin@gmail.com */}
+                      {currentUserEmail === 'smmmcwin@gmail.com' && (
+                        <td className="py-4 px-4">
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleDelete(user.id, user.email)}
+                              disabled={isDeleting === user.id}
+                              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 
+                                       hover:border-red-500/60 transition-all duration-200 disabled:opacity-50
+                                       disabled:cursor-not-allowed group"
+                              title={`Удалить ${user.email}`}
+                            >
+                              {isDeleting === user.id ? (
+                                <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Trash2 className="w-5 h-5 text-red-500 group-hover:text-red-400 transition-colors" />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

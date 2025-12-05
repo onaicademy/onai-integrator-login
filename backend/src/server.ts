@@ -38,6 +38,17 @@ console.log('   - SUPABASE_SERVICE_ROLE_KEY exists:', !!supabaseKey);
 console.log('   - SUPABASE_SERVICE_ROLE_KEY length:', supabaseKey?.length || 0);
 console.log('\n');
 
+// Resend
+const resendKey = process.env.RESEND_API_KEY;
+console.log('📧 RESEND (Email Service):');
+console.log('   - RESEND_API_KEY exists:', !!resendKey);
+console.log('   - RESEND_API_KEY length:', resendKey?.length || 0);
+console.log('   - First 10 chars:', resendKey?.substring(0, 10) || 'EMPTY');
+if (!resendKey || resendKey.length < 20) {
+  console.error('   ⚠️  WARNING: RESEND_API_KEY не загружен! Отправка писем НЕ БУДЕТ работать!');
+}
+console.log('\n');
+
 console.log('═══════════════════════════════════════════════════════════════\n');
 
 // Проверка критичных переменных
@@ -74,6 +85,11 @@ import tripwireLessonsRouter from './routes/tripwire-lessons';
 import tripwireManagerRouter from './routes/tripwire-manager'; // ✅ Sales Manager Dashboard
 import tripwireAdminRouter from './routes/tripwire/admin'; // ✅ Tripwire Admin Dashboard
 import tripwireTranscriptionsRouter from './routes/tripwire/transcriptions'; // ✅ Tripwire Transcriptions
+import tripwireProfileRouter from './routes/tripwire/profile'; // ✅ Tripwire Profile (Isolated DB)
+import tripwireAnalyticsRouter from './routes/tripwire/analytics'; // ✅ Tripwire Analytics (Isolated DB)
+import tripwireMaterialsRouter from './routes/tripwire/materials'; // ✅ Tripwire Materials (Phase 2)
+import tripwireCertificatesRouter from './routes/tripwire/certificates'; // ✅ Tripwire Certificates (Phase 2)
+import tripwireAiRouter from './routes/tripwire/ai'; // ✅ Tripwire AI Curator (Phase 2)
 import videoUploadRouter from './routes/videoUpload';
 import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW)
 import progressRouter from './routes/progress'; // ✅ Video Progress Tracking for AI Mentor
@@ -101,6 +117,7 @@ app.use(helmet());
 const allowedOrigins = [
   'https://onai.academy',
   'http://localhost:8080',
+  'http://localhost:8081', // NEW PORT!
   'http://localhost:5173',
   process.env.FRONTEND_URL
 ].filter(Boolean); // Убираем undefined значения
@@ -119,7 +136,7 @@ app.use(cors({
       // В production используем https://onai.academy, в dev - localhost
       const defaultOrigin = process.env.NODE_ENV === 'production' 
         ? 'https://onai.academy' 
-        : 'http://localhost:8080';
+        : 'http://localhost:8081'; // UPDATED PORT!
       callback(null, defaultOrigin);
     }
   },
@@ -216,6 +233,11 @@ app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints
 app.use('/api/admin/tripwire', tripwireManagerRouter); // ✅ Sales Manager Dashboard (admin & sales roles only)
 app.use('/api/tripwire/admin', tripwireAdminRouter); // ✅ Tripwire Admin Dashboard (admin only)
 app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsRouter); // ✅ Tripwire Transcriptions
+app.use('/api/tripwire/users', tripwireProfileRouter); // ✅ Tripwire Profile (Isolated DB)
+app.use('/api/tripwire/analytics', tripwireAnalyticsRouter); // ✅ Tripwire Analytics (ISOLATED DB)
+app.use('/api/tripwire', tripwireMaterialsRouter); // ✅ Tripwire Materials (Phase 2)
+app.use('/api/tripwire/certificates', tripwireCertificatesRouter); // ✅ Tripwire Certificates (Phase 2)
+app.use('/api/tripwire/ai', tripwireAiRouter); // ✅ Tripwire AI Curator (Phase 2)
 app.use('/api/supabase', supabaseRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/tokens', tokensRouter);

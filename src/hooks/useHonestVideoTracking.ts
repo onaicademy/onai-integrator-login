@@ -325,6 +325,21 @@ export const useHonestVideoTracking = (
     setProgress(percentage);
     setTotalWatchedSeconds(totalWatched);
     
+    // ✅ НОВАЯ ЛОГИКА: Если пользователь перемотал на 80%+, автоматически разрешаем завершение
+    const currentPositionPercent = (currentTime / totalDuration) * 100;
+    const isQualifiedBySkip = currentPositionPercent >= 80;
+    const isQualifiedByWatch = percentage >= 80;
+    
+    if ((isQualifiedBySkip || isQualifiedByWatch) && !isCompleted) {
+      console.log('🎉 [HonestTracking] Qualified for completion!', {
+        bySkip: isQualifiedBySkip,
+        byWatch: isQualifiedByWatch,
+        currentPosition: currentPositionPercent.toFixed(1) + '%',
+        watchedProgress: percentage + '%'
+      });
+      setIsCompleted(true);
+    }
+    
     // Троттлинг автосохранения
     if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
     
@@ -342,7 +357,7 @@ export const useHonestVideoTracking = (
       }
       syncProgress();
     }, 10000); // Сохраняем каждые 10 секунд
-  }, [syncProgress]);
+  }, [syncProgress, isCompleted]);
   
   // 🔄 Cleanup при уходе со страницы
   useEffect(() => {

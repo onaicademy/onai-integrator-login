@@ -287,6 +287,7 @@ router.get('/module-progress/:moduleId', async (req, res) => {
 });
 
 // POST /api/tripwire/unlock-achievement - Unlock achievement for completing module
+// 🔥 DIRECT DB VERSION - БЕЗ RPC!
 router.post('/unlock-achievement', async (req, res) => {
   try {
     const { module_number } = req.body;
@@ -310,21 +311,118 @@ router.post('/unlock-achievement', async (req, res) => {
       return res.status(400).json({ error: 'module_number must be 1, 2, or 3' });
     }
 
-    // Call database function to unlock achievement
-    const { data: result, error } = await adminSupabase.rpc('unlock_tripwire_achievement', {
-      p_user_id: user.id,
-      p_module_number: module_number
-    });
+    const userId = user.id;
+    console.log(`🏆 [DIRECT DB] Unlocking achievement for Module ${module_number}, user: ${userId}`);
 
-    if (error) {
-      console.error('❌ Error unlocking achievement:', error);
-      return res.status(500).json({ error: error.message });
+    // 🔥 DIRECT DB - NO RPC!
+    const { tripwirePool } = require('../config/tripwire-db');
+    const client = await tripwirePool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // 1️⃣ Определяем тип достижения
+      const achievementType = `${module_number === 1 ? 'first' : module_number === 2 ? 'second' : 'third'}_module_complete`;
+      
+      // 2️⃣ Разблокируем достижение в user_achievements
+      const unlockResult = await client.query(`
+        UPDATE public.user_achievements
+        SET is_completed = true, completed_at = NOW(), updated_at = NOW()
+        WHERE user_id = $1 AND achievement_id = $2 AND is_completed = false
+        RETURNING *
+      `, [userId, achievementType]);
+
+      const newly_unlocked = unlockResult.rowCount > 0;
+
+      // 3️⃣ Обновляем tripwire_user_profile
+      await client.query(`
+        UPDATE public.tripwire_user_profile
+        SET 
+          modules_completed = GREATEST(modules_completed, $2),
+          completion_percentage = (GREATEST(modules_completed, $2)::DECIMAL / total_modules) * 100,
+          updated_at = NOW()
+        WHERE user_id = $1
+      `, [userId, module_number]);
+
+      // 4️⃣ 🔥 ОТКРЫВАЕМ СЛЕДУЮЩИЙ МОДУЛЬ!
+      const moduleMapping = {
+        1: 17, // После Module 16 (1) → открываем Module 17
+        2: 18, // После Module 17 (2) → открываем Module 18
+        3: null // Module 18 (3) - последний, нет следующего
+      };
+
+      const nextModuleId = moduleMapping[module_number as 1 | 2 | 3];
+
+      if (nextModuleId) {
+        console.log(`🔓 [DIRECT DB] Unlocking next module: ${nextModuleId}`);
+        
+        await client.query(`
+          INSERT INTO public.module_unlocks (id, user_id, module_id, unlocked_at, animation_shown)
+          VALUES (gen_random_uuid(), $1, $2, NOW(), false)
+          ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
+        `, [userId, nextModuleId]);
+
+        // Создаем student_progress для следующего урока (если еще не создан)
+        const nextLessonId = nextModuleId === 17 ? 68 : 69;
+        await client.query(`
+          INSERT INTO public.student_progress (
+            id, user_id, module_id, lesson_id, status, created_at
+          )
+          SELECT gen_random_uuid(), $1, $2, $3, 'not_started', NOW()
+          WHERE NOT EXISTS (
+            SELECT 1 FROM public.student_progress 
+            WHERE user_id = $1 AND lesson_id = $3
+          )
+        `, [userId, nextModuleId, nextLessonId]);
+      }
+
+      // 5️⃣ 🎓 АВТОМАТИЧЕСКИ ВЫДАЕМ СЕРТИФИКАТ ПОСЛЕ MODULE 18!
+      if (module_number === 3 && newly_unlocked) {
+        console.log(`🎓 [DIRECT DB] Issuing certificate for user: ${userId}`);
+        
+        // Разблокируем достижение tripwire_graduate
+        await client.query(`
+          UPDATE public.user_achievements
+          SET is_completed = true, completed_at = NOW(), updated_at = NOW()
+          WHERE user_id = $1 AND achievement_id = 'tripwire_graduate' AND is_completed = false
+        `, [userId]);
+
+        // Обновляем профиль - сертификат выдан
+        await client.query(`
+          UPDATE public.tripwire_user_profile
+          SET certificate_issued = true, certificate_issued_at = NOW(), updated_at = NOW()
+          WHERE user_id = $1
+        `, [userId]);
+
+        console.log(`✅ [DIRECT DB] Certificate issued for user: ${userId}`);
+      }
+
+      await client.query('COMMIT');
+
+      // Получаем информацию о достижении
+      const { data: achievement } = await adminSupabase
+        .from('achievements')
+        .select('*')
+        .eq('title', achievementType)
+        .single();
+
+      console.log(`✅ [DIRECT DB] Achievement unlocked: ${achievementType}, Next module: ${nextModuleId || 'none'}`);
+
+      res.json({
+        newly_unlocked,
+        achievement,
+        next_module_unlocked: nextModuleId
+      });
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
 
-    console.log(`✅ Achievement unlocked for user ${user.id}, module ${module_number}`);
-    res.json(result);
   } catch (error: any) {
-    console.error('❌ Unexpected error:', error);
+    console.error('❌ Error unlocking achievement:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -222,16 +222,26 @@ export default function TripwireProfile() {
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.functions.invoke('generate-tripwire-certificate', {
-        body: { full_name: profile.full_name }
+      
+      // ✅ PHASE 3: Use new Tripwire Certificate API
+      const response = await fetch('/api/tripwire/certificates/issue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          full_name: profile.full_name
+        })
       });
 
-      if (error) {
-        console.error('Edge Function Error:', error);
-        throw new Error(error.message || 'Failed to generate certificate');
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to generate certificate');
       }
 
-      if (data?.url) {
+      if (result.data?.certificate_url) {
         toast({
           title: "Сертификат готов!",
           description: "Сертификат успешно сгенерирован",
@@ -239,8 +249,8 @@ export default function TripwireProfile() {
         
         // Reload profile data to update UI
         await loadProfileData();
-      } else if (data?.error) {
-         throw new Error(data.error);
+      } else {
+         throw new Error('Certificate URL not returned');
       }
 
     } catch (error: any) {

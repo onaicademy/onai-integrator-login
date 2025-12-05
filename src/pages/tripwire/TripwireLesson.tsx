@@ -230,8 +230,8 @@ const TripwireLesson = () => {
 
       // Загрузить материалы
       try {
-        const materialsRes = await api.get(`/api/tripwire/materials/${lessonId}`);
-        setMaterials(materialsRes?.materials || []);
+        const materialsRes = await api.get(`/api/tripwire/lessons/${lessonId}/materials`);
+        setMaterials(materialsRes?.data || []);
       } catch (error) {
         console.log('ℹ️ Материалы не найдены');
       }
@@ -1006,8 +1006,9 @@ const TripwireLesson = () => {
           moduleNumber={unlockedModuleNumber}
           onClose={() => setUnlockedModuleNumber(null)}
           onNavigate={() => {
-            // Navigate to next module
-            navigate(`/tripwire/module/${unlockedModuleNumber}/lesson/${allLessons[0]?.id || 1}`);
+            // Navigate back to Tripwire homepage where user will see unlocked modules
+            setUnlockedModuleNumber(null);
+            navigate('/tripwire');
           }}
         />
       )}

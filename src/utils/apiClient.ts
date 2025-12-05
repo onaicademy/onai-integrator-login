@@ -11,13 +11,35 @@ interface ApiRequestOptions extends RequestInit {
 }
 
 /**
- * ✅ Helper: Get JWT token from localStorage (correct key)
+ * ✅ Helper: Get JWT token from localStorage
+ * Supports both Main Platform and Tripwire tokens
  */
-export function getAuthToken(): string | null {
-  // Try old key first (for backward compatibility)
+export function getAuthToken(endpoint?: string): string | null {
+  // Если это Tripwire API endpoint - пробуем Tripwire токен ПЕРВЫМ
+  if (endpoint && endpoint.includes('/tripwire')) {
+    // 1. Проверяем Tripwire JWT токен (сохранённый после логина)
+    const tripwireToken = localStorage.getItem('tripwire_supabase_token');
+    if (tripwireToken) {
+      return tripwireToken;
+    }
+    
+    // 2. Проверяем Tripwire Supabase session
+    const tripwireSessionData = localStorage.getItem('sb-tripwire-auth-token');
+    if (tripwireSessionData) {
+      try {
+        const parsed = JSON.parse(tripwireSessionData);
+        if (parsed?.access_token) {
+          return parsed.access_token;
+        }
+      } catch (e) {
+        console.error('Failed to parse Tripwire Supabase token:', e);
+      }
+    }
+  }
+  
+  // Fallback: пробуем основной Platform токен
   let token = localStorage.getItem('supabase_token');
   
-  // If not found, get from Supabase session
   if (!token) {
     const sessionData = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
     if (sessionData) {
@@ -41,7 +63,8 @@ export async function apiRequest<T = any>(
   options: ApiRequestOptions = {}
 ): Promise<T> {
   // Получаем JWT токен из localStorage (сохраняется после авторизации)
-  const token = getAuthToken();
+  // Передаём endpoint чтобы определить какой токен использовать (Main или Tripwire)
+  const token = getAuthToken(endpoint);
   
   // 🏗️ АРХИТЕКТУРНОЕ РЕШЕНИЕ: Умный fallback в зависимости от окружения
   // Development: localhost:3000, Production: api.onai.academy

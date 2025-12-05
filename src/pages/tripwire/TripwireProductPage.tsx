@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, Lock, Zap, Code, Briefcase, Rocket, Brain, Bot, Clapperboard, Sparkles } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";  // ✅ ADDED: Admin God Mode
 import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
 import { api } from "@/utils/apiClient";
 import LiveStreamModule from "./components/LiveStreamModule";
 import { TripwireAIChatDialog } from "@/components/tripwire/TripwireAIChatDialog";
+import { tripwireSupabase } from "@/lib/supabase-tripwire";
 
 // 🎯 Brand Code v3.0 - Cyber-Architecture
 const BRAND = {
@@ -76,11 +76,11 @@ const tripwireModules = [
 export default function TripwireProductPage() {
   const navigate = useNavigate();
   const [hoveredModule, setHoveredModule] = useState<number | null>(null);
-  const { user, userRole } = useAuth();  // ✅ FIXED: Get userRole from context
   const [isAIChatOpen, setIsAIChatOpen] = useState(false); // ✅ AI Curator State
   
-  // 🔓 ADMIN GOD MODE: Unlock all modules for admin
-  const isAdmin = userRole === 'admin';  // ✅ FIXED: Use userRole, not user.role
+  // 🔥 ВАЖНО: Используем tripwireSupabase для Tripwire студентов, НЕ useAuth()!
+  const [tripwireUser, setTripwireUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // 🎮 GAMIFICATION: Module unlock animations
   const [unlockedModules, setUnlockedModules] = useState<any[]>([]);
@@ -88,13 +88,24 @@ export default function TripwireProductPage() {
   const [showUnlockAnimation, setShowUnlockAnimation] = useState(false);
   const [userUnlockedModuleIds, setUserUnlockedModuleIds] = useState<number[]>([]);
 
+  // 🔥 Load Tripwire user from tripwireSupabase
+  useEffect(() => {
+    tripwireSupabase.auth.getSession().then(({ data: { session } }: any) => {
+      if (session?.user) {
+        console.log('🔥 TripwireProductPage: Loaded tripwire user:', session.user.email);
+        setTripwireUser(session.user);
+        setIsAdmin(session.user.user_metadata?.role === 'admin');
+      }
+    });
+  }, []);
+
   // Load newly unlocked modules on mount
   useEffect(() => {
-    if (!user?.id) return;
+    if (!tripwireUser?.id) return;
 
     const loadUnlocks = async () => {
       try {
-        const response = await api.get(`/api/tripwire/module-unlocks/${user.id}`);
+        const response = await api.get(`/api/tripwire/module-unlocks/${tripwireUser.id}`);
         const unlocks = response.unlocks || [];
         
         console.log('🔓 Loaded unlocks:', unlocks);
@@ -116,16 +127,16 @@ export default function TripwireProductPage() {
     };
 
     loadUnlocks();
-  }, [user?.id]);
+  }, [tripwireUser?.id]);
 
   // Handle unlock animation completion
   const handleUnlockComplete = async () => {
-    if (!currentUnlock || !user?.id) return;
+    if (!currentUnlock || !tripwireUser?.id) return;
 
     try {
       // Mark animation as shown
       await api.post('/api/tripwire/module-unlocks/mark-shown', {
-        userId: user.id,
+        userId: tripwireUser.id,
         moduleId: currentUnlock.module_id
       });
 
@@ -796,12 +807,19 @@ export default function TripwireProductPage() {
       </div>
 
       {/* 🎮 GAMIFICATION: Module Unlock Animation */}
-      {showUnlockAnimation && currentUnlockModule && (
+      {showUnlockAnimation && currentUnlock && (
         <ModuleUnlockAnimation
-          moduleName={currentUnlockModule.title}
-          moduleIcon={currentUnlockModule.icon}
-          isVisible={showUnlockAnimation}
-          onComplete={handleUnlockComplete}
+          moduleNumber={currentUnlock.module_id}
+          onClose={() => {
+            setShowUnlockAnimation(false);
+            handleUnlockComplete();
+          }}
+          onNavigate={() => {
+            setShowUnlockAnimation(false);
+            handleUnlockComplete();
+            // Navigate to module (moduleId is currentUnlock.module_id)
+            navigate(`/tripwire/lesson/${currentUnlock.module_id}`);
+          }}
         />
       )}
 

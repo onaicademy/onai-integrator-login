@@ -117,3 +117,7 @@ NOTIFY pgrst, 'reload config';
 **ВЫВОД:** Проблема не в коде, не в миграциях, не в Backend. Проблема в том, что **PostgREST не перечитал схему**. Restart Connection Pooler решит это за 30 секунд.
 
 
+
+
+
+

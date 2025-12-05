@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as tripwireManagerService from '../services/tripwireManagerService';
 import { supabase } from '../config/supabase';
+import { tripwirePool } from '../config/tripwire-db'; // 🔥 DIRECT POSTGRES для stats
 
 /**
  * POST /api/admin/tripwire/users
@@ -127,7 +128,15 @@ export async function getTripwireUsers(req: Request, res: Response) {
       endDate,
     });
 
-    return res.status(200).json(result);
+    // 🔥 FORMAT RESPONSE: Frontend expects { users: [...], total: N }
+    const total = result.length > 0 ? parseInt(result[0].total_count) || result.length : 0;
+    
+    console.log(`✅ Returning ${result.length} users, total=${total}`);
+    
+    return res.status(200).json({
+      users: result,
+      total: total,
+    });
   } catch (error: any) {
     console.error('❌ Error in getTripwireUsers:', error);
     return res.status(500).json({
@@ -386,6 +395,42 @@ export async function getMyStats(req: Request, res: Response) {
     return res.status(200).json(stats);
   } catch (error: any) {
     console.error('❌ Error in getMyStats:', error);
+    return res.status(500).json({
+      error: error.message || 'Internal server error',
+    });
+  }
+}
+
+/**
+ * DELETE /api/admin/tripwire/users/:userId
+ * Удаляет Tripwire студента
+ * 🔥 ONLY FOR ADMIN (smmmcwin@gmail.com)
+ */
+export async function deleteTripwireUser(req: Request, res: Response) {
+  try {
+    const { userId } = req.params;
+    const currentUser = (req as any).user;
+
+    if (!currentUser) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // 🔒 ПРОВЕРКА: Только smmmcwin@gmail.com может удалять!
+    const userEmail = currentUser.email;
+    if (userEmail !== 'smmmcwin@gmail.com') {
+      return res.status(403).json({
+        error: 'Forbidden: Only smmmcwin@gmail.com can delete users',
+      });
+    }
+
+    console.log(`🗑️ [DELETE] Admin ${userEmail} is deleting user ${userId}`);
+
+    // Удаляем через service
+    const result = await tripwireManagerService.deleteTripwireUser(userId);
+
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('❌ Error in deleteTripwireUser:', error);
     return res.status(500).json({
       error: error.message || 'Internal server error',
     });

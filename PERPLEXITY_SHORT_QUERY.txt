@@ -1,0 +1,63 @@
+КРИТИЧЕСКАЯ ПРОБЛЕМА: PostgREST не находит RPC функции в Supabase schema cache
+
+СИМПТОМЫ:
+- Создали 5 RPC функций в PostgreSQL (Supabase)
+- Функции СУЩЕСТВУЮТ в базе (проверили через pg_proc)
+- PostgREST выдает ошибку: "Could not find the function public.rpc_get_sales_activity_log(p_end_date, p_limit, p_manager_id, p_start_date) in the schema cache"
+
+ЧТО УЖЕ ПРОБОВАЛИ:
+1. ✅ Функции существуют в БД (проверили через SELECT из pg_proc)
+2. ❌ Выполнили NOTIFY pgrst, 'reload schema'; - НЕ ПОМОГЛО
+3. ❌ Пересоздали функции с параметрами в АЛФАВИТНОМ ПОРЯДКЕ (E, L, M, S вместо M, L, S, E) - НЕ ПОМОГЛО
+4. ❌ Перезапустили Backend Node.js сервер - НЕ ПОМОГЛО
+5. ❌ Добавили GRANT EXECUTE TO authenticated, anon, service_role - НЕ ПОМОГЛО
+
+ПРИМЕР ФУНКЦИИ:
+```sql
+CREATE OR REPLACE FUNCTION public.rpc_get_sales_activity_log(
+  p_end_date TIMESTAMPTZ DEFAULT NULL,
+  p_limit INTEGER DEFAULT 20,
+  p_manager_id UUID DEFAULT NULL,
+  p_start_date TIMESTAMPTZ DEFAULT NULL
+)
+RETURNS TABLE (...)
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT ... FROM public.sales_activity_log sal
+  WHERE (p_manager_id IS NULL OR sal.manager_id = p_manager_id)
+  ORDER BY sal.created_at DESC
+  LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.rpc_get_sales_activity_log(TIMESTAMPTZ, INTEGER, UUID, TIMESTAMPTZ) TO authenticated, anon, service_role;
+NOTIFY pgrst, 'reload schema';
+```
+
+ВЫЗОВ ЧЕРЕЗ SUPABASE JS:
+```typescript
+const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_sales_activity_log', {
+  p_manager_id: managerId,
+  p_limit: limit,
+  p_start_date: startDate || null,
+  p_end_date: endDate || null,
+});
+```
+
+ВОПРОСЫ:
+1. Почему PostgREST не видит функции которые ТОЧНО существуют в БД?
+2. Как правильно обновить PostgREST schema cache в Supabase Production?
+3. Есть ли особые требования к порядку параметров RPC функций?
+4. Есть ли проблемы с DEFAULT значениями в параметрах?
+5. Какой правильный способ создания RPC функций для Supabase PostgREST?
+
+ОКРУЖЕНИЕ:
+- Supabase Production (не self-hosted)
+- PostgreSQL 15
+- @supabase/supabase-js v2
+- Node.js 18+
+- TypeScript 5+
+
+СРОЧНОСТЬ: КРИТИЧЕСКАЯ - блокирует production deployment!
+

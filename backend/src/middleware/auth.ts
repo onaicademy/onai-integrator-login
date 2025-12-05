@@ -20,7 +20,12 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
 
+    console.log('🔍 [authenticateJWT] Request:', req.method, req.path);
+    console.log('🔍 [authenticateJWT] Auth header present:', !!authHeader);
+    console.log('🔍 [authenticateJWT] Token present:', !!token);
+
     if (!token) {
+      console.error('❌ [authenticateJWT] No token provided');
       return res.status(401).json({ error: 'No token provided' });
     }
 
@@ -28,14 +33,22 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
     // In production, you should verify the JWT with Supabase's JWKS endpoint
     const decoded = jwt.decode(token) as any;
     
+    console.log('🔍 [authenticateJWT] Decoded token:', {
+      sub: decoded?.sub,
+      email: decoded?.email,
+      iss: decoded?.iss
+    });
+    
     if (!decoded || !decoded.sub) {
+      console.error('❌ [authenticateJWT] Invalid token format');
       return res.status(401).json({ error: 'Invalid token format' });
     }
     
     req.user = decoded;
+    console.log('✅ [authenticateJWT] User authenticated:', decoded.email);
     next();
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('❌ [authenticateJWT] Auth error:', error);
     return res.status(401).json({ error: 'Invalid token' });
   }
 }
@@ -82,6 +95,92 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     next();
   } catch (error) {
     console.error('❌ Admin check error:', error);
+    return res.status(403).json({ error: 'Access denied' });
+  }
+}
+
+/**
+ * Middleware для проверки роли админа ИЛИ sales manager (для Tripwire)
+ * Использовать ПОСЛЕ authenticateJWT
+ * 
+ * ✅ ВАЖНО: Проверяет роль В ТОЙ ЖЕ БАЗЕ, откуда пришёл токен!
+ * - Токен от Tripwire Auth → Проверка в Tripwire DB
+ * - Токен от Main Auth → Проверка в Main DB
+ */
+export async function requireSalesOrAdmin(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // 🔍 ОПРЕДЕЛЯЕМ ИСТОЧНИК ТОКЕНА по пути запроса
+    // ⚠️  ВАЖНО: req.path НЕ СОДЕРЖИТ базовый путь роутера!
+    // Используем req.originalUrl для проверки полного пути
+    const isTripwireEndpoint = req.originalUrl.includes('/tripwire');
+    
+    console.log('🔍 [requireSalesOrAdmin] Full URL:', req.originalUrl);
+    console.log('🔍 [requireSalesOrAdmin] Is Tripwire endpoint?', isTripwireEndpoint);
+    
+    // ✅ Выбираем нужную базу данных
+    let supabase;
+    if (isTripwireEndpoint) {
+      // Tripwire endpoint → проверяем в Tripwire DB
+      const { tripwireAdminSupabase } = await import('../config/supabase-tripwire');
+      supabase = tripwireAdminSupabase;
+      console.log('✅ [requireSalesOrAdmin] Using TRIPWIRE DB');
+    } else {
+      // Main endpoint → проверяем в Main DB
+      supabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      console.log('✅ [requireSalesOrAdmin] Using MAIN DB');
+    }
+
+    // ✅ FIX: Используем auth.admin.getUserById вместо public.users
+    // Роль хранится в user_metadata (для Tripwire users)
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(req.user.sub);
+
+    if (authError || !authUser.user) {
+      console.error('❌ requireSalesOrAdmin: Failed to fetch auth user:', authError);
+      console.error('   User ID:', req.user.sub);
+      console.error('   Database:', isTripwireEndpoint ? 'TRIPWIRE' : 'MAIN');
+      return res.status(403).json({ error: 'Access denied. Could not verify user role.' });
+    }
+
+    // Получаем роль из user_metadata (Tripwire) или пробуем из public.users (Main)
+    let userRole: string | undefined = authUser.user.user_metadata?.role;
+    let userEmail = authUser.user.email;
+
+    // Если роли нет в metadata, пробуем public.users (для Main Platform)
+    if (!userRole && !isTripwireEndpoint) {
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', req.user.sub)
+        .single();
+      
+      userRole = userProfile?.role;
+    }
+
+    if (!userRole) {
+      console.error('❌ requireSalesOrAdmin: No role found for user', userEmail);
+      return res.status(403).json({ error: 'Access denied. No role assigned.' });
+    }
+
+    // ✅ Разрешаем доступ для admin и sales
+    if (userRole !== 'admin' && userRole !== 'sales') {
+      console.log(`❌ requireSalesOrAdmin: Access denied for ${userEmail} (role: ${userRole})`);
+      return res.status(403).json({ 
+        error: 'Access denied. Admin or Sales role required.',
+        currentRole: userRole || 'student'
+      });
+    }
+
+    console.log(`✅ requireSalesOrAdmin: Access granted for ${userEmail} (${userRole})`);
+    next();
+  } catch (error) {
+    console.error('❌ Sales/Admin check error:', error);
     return res.status(403).json({ error: 'Access denied' });
   }
 }

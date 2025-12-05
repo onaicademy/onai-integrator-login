@@ -1,13 +1,11 @@
 import { Router } from 'express';
 import { authenticateJWT, requireAdmin } from '../../middleware/auth';
-import { createClient } from '@supabase/supabase-js';
+import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
 
 const router = Router();
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// ✅ USE TRIPWIRE DATABASE, NOT MAIN!
+const supabase = tripwireAdminSupabase;
 
 /**
  * 🎯 GET /api/tripwire/admin/stats
