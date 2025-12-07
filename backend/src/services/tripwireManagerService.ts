@@ -70,37 +70,40 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     try {
       await client.query('BEGIN');
 
-      // ✅ public.users
+      // ✅ public.users - используем WHERE NOT EXISTS вместо ON CONFLICT
       await client.query(`
         INSERT INTO public.users (id, email, full_name, role, created_at, updated_at)
-        VALUES ($1, $2, $3, 'student', NOW(), NOW())
-        ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, updated_at = NOW()
+        SELECT $1, $2, $3, 'student', NOW(), NOW()
+        WHERE NOT EXISTS (SELECT 1 FROM public.users WHERE id = $1)
       `, [userId, email, full_name]);
 
-      // ✅ tripwire_users
+      // ✅ tripwire_users - используем WHERE NOT EXISTS
       await client.query(`
         INSERT INTO public.tripwire_users (
           id, user_id, email, full_name, granted_by, manager_name,
           status, modules_completed, price, created_at
         )
-        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, 'active', 0, 5000, NOW())
-        ON CONFLICT (user_id) DO NOTHING
+        SELECT gen_random_uuid(), $1, $2, $3, $4, $5, 'active', 0, 5000, NOW()
+        WHERE NOT EXISTS (SELECT 1 FROM public.tripwire_users WHERE user_id = $1)
       `, [userId, email, full_name, currentUserId, currentUserName || currentUserEmail || 'Unknown Manager']);
 
-      // ✅ tripwire_user_profile
+      // ✅ tripwire_user_profile - используем WHERE NOT EXISTS
       await client.query(`
         INSERT INTO public.tripwire_user_profile (
           id, user_id, total_modules, modules_completed, created_at
         )
-        VALUES (gen_random_uuid(), $1, 3, 0, NOW())
-        ON CONFLICT (user_id) DO NOTHING
+        SELECT gen_random_uuid(), $1, 3, 0, NOW()
+        WHERE NOT EXISTS (SELECT 1 FROM public.tripwire_user_profile WHERE user_id = $1)
       `, [userId]);
 
-      // ✅ module_unlocks (открываем Module 16)
+      // ✅ module_unlocks (открываем Module 16) - используем WHERE NOT EXISTS
       await client.query(`
         INSERT INTO public.module_unlocks (id, user_id, module_id, unlocked_at)
-        VALUES (gen_random_uuid(), $1, 16, NOW())
-        ON CONFLICT (user_id, module_id) DO NOTHING
+        SELECT gen_random_uuid(), $1, 16, NOW()
+        WHERE NOT EXISTS (
+          SELECT 1 FROM public.module_unlocks 
+          WHERE user_id = $1 AND module_id = 16
+        )
       `, [userId]);
 
       // ✅ student_progress (ТОЛЬКО для Module 16 - первый модуль!)
@@ -130,18 +133,21 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
           INSERT INTO public.user_achievements (
             id, user_id, achievement_id, current_value, required_value, is_completed, created_at
           )
-          VALUES (gen_random_uuid(), $1, $2, 0, 1, false, NOW())
-          ON CONFLICT (user_id, achievement_id) DO NOTHING
+          SELECT gen_random_uuid(), $1, $2, 0, 1, false, NOW()
+          WHERE NOT EXISTS (
+            SELECT 1 FROM public.user_achievements 
+            WHERE user_id = $1 AND achievement_id = $2
+          )
         `, [userId, achievement]);
     }
 
-      // ✅ user_statistics
+      // ✅ user_statistics - используем WHERE NOT EXISTS
       await client.query(`
         INSERT INTO public.user_statistics (
           user_id, lessons_completed, total_time_spent, created_at
         )
-        VALUES ($1, 0, 0, NOW())
-        ON CONFLICT (user_id) DO NOTHING
+        SELECT $1, 0, 0, NOW()
+        WHERE NOT EXISTS (SELECT 1 FROM public.user_statistics WHERE user_id = $1)
       `, [userId]);
 
       // ✅ sales_activity_log
