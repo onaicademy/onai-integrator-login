@@ -1,29 +1,46 @@
 import * as mammoth from 'mammoth';
 import pdfParse from 'pdf-parse';
+import * as groqService from './groqAiService';
 
 /**
- * Извлечь текст из PDF (РАБОЧАЯ ВЕРСИЯ!)
+ * Извлечь текст из PDF (с автоматической конвертацией через Groq Vision)
+ * ✅ Если PDF содержит текст - извлекаем напрямую
+ * ✅ Если PDF содержит изображения - конвертируем → Groq Vision
  */
-export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
+export async function extractTextFromPDF(buffer: Buffer, userQuestion?: string): Promise<string> {
   try {
-    console.log('[FileProcessing] ✅ Начинаем парсинг PDF (pdf-parse@1.1.1)...');
+    console.log('[FileProcessing] ✅ Начинаем парсинг PDF...');
     console.log('[FileProcessing] Buffer size:', buffer.length, 'bytes');
 
     if (buffer.length === 0) {
       throw new Error('PDF buffer is empty!');
     }
 
-    // ✅ ПРАВИЛЬНЫЙ СИНТАКСИС для v1.1.1
+    // Пробуем извлечь текст
     const data = await pdfParse(buffer);
 
-    console.log(`[FileProcessing] ✅ УСПЕХ! Извлечено ${data.text.length} символов из PDF`);
-    console.log('[FileProcessing] Pages:', data.numpages);
+    console.log(`[FileProcessing] PDF info: ${data.numpages} страниц, ${data.text.length} символов текста`);
     
-    return data.text;
+    // Если текста достаточно - возвращаем
+    if (data.text && data.text.trim().length >= 50) {
+      console.log('[FileProcessing] ✅ PDF содержит текст - возвращаем');
+      return data.text;
+    }
+    
+    // ✅ Если текста мало - используем Groq Vision (Pure JS!)
+    console.log('[FileProcessing] 🔄 PDF содержит изображения → используем Groq Vision (Pure JS)');
+    
+    const { analysis } = await groqService.analyzePDF(
+      buffer,
+      userQuestion || 'Прочитай и извлеки весь текст из этого документа.',
+      { page: 0 }
+    );
+    
+    console.log('[FileProcessing] ✅ Текст извлечён через Groq Vision');
+    
+    return analysis;
   } catch (error: any) {
-    console.error('[FileProcessing] ❌ ОШИБКА парсинга PDF:');
-    console.error('[FileProcessing] Message:', error.message);
-    console.error('[FileProcessing] Stack:', error.stack);
+    console.error('[FileProcessing] ❌ ОШИБКА парсинга PDF:', error.message);
     throw new Error(`Failed to parse PDF: ${error.message}`);
   }
 }

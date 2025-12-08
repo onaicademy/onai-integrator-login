@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
@@ -16,7 +16,8 @@ interface SmartVideoPlayerProps {
   userSubtitles?: string;
 }
 
-export function SmartVideoPlayer({
+// 🚀 ОПТИМИЗАЦИЯ: Мемоизация компонента
+export const SmartVideoPlayer = memo(function SmartVideoPlayer({
   videoUrl,
   videoId,
   onProgress,
@@ -39,14 +40,20 @@ export function SmartVideoPlayer({
   const playerRef = useRef<Plyr | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const blobUrlRef = useRef<string | null>(null); // ✅ Хранить blob URL для cleanup
   
   // Функция добавления track с проверками и ре-инициализацией
   const addSubtitleTrack = (video: HTMLVideoElement, vtt: string) => {
     try {
-      // ✅ ФИКС: Удаляем старые tracks ВСЕГДА (blob URL мог expire)
+      // ✅ ОЧИСТКА: Освобождаем старый blob URL
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+
+      // ✅ ФИКС: Удаляем старые tracks ВСЕГДА
       const existingTracks = Array.from(video.querySelectorAll('track'));
       if (existingTracks.length > 0) {
-        console.log('🧹 Removing old subtitle tracks...');
         existingTracks.forEach(track => track.remove());
       }
 
@@ -57,9 +64,11 @@ export function SmartVideoPlayer({
       track.srclang = 'ru';
       track.default = true;
       
-      // ✅ ИСПОЛЬЗУЕМ BLOB URL (надёжнее чем data URL)
+      // ✅ ИСПОЛЬЗУЕМ BLOB URL
       const blob = new Blob([vtt], { type: 'text/vtt' });
-      track.src = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
+      blobUrlRef.current = blobUrl; // ✅ Сохраняем для cleanup
+      track.src = blobUrl;
       
       // ✅ Добавляем обработчик загрузки
       track.addEventListener('load', () => {
@@ -246,41 +255,30 @@ export function SmartVideoPlayer({
     console.log('✅ Plyr initialized');
   };
 
-  // Загрузка субтитров
+  // Загрузка субтитров (Tripwire)
   const fetchSubtitles = async () => {
     try {
       console.log(`🔍 Fetching subtitles for video ${videoId}...`);
       
-      // ✅ Get token from Supabase
-      const token = localStorage.getItem('token') || localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
-      if (!token) {
-        console.warn('⚠️ No auth token found');
-        return;
-      }
-
-      // Parse Supabase token if needed
-      let actualToken = token;
-      try {
-        const parsed = JSON.parse(token);
-        if (parsed.access_token) {
-          actualToken = parsed.access_token;
-        }
-      } catch {
-        // Token is plain string
-      }
-
-      const data = await api.get<{ transcript_vtt?: string }>(`/api/video/${videoId}/transcription`);
+      // ✅ Для Tripwire используем новый API endpoint
+      const response = await api.get<{ success: boolean; data: { vttContent?: string } | null }>(`/api/tripwire/transcriptions/${videoId}`);
       
       console.log('✅ Subtitles fetched:', {
-        hasVTT: !!data.transcript_vtt,
-        vttLength: data.transcript_vtt?.length || 0
+        success: response.success,
+        hasData: !!response.data,
+        hasVTT: !!response.data?.vttContent,
+        vttLength: response.data?.vttContent?.length || 0
       });
       
-      if (data.transcript_vtt) {
-        setSubtitlesVTT(data.transcript_vtt);
+      if (response.success && response.data?.vttContent) {
+        setSubtitlesVTT(response.data.vttContent);
+        console.log('✅ Subtitles loaded successfully');
+      } else {
+        console.log('ℹ️ No subtitles available for this video');
       }
     } catch (error) {
       console.error('❌ Failed to fetch subtitles:', error);
+      // Не критично - субтитры опциональны
     }
   };
 
@@ -340,10 +338,22 @@ export function SmartVideoPlayer({
 
     // B. Инициализировать HLS
     if (Hls.isSupported()) {
+      // 🚀 ОПТИМИЗАЦИЯ: Конфигурация HLS для быстрой загрузки
       const hls = new Hls({
-        enableWorker: true,
+        enableWorker: true, // Используем Web Worker для парсинга
         lowLatencyMode: false,
-        backBufferLength: 90
+        backBufferLength: 30, // ✅ Уменьшено с 90 до 30 секунд (меньше памяти)
+        maxBufferLength: 30, // ✅ Макс буфер 30 секунд
+        maxBufferSize: 60 * 1000 * 1000, // ✅ 60MB макс (вместо default)
+        maxMaxBufferLength: 600, // ✅ 10 минут макс
+        liveSyncDurationCount: 3, // ✅ Live буфер
+        liveMaxLatencyDurationCount: 10, // ✅ Live макс задержка
+        startLevel: -1, // ✅ Автовыбор начального качества
+        abrEwmaDefaultEstimate: 500000, // ✅ 500Kbps начальная оценка
+        abrBandWidthFactor: 0.95, // ✅ 95% от bandwidth для выбора качества
+        abrBandWidthUpFactor: 0.7, // ✅ 70% запас для апгрейда качества
+        capLevelToPlayerSize: true, // ✅ Ограничение качества размером плеера
+        debug: false, // ✅ Отключаем debug логи
       });
 
       hls.loadSource(videoUrl);
@@ -365,6 +375,12 @@ export function SmartVideoPlayer({
 
     // Cleanup
     return () => {
+      // ✅ Освобождаем blob URL
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+      
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -801,4 +817,4 @@ export function SmartVideoPlayer({
       </div>
     </div>
   );
-}
+}); // 🚀 ОПТИМИЗАЦИЯ: Закрываем memo

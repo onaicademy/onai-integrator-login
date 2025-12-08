@@ -105,20 +105,50 @@ export default function TripwireProductPage() {
 
     const loadUnlocks = async () => {
       try {
+        // ✅ КЭШИРОВАНИЕ: Проверяем есть ли в localStorage
+        const cachedKey = `tripwire_unlocks_${tripwireUser.id}`;
+        const cached = localStorage.getItem(cachedKey);
+        
+        if (cached) {
+          const cachedData = JSON.parse(cached);
+          console.log('⚡ Loaded from CACHE:', cachedData.moduleIds);
+          setUserUnlockedModuleIds(cachedData.moduleIds);
+        }
+        
+        // Загружаем с сервера в фоне
         const response = await api.get(`/api/tripwire/module-unlocks/${tripwireUser.id}`);
         const unlocks = response.unlocks || [];
         
-        console.log('🔓 Loaded unlocks:', unlocks);
+        console.log('🔓 Loaded unlocks from API:', unlocks);
         
         // Store all unlocked module IDs (для изменения визуала)
         const allUnlockedIds = unlocks.map((u: any) => u.module_id);
         setUserUnlockedModuleIds(allUnlockedIds);
         
-        // Показываем анимацию только для тех, где animation_shown = false
-        const pendingUnlocks = unlocks.filter((u: any) => !u.animation_shown);
-        if (pendingUnlocks.length > 0) {
-          setUnlockedModules(pendingUnlocks);
-          setCurrentUnlock(pendingUnlocks[0]);
+        // ✅ СОХРАНЯЕМ В КЭШЕ
+        localStorage.setItem(cachedKey, JSON.stringify({
+          moduleIds: allUnlockedIds,
+          timestamp: Date.now()
+        }));
+        
+        // ✅ FIX: Показываем анимацию ТОЛЬКО если unlock создан недавно (последние 10 секунд)
+        const now = new Date().getTime();
+        const recentUnlocks = unlocks.filter((u: any) => {
+          if (u.animation_shown) return false; // Уже показанные - пропускаем
+          
+          const unlockedAt = new Date(u.unlocked_at).getTime();
+          const diffSeconds = (now - unlockedAt) / 1000;
+          
+          console.log(`🕐 Module ${u.module_id} unlocked ${diffSeconds.toFixed(1)}s ago`);
+          
+          // Показываем только если разблокирован меньше 10 секунд назад
+          return diffSeconds < 10;
+        });
+        
+        if (recentUnlocks.length > 0) {
+          console.log(`🎉 Showing animation for ${recentUnlocks.length} recent unlock(s)`);
+          setUnlockedModules(recentUnlocks);
+          setCurrentUnlock(recentUnlocks[0]);
           setShowUnlockAnimation(true);
         }
       } catch (error) {
@@ -167,17 +197,29 @@ export default function TripwireProductPage() {
     if (module.status === 'locked' && !isAdmin) {
       return;
     }
-    
-    navigate(`/tripwire/module/${module.id}/lesson/${module.lessonId}`);
+
+    // ✅ FIX: Правильный URL format без /module/${module.id}
+    navigate(`/tripwire/lesson/${module.lessonId}`);
   };
 
   // ✅ DYNAMICALLY unlock modules based on userUnlockedModuleIds
-  const modulesWithDynamicStatus = tripwireModules.map(module => ({
-    ...module,
-    status: (module.id === 1 || userUnlockedModuleIds.includes(module.id) || isAdmin) 
-      ? 'active' 
-      : 'locked'
-  }));
+  const modulesWithDynamicStatus = tripwireModules.map(module => {
+    // 🔥 Module 16 (вводный) ВСЕГДА открыт для ВСЕХ (даже если нет в userUnlockedModuleIds)
+    if (module.id === 16) {
+      return { ...module, status: 'active' };
+    }
+    
+    // 🔥 Admin видит все модули
+    if (isAdmin) {
+      return { ...module, status: 'active' };
+    }
+    
+    // 🔥 Остальные модули открываются через userUnlockedModuleIds
+    return {
+      ...module,
+      status: userUnlockedModuleIds.includes(module.id) ? 'active' : 'locked'
+    };
+  });
 
   const activeModules = modulesWithDynamicStatus.filter(m => m.status === 'active');
   const lockedModules = modulesWithDynamicStatus.filter(m => m.status === 'locked');

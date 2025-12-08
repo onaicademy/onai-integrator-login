@@ -17,12 +17,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import { supabase } from "@/lib/supabase";
+import { tripwireSupabase } from "@/lib/supabase-tripwire";
 // ✅ IMPORT FROM TRIPWIRE SPECIFIC LIB
 import {
   sendMessageToAI,
   getChatHistory,
   startNewConversation,
   transcribeAudioToText,
+  sendFileToAI,
   type ChatMessage,
 } from "@/lib/tripwire-openai";
 import { getStatusSequence } from "@/lib/ai-loading-states";
@@ -565,31 +567,42 @@ export const TripwireAIChatDialog = ({ open, onOpenChange }: AIChatDialogProps) 
     try {
       let userId = 'user-1'; 
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await tripwireSupabase.auth.getUser();
         if (user?.id) {
           userId = user.id;
         }
       } catch (authError) {}
 
-      const transcription = await transcribeAudioToText(audioBlob, userId);
+      // ✅ ТРАНСКРИБИРУЕМ АУДИО
+      console.log('🎤 Транскрибирую через Groq Whisper...');
       
-      if (!transcription || transcription.trim().length === 0) {
+      const transcribedText = await transcribeAudioToText(audioBlob, userId);
+      
+      if (!transcribedText || transcribedText.trim().length === 0) {
         throw new Error("Не удалось распознать речь");
       }
 
+      console.log(`✅ Транскрипция: "${transcribedText}"`);
+
+      // ✅ СТАВИМ ТРАНСКРИПЦИЮ В INPUT (НЕ ОТПРАВЛЯЕМ СРАЗУ!)
       setInput((prevInput) => {
         if (!prevInput.trim()) {
-          return transcription;
+          return transcribedText;
         }
-        return `${prevInput.trim()} ${transcription.trim()}`;
+        return `${prevInput.trim()} ${transcribedText.trim()}`;
+      });
+
+      toast({
+        title: "✅ Речь распознана",
+        description: "Можешь отредактировать текст перед отправкой",
       });
       
     } catch (error: any) {
       console.error("❌ Ошибка транскрипции:", error);
       toast({
         title: "❌ Ошибка распознавания",
+        description: error.message || "Не удалось распознать речь",
         variant: "destructive",
-        duration: 3000,
       });
     } finally {
       setIsLoading(false);

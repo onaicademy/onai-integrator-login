@@ -1,0 +1,1 @@
+Groq API capabilities 2024-2025: Does Groq support Vision API for image analysis like OpenAI GPT-4o? Current pricing for Groq models (Llama 3, Mixtral, Whisper)? Best Groq model for Russian language chat? Compare Groq vs OpenAI GPT-4o pricing, quality, and speed. Rate limits and context window sizes. Code examples for chat and vision (if available).

@@ -9,11 +9,11 @@ interface ModuleUnlockAnimationProps {
   onNavigate: () => void;
 }
 
-// 🎯 Tripwire Modules Config
+// 🎯 Tripwire Modules Config - ПРАВИЛЬНЫЕ НАЗВАНИЯ из TripwireProductPage
 const TRIPWIRE_MODULES = {
-  16: { name: "Введение в холодный трафик", icon: Rocket },
-  17: { name: "Инструменты и стратегии", icon: Target },
-  18: { name: "Монетизация и масштабирование", icon: Trophy }
+  16: { name: "Вводный модуль", icon: Rocket },
+  17: { name: "Создание GPT-бота", icon: Target },
+  18: { name: "Создание вирусных Reels", icon: Trophy }
 };
 
 /**

@@ -1,0 +1,9 @@
+Node.js/PostgreSQL/React приложение, 3 критические ошибки:
+
+1. PostgreSQL Error 42P10: Код использует `ON CONFLICT (user_id, module_id, lesson_id)` но constraint только на `(user_id, lesson_id)`. Как правильно исправить? Изменить SQL или добавить второй constraint?
+
+2. Multi-Database React Hook: useHonestVideoTracking импортирует `supabase` (Main DB) но должен использовать `tripwireSupabase`. Как правильно передать нужный DB клиент в React hook? Context, параметр, или два отдельных хука?
+
+3. UX Bug: Кнопка "Завершить урок" появляется при 80% прогресса видео, но ПРОПАДАЕТ если откатить назад. Должна ОСТАВАТЬСЯ после первого достижения 80%. Где хранить флаг "qualified for completion" - DB, localStorage, или Context? Какой database schema для video progress tracking?
+
+Stack: Node.js 20, PostgreSQL 17.6 (Supabase), React 18, TypeScript, Express. Нужны Best Practices, SQL миграции, код примеры и ссылки на документацию.

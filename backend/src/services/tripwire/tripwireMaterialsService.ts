@@ -31,6 +31,13 @@ export async function getLessonMaterials(lessonId: number): Promise<LessonMateri
       .order('created_at', { ascending: true });
 
     if (error) {
+      // ✅ GRACEFUL: Если таблица не существует - возвращаем пустой массив
+      if (error.message?.includes('schema cache') || 
+          error.code === 'PGRST205' || 
+          error.message?.includes("Could not find the table")) {
+        console.log('ℹ️ [Tripwire MaterialsService] Таблица lesson_materials не существует, возвращаем []');
+        return [];
+      }
       console.error('❌ [Tripwire MaterialsService] Ошибка:', error);
       throw new Error(`Failed to fetch materials: ${error.message}`);
     }

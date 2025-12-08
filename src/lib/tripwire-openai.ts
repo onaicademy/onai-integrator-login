@@ -153,15 +153,41 @@ export async function sendMessageToAI(
       }
     }
 
-    // Обработка файлов (пока placeholder, TODO: добавить в Phase 3+)
-    let finalMessage = message;
+    // ✅ Обработка файлов через Vision/OCR API (ПОСЛЕДОВАТЕЛЬНО!)
     if (attachments && attachments.length > 0) {
-      console.log(`📎 Обработка ${attachments.length} файлов...`);
-      // TODO Phase 3+: Обработать файлы через Vision API
-      finalMessage += `\n\n[Прикреплено файлов: ${attachments.length}]`;
+      console.log(`📎 Обработка ${attachments.length} файлов последовательно...`);
+
+      const fileResults: string[] = [];
+
+      // Обрабатываем каждый файл по очереди
+      for (let i = 0; i < attachments.length; i++) {
+        const attachment = attachments[i];
+        
+        if (!attachment.file) {
+          console.warn(`⚠️ Файл #${i + 1} (${attachment.name}) пропущен - нет file объекта`);
+          continue;
+        }
+
+        console.log(`📄 [${i + 1}/${attachments.length}] Обработка: ${attachment.name} (${(attachment.size / 1024).toFixed(2)}KB)`);
+        
+        try {
+          const fileResponse = await sendFileToAI(attachment.file, finalUserId, message);
+          fileResults.push(`**📎 Файл: ${attachment.name}**\n\n${fileResponse}`);
+          console.log(`✅ [${i + 1}/${attachments.length}] Файл обработан`);
+        } catch (error: any) {
+          console.error(`❌ [${i + 1}/${attachments.length}] Ошибка обработки файла:`, error);
+          fileResults.push(`**❌ Файл: ${attachment.name}**\n\nОшибка: ${error.message}`);
+        }
+      }
+
+      // Объединяем все результаты
+      const combinedResponse = fileResults.join('\n\n---\n\n');
+      console.log(`✅ Обработано ${fileResults.length} из ${attachments.length} файлов`);
+      
+      return combinedResponse;
     }
 
-    // ✅ НОВЫЙ ENDPOINT: /api/tripwire/ai/chat
+    // ✅ Обычное текстовое сообщение: /api/tripwire/ai/chat
     const response = await api.post<{
       success: boolean;
       data: {
@@ -170,7 +196,7 @@ export async function sendMessageToAI(
       };
     }>('/api/tripwire/ai/chat', {
       user_id: finalUserId,
-      message: finalMessage,
+      message: message,
     });
 
     if (!response.success || !response.data?.message) {
@@ -240,21 +266,22 @@ export async function startNewConversation(): Promise<void> {
 }
 
 /**
- * Транскрипция аудио через Whisper (Generic Backend API)
+ * ✅ НОВАЯ ЛОГИКА: Транскрипция аудио через Whisper (Tripwire /transcribe)
+ * Response: string (только транскрипция текста, БЕЗ AI ответа)
  */
-export async function transcribeAudioToText(audioBlob: Blob, userId?: string, threadId?: string): Promise<string> {
-    // Reuse the same backend endpoint for Whisper as it's stateless regarding DB
-    // Copied logic from openai-assistant.ts for convenience
+export async function transcribeAudioToText(audioBlob: Blob, userId?: string): Promise<string> {
     try {
+        console.log('🎤 [Tripwire Transcribe] Отправка аудио для транскрипции...');
+        
         const formData = new FormData();
-        formData.append('audio', audioBlob);
-        formData.append('language', 'ru');
-        formData.append('prompt', 'Это голосовое сообщение студента на русском языке для AI-куратора.');
+        formData.append('audio', audioBlob, 'voice-message.webm');
+        formData.append('user_id', userId || 'unknown');
         
         const token = getAuthToken();
         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-        const response = await fetch(`${baseUrl}/api/openai/audio/transcriptions`, {
+        // ✅ НОВЫЙ ENDPOINT: /transcribe (ТОЛЬКО транскрипция)
+        const response = await fetch(`${baseUrl}/api/tripwire/ai/transcribe`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -262,19 +289,65 @@ export async function transcribeAudioToText(audioBlob: Blob, userId?: string, th
             body: formData,
         });
 
-        if (!response.ok) throw new Error('Whisper API error');
-        const result = await response.json();
-        
-        if (result.text) {
-             try {
-                // Log Whisper usage with 'tripwire' context if possible, or generic
-                await logWhisperUsage(10, { userId, threadId }); // Approx duration
-            } catch (e) {}
-            return result.text;
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Whisper transcription failed');
         }
+        
+        const result = await response.json();
+        console.log('✅ [Tripwire Transcribe] Транскрипция получена');
+        
+        if (result.success && result.transcription) {
+            return result.transcription; // ✅ ТОЛЬКО ТЕКСТ!
+        }
+        
         throw new Error('Empty transcription');
     } catch (error) {
-        console.error("Whisper Error:", error);
+        console.error("❌ [Tripwire Transcribe] Error:", error);
+        throw error;
+    }
+}
+
+/**
+ * Отправить файл для анализа AI (Tripwire endpoint)
+ */
+export async function sendFileToAI(file: File, userId: string, question?: string): Promise<string> {
+    try {
+        console.log('📎 [Tripwire OpenAI] Отправка файла для анализа...');
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('user_id', userId);
+        if (question) {
+            formData.append('question', question);
+        }
+        
+        const token = getAuthToken();
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+        const response = await fetch(`${baseUrl}/api/tripwire/ai/file`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'File analysis error');
+        }
+        
+        const result = await response.json();
+        console.log('✅ [Tripwire OpenAI] Файл проанализирован');
+        
+        if (result.success && result.data?.message) {
+            return result.data.message; // ✅ Ответ от GPT-4o с анализом файла
+        }
+        
+        throw new Error('Empty file analysis');
+    } catch (error) {
+        console.error("❌ [Tripwire OpenAI] File Error:", error);
         throw error;
     }
 }

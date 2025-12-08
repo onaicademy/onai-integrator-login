@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react"; // 🚀 ОПТИМИЗАЦИЯ: Lazy loading
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,39 +16,41 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Tripwire)
 import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGuard"; // ✅ Admin Guard (Tripwire)
+
+// 🚀 ОПТИМИЗАЦИЯ: Синхронные импорты только для критичных страниц
 import Login from "./pages/Login";
-import AccessDenied from "./pages/AccessDenied";
-import Profile from "./pages/Profile";
-import NeuroHub from "./pages/NeuroHub";
-import Achievements from "./pages/Achievements";
-import Welcome from "./pages/Welcome";
-import Courses from "./pages/Courses";
-import Course from "./pages/Course";
-import Module from "./pages/Module";
-import Lesson from "./pages/Lesson";
 import NotFound from "./pages/NotFound";
-import Activity from "./pages/admin/Activity";
-import AICuratorChats from "./pages/admin/AICuratorChats";
-import TokenUsage from "./pages/admin/TokenUsage";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import StudentsActivity from "./pages/admin/StudentsActivity";
-import AIAnalytics from "./pages/admin/AIAnalytics";
-import TripwireManager from "./pages/admin/TripwireManager"; // ✅ Sales Manager Dashboard
-import Messages from "./pages/Messages";
-// ✅ New Card-based Admin Routes (NO Layout!)
-import Analytics from "./pages/admin/Analytics";
-import Students from "./pages/admin/Students";
-import Costs from "./pages/admin/Costs";
-import Transcriptions from "./pages/admin/Transcriptions";
-import MainPlatformTranscriptions from "./pages/admin/MainPlatformTranscriptions"; // ✅ Основная платформа
-// 🔥 БЕЗОПАСНОСТЬ: TestQuery удалён - не должен быть доступен в production
-// import TestQuery from "./pages/TestQuery";
+import AccessDenied from "./pages/AccessDenied";
 import { Loader2 } from "lucide-react";
-// Tripwire pages
-import TripwireProductPage from "./pages/tripwire/TripwireProductPage";
-import TripwireLogin from "./pages/tripwire/TripwireLogin";
-import TripwireLesson from "./pages/tripwire/TripwireLesson";
-import TripwireProfile from "./pages/tripwire/TripwireProfile";
+
+// 🚀 ОПТИМИЗАЦИЯ: Lazy loading страниц (уменьшает начальный бандл)
+const Profile = lazy(() => import("./pages/Profile"));
+const NeuroHub = lazy(() => import("./pages/NeuroHub"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const Welcome = lazy(() => import("./pages/Welcome"));
+const Courses = lazy(() => import("./pages/Courses"));
+const Course = lazy(() => import("./pages/Course"));
+const Module = lazy(() => import("./pages/Module"));
+const Lesson = lazy(() => import("./pages/Lesson"));
+const Activity = lazy(() => import("./pages/admin/Activity"));
+const AICuratorChats = lazy(() => import("./pages/admin/AICuratorChats"));
+const TokenUsage = lazy(() => import("./pages/admin/TokenUsage"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const StudentsActivity = lazy(() => import("./pages/admin/StudentsActivity"));
+const AIAnalytics = lazy(() => import("./pages/admin/AIAnalytics"));
+const TripwireManager = lazy(() => import("./pages/admin/TripwireManager"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Analytics = lazy(() => import("./pages/admin/Analytics"));
+const Students = lazy(() => import("./pages/admin/Students"));
+const Costs = lazy(() => import("./pages/admin/Costs"));
+const Transcriptions = lazy(() => import("./pages/admin/TripwireTranscriptions"));
+const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatformTranscriptions"));
+
+// 🚀 ОПТИМИЗАЦИЯ: Lazy loading Tripwire страниц
+const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
+const TripwireLogin = lazy(() => import("./pages/tripwire/TripwireLogin"));
+const TripwireLesson = lazy(() => import("./pages/tripwire/TripwireLesson"));
+const TripwireProfile = lazy(() => import("./pages/tripwire/TripwireProfile"));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
@@ -59,12 +62,25 @@ import TripwireCosts from "./pages/tripwire/admin/Costs";
 
 const queryClient = new QueryClient();
 
+// 🚀 ОПТИМИЗАЦИЯ: Красивый Loader для Suspense
+const SuspenseLoader = () => (
+  <div className="flex items-center justify-center h-screen bg-[#030303]">
+    <div className="text-center space-y-4">
+      <Loader2 className="h-12 w-12 animate-spin text-[#00FF88] mx-auto" />
+      <p className="text-white font-['Space_Grotesk'] text-xl tracking-wider uppercase">
+        /// ЗАГРУЗКА МОДУЛЯ...
+      </p>
+    </div>
+  </div>
+);
+
 const AppRoutes = () => {
   const location = useLocation();
   const isWelcomePage = location.pathname === '/welcome';
 
   return (
-    <Routes>
+    <Suspense fallback={<SuspenseLoader />}>
+      <Routes>
       {/* Публичные страницы (без авторизации) */}
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
@@ -184,7 +200,8 @@ const AppRoutes = () => {
           </TripwireLayout>
         </StudentGuard>
       } />
-      <Route path="/tripwire/module/:moduleId/lesson/:lessonId" element={
+      {/* ✅ Единственный роут для Tripwire уроков */}
+      <Route path="/tripwire/lesson/:lessonId" element={
         <StudentGuard>
           <TripwireLayout>
             <TripwireLesson />
@@ -242,6 +259,7 @@ const AppRoutes = () => {
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

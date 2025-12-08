@@ -84,7 +84,8 @@ import tripwireRouter from './routes/tripwire';
 import tripwireLessonsRouter from './routes/tripwire-lessons';
 import tripwireManagerRouter from './routes/tripwire-manager'; // ✅ Sales Manager Dashboard
 import tripwireAdminRouter from './routes/tripwire/admin'; // ✅ Tripwire Admin Dashboard
-import tripwireTranscriptionsRouter from './routes/tripwire/transcriptions'; // ✅ Tripwire Transcriptions
+import tripwireTranscriptionsOldRouter from './routes/tripwire/transcriptions'; // ✅ Tripwire Transcriptions (OLD - admin only)
+import tripwireTranscriptionsRouter from './routes/tripwire/transcriptions'; // ✅ NEW Tripwire Transcriptions API
 import tripwireProfileRouter from './routes/tripwire/profile'; // ✅ Tripwire Profile (Isolated DB)
 import tripwireAnalyticsRouter from './routes/tripwire/analytics'; // ✅ Tripwire Analytics (Isolated DB)
 import tripwireMaterialsRouter from './routes/tripwire/materials'; // ✅ Tripwire Materials (Phase 2)
@@ -232,7 +233,8 @@ app.use('/api/tripwire', tripwireRouter);
 app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints
 app.use('/api/admin/tripwire', tripwireManagerRouter); // ✅ Sales Manager Dashboard (admin & sales roles only)
 app.use('/api/tripwire/admin', tripwireAdminRouter); // ✅ Tripwire Admin Dashboard (admin only)
-app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsRouter); // ✅ Tripwire Transcriptions
+app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsOldRouter); // ✅ Tripwire Transcriptions (Admin)
+app.use('/api/tripwire/transcriptions', tripwireTranscriptionsRouter); // ✅ NEW: Public transcriptions API
 app.use('/api/tripwire/users', tripwireProfileRouter); // ✅ Tripwire Profile (Isolated DB)
 app.use('/api/tripwire/analytics', tripwireAnalyticsRouter); // ✅ Tripwire Analytics (ISOLATED DB)
 app.use('/api/tripwire', tripwireMaterialsRouter); // ✅ Tripwire Materials (Phase 2)

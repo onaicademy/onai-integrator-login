@@ -3,12 +3,38 @@
  * 
  * Все запросы к данным должны идти через Backend API, а не напрямую к Supabase.
  * Backend будет использовать Supabase service_role_key для безопасной работы с БД.
+ * 
+ * 🚀 ОПТИМИЗАЦИЯ: In-memory кэш для GET запросов
  */
 
 interface ApiRequestOptions extends RequestInit {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
+  cache?: boolean; // 🚀 Включить кэширование для этого запроса
+  cacheTTL?: number; // 🚀 Время жизни кэша в ms (default: 60000 = 1 минута)
 }
+
+// 🚀 ОПТИМИЗАЦИЯ: Простой in-memory кэш
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+  ttl: number;
+}
+
+const apiCache = new Map<string, CacheEntry>();
+
+// 🚀 Функция очистки устаревшего кэша
+function clearExpiredCache() {
+  const now = Date.now();
+  for (const [key, entry] of apiCache.entries()) {
+    if (now - entry.timestamp > entry.ttl) {
+      apiCache.delete(key);
+    }
+  }
+}
+
+// 🚀 Очистка кэша каждые 5 минут
+setInterval(clearExpiredCache, 5 * 60 * 1000);
 
 /**
  * ✅ Helper: Get JWT token from localStorage
@@ -57,11 +83,26 @@ export function getAuthToken(endpoint?: string): string | null {
 
 /**
  * Базовая функция для выполнения HTTP запросов к Backend API
+ * 🚀 ОПТИМИЗАЦИЯ: Поддержка кэширования для GET запросов
  */
 export async function apiRequest<T = any>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
+  const { cache = false, cacheTTL = 60000, ...fetchOptions } = options;
+  
+  // 🚀 ОПТИМИЗАЦИЯ: Проверяем кэш для GET запросов
+  const method = options.method || 'GET';
+  const cacheKey = `${method}:${endpoint}`;
+  
+  if (method === 'GET' && cache) {
+    const cached = apiCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < cached.ttl) {
+      console.log(`✨ [API Cache HIT] ${endpoint}`);
+      return cached.data;
+    }
+  }
+  
   // Получаем JWT токен из localStorage (сохраняется после авторизации)
   // Передаём endpoint чтобы определить какой токен использовать (Main или Tripwire)
   const token = getAuthToken(endpoint);
@@ -181,7 +222,17 @@ export async function apiRequest<T = any>(
     console.log('='.repeat(80));
     console.log(`✅ API Response ${response.status}:`, data);
     console.log('='.repeat(80));
-    
+
+    // 🚀 ОПТИМИЗАЦИЯ: Сохраняем в кэш для GET запросов
+    if (method === 'GET' && cache && response.ok) {
+      apiCache.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+        ttl: cacheTTL
+      });
+      console.log(`💾 [API Cache SAVE] ${endpoint} (TTL: ${cacheTTL}ms)`);
+    }
+
     return data as T;
     
   } catch (error: any) {

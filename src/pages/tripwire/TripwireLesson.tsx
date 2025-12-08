@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/utils/apiClient";
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // ✅ Для получения Tripwire user
+import { useToast } from "@/hooks/use-toast";
 import { 
   ChevronLeft,
   ChevronRight,
@@ -20,7 +22,8 @@ import {
   Book,
   Edit,
   Star,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import { TripwireLessonEditDialog } from "@/components/tripwire/TripwireLessonEditDialog";
 import { MaterialPreviewDialog } from "@/components/MaterialPreviewDialog";
@@ -37,25 +40,32 @@ import AchievementModal from "./components/AchievementModal";
 import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
 
 const TripwireLesson = () => {
-  const { moduleId, lessonId } = useParams();
+  const { lessonId } = useParams(); // ✅ ТОЛЬКО lessonId из URL
   const navigate = useNavigate();
   const { user, userRole } = useAuth();
+  const { toast } = useToast();
   
-  // ✅ Use real user.id for authenticated users, fallback to localStorage for legacy
-  const [tripwireUserId] = useState(() => {
-    // Если пользователь авторизован, используем его реальный ID
-    if (user?.id) {
-      return user.id;
-    }
-    
-    // Fallback для не авторизованных (legacy support)
-    let userId = localStorage.getItem('tripwire_user_id');
-    if (!userId) {
-      userId = `tripwire_${Math.random().toString(36).substring(2, 15)}`;
-      localStorage.setItem('tripwire_user_id', userId);
-    }
-    return userId;
-  });
+  // ✅ moduleId получаем из ДАННЫХ урока, НЕ из URL
+  const [moduleId, setModuleId] = useState<number | null>(null);
+  
+  // ✅ ИСПРАВЛЕНО: Получаем РЕАЛЬНЫЙ UUID от Tripwire Supabase
+  const [tripwireUserId, setTripwireUserId] = useState<string>('');
+
+  // ✅ Загружаем Tripwire user при монтировании
+  useEffect(() => {
+    const loadTripwireUser = async () => {
+      console.log('🔄 TripwireLesson: Загружаем Tripwire user...');
+      const { data: { user: tripwireUser } } = await tripwireSupabase.auth.getUser();
+      if (tripwireUser?.id) {
+        console.log('✅ TripwireLesson: Loaded tripwire user:', tripwireUser.email, tripwireUser.id);
+        setTripwireUserId(tripwireUser.id); // ✅ Правильный UUID
+      } else {
+        console.error('❌ TripwireLesson: No tripwire user found');
+        console.log('🔍 TripwireLesson: Current auth state:', await tripwireSupabase.auth.getSession());
+      }
+    };
+    loadTripwireUser();
+  }, []);
   
   // 🔧 Admin check for debug panel
   const [isAdmin, setIsAdmin] = useState(false);
@@ -68,11 +78,13 @@ const TripwireLesson = () => {
   const [video, setVideo] = useState<any>(null);
   
   // 🎯 Честный Video Tracking (учитывает только реальный просмотр, НЕ перемотку!)
-  const { 
-    progress: videoProgress, 
-    isCompleted: isVideoCompleted, 
-    isLoaded: isProgressLoaded, 
+  const {
+    progress: videoProgress,
+    isCompleted: isVideoCompleted,
+    isLoaded: isProgressLoaded,
     totalWatchedSeconds,
+    // ✅ FIX #3: Используем флаг квалификации (остается даже при откате прогресса!)
+    isQualifiedForCompletion,
     handleTimeUpdate: trackVideoTime,
     handlePlay: trackVideoPlay,
     handlePause: trackVideoPause,
@@ -81,7 +93,7 @@ const TripwireLesson = () => {
   } = useHonestVideoTracking(
     Number(lessonId), 
     tripwireUserId, // Используем tripwire_user_id, НЕ user.id
-    'tripwire_progress' // 🔥 Сохраняем в таблицу tripwire_progress
+    'video_tracking' // ✅ ИСПРАВЛЕНО: Используем video_tracking (не tripwire_progress)
   );
   
   // 📊 Progress Update Hook (saves to backend for AI Mentor)
@@ -101,6 +113,7 @@ const TripwireLesson = () => {
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false); // ✅ Prevent double-submission
   
   // ✅ Все уроки модуля для навигации
   const [allLessons, setAllLessons] = useState<any[]>([]);
@@ -200,7 +213,13 @@ const TripwireLesson = () => {
       
       // Загрузить урок
       const lessonRes = await api.get(`/api/tripwire/lessons/${lessonId}`);
-      setLesson(lessonRes?.lesson || lessonRes);
+      const loadedLesson = lessonRes?.lesson || lessonRes;
+      setLesson(loadedLesson);
+      
+      // ✅ Получаем module_id из данных урока
+      if (loadedLesson?.module_id) {
+        setModuleId(loadedLesson.module_id);
+      }
       
       // Проверить завершение
       const progressRes = await api.get(`/api/tripwire/progress/${lessonId}?tripwire_user_id=${tripwireUserId}`);
@@ -351,16 +370,59 @@ const TripwireLesson = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleComplete = async () => {
+  // ✅ PERPLEXITY BEST PRACTICE: useCallback для стабильной ссылки
+  const handleComplete = useCallback(async () => {
+    console.log('✅ handleComplete FIRED!'); // ✅ Debug log
+
+    // ✅ GUARD 1: Prevent double-submission
+    if (isCompleting || isCompleted) {
+      console.warn('⚠️ Already completing or completed');
+      return;
+    }
+
+    // ✅ GUARD 2: Validate user ID
+    if (!tripwireUserId) {
+      console.error('❌ tripwireUserId не загружен!');
+      toast({
+        title: "Ошибка",
+        description: "Не удалось определить пользователя. Обновите страницу.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // ✅ GUARD 3: Validate lesson ID
+    if (!lessonId) {
+      console.error('❌ lessonId не определён!');
+      return;
+    }
+
+    setIsCompleting(true);
+
     try {
-      await api.post('/api/tripwire/complete', {
-        lesson_id: parseInt(lessonId!),
+      console.log(`🎯 Завершаем урок ${lessonId} (модуль ${moduleId}) для пользователя ${tripwireUserId}`);
+
+      // ✅ Call backend API
+      const response = await api.post('/api/tripwire/complete', {
+        lesson_id: parseInt(lessonId),
+        module_id: moduleId ? parseInt(moduleId) : undefined,
         tripwire_user_id: tripwireUserId,
       });
+
+      console.log('✅ Backend response:', response.data);
+
+      // ✅ Optimistic UI update
       setIsCompleted(true);
+
+      // ✅ Show success toast
+      toast({
+        title: '✅ Урок завершён!',
+        description: 'Отличная работа!',
+        variant: 'default',
+      });
       
       // 🎉 GAMIFICATION: Trigger confetti explosion
-      const duration = 3000;
+      const duration = 2000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
 
@@ -392,15 +454,43 @@ const TripwireLesson = () => {
         });
       }, 250);
 
-      // 🏆 Check if module is completed and unlock achievement
-      if (user) {
-        checkAndUnlockAchievement();
-      }
+      // ✅ Navigate to main page after confetti (with unlock animation if module completed)
+      setTimeout(() => {
+        if (response.data?.moduleCompleted && response.data?.unlockedModuleId) {
+          console.log(`🔓 Module ${response.data.unlockedModuleId} unlocked!`);
+          
+          // ✅ ИНВАЛИДАЦИЯ КЭША: Очищаем чтобы загрузить свежие данные
+          if (tripwireUserId) {
+            const cachedKey = `tripwire_unlocks_${tripwireUserId}`;
+            localStorage.removeItem(cachedKey);
+            console.log('🗑️ Cache invalidated - will reload fresh unlocks');
+          }
+          
+          navigate('/tripwire', {
+            state: {
+              unlockedModuleId: response.data.unlockedModuleId,
+              showUnlockAnimation: true,
+            },
+          });
+        } else {
+          navigate('/tripwire');
+        }
+      }, 2000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Ошибка завершения:', error);
+      
+      // ✅ Show error toast
+      toast({
+        title: 'Ошибка',
+        description: error.response?.data?.error || error.message || 'Не удалось завершить урок',
+        variant: 'destructive',
+      });
+
+      // ✅ Reset state on error
+      setIsCompleting(false);
     }
-  };
+  }, [lessonId, moduleId, tripwireUserId, isCompleting, isCompleted, toast, navigate]);
 
   // 🏆 Проверить завершение модуля и разблокировать достижение
   const checkAndUnlockAchievement = async () => {
@@ -484,23 +574,8 @@ const TripwireLesson = () => {
     return () => clearInterval(interval);
   }, [playing, currentTime, duration, lessonId, tripwireUserId]);
 
-  // Navigation
+  // ✅ Navigation (определяем есть ли следующий урок для показа кнопки)
   const hasNextLesson = currentLessonIndex >= 0 && currentLessonIndex < allLessons.length - 1;
-  const hasPreviousLesson = currentLessonIndex > 0;
-
-  const handleNext = () => {
-    if (hasNextLesson) {
-      const nextLesson = allLessons[currentLessonIndex + 1];
-      navigate(`/tripwire/module/${moduleId}/lesson/${nextLesson.id}`);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (hasPreviousLesson) {
-      const prevLesson = allLessons[currentLessonIndex - 1];
-      navigate(`/tripwire/module/${moduleId}/lesson/${prevLesson.id}`);
-    }
-  };
 
   if (loading) {
     return (
@@ -667,91 +742,62 @@ const TripwireLesson = () => {
 
             {/* ⚡ CYBER ACTION BUTTONS - Адаптивные */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {/* Complete Button - без scale, только подсветка */}
-              <motion.button
-                onClick={handleComplete}
-                disabled={isCompleted || !isVideoCompleted}
-                className={`flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-sans font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 not-italic ${
-                  isCompleted 
-                    ? "bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700" 
-                    : !isVideoCompleted
-                    ? "bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50 opacity-60"
-                    : "bg-[#00FF88] text-black border-2 border-[#00FF88] hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]"
-                }`}
-                style={{
-                  transform: 'skewX(-10deg)',
-                  boxShadow: (isCompleted || !isVideoCompleted) ? 'none' : '0 0 30px rgba(0, 255, 136, 0.3)'
-                }}
-              >
-                <span className="flex items-center justify-center gap-2 sm:gap-3 not-italic" style={{ transform: 'skewX(10deg)' }}>
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
-                  ) : (
+              {/* ✅ Кнопка "ЗАВЕРШИТЬ УРОК" - показывается ДО завершения */}
+              {!isCompleted && (
+                <motion.button
+                  onClick={handleComplete}
+                  disabled={!isQualifiedForCompletion}
+                  className={`flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-sans font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 not-italic ${
+                    !isQualifiedForCompletion
+                      ? "bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50 opacity-60"
+                      : "bg-[#00FF88] text-black border-2 border-[#00FF88] hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]"
+                  }`}
+                  style={{
+                    transform: 'skewX(-10deg)',
+                    boxShadow: !isQualifiedForCompletion ? 'none' : '0 0 30px rgba(0, 255, 136, 0.3)'
+                  }}
+                >
+                  <span className="flex items-center justify-center gap-2 sm:gap-3 not-italic" style={{ transform: 'skewX(10deg)' }}>
                     <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-                  )}
-                  <span className="hidden xs:inline">
-                    {isCompleted ? "УРОК ЗАВЕРШЁН" : !isVideoCompleted ? "ПОСМОТРИТЕ ВИДЕО (80%)" : "ЗАВЕРШИТЬ УРОК"}
+                    <span className="hidden xs:inline">
+                      {!isQualifiedForCompletion ? "ПОСМОТРИТЕ ВИДЕО (80%)" : "ЗАВЕРШИТЬ УРОК"}
+                    </span>
+                    <span className="xs:hidden">
+                      {!isQualifiedForCompletion ? "80% ВИДЕО" : "ЗАВЕРШИТЬ"}
+                    </span>
                   </span>
-                  <span className="xs:hidden">
-                    {isCompleted ? "ЗАВЕРШЕНО" : !isVideoCompleted ? "80% ВИДЕО" : "ЗАВЕРШИТЬ"}
-                  </span>
-                </span>
-              </motion.button>
+                </motion.button>
+              )}
               
-              {/* Navigation Buttons - адаптивные, без scale */}
-              <div className="flex gap-2 sm:gap-3">
-                {hasPreviousLesson && (
-                  <motion.button
-                    onClick={handlePrevious}
-                    className="group px-3 sm:px-6 py-3 sm:py-4 bg-transparent border-2 border-[#00FF88]/30 text-[#00FF88] hover:bg-[#00FF88]/10 hover:border-[#00FF88] font-sans font-semibold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] not-italic"
-                    style={{ transform: 'skewX(-10deg)' }}
-                  >
-                    <span className="flex items-center gap-1 sm:gap-2 not-italic" style={{ transform: 'skewX(10deg)' }}>
-                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
-                      <span className="hidden sm:inline">Назад</span>
-                    </span>
-                  </motion.button>
-                )}
-                {hasNextLesson ? (
-                  <motion.button
-                    onClick={handleNext}
-                    className="group px-3 sm:px-6 py-3 sm:py-4 bg-transparent border-2 border-[#00FF88]/30 text-[#00FF88] hover:bg-[#00FF88]/10 hover:border-[#00FF88] font-sans font-semibold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] not-italic"
-                    style={{ transform: 'skewX(-10deg)' }}
-                  >
-                    <span className="flex items-center gap-1 sm:gap-2 not-italic" style={{ transform: 'skewX(10deg)' }}>
-                      <span className="hidden sm:inline">Далее</span>
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </motion.button>
-                ) : (
-                  /* 🔥 Tripwire: Следующий модуль (модули 16, 17, 18 в БД). Если 3-й - нет кнопки */
-                  (() => {
-                    const currentModuleId = parseInt(moduleId || '0');
-                    const tripwireModules = [16, 17, 18]; // ✅ ID модулей Tripwire в БД
-                    const currentIndex = tripwireModules.indexOf(currentModuleId);
-                    const isLastModule = currentIndex === tripwireModules.length - 1;
-                    const nextModuleId = !isLastModule && currentIndex !== -1 ? tripwireModules[currentIndex + 1] : null;
-                    
-                    if (isLastModule || nextModuleId === null) {
-                      return null;
+              {/* ✅ Кнопка "СЛЕДУЮЩИЙ МОДУЛЬ" - показывается ПОСЛЕ завершения (если не последний модуль) */}
+              {isCompleted && moduleId && moduleId < 18 && (
+                <motion.button
+                  onClick={() => {
+                    // ✅ 100% ПРАВИЛЬНЫЙ MAPPING:
+                    // Module 16 (lesson 67) → Module 17 (lesson 68)
+                    // Module 17 (lesson 68) → Module 18 (lesson 69)
+                    const nextLessonId = moduleId === 16 ? 68 : moduleId === 17 ? 69 : null;
+                    console.log(`🚀 Переход: Module ${moduleId} → Lesson ${nextLessonId}`);
+                    if (nextLessonId) {
+                      navigate(`/tripwire/lesson/${nextLessonId}`);
                     }
-                    
-                    return (
-                      <motion.button
-                        onClick={() => navigate(`/tripwire/module/${nextModuleId}`)}
-                        className="group px-3 sm:px-6 py-3 sm:py-4 bg-transparent border-2 border-[#00FF88]/30 text-[#00FF88] hover:bg-[#00FF88]/10 hover:border-[#00FF88] font-sans font-semibold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] not-italic"
-                        style={{ transform: 'skewX(-10deg)' }}
-                      >
-                        <span className="flex items-center gap-1 sm:gap-2 not-italic" style={{ transform: 'skewX(10deg)' }}>
-                          <span className="hidden sm:inline">Следующий модуль</span>
-                          <span className="sm:hidden">Далее</span>
-                          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                        </span>
-                      </motion.button>
-                    );
-                  })()
-                )}
-              </div>
+                  }}
+                  className="flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-sans font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 not-italic bg-[#00FF88] text-black border-2 border-[#00FF88] hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]"
+                  style={{
+                    transform: 'skewX(-10deg)',
+                    boxShadow: '0 0 30px rgba(0, 255, 136, 0.3)'
+                  }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <span className="flex items-center justify-center gap-2 sm:gap-3 not-italic" style={{ transform: 'skewX(10deg)' }}>
+                    <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="hidden xs:inline">СЛЕДУЮЩИЙ МОДУЛЬ</span>
+                    <span className="xs:hidden">ДАЛЕЕ</span>
+                  </span>
+                </motion.button>
+              )}
             </div>
           </motion.section>
 

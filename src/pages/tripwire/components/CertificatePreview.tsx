@@ -365,15 +365,13 @@ export function CertificatePreview({
           {/* <g transform="translate(1050, 710)"> ... </g> */}
         </svg>
 
-        {/* Overlay для заблокированного состояния */}
+        {/* Overlay для заблокированного состояния - BLUR 30% */}
         {showLockOverlay && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md z-10">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 z-10" 
+               style={{ backdropFilter: 'blur(5px)' }}>
             <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center">
               <div className="flex items-center gap-4 mb-4">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+                <Lock className="w-12 h-12 text-[#9CA3AF]" />
                 <div>
                   <h3 className="text-xl text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider mb-1">
                     Сертификат заблокирован
@@ -383,22 +381,10 @@ export function CertificatePreview({
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 font-['JetBrains_Mono'] uppercase mb-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-['JetBrains_Mono'] uppercase">
                 <span>/// ПРОГРЕСС:</span>
                 <span className="text-[#00FF94]">{profile.modules_completed}/3 модулей</span>
               </div>
-
-              {/* Кнопка просмотра (временная) */}
-              <button
-                onClick={() => setIsPreviewOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/10 
-                         hover:bg-white/20 hover:border-[#00FF94]/50 transition-all duration-300 group"
-              >
-                <Eye className="w-4 h-4 text-[#00FF94] group-hover:scale-110 transition-transform" />
-                <span className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wide text-sm">
-                  ОТКРЫТЬ СЕРТИФИКАТ
-                </span>
-              </button>
             </div>
           </div>
         )}

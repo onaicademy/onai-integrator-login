@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import { Loader2 } from 'lucide-react';
 import { 
@@ -8,6 +7,7 @@ import {
   TripwireCertificate,
   getPendingAchievement 
 } from '@/lib/tripwire-utils';
+import type { User } from '@supabase/supabase-js';
 
 // Components
 import ProfileHeader from './components/ProfileHeader';
@@ -25,8 +25,8 @@ import { useToast } from '@/hooks/use-toast';
  * Главная страница профиля пользователя Tripwire (Premium Redesign)
  */
 export default function TripwireProfile() {
-  const { user } = useAuth();
   const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
 
   // State
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +42,30 @@ export default function TripwireProfile() {
   const [newAchievement, setNewAchievement] = useState<any>(null);
 
   // Загрузка данных
+  useEffect(() => {
+    // ✅ Получаем текущего пользователя из Tripwire Supabase
+    const loadUser = async () => {
+      console.log('🔍 TripwireProfile: Загружаем пользователя...');
+      const { data: { user: currentUser }, error } = await tripwireSupabase.auth.getUser();
+      
+      if (error) {
+        console.error('❌ TripwireProfile: Ошибка получения user:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (currentUser) {
+        console.log('✅ TripwireProfile: Пользователь найден:', currentUser.email);
+        setUser(currentUser);
+      } else {
+        console.error('❌ TripwireProfile: Пользователь НЕ найден');
+        setIsLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   useEffect(() => {
     if (user) {
       loadProfileData();
@@ -74,69 +98,55 @@ export default function TripwireProfile() {
     try {
       setIsLoading(true);
 
-      // 1. Получаем или создаем профиль
-      const { data: existingProfile, error: profileError } = await supabase
+      // 1. Получаем или создаем профиль (используем tripwireSupabase!)
+      const { data: existingProfile, error: profileError } = await tripwireSupabase
         .from('tripwire_user_profile')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
       if (profileError && profileError.code === 'PGRST116') {
-        // Профиль не существует, инициализируем
-        const { error: initError } = await supabase.rpc('initialize_tripwire_user', {
-          p_user_id: user.id
-        });
-
-        if (initError) {
-          console.error('Error initializing user:', initError);
-        }
-
-        // Загружаем снова
-        const { data: newProfile } = await supabase
-          .from('tripwire_user_profile')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (newProfile) {
-          setProfile({
-            ...newProfile,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || user.email,
-          });
-        }
-      } else if (existingProfile) {
+        // Профиль не существует - показываем дефолтный
+        console.warn('⚠️ Profile not found, showing default profile');
         setProfile({
-          ...existingProfile,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.email,
-        });
+          user_id: user.id,
+          modules_completed: 0,
+          total_modules: 3,
+          completion_percentage: 0,
+          certificate_issued: false,
+          certificate_url: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any);
+      } else if (existingProfile) {
+        setProfile(existingProfile as any);
       }
 
-      // 2. Загружаем достижения
-      const { data: achievementsData } = await supabase
-        .from('tripwire_achievements')
+      // 2. Загружаем достижения (используем tripwireSupabase!)
+      const { data: achievementsData } = await tripwireSupabase
+        .from('user_achievements')  // ✅ ПРАВИЛЬНАЯ ТАБЛИЦА
         .select('*')
         .eq('user_id', user.id)
-        .order('achievement_type');
+        .order('created_at');
 
       if (achievementsData) {
-        setAchievements(achievementsData);
+        setAchievements(achievementsData as any);
       }
 
-      // 3. Загружаем сертификат (если есть)
-      const { data: certificateData } = await supabase
-        .from('tripwire_certificates')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      // 3. Сертификаты - таблица не существует, пропускаем
+      // const { data: certificateData } = await tripwireSupabase
+      //   .from('tripwire_certificates')
+      //   .select('*')
+      //   .eq('user_id', user.id)
+      //   .single();
 
-      if (certificateData) {
-        setCertificate(certificateData);
-      }
+      // if (certificateData) {
+      //   setCertificate(certificateData);
+      // }
 
       // 4. Загружаем прогресс по модулям
-      await loadModuleProgress();
+      // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО: таблица tripwire_progress не существует
+      // await loadModuleProgress();
 
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -157,8 +167,8 @@ export default function TripwireProfile() {
       // Для авторизованных пользователей используем user.id как tripwire_user_id
       const tripwireUserId = user.id;
 
-      // Загружаем прогресс по урокам
-      const { data: progressData } = await supabase
+      // Загружаем прогресс по урокам (используем tripwireSupabase!)
+      const { data: progressData } = await tripwireSupabase
         .from('tripwire_progress')
         .select(`
           *,
@@ -265,12 +275,32 @@ export default function TripwireProfile() {
     }
   };
 
+  // 🔴 DEBUG: Показываем что загружается
+  console.log('🎨 TripwireProfile render:', { 
+    isLoading, 
+    hasUser: !!user, 
+    hasProfile: !!profile,
+    userEmail: user?.email 
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#030303]">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin text-[#00FF94] mx-auto" />
           <p className="text-xl text-white">Загрузка профиля...</p>
+          <p className="text-sm text-gray-500">User: {user?.email || 'загружается...'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#030303]">
+        <div className="text-center space-y-4">
+          <p className="text-xl text-white">❌ Пользователь не найден</p>
+          <p className="text-sm text-gray-500">Попробуйте перезайти</p>
         </div>
       </div>
     );
@@ -280,7 +310,8 @@ export default function TripwireProfile() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#030303]">
         <div className="text-center space-y-4">
-          <p className="text-xl text-white">Профиль не найден</p>
+          <p className="text-xl text-white">❌ Профиль не найден</p>
+          <p className="text-sm text-gray-500">User ID: {user.id}</p>
         </div>
       </div>
     );

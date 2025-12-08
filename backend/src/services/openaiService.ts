@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { openai } from '../config/openai';
+import * as groqService from './groqAiService';
 
 /**
  * Создание нового Thread
@@ -261,45 +262,34 @@ export async function transcribeAudio(
 }
 
 /**
- * Анализ изображения через Vision API (gpt-4o)
+ * Анализ изображения через Groq Vision API (Llama 4 Scout)
+ * ✅ 96% дешевле чем OpenAI GPT-4o Vision
  */
 export async function analyzeImage(
   imageDataUrl: string,
   userQuestion?: string
 ): Promise<string> {
   try {
-    console.log('[OpenAI] Analyzing image with Vision API...');
-    
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: userQuestion || 'Опиши что изображено на картинке подробно.',
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageDataUrl,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 1000,
-    });
+    console.log('[Groq Vision] Analyzing image with Llama 4 Scout...');
 
-    const description = response.choices[0].message.content || 'Не удалось проанализировать изображение';
-    
-    console.log(`✅ Image analyzed: ${description.length} characters`);
-    console.log(`📊 Tokens used: ${response.usage?.total_tokens || 0}`);
-    
-    return description;
+    // Конвертируем data URL в Buffer
+    const base64Data = imageDataUrl.split(',')[1];
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    const { analysis, usage } = await groqService.analyzeImage(
+      imageBuffer,
+      userQuestion || 'Опиши что изображено на картинке подробно.',
+      'image/png'
+    );
+
+    console.log('[Groq Vision] ✅ Analysis completed');
+    if (usage) {
+      console.log(`💰 [Groq Vision] Cost: $${usage.cost_usd.toFixed(6)} (96% cheaper than OpenAI)`);
+    }
+
+    return analysis;
   } catch (error: any) {
-    console.error('[OpenAI] Failed to analyze image:', error.message);
+    console.error('[Groq Vision] Failed to analyze image:', error.message);
     throw new Error(`Failed to analyze image: ${error.message}`);
   }
 }

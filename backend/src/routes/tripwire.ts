@@ -100,20 +100,15 @@ router.get('/module-unlocks/:userId', async (req, res) => {
     
     console.log('🔓 Getting module unlocks for Tripwire user:', userId);
     
-    // ⚠️ ВАЖНО: module_unlocks находится в MAIN DB, НЕ в Tripwire DB!
-    // Используем обычный adminSupabase (не tripwireAdminSupabase)
-    const { adminSupabase } = require('../config/supabase');
+    // ✅ FIX: Читаем из Tripwire DB (не Main!)
+    const { tripwirePool } = require('../config/tripwire-db');
+    const result = await tripwirePool.query(`
+      SELECT * FROM module_unlocks
+      WHERE user_id = $1::uuid
+      ORDER BY unlocked_at DESC
+    `, [userId]);
     
-    const { data: unlocks, error } = await adminSupabase
-      .from('module_unlocks')
-      .select('*')
-      .eq('user_id', userId)
-      .order('unlocked_at', { ascending: false });
-    
-    if (error) {
-      console.error('❌ Error fetching module unlocks:', error);
-      return res.status(500).json({ error: error.message });
-    }
+    const unlocks = result.rows;
     
     console.log(`✅ Found ${unlocks?.length || 0} module unlocks for user ${userId}`);
     
@@ -128,27 +123,23 @@ router.get('/module-unlocks/:userId', async (req, res) => {
 router.post('/module-unlocks/mark-shown', async (req, res) => {
   try {
     const { userId, moduleId } = req.body;
-    
+
     if (!userId || !moduleId) {
       return res.status(400).json({ error: 'userId and moduleId are required' });
     }
-    
+
     console.log(`🔔 Marking animation as shown for user ${userId}, module ${moduleId}`);
-    
-    const { adminSupabase } = require('../config/supabase');
-    
-    const { error } = await adminSupabase
-      .from('module_unlocks')
-      .update({ animation_shown: true })
-      .eq('user_id', userId)
-      .eq('module_id', moduleId);
-    
-    if (error) {
-      console.error('❌ Error marking animation as shown:', error);
-      return res.status(500).json({ error: error.message });
-    }
-    
-    console.log(`✅ Animation marked as shown`);
+
+    // ✅ ИСПРАВЛЕНО: Используем Tripwire DB (Direct Pool)
+    const { tripwirePool } = require('../config/tripwire-db');
+
+    await tripwirePool.query(`
+      UPDATE module_unlocks 
+      SET animation_shown = true 
+      WHERE user_id = $1 AND module_id = $2
+    `, [userId, moduleId]);
+
+    console.log(`✅ Animation marked as shown in Tripwire DB`);
     return res.json({ success: true });
   } catch (error: any) {
     console.error('❌ Error in mark-shown endpoint:', error);

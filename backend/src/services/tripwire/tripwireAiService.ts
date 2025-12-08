@@ -8,8 +8,10 @@
 
 import { tripwireAdminSupabase as supabase } from '../../config/supabase-tripwire';
 import OpenAI from 'openai';
+import * as groqService from '../groqAiService';
 
-// Инициализация OpenAI client
+// ✅ Groq для всех операций (кроме Assistants)
+// OpenAI оставляем только для fallback
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -58,7 +60,8 @@ const SYSTEM_PROMPT = `Ты - AI-Куратор курса "Integrator: 0 to $10
 Ты готов помогать! 🚀`;
 
 /**
- * Обработать сообщение пользователя с OpenAI GPT-4o
+ * Обработать сообщение пользователя через Groq Llama 3.3 70B
+ * ✅ GROQ API - 93% дешевле чем OpenAI GPT-4o
  */
 export async function processChat(userId: string, userMessage: string): Promise<ChatResponse> {
   try {
@@ -71,28 +74,26 @@ export async function processChat(userId: string, userMessage: string): Promise<
     // 2. Получаем историю чата (последние 10 сообщений для контекста)
     const history = await getChatHistory(userId, 10);
     
-    // 3. Формируем messages для OpenAI
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...history.map(msg => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content
-      }))
-    ];
+    // 3. Формируем историю для Groq
+    const conversationHistory = history.map(msg => ({
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content
+    }));
     
-    // 4. Вызываем OpenAI API
-    console.log('🧠 [Tripwire AiService] Отправляем запрос в OpenAI...');
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o', // Используем GPT-4o (быстрый и мощный)
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 500, // Краткие ответы для чата
-    });
+    console.log('🧠 [Tripwire AiService] Отправляем запрос в Groq Llama 3.3...');
     
-    const aiResponse = completion.choices[0]?.message?.content || 'Извините, не смог сгенерировать ответ.';
+    // 4. ✅ Используем Groq вместо OpenAI (93% экономия!)
+    const { message: aiResponse, usage } = await groqService.processChat(
+      userMessage,
+      conversationHistory,
+      SYSTEM_PROMPT
+    );
     
-    console.log('✅ [Tripwire AiService] Ответ от OpenAI получен');
+    console.log('✅ [Tripwire AiService] Ответ от Groq получен');
     console.log('💬 [Tripwire AiService] Ответ:', aiResponse.substring(0, 100) + '...');
+    if (usage) {
+      console.log(`💰 [Tripwire AiService] Экономия vs OpenAI: ~93% ($${usage.cost_usd.toFixed(6)})`);
+    }
     
     // 5. Сохраняем ответ AI
     await saveChatMessage(userId, 'assistant', aiResponse);
@@ -104,15 +105,10 @@ export async function processChat(userId: string, userMessage: string): Promise<
   } catch (error: any) {
     console.error('❌ [Tripwire AiService] Ошибка processChat:', error);
     
-    // Если ошибка OpenAI - возвращаем fallback
-    if (error.code === 'insufficient_quota' || error.status === 429) {
-      return {
-        message: 'Извините, AI-куратор временно недоступен. Пожалуйста, попробуйте позже или обратитесь к материалам курса.',
-        timestamp: new Date().toISOString(),
-      };
-    }
-    
-    throw error;
+    return {
+      message: '⚠️ Произошла ошибка. Попробуй ещё раз или обратись к поддержке.',
+      timestamp: new Date().toISOString(),
+    };
   }
 }
 
@@ -167,48 +163,212 @@ export async function getChatHistory(userId: string, limit: number = 50): Promis
 }
 
 /**
- * Обработать голосовое сообщение (TODO: Whisper API)
+ * Обработать голосовое сообщение (Groq Whisper - БЕСПЛАТНО!)
+ * ✅ СКОПИРОВАНО С МЕЙН-ПЛАТФОРМЫ
  */
-export async function processVoiceMessage(userId: string, audioFile: any): Promise<ChatResponse> {
+export async function processVoiceMessage(userId: string, audioFile: Express.Multer.File): Promise<ChatResponse> {
   try {
     console.log('🎤 [Tripwire AiService] Получено голосовое сообщение от:', userId);
+    console.log('📊 [Tripwire AiService] Audio file:', {
+      originalname: audioFile.originalname,
+      mimetype: audioFile.mimetype,
+      size: audioFile.size,
+    });
     
-    // TODO: Интеграция с Whisper API для транскрипции
-    // const transcription = await openai.audio.transcriptions.create({
-    //   file: audioFile,
-    //   model: 'whisper-1',
-    // });
-    // return processChat(userId, transcription.text);
+    // ✅ GROQ WHISPER (как на мейн-платформе!)
+    const groq = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY || '',
+      baseURL: 'https://api.groq.com/openai/v1'
+    });
     
-    const placeholderResponse = '[Voice Placeholder] Транскрипция голосовых сообщений будет добавлена позже. Пока используйте текстовые сообщения.';
+    console.log(`[Groq Whisper] === НАЧАЛО ТРАНСКРИПЦИИ ===`);
+    console.log(`[Groq Whisper] File: ${audioFile.originalname}, size: ${audioFile.size}, mime: ${audioFile.mimetype}`);
+    
+    // ✅ Создаём File-like объект для Groq (toFile из OpenAI SDK)
+    const { toFile } = await import('openai/uploads');
+    const fileForGroq = await toFile(audioFile.buffer, audioFile.originalname, {
+      type: audioFile.mimetype
+    });
+    
+    console.log(`[Groq Whisper] Отправляем в Groq API...`);
+    
+    const transcription = await groq.audio.transcriptions.create({
+      file: fileForGroq,
+      model: 'whisper-large-v3', // Groq использует whisper-large-v3
+      language: 'ru',
+      response_format: 'verbose_json',
+      prompt: 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы. Транскрибируй текст с правильной пунктуацией и заглавными буквами.',
+      temperature: 0.0,
+    });
+    
+    const transcribedText = (transcription as any).text as string;
+    
+    console.log(`✅ [Groq Whisper] Транскрипция успешна: ${transcribedText.length} символов`);
+    
+    // Сохраняем транскрипцию как сообщение пользователя
+    await saveChatMessage(userId, 'user', `🎤 [Голосовое]: ${transcribedText}`);
+    
+    // Обрабатываем транскрипцию через GPT-4o
+    return processChat(userId, transcribedText);
+  } catch (error: any) {
+    console.error('❌ [Tripwire AiService] Ошибка Groq Whisper:', error);
     
     return {
-      message: placeholderResponse,
+      message: '⚠️ Не удалось распознать голос. Попробуйте ещё раз или напишите текстом.',
       timestamp: new Date().toISOString(),
     };
-  } catch (error: any) {
-    console.error('❌ [Tripwire AiService] Ошибка processVoiceMessage:', error);
-    throw error;
   }
 }
 
 /**
- * Обработать файл (TODO: File Analysis)
+ * Обработать файл (Vision/PDF/DOCX Analysis)
+ * ✅ СКОПИРОВАНО С МЕЙН-ПЛАТФОРМЫ
  */
-export async function processFileUpload(userId: string, file: any): Promise<ChatResponse> {
+export async function processFileUpload(userId: string, file: Express.Multer.File, userQuestion?: string): Promise<ChatResponse> {
   try {
     console.log('📎 [Tripwire AiService] Получен файл от:', userId);
+    console.log('📊 [Tripwire AiService] File:', file.originalname, file.mimetype, file.size, 'bytes');
     
-    // TODO: Анализ файлов через OpenAI Vision/Document Analysis
-    const placeholderResponse = '[File Placeholder] Анализ файлов будет добавлен позже. Пока задавайте вопросы текстом.';
+    const analysisPrompt = userQuestion || 'Проанализируй этот файл и расскажи о чём он.';
+    let aiResponse = '';
+    
+    // ✅ ИЗОБРАЖЕНИЯ: Groq Vision API (Llama 4 Scout - 96% дешевле!)
+    if (file.mimetype.startsWith('image/')) {
+      console.log('🖼️ [Tripwire AiService] Groq Vision API...');
+      
+      const { analysis, usage } = await groqService.analyzeImage(
+        file.buffer,
+        analysisPrompt,
+        file.mimetype
+      );
+      
+      aiResponse = analysis;
+      console.log(`✅ [Tripwire AiService] Vision ответ: ${aiResponse.length} символов`);
+      if (usage) {
+        console.log(`💰 [Tripwire AiService] Экономия vs OpenAI Vision: ~96% ($${usage.cost_usd.toFixed(6)})`);
+      }
+    }
+    
+    // ✅ PDF: Groq Vision API (автоматическая конвертация PDF → Image)
+    else if (file.mimetype === 'application/pdf' || file.originalname.endsWith('.pdf')) {
+      console.log('📄 [Tripwire AiService] PDF анализ через Groq Vision...');
+      console.log(`📊 [Tripwire AiService] PDF size: ${file.size} bytes`);
+      
+      // Сначала пробуем извлечь текст
+      const pdfParse = require('pdf-parse');
+      
+      try {
+        const pdfData = await pdfParse(file.buffer, { max: 0 });
+        
+        console.log(`📄 [Tripwire AiService] PDF info:`, {
+          pages: pdfData.numpages,
+          textLength: pdfData.text.length,
+        });
+        
+        // Если текста мало (отсканированный PDF), используем Groq Vision
+        if (!pdfData.text || pdfData.text.trim().length < 50) {
+          console.log('🔄 [Tripwire AiService] PDF содержит изображения → используем Groq Vision (Pure JS)');
+          
+          const { analysis, usage } = await groqService.analyzePDF(
+            file.buffer,
+            analysisPrompt,
+            { page: 0 } // Первая страница
+          );
+          
+          aiResponse = analysis;
+          console.log(`✅ [Tripwire AiService] PDF проанализирован через Vision`);
+          if (usage) {
+            console.log(`💰 [Tripwire AiService] Стоимость: $${usage.cost_usd.toFixed(6)} (96% дешевле OpenAI)`);
+          }
+        } else {
+          // Если текст есть, используем Groq Chat
+          console.log('📝 [Tripwire AiService] PDF содержит текст → используем Groq Chat');
+          
+          const { message, usage } = await groqService.processChat(
+            `PDF документ:\n\n${pdfData.text.substring(0, 20000)}\n\nВопрос: ${analysisPrompt}`,
+            [],
+            SYSTEM_PROMPT
+          );
+          
+          aiResponse = message;
+          if (usage) {
+            console.log(`💰 [Tripwire AiService] Стоимость: $${usage.cost_usd.toFixed(6)}`);
+          }
+        }
+      } catch (pdfError: any) {
+        console.error('❌ [Tripwire AiService] PDF error:', pdfError.message);
+        aiResponse = `❌ Не удалось прочитать PDF: ${pdfError.message}`;
+      }
+    }
+    
+    // ✅ DOCX: Извлечение текста + GPT-4o
+    else if (
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.originalname.endsWith('.docx')
+    ) {
+      console.log('📝 [Tripwire AiService] DOCX parsing...');
+      
+      const mammoth = require('mammoth');
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      
+      console.log(`✅ [Tripwire AiService] DOCX извлечён: ${result.value.length} символов`);
+      
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { 
+            role: 'user', 
+            content: `Вот содержимое DOCX документа:\n\n${result.value.substring(0, 10000)}\n\nВопрос студента: ${analysisPrompt}` 
+          }
+        ],
+        max_tokens: 1000,
+      });
+      
+      aiResponse = response.choices[0].message.content || 'Не удалось проанализировать DOCX';
+    }
+    
+    // ✅ ТЕКСТ: TXT, MD (через Groq Chat)
+    else if (file.mimetype.startsWith('text/')) {
+      console.log('📄 [Tripwire AiService] Text file...');
+      
+      const textContent = file.buffer.toString('utf-8');
+      
+      const { message, usage } = await groqService.processChat(
+        `Вот содержимое файла:\n\n${textContent.substring(0, 20000)}\n\nВопрос: ${analysisPrompt}`,
+        [],
+        SYSTEM_PROMPT
+      );
+      
+      aiResponse = message;
+      if (usage) {
+        console.log(`💰 [Tripwire AiService] Стоимость: $${usage.cost_usd.toFixed(6)}`);
+      }
+    }
+    
+    // ❌ Неподдерживаемый тип
+    else {
+      return {
+        message: `⚠️ Файлы типа ${file.mimetype} не поддерживаются. Попробуйте изображение, PDF или DOCX.`,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    
+    // Сохраняем в БД
+    await saveChatMessage(userId, 'user', `📎 Прикреплён файл: ${file.originalname}`);
+    await saveChatMessage(userId, 'assistant', aiResponse);
     
     return {
-      message: placeholderResponse,
+      message: aiResponse,
       timestamp: new Date().toISOString(),
     };
   } catch (error: any) {
     console.error('❌ [Tripwire AiService] Ошибка processFileUpload:', error);
-    throw error;
+    
+    return {
+      message: '⚠️ Не удалось обработать файл. Попробуйте другой формат или опишите вопрос текстом.',
+      timestamp: new Date().toISOString(),
+    };
   }
 }
 
@@ -233,5 +393,31 @@ export async function clearChatHistory(userId: string): Promise<void> {
   } catch (error: any) {
     console.error('❌ [Tripwire AiService] Ошибка clearChatHistory:', error);
     throw error;
+  }
+}
+
+/**
+ * ✅ НОВАЯ ФУНКЦИЯ: Только транскрипция аудио → текст (через Groq Whisper Turbo)
+ * Response: string (только текст)
+ */
+export async function transcribeAudioOnly(audioFile: Express.Multer.File): Promise<string> {
+  try {
+    console.log('🎤 [Groq Whisper Turbo] Транскрибирую аудио...');
+    console.log('📊 [Groq Whisper Turbo] Audio:', audioFile.originalname, audioFile.mimetype, audioFile.size, 'bytes');
+    
+    // ✅ Используем unified Groq service
+    const { transcription, cost_usd } = await groqService.transcribeAudio(
+      audioFile.buffer,
+      audioFile.originalname,
+      audioFile.mimetype
+    );
+    
+    console.log(`✅ [Groq Whisper Turbo] Транскрипция: "${transcription}"`);
+    console.log(`💰 [Groq Whisper Turbo] Стоимость: $${cost_usd.toFixed(6)}`);
+    
+    return transcription;
+  } catch (error: any) {
+    console.error('❌ [Groq Whisper Turbo] Ошибка:', error);
+    throw new Error(`Whisper transcription failed: ${error.message}`);
   }
 }

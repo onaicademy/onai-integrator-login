@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+// ✅ FIX #2: Используем Tripwire Supabase вместо Main Platform
+import { tripwireSupabase as supabase } from '@/lib/supabase-tripwire';
 
 /**
  * 🎥 Честный Video Tracking Hook
@@ -68,6 +69,8 @@ export const useHonestVideoTracking = (
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [totalWatchedSeconds, setTotalWatchedSeconds] = useState(0);
+  // ✅ FIX #3: Новый флаг для отслеживания квалификации (остается даже при откате прогресса)
+  const [isQualifiedForCompletion, setIsQualifiedForCompletion] = useState(false);
   
   // Refs для отслеживания
   const segmentsRef = useRef<WatchedSegment[]>([]);
@@ -86,12 +89,19 @@ export const useHonestVideoTracking = (
     const loadProgress = async () => {
       if (!userId || !lessonId) return;
       
+      // 🚀 ОПТИМИЗАЦИЯ: Пропускаем загрузку для tripwire_progress (таблица не существует)
+      if (tableName === 'tripwire_progress') {
+        console.log('⚠️ [HonestTracking] Skipping load - tripwire_progress table does not exist');
+        setIsLoaded(true);
+        return;
+      }
+      
       try {
         console.log('📥 [HonestTracking] Loading progress for:', { lessonId, userId, tableName });
         
         // Определяем какие поля загружать
         const selectFields = tableName === 'tripwire_progress'
-          ? 'watched_segments, total_watched_seconds, video_duration, video_progress_percent, is_completed'
+          ? 'watched_segments, total_watched_seconds, video_duration, video_progress_percent, is_completed, video_qualified_for_completion'
           : 'watched_segments, total_watched_seconds, video_duration_seconds, watch_percentage, is_qualified_for_completion';
         
         const { data, error } = await supabase
@@ -132,9 +142,15 @@ export const useHonestVideoTracking = (
             ? record.is_completed
             : record.is_qualified_for_completion;
           
+          // ✅ FIX #3: Загружаем флаг квалификации
+          const qualified = tableName === 'tripwire_progress'
+            ? (record.video_qualified_for_completion || false)
+            : (record.is_qualified_for_completion || false);
+          
           setProgress(Number(progressPercent) || 0);
           setTotalWatchedSeconds(record.total_watched_seconds || 0);
           setIsCompleted(completed || false);
+          setIsQualifiedForCompletion(qualified);
           lastSavedRef.current = Number(progressPercent) || 0;
           videoDurationRef.current = (tableName === 'tripwire_progress' 
             ? record.video_duration 
@@ -195,6 +211,8 @@ export const useHonestVideoTracking = (
             video_progress_percent: percentage,
             last_position_seconds: Math.round(lastTimeRef.current),
             is_completed: qualified,
+            // ✅ FIX #3: Сохраняем флаг квалификации (остается навсегда!)
+            video_qualified_for_completion: qualified,
             updated_at: new Date().toISOString()
           }
         : {
@@ -227,14 +245,15 @@ export const useHonestVideoTracking = (
       setProgress(percentage);
       setTotalWatchedSeconds(totalWatched);
       
-      if (qualified && !isCompleted) {
+      if (qualified && !isQualifiedForCompletion) {
+        setIsQualifiedForCompletion(true);
         setIsCompleted(true);
         console.log('🎉 [HonestTracking] Lesson qualified for completion!');
       }
     } catch (e) {
       console.error('❌ [HonestTracking] Exception:', e);
     }
-  }, [userId, lessonId, tableName, isCompleted]);
+  }, [userId, lessonId, tableName, isCompleted, isQualifiedForCompletion]);
   
   // 🎬 Начало воспроизведения
   const handlePlay = useCallback(() => {
@@ -330,13 +349,15 @@ export const useHonestVideoTracking = (
     const isQualifiedBySkip = currentPositionPercent >= 80;
     const isQualifiedByWatch = percentage >= 80;
     
-    if ((isQualifiedBySkip || isQualifiedByWatch) && !isCompleted) {
+    if ((isQualifiedBySkip || isQualifiedByWatch) && !isQualifiedForCompletion) {
       console.log('🎉 [HonestTracking] Qualified for completion!', {
         bySkip: isQualifiedBySkip,
         byWatch: isQualifiedByWatch,
         currentPosition: currentPositionPercent.toFixed(1) + '%',
         watchedProgress: percentage + '%'
       });
+      // ✅ FIX #3: Устанавливаем флаг квалификации (остается навсегда!)
+      setIsQualifiedForCompletion(true);
       setIsCompleted(true);
     }
     
@@ -384,6 +405,8 @@ export const useHonestVideoTracking = (
     isLoaded,
     totalWatchedSeconds,
     videoDuration: videoDurationRef.current,
+    // ✅ FIX #3: Возвращаем флаг квалификации
+    isQualifiedForCompletion,
     handleTimeUpdate,
     handlePlay,
     handlePause,

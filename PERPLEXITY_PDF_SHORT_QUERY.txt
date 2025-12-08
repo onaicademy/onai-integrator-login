@@ -1,0 +1,1 @@
+How to automatically convert PDF files (including scanned documents) to images in Node.js backend and send to OpenAI Vision API? Need pure Node.js solution without external dependencies like ImageMagick. Compare pdf-to-img, pdf2pic, pdfjs-dist libraries with code examples for Express + TypeScript + Buffer input.

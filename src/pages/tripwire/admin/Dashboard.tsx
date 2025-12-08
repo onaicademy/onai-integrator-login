@@ -6,7 +6,8 @@ import {
   Mic,
   DollarSign,
   TrendingUp,
-  Activity
+  Activity,
+  FileText
 } from 'lucide-react'
 import { apiRequest } from '@/utils/apiClient'
 
