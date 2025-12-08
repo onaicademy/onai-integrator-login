@@ -323,11 +323,15 @@ export default function TripwireProfile() {
     try {
       setIsLoading(true);
       
+      console.log('🎓 [Certificate] Starting generation for:', profile.full_name);
+      
       // ✅ PHASE 3: Use new Tripwire Certificate API via apiClient
       const result = await apiClient.post('/api/tripwire/certificates/issue', {
         user_id: user.id,
         full_name: profile.full_name
       });
+      
+      console.log('✅ [Certificate] API response:', result);
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to generate certificate');
