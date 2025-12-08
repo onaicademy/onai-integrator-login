@@ -1001,7 +1001,7 @@ const TripwireLesson = () => {
                   if (isAdmin) {
                     setIsAIChatOpen(true);
                   } else {
-                    alert('🔒 AI Куратор доступен только на полной версии продукта');
+                    showLocked('AI Куратор');
                   }
                 }}
                 disabled={!isAdmin}

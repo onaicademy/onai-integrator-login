@@ -415,7 +415,7 @@ export default function TripwireProductPage() {
               if (isAdmin) {
                 setIsAIChatOpen(true);
               } else {
-                alert('🔒 AI Куратор доступен только на полной версии продукта');
+                showLocked('AI Куратор');
               }
             }}
             className={`group relative px-10 py-5 overflow-hidden rounded-2xl flex items-center gap-5 border-2 transition-all duration-300 ${

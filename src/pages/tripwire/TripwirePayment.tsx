@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { showInfo, showSuccess } from '@/lib/notifications';
 
 export default function TripwirePayment() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -143,21 +144,27 @@ export default function TripwirePayment() {
     if (paymentMethod === 'kaspi') {
       console.log("Simulating redirect to KASPI Payment Gateway...");
       // TODO: Redirect to Kaspi payment
-      alert('Перенаправление на KASPI...');
+      showInfo('Перенаправление на KASPI', {
+        description: 'Ожидайте редиректа на платежную систему...'
+      });
       return;
     }
 
     if (paymentMethod === 'card') {
       console.log("Simulating redirect to Card Payment System...");
       // TODO: Redirect to card payment
-      alert('Перенаправление на оплату картой...');
+      showInfo('Перенаправление на оплату картой', {
+        description: 'Открываем платежную систему...'
+      });
       return;
     }
 
     if (paymentMethod === 'manager') {
       console.log(`Заявка менеджеру. Имя: ${name}, Телефон: ${phone}`);
       // TODO: Send to backend
-      alert('Заказ принят! Ожидайте звонка от менеджера.');
+      showSuccess('Заказ принят!', {
+        description: 'Ожидайте звонка от менеджера в ближайшее время'
+      });
       return;
     }
   };
