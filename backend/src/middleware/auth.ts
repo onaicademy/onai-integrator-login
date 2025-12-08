@@ -66,28 +66,53 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // ✅ Получаем роль из БД (более надежно чем из токена)
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // ✅ Определяем какую БД использовать на основе endpoint
+    const isTripwireEndpoint = req.originalUrl.includes('/tripwire');
+    let supabase: any;
 
-    const { data: userProfile, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', req.user.sub)
-      .single();
+    if (isTripwireEndpoint) {
+      // Tripwire endpoint → используем Tripwire DB
+      supabase = createClient(
+        process.env.TRIPWIRE_SUPABASE_URL!,
+        process.env.TRIPWIRE_SUPABASE_SERVICE_KEY!
+      );
+      console.log('✅ [requireAdmin] Using TRIPWIRE DB');
+    } else {
+      // Main endpoint → используем Main DB
+      supabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      console.log('✅ [requireAdmin] Using MAIN DB');
+    }
 
-    if (error || !userProfile) {
-      console.error('❌ requireAdmin: Failed to fetch user profile:', error);
+    // ✅ Получаем роль из auth.users.user_metadata (для Tripwire) или users table (для Main)
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(req.user.sub);
+
+    if (authError || !authUser.user) {
+      console.error('❌ requireAdmin: Failed to fetch auth user:', authError);
       return res.status(403).json({ error: 'Access denied. Could not verify user role.' });
     }
 
-    if (userProfile.role !== 'admin') {
-      console.log(`❌ requireAdmin: Access denied for ${req.user.email} (role: ${userProfile.role})`);
+    // Получаем роль из user_metadata (Tripwire) или пробуем из public.users (Main)
+    let userRole: string | undefined = authUser.user.user_metadata?.role;
+
+    // Если роли нет в metadata, пробуем public.users (для Main Platform)
+    if (!userRole && !isTripwireEndpoint) {
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', req.user.sub)
+        .single();
+      
+      userRole = userProfile?.role;
+    }
+
+    if (!userRole || userRole !== 'admin') {
+      console.log(`❌ requireAdmin: Access denied for ${req.user.email} (role: ${userRole})`);
       return res.status(403).json({ 
         error: 'Access denied. Admin role required.',
-        currentRole: userProfile.role || 'student'
+        currentRole: userRole || 'student'
       });
     }
 
