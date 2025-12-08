@@ -49,6 +49,8 @@ const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatform
 // 🚀 ОПТИМИЗАЦИЯ: Lazy loading Tripwire страниц
 const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
 const TripwireLogin = lazy(() => import("./pages/tripwire/TripwireLogin"));
+const TripwireLanding = lazy(() => import("./pages/tripwire/TripwireLanding"));
+const TripwirePayment = lazy(() => import("./pages/tripwire/TripwirePayment"));
 const TripwireLesson = lazy(() => import("./pages/tripwire/TripwireLesson"));
 const TripwireProfile = lazy(() => import("./pages/tripwire/TripwireProfile"));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
@@ -185,6 +187,10 @@ const AppRoutes = () => {
       {/* Tripwire (Trial Version - Now Requires Real Authentication) */}
       {/* Public: Login page */}
       <Route path="/tripwire/login" element={<TripwireLogin />} />
+      
+      {/* Public: Landing page (no auth required) - для сбора заявок */}
+      <Route path="/twland" element={<TripwireLanding />} />
+      <Route path="/twland/pay" element={<TripwirePayment />} />
       
       {/* Public: Password Reset (no auth required) */}
       <Route path="/tripwire/update-password" element={<TripwireUpdatePassword />} />

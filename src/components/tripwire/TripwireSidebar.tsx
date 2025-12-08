@@ -21,7 +21,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from "react";
+import { tripwireSupabase } from "@/lib/supabase-tripwire";
 
 interface MenuItem {
   title: string;
@@ -56,11 +57,22 @@ interface TripwireSidebarProps {
  * - Glassmorphism matching main platform
  */
 export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarProps) {
-  const { user, userRole } = useAuth();
+  const [tripwireUserRole, setTripwireUserRole] = useState<string>('student');
   
-  // 🔒 SECURITY: Role-based access
-  const isAdmin = userRole === 'admin';
-  const isSales = userRole === 'sales' || isAdmin;
+  // 🔥 Load Tripwire user role from tripwireSupabase
+  useEffect(() => {
+    tripwireSupabase.auth.getSession().then(({ data: { session } }: any) => {
+      if (session?.user) {
+        const role = session.user.user_metadata?.role || 'student';
+        setTripwireUserRole(role);
+        console.log('🔒 TripwireSidebar: User role:', role);
+      }
+    });
+  }, []);
+  
+  // 🔒 SECURITY: Role-based access  
+  const isAdmin = tripwireUserRole === 'admin';
+  const isSales = false; // Sales not available in Tripwire
   
   return (
     <div 

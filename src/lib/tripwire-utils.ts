@@ -37,12 +37,11 @@ export interface TripwireCertificate {
   user_id: string;
   certificate_number: string;
   full_name: string;
-  course_name: string;
-  certificate_url: string;
   issued_at: string;
-  downloaded_at: string | null;
-  download_count: number;
-  created_at: string;
+  pdf_url?: string;
+  metadata?: any;
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**

@@ -156,3 +156,4 @@ await tripwirePool.query(`
 - ✅ Навигация между модулями
 - ✅ localStorage кэш
 - ✅ Groq API (Whisper, Vision, Chat)
+

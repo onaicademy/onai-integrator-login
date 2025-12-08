@@ -98,6 +98,7 @@ import videoRouter from './routes/video'; // ✅ Video Quality & Transcription A
 import transcriptionsRouter from './routes/admin/transcriptions'; // ✅ Admin Transcriptions Management
 import aiLessonGeneratorRouter from './routes/ai-lesson-generator'; // ✅ AI Description & Tips Generator
 import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & Analytics
+import landingRouter from './routes/landing'; // ✅ Landing Page Leads (New DB + AmoCRM)
 import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
@@ -263,6 +264,7 @@ app.use('/api/ai-analytics', aiAnalyticsRouter); // 📊 AI Analytics Reports
 app.use('/api/telegram-connection', telegramConnectionRouter); // 📱 Telegram Connection Management
 app.use('/api/webhooks', webhooksRouter); // 🔗 BunnyCDN & External Webhooks (для video transcoding events)
 app.use('/api/admin', adminResetPasswordRouter); // 🔑 TEMPORARY: Admin Password Reset
+app.use('/api/landing', landingRouter); // 🎯 Landing Page Leads (New DB + AmoCRM)
 
 // 404 обработка
 app.use((req, res) => {

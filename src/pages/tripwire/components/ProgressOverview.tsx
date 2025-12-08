@@ -139,14 +139,14 @@ export default function ProgressOverview({ modulesCompleted, moduleProgress }: P
                           <div className="flex items-center gap-2">
                             <BarChart3 className="w-4 h-4 text-white/40" />
                             <div>
-                              <span className="text-[10px] text-white/40 font-['Space_Grotesk'] uppercase block">ПРОГРЕСС</span>
+                              <span className="text-[11px] font-mono font-semibold text-white/60 uppercase tracking-widest block">ПРОГРЕСС</span>
                               <span className="text-sm font-bold text-white">{Math.round(completionPercent)}%</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-white/40" />
                             <div>
-                              <span className="text-[10px] text-white/40 font-['Space_Grotesk'] uppercase block">ВРЕМЯ</span>
+                              <span className="text-[11px] font-mono font-semibold text-white/60 uppercase tracking-widest block">ВРЕМЯ</span>
                               <span className="text-sm font-bold text-white">{Math.floor(watchTime / 60)} мин</span>
                             </div>
                           </div>

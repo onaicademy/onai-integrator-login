@@ -77,3 +77,4 @@ echo "   1. Open: https://onai.academy/tripwire/lesson/67"
 echo "   2. Skip to 80%"
 echo "   3. Click 'ЗАВЕРШИТЬ УРОК'"
 echo "   4. Should work without 500 error"
+

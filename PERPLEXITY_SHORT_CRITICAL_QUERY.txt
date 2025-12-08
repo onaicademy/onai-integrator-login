@@ -7,3 +7,4 @@ Node.js/PostgreSQL/React приложение, 3 критические ошиб
 3. UX Bug: Кнопка "Завершить урок" появляется при 80% прогресса видео, но ПРОПАДАЕТ если откатить назад. Должна ОСТАВАТЬСЯ после первого достижения 80%. Где хранить флаг "qualified for completion" - DB, localStorage, или Context? Какой database schema для video progress tracking?
 
 Stack: Node.js 20, PostgreSQL 17.6 (Supabase), React 18, TypeScript, Express. Нужны Best Practices, SQL миграции, код примеры и ссылки на документацию.
+

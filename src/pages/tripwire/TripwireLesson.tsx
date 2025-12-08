@@ -49,19 +49,45 @@ const TripwireLesson = () => {
   const [moduleId, setModuleId] = useState<number | null>(null);
   
   // ✅ ИСПРАВЛЕНО: Получаем РЕАЛЬНЫЙ UUID от Tripwire Supabase
-  const [tripwireUserId, setTripwireUserId] = useState<string>('');
+  const [tripwireUserId, setTripwireUserId] = useState<string>(''); // tripwire_users.id
+  const [mainUserId, setMainUserId] = useState<string>(''); // users.id (for video_tracking)
 
   // ✅ Загружаем Tripwire user при монтировании
   useEffect(() => {
     const loadTripwireUser = async () => {
       console.log('🔄 TripwireLesson: Загружаем Tripwire user...');
-      const { data: { user: tripwireUser } } = await tripwireSupabase.auth.getUser();
-      if (tripwireUser?.id) {
-        console.log('✅ TripwireLesson: Loaded tripwire user:', tripwireUser.email, tripwireUser.id);
-        setTripwireUserId(tripwireUser.id); // ✅ Правильный UUID
+      const { data: { user: authUser } } = await tripwireSupabase.auth.getUser();
+      if (authUser?.email) {
+        // Get BOTH IDs + role from users table (via user_id)
+        const { data: tripwireUser, error } = await tripwireSupabase
+          .from('tripwire_users')
+          .select('id, user_id')
+          .eq('email', authUser.email)
+          .single();
+        
+        if (tripwireUser?.id && tripwireUser?.user_id) {
+          console.log('✅ TripwireLesson: Loaded IDs:', {
+            tripwire_users_id: tripwireUser.id,
+            users_id: tripwireUser.user_id
+          });
+          setTripwireUserId(tripwireUser.id); // For API completion
+          setMainUserId(tripwireUser.user_id); // For video_tracking
+          
+          // ✅ CHECK ROLE from users table
+          const { data: userData } = await tripwireSupabase
+            .from('users')
+            .select('role')
+            .eq('id', tripwireUser.user_id)
+            .single();
+          
+          const userRole = userData?.role;
+          console.log('🔒 TripwireLesson: User role:', userRole);
+          setIsAdmin(userRole === 'admin' || userRole === 'manager');
+        } else {
+          console.error('❌ TripwireLesson: No tripwire_users record found for:', authUser.email);
+        }
       } else {
-        console.error('❌ TripwireLesson: No tripwire user found');
-        console.log('🔍 TripwireLesson: Current auth state:', await tripwireSupabase.auth.getSession());
+        console.error('❌ TripwireLesson: No auth user found');
       }
     };
     loadTripwireUser();
@@ -91,8 +117,8 @@ const TripwireLesson = () => {
     handleSeeking: trackVideoSeeking,
     handleSeeked: trackVideoSeeked
   } = useHonestVideoTracking(
-    Number(lessonId), 
-    tripwireUserId, // Используем tripwire_user_id, НЕ user.id
+    Number(lessonId),
+    mainUserId, // ✅ CRITICAL FIX: video_tracking uses users.id, NOT tripwire_users.id!
     'video_tracking' // ✅ ИСПРАВЛЕНО: Используем video_tracking (не tripwire_progress)
   );
   
@@ -683,23 +709,25 @@ const TripwireLesson = () => {
             )}
           </div>
           
-          {/* ⚡ ADMIN EDIT BUTTON - Ghost style with neon text */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <button
-              onClick={() => setEditDialogOpen(true)}
-              className="group relative px-6 py-3 bg-transparent border border-[#00FF88]/20 hover:border-[#00FF88] text-[#00FF88] font-['Manrope'] font-semibold uppercase tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] overflow-hidden"
-              style={{ transform: 'skewX(-10deg)' }}
+          {/* ⚡ ADMIN EDIT BUTTON - Only visible for admin/manager */}
+          {isAdmin && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
             >
-              <span className="flex items-center gap-2" style={{ transform: 'skewX(10deg)' }}>
-                <Edit className="w-4 h-4" />
-                Редактировать урок
-              </span>
-            </button>
-          </motion.div>
+              <button
+                onClick={() => setEditDialogOpen(true)}
+                className="group relative px-6 py-3 bg-transparent border border-[#00FF88]/20 hover:border-[#00FF88] text-[#00FF88] font-['Manrope'] font-semibold uppercase tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] overflow-hidden"
+                style={{ transform: 'skewX(-10deg)' }}
+              >
+                <span className="flex items-center gap-2" style={{ transform: 'skewX(10deg)' }}>
+                  <Edit className="w-4 h-4" />
+                  Редактировать урок
+                </span>
+              </button>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Main Content */}

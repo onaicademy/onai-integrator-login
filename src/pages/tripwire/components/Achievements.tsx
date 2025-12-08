@@ -1,6 +1,8 @@
 import { Icon } from '@iconify/react';
 import { Lock } from 'lucide-react';
 import { TripwireAchievement } from '@/lib/tripwire-utils';
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 interface AchievementsProps {
   achievements: TripwireAchievement[];
@@ -8,7 +10,7 @@ interface AchievementsProps {
 
 const ACHIEVEMENT_CONFIG = [
   {
-    id: 'module_1_completed',
+    id: 'first_module_complete',  // ✅ CORRECT ID from DB!
     icon: 'solar:cup-star-bold-duotone',
     title: 'ПЕРВЫЙ ШАГ',
     description: 'Завершите первый модуль',
@@ -17,7 +19,7 @@ const ACHIEVEMENT_CONFIG = [
     gradient: 'from-green-500/30 via-emerald-500/20 to-transparent',
   },
   {
-    id: 'module_2_completed',
+    id: 'second_module_complete',  // ✅ CORRECT ID from DB!
     icon: 'fluent:rocket-24-filled',
     title: 'НА ПУТИ К МАСТЕРСТВУ',
     description: 'Завершите второй модуль',
@@ -26,7 +28,7 @@ const ACHIEVEMENT_CONFIG = [
     gradient: 'from-blue-500/30 via-cyan-500/20 to-transparent',
   },
   {
-    id: 'module_3_completed',
+    id: 'third_module_complete',  // ✅ CORRECT ID from DB!
     icon: 'solar:bolt-circle-bold-duotone',
     title: 'ПОЧТИ У ЦЕЛИ',
     description: 'Завершите третий модуль',
@@ -45,8 +47,35 @@ const ACHIEVEMENT_CONFIG = [
  */
 export default function Achievements({ achievements }: AchievementsProps) {
   // Вычисляем прогресс
-  const unlockedCount = achievements.filter(a => a.unlocked).length;
+  // ✅ FIX: Use is_completed instead of unlocked
+  const unlockedCount = achievements.filter(a => a.is_completed).length;
   const totalCount = ACHIEVEMENT_CONFIG.length; // Теперь 3
+
+  // 🎯 ОТСЛЕЖИВАЕМ НОВЫЕ ДОСТИЖЕНИЯ
+  const [newlyUnlockedIds, setNewlyUnlockedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const previousUnlockedIds = JSON.parse(localStorage.getItem('unlocked_achievements') || '[]');
+    const currentUnlockedIds = achievements
+      .filter(a => a.is_completed)
+      .map(a => a.achievement_id);
+
+    // Находим новые достижения (которых не было в previous)
+    const newIds = currentUnlockedIds.filter(id => !previousUnlockedIds.includes(id));
+
+    if (newIds.length > 0) {
+      console.log('🎉 [Achievements] Новые достижения:', newIds);
+      setNewlyUnlockedIds(newIds);
+
+      // Скрываем анимацию через 3 секунды
+      setTimeout(() => {
+        setNewlyUnlockedIds([]);
+      }, 3000);
+    }
+
+    // Сохраняем текущий список
+    localStorage.setItem('unlocked_achievements', JSON.stringify(currentUnlockedIds));
+  }, [achievements]);
 
   return (
     <div className="space-y-8">
@@ -77,11 +106,35 @@ export default function Achievements({ achievements }: AchievementsProps) {
       {/* Achievements Grid - 3 columns */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {ACHIEVEMENT_CONFIG.map((config) => {
-          const achievement = achievements.find(a => a.achievement_type === config.id);
-          const isUnlocked = achievement?.unlocked || false;
+          // ✅ FIX: Use achievement_id instead of achievement_type
+          const achievement = achievements.find(a => a.achievement_id === config.id);
+          // ✅ FIX: Use is_completed instead of unlocked
+          const isUnlocked = achievement?.is_completed || false;
+
+          const isNewlyUnlocked = newlyUnlockedIds.includes(config.id);
 
           return (
-            <div key={config.id} className="relative group h-full">
+            <motion.div 
+              key={config.id} 
+              className="relative group h-full"
+              initial={{ scale: 1 }}
+              animate={isNewlyUnlocked ? { 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              } : { scale: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* 🎉 АНИМАЦИЯ РАЗБЛОКИРОВКИ */}
+              {isNewlyUnlocked && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1.5, 1.5, 2] }}
+                  transition={{ duration: 2 }}
+                  className="absolute inset-0 rounded-full blur-3xl z-10 pointer-events-none"
+                  style={{ backgroundColor: config.color }}
+                />
+              )}
+
               {/* Outer glow - visible only when unlocked */}
               {isUnlocked && (
                 <div 
@@ -91,14 +144,15 @@ export default function Achievements({ achievements }: AchievementsProps) {
               )}
 
               {/* Card container - Lighter background for readability */}
-              <div className={`
-                relative rounded-3xl overflow-hidden transition-all duration-500 h-full
-                flex flex-col
-                ${isUnlocked 
-                  ? 'bg-[#1A1A1A]/80 border-2 border-white/10 hover:scale-105 hover:border-opacity-50' 
-                  : 'bg-[#111]/60 border border-white/5'
-                }
-              `}
+              <motion.div 
+                className={`
+                  relative rounded-3xl overflow-hidden transition-all duration-500 h-full
+                  flex flex-col
+                  ${isUnlocked 
+                    ? 'bg-[#1A1A1A]/80 border-2 border-white/10 hover:scale-105 hover:border-opacity-50' 
+                    : 'bg-[#111]/60 border border-white/5'
+                  }
+                `}
                    style={{
                      borderColor: isUnlocked ? config.color : undefined,
                      boxShadow: isUnlocked ? `0 0 30px ${config.shadowColor}` : 'none'
@@ -156,8 +210,8 @@ export default function Achievements({ achievements }: AchievementsProps) {
                      </div>
                   )}
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )
         })}
       </div>

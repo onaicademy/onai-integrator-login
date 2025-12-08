@@ -87,6 +87,8 @@ export default function TripwireProductPage() {
   const [currentUnlock, setCurrentUnlock] = useState<any | null>(null);
   const [showUnlockAnimation, setShowUnlockAnimation] = useState(false);
   const [userUnlockedModuleIds, setUserUnlockedModuleIds] = useState<number[]>([]);
+  const [completedLessons, setCompletedLessons] = useState<number[]>([]);
+  const [modulesWithDuration, setModulesWithDuration] = useState(tripwireModules);
 
   // 🔥 Load Tripwire user from tripwireSupabase
   useEffect(() => {
@@ -99,7 +101,7 @@ export default function TripwireProductPage() {
     });
   }, []);
 
-  // Load newly unlocked modules on mount
+  // Load newly unlocked modules and progress on mount
   useEffect(() => {
     if (!tripwireUser?.id) return;
 
@@ -151,6 +153,19 @@ export default function TripwireProductPage() {
           setCurrentUnlock(recentUnlocks[0]);
           setShowUnlockAnimation(true);
         }
+        
+        // 🔥 Загружаем завершенные уроки из tripwire_progress
+        const { data: progressData, error: progressError } = await tripwireSupabase
+          .from('tripwire_progress')
+          .select('lesson_id, is_completed')
+          .eq('tripwire_user_id', tripwireUser.id)
+          .eq('is_completed', true);
+        
+        if (!progressError && progressData) {
+          const completedLessonIds = progressData.map((p: any) => p.lesson_id);
+          setCompletedLessons(completedLessonIds);
+          console.log('✅ Loaded completed lessons:', completedLessonIds);
+        }
       } catch (error) {
         console.error('❌ Failed to load unlocks:', error);
       }
@@ -158,6 +173,53 @@ export default function TripwireProductPage() {
 
     loadUnlocks();
   }, [tripwireUser?.id]);
+
+  // 🔥 Load lesson durations from Bunny Stream video metadata
+  useEffect(() => {
+    const loadDurations = async () => {
+      try {
+        // Load all 3 lessons and extract duration from video metadata
+        const lessonIds = [67, 68, 69];
+        const lessons = await Promise.all(
+          lessonIds.map(async (id) => {
+            try {
+              const response = await api.get(`/api/tripwire/lessons/${id}`);
+              return {
+                id,
+                duration_minutes: response.lesson?.duration_minutes || 0
+              };
+            } catch (err) {
+              console.warn(`Failed to load lesson ${id}:`, err);
+              return { id, duration_minutes: 0 };
+            }
+          })
+        );
+        
+        const updatedModules = tripwireModules.map(module => {
+          const lesson = lessons.find(l => l.id === module.lessonId);
+          if (lesson && lesson.duration_minutes) {
+            const hours = Math.floor(lesson.duration_minutes / 60);
+            const minutes = lesson.duration_minutes % 60;
+            let durationStr = '';
+            if (hours > 0) {
+              durationStr = hours + ' ч' + (minutes > 0 ? ' ' + minutes + ' мин' : '');
+            } else {
+              durationStr = minutes + ' мин';
+            }
+            return { ...module, duration: durationStr };
+          }
+          return module;
+        });
+        setModulesWithDuration(updatedModules);
+        console.log('✅ Loaded lesson durations:', lessons);
+      } catch (error) {
+        console.error('❌ Failed to load durations:', error);
+      }
+    };
+    
+    loadDurations();
+  }, []);
+
 
   // Handle unlock animation completion
   const handleUnlockComplete = async () => {
@@ -203,7 +265,7 @@ export default function TripwireProductPage() {
   };
 
   // ✅ DYNAMICALLY unlock modules based on userUnlockedModuleIds
-  const modulesWithDynamicStatus = tripwireModules.map(module => {
+  const modulesWithDynamicStatus = modulesWithDuration.map(module => {
     // 🔥 Module 16 (вводный) ВСЕГДА открыт для ВСЕХ (даже если нет в userUnlockedModuleIds)
     if (module.id === 16) {
       return { ...module, status: 'active' };
@@ -211,18 +273,37 @@ export default function TripwireProductPage() {
     
     // 🔥 Admin видит все модули
     if (isAdmin) {
+      console.log(`🔥 Admin mode: unlocking module ${module.id}`);
       return { ...module, status: 'active' };
     }
     
     // 🔥 Остальные модули открываются через userUnlockedModuleIds
+    const isUnlocked = userUnlockedModuleIds.includes(module.id);
+    console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
     return {
       ...module,
-      status: userUnlockedModuleIds.includes(module.id) ? 'active' : 'locked'
+      status: isUnlocked ? 'active' : 'locked'
     };
   });
 
   const activeModules = modulesWithDynamicStatus.filter(m => m.status === 'active');
   const lockedModules = modulesWithDynamicStatus.filter(m => m.status === 'locked');
+  
+  // 🔥 Подсчитываем завершенные модули
+  // Модуль считается завершенным, если его урок завершен в tripwire_progress
+  // Модуль 16 (урок 67) завершен → completedLessons includes 67
+  // Модуль 17 (урок 68) завершен → completedLessons includes 68
+  // Модуль 18 (урок 69) завершен → completedLessons includes 69
+  let completedModulesCount = 0;
+  if (isAdmin) {
+    completedModulesCount = 3; // Admin видит всё открытым
+  } else {
+    if (completedLessons.includes(67)) completedModulesCount++; // Модуль 16 завершен
+    if (completedLessons.includes(68)) completedModulesCount++; // Модуль 17 завершен
+    if (completedLessons.includes(69)) completedModulesCount++; // Модуль 18 завершен
+  }
+  
+  console.log('🎯 Completed modules count:', completedModulesCount, 'completedLessons:', completedLessons);
   
   // Первый активный модуль показываем большой картой
   const featuredModule = activeModules[0];
@@ -231,7 +312,7 @@ export default function TripwireProductPage() {
 
   // Get current unlock module data
   const currentUnlockModule = currentUnlock 
-    ? tripwireModules.find(m => m.id === currentUnlock.module_id)
+    ? modulesWithDuration.find(m => m.id === currentUnlock.module_id)
     : null;
 
   return (
@@ -791,7 +872,7 @@ export default function TripwireProductPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
             >
-              <LiveStreamModule modulesCompleted={isAdmin ? 3 : 0} />
+              <LiveStreamModule modulesCompleted={completedModulesCount} />
             </motion.div>
           </div>
         </div>
@@ -860,7 +941,10 @@ export default function TripwireProductPage() {
             setShowUnlockAnimation(false);
             handleUnlockComplete();
             // Navigate to module (moduleId is currentUnlock.module_id)
-            navigate(`/tripwire/lesson/${currentUnlock.module_id}`);
+            // Map module_id to lesson_id
+            const lessonMap = { 16: 67, 17: 68, 18: 69 };
+            const lessonId = lessonMap[currentUnlock.module_id as keyof typeof lessonMap] || currentUnlock.module_id;
+            navigate(`/tripwire/lesson/${lessonId}`);
           }}
         />
       )}

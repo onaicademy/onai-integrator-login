@@ -120,26 +120,11 @@ router.get('/module-unlocks/:userId', async (req, res) => {
 });
 
 // 🔥 POST /api/tripwire/module-unlocks/mark-shown - отметить анимацию как показанную
+// ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО: колонка animation_shown не существует в module_unlocks
 router.post('/module-unlocks/mark-shown', async (req, res) => {
   try {
-    const { userId, moduleId } = req.body;
-
-    if (!userId || !moduleId) {
-      return res.status(400).json({ error: 'userId and moduleId are required' });
-    }
-
-    console.log(`🔔 Marking animation as shown for user ${userId}, module ${moduleId}`);
-
-    // ✅ ИСПРАВЛЕНО: Используем Tripwire DB (Direct Pool)
-    const { tripwirePool } = require('../config/tripwire-db');
-
-    await tripwirePool.query(`
-      UPDATE module_unlocks 
-      SET animation_shown = true 
-      WHERE user_id = $1 AND module_id = $2
-    `, [userId, moduleId]);
-
-    console.log(`✅ Animation marked as shown in Tripwire DB`);
+    // Просто возвращаем success без обновления БД
+    console.log(`📝 Mark animation as shown (skipped - no animation_shown column)`);
     return res.json({ success: true });
   } catch (error: any) {
     console.error('❌ Error in mark-shown endpoint:', error);

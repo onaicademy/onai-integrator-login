@@ -320,3 +320,4 @@ CREATE TABLE user_achievements (
 **Приоритет:** P0 - CRITICAL  
 **Дедлайн:** ASAP (Production Broken)  
 **Вопрос задан:** 2025-12-07
+

@@ -191,6 +191,17 @@ router.post('/complete', async (req, res) => {
     await client.query('BEGIN');
     transactionStarted = true;
 
+    // 🔥 CRITICAL: Get users.id for module_unlocks and achievements
+    const userIdResult = await client.query(`
+      SELECT user_id FROM tripwire_users WHERE id = $1::uuid
+    `, [tripwire_user_id]);
+    
+    const main_user_id = userIdResult.rows[0]?.user_id;
+    if (!main_user_id) {
+      throw new Error(`Cannot find users.id for tripwire_user_id: ${tripwire_user_id}`);
+    }
+    console.log(`✅ Resolved IDs: tripwire_user_id=${tripwire_user_id}, main_user_id=${main_user_id}`);
+
     try {
       // ✅ STEP 1: SECURITY - Check if user actually watched 80% of video
       // ❗ SKIP FOR NOW - tripwire_progress doesn't have reliable percentage tracking
@@ -199,38 +210,23 @@ router.post('/complete', async (req, res) => {
       const watchedPercentage = 100; // Trust frontend validation for now
       console.log(`✅ [STEP 1 SUCCESS] Security check skipped (trusting frontend): ${watchedPercentage}% assumed`);
 
-      // ✅ STEP 1: Check if already completed (idempotency)
-      const existingProgress = await client.query(`
-        SELECT status FROM student_progress
-        WHERE user_id = $1::uuid AND lesson_id = $2::integer
-      `, [tripwire_user_id, lesson_id]);
-
-      if (existingProgress.rows[0]?.status === 'completed') {
-        await client.query('COMMIT');
-        console.log(`ℹ️ [Complete] Already completed, returning cached result`);
-        return res.json({
-          success: true,
-          message: 'Already completed',
-          progress: existingProgress.rows[0],
-          moduleCompleted: false
-        });
-      }
-
       // ✅ STEP 2: Mark lesson as completed
+      // ❗ IDEMPOTENCY: ON CONFLICT ensures no duplicates, but we ALWAYS check module completion
+      // ❗ CRITICAL: tripwire_progress.tripwire_user_id → FOREIGN KEY → users.id (NOT tripwire_users.id!)
       console.log(`[STEP 2] Marking lesson as completed...`);
       const progressResult = await client.query(`
-        INSERT INTO student_progress (
-          user_id, module_id, lesson_id, status, completed_at, updated_at
+        INSERT INTO tripwire_progress (
+          tripwire_user_id, module_id, lesson_id, is_completed, completed_at, updated_at
         )
-        VALUES ($1::uuid, $2::integer, $3::integer, 'completed', NOW(), NOW())
-        ON CONFLICT (user_id, lesson_id)
+        VALUES ($1::uuid, $2::integer, $3::integer, TRUE, NOW(), NOW())
+        ON CONFLICT (tripwire_user_id, lesson_id)
         DO UPDATE SET
-          status = 'completed',
+          is_completed = TRUE,
           module_id = EXCLUDED.module_id,
           completed_at = NOW(),
           updated_at = NOW()
         RETURNING *
-      `, [tripwire_user_id, module_id, lesson_id]);
+      `, [main_user_id, module_id, lesson_id]);
 
       const progress = progressResult.rows[0];
       console.log(`✅ [STEP 2 SUCCESS] Lesson marked as completed, progress ID:`, progress?.id);
@@ -251,11 +247,11 @@ router.post('/complete', async (req, res) => {
       // ✅ STEP 4: Get completed lessons for this user in current module
       console.log(`[STEP 4] Fetching user's completed lessons...`);
       const completedLessonsResult = await client.query(`
-        SELECT DISTINCT lesson_id FROM student_progress
-        WHERE user_id = $1::uuid
+        SELECT DISTINCT lesson_id FROM tripwire_progress
+        WHERE tripwire_user_id = $1::uuid
         AND module_id = $2::integer
-        AND status = 'completed'
-      `, [tripwire_user_id, module_id]);
+        AND is_completed = TRUE
+      `, [main_user_id, module_id]);
 
       const completedLessonIds = completedLessonsResult.rows.map(row => row.lesson_id);
       console.log(`[STEP 4 RESULT] User completed ${completedLessonIds.length}/${allLessonIds.length} lessons in module ${module_id}`);
@@ -277,19 +273,19 @@ router.post('/complete', async (req, res) => {
 
         if (nextModuleId <= maxModuleId) {
           // Create module_unlock record for animation
-          // ❗ NO tripwire_modules table - just track unlocks
+          // ❗ Use main_user_id (users.id), NOT tripwire_user_id
           await client.query(`
             INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
             VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
             ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
-          `, [tripwire_user_id, nextModuleId]);
+          `, [main_user_id, nextModuleId]);
 
           unlockedModuleId = nextModuleId;
-          console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked (via module_unlocks table)`);
+          console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
         }
 
         // ✅ STEP 6b: Create achievement
-        // ❗ Schema uses 'achievement_id', not 'achievement_type'
+        // ❗ Use main_user_id (users.id), NOT tripwire_user_id
         const achievementId = module_id === 16 ? 'first_module_complete' 
                             : module_id === 17 ? 'second_module_complete'
                             : 'third_module_complete';
@@ -300,7 +296,7 @@ router.post('/complete', async (req, res) => {
           ON CONFLICT (user_id, achievement_id) 
           DO UPDATE SET is_completed = true, completed_at = NOW(), current_value = 1
           RETURNING *
-        `, [tripwire_user_id, achievementId]);
+        `, [main_user_id, achievementId]);
 
         if (achievementResult.rows.length > 0) {
           achievement = achievementResult.rows[0];
@@ -535,21 +531,21 @@ router.post('/unlock-achievement', async (req, res) => {
         console.log(`🔓 [DIRECT DB] Unlocking next module: ${nextModuleId}`);
         
         await client.query(`
-          INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at, animation_shown)
-          VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW(), false)
-          ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW(), animation_shown = false
+          INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
+          VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
+          ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
         `, [userId, nextModuleId]);
 
-        // Создаем student_progress для следующего урока (если еще не создан)
+        // Создаем tripwire_progress для следующего урока (если еще не создан)
         const nextLessonId = nextModuleId === 17 ? 68 : 69;
         await client.query(`
-          INSERT INTO public.student_progress (
-            id, user_id, module_id, lesson_id, status, created_at
+          INSERT INTO public.tripwire_progress (
+            id, tripwire_user_id, module_id, lesson_id, is_completed, created_at
           )
-          SELECT gen_random_uuid(), $1, $2, $3, 'not_started', NOW()
+          SELECT gen_random_uuid(), $1, $2, $3, FALSE, NOW()
           WHERE NOT EXISTS (
-            SELECT 1 FROM public.student_progress 
-            WHERE user_id = $1 AND lesson_id = $3
+            SELECT 1 FROM public.tripwire_progress 
+            WHERE tripwire_user_id = $1 AND lesson_id = $3
           )
         `, [userId, nextModuleId, nextLessonId]);
       }

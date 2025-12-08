@@ -32,6 +32,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const lastRefreshTime = useRef<number>(0);
   const MIN_REFRESH_INTERVAL = 10000; // 10 секунд между обновлениями
 
+  // 🔇 Отключаем логи на публичных страницах (лендинг, логин, сертификаты)
+  const isPublicPage = typeof window !== 'undefined' && (
+    window.location.pathname === '/twland' ||
+    window.location.pathname === '/tripwire/login' ||
+    window.location.pathname.startsWith('/tripwire/certificate/')
+  );
+  
+  // Утилита для логирования (только если не публичная страница)
+  const log = (...args: any[]) => {
+    if (!isPublicPage) {
+      console.log(...args);
+    }
+  };
+
   // 📋 Загрузить данные профиля из profiles (С КЭШЕМ И TTL!)
   const loadUserProfile = async (userId: string, forceRefresh = false): Promise<ExtendedUser | null> => {
     try {

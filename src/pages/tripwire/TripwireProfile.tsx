@@ -54,9 +54,27 @@ export default function TripwireProfile() {
         return;
       }
 
-      if (currentUser) {
-        console.log('✅ TripwireProfile: Пользователь найден:', currentUser.email);
-        setUser(currentUser);
+      if (currentUser && currentUser.email) {
+        console.log('✅ TripwireProfile: Auth user найден:', currentUser.email);
+        
+        // ✅ CRITICAL FIX: Get users.id from tripwire_users table!
+        const { data: tripwireUser } = await tripwireSupabase
+          .from('tripwire_users')
+          .select('id, user_id, email')
+          .eq('email', currentUser.email)
+          .single();
+        
+        if (tripwireUser?.user_id) {
+          console.log('✅ TripwireProfile: Loaded users.id:', tripwireUser.user_id);
+          // Override with the CORRECT users.id from main DB!
+          setUser({
+            ...currentUser,
+            id: tripwireUser.user_id
+          });
+        } else {
+          console.error('❌ TripwireProfile: tripwire_users record not found');
+          setIsLoading(false);
+        }
       } else {
         console.error('❌ TripwireProfile: Пользователь НЕ найден');
         setIsLoading(false);
@@ -73,9 +91,36 @@ export default function TripwireProfile() {
     }
   }, [user]);
 
+  // 🎯 АВТОПРОВЕРКА ДОСТИЖЕНИЙ И СЕРТИФИКАТА
+  useEffect(() => {
+    // Проверяем при возврате на вкладку
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('👀 [Profile] Вкладка стала видимой, проверяем достижения...');
+        checkPendingAchievement();
+        if (user) {
+          loadProfileData(); // Обновляем данные профиля
+        }
+      }
+    };
+
+    // Интервальная проверка каждые 3 секунды
+    const interval = setInterval(() => {
+      checkPendingAchievement();
+    }, 3000);
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
+
   const checkPendingAchievement = () => {
     const pending = getPendingAchievement();
     if (pending) {
+      console.log('🎉 [Profile] Найдено новое достижение:', pending);
       setNewAchievement(pending);
       setShowFireworks(true);
       setShowAchievementModal(true);
@@ -105,6 +150,15 @@ export default function TripwireProfile() {
         .eq('user_id', user.id)
         .single();
 
+      // 1.5. Получаем full_name из tripwire_users
+      const { data: tripwireUserData } = await tripwireSupabase
+        .from('tripwire_users')
+        .select('full_name, email')
+        .eq('user_id', user.id)
+        .single();
+
+      console.log('🔍 DEBUG: tripwireUserData:', tripwireUserData);
+
       if (profileError && profileError.code === 'PGRST116') {
         // Профиль не существует - показываем дефолтный
         console.warn('⚠️ Profile not found, showing default profile');
@@ -115,11 +169,17 @@ export default function TripwireProfile() {
           completion_percentage: 0,
           certificate_issued: false,
           certificate_url: null,
+          full_name: tripwireUserData?.full_name || 'Имя Фамилия',
+          email: tripwireUserData?.email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         } as any);
       } else if (existingProfile) {
-        setProfile(existingProfile as any);
+        setProfile({
+          ...existingProfile,
+          full_name: tripwireUserData?.full_name || 'Имя Фамилия',
+          email: tripwireUserData?.email,
+        } as any);
       }
 
       // 2. Загружаем достижения (используем tripwireSupabase!)
@@ -133,20 +193,50 @@ export default function TripwireProfile() {
         setAchievements(achievementsData as any);
       }
 
-      // 3. Сертификаты - таблица не существует, пропускаем
-      // const { data: certificateData } = await tripwireSupabase
-      //   .from('tripwire_certificates')
-      //   .select('*')
-      //   .eq('user_id', user.id)
-      //   .single();
+      // 3. Сертификаты
+      const { data: certificateData } = await tripwireSupabase
+        .from('tripwire_certificates')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-      // if (certificateData) {
-      //   setCertificate(certificateData);
-      // }
+      if (certificateData) {
+        setCertificate(certificateData as any);
+      }
 
       // 4. Загружаем прогресс по модулям
-      // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО: таблица tripwire_progress не существует
-      // await loadModuleProgress();
+      await loadModuleProgress();
+
+      // 5. ✅ ПЕРЕСЧИТЫВАЕМ modules_completed из реального прогресса!
+      // Считаем сколько модулей завершено по tripwire_progress
+      const { data: completedModulesData } = await tripwireSupabase
+        .from('tripwire_progress')
+        .select('module_id, is_completed')
+        .eq('tripwire_user_id', user.id)
+        .eq('is_completed', true);
+
+      // Группируем по module_id чтобы посчитать уникальные завершенные модули
+      const completedModuleIds = new Set(completedModulesData?.map(p => p.module_id) || []);
+      const modulesCompleted = completedModuleIds.size;
+      const completionPercentage = Math.round((modulesCompleted / 3) * 100);
+
+      console.log(`✅ Calculated: ${modulesCompleted}/3 modules completed (${completionPercentage}%)`);
+
+      // ✅ CRITICAL FIX: Use existingProfile OR create new profile with calculated values
+      const updatedProfile = existingProfile || {
+        user_id: user.id,
+        total_modules: 3,
+        certificate_issued: false,
+        certificate_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      setProfile({
+        ...updatedProfile,
+        modules_completed: modulesCompleted,
+        completion_percentage: completionPercentage,
+      } as any);
 
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -168,25 +258,24 @@ export default function TripwireProfile() {
       const tripwireUserId = user.id;
 
       // Загружаем прогресс по урокам (используем tripwireSupabase!)
-      const { data: progressData } = await tripwireSupabase
+      const { data: progressData, error: progressError } = await tripwireSupabase
         .from('tripwire_progress')
-        .select(`
-          *,
-          lesson:lessons!inner(
-            id,
-            title,
-            module_id,
-            order_index
-          )
-        `)
+        .select('*')
         .eq('tripwire_user_id', tripwireUserId);
 
-      if (progressData) {
-        // Группируем по модулям
+      if (progressError) {
+        console.error('❌ Error loading tripwire_progress:', progressError);
+        return;
+      }
+
+      console.log(`✅ Loaded ${progressData?.length || 0} progress records`);
+
+      if (progressData && progressData.length > 0) {
+        // Группируем по модулям (используем module_id напрямую из progress)
         const moduleMap = new Map();
 
         progressData.forEach((item: any) => {
-          const moduleId = item.lesson.module_id;
+          const moduleId = item.module_id;
           if (!moduleMap.has(moduleId)) {
             moduleMap.set(moduleId, {
               module_number: moduleId,
@@ -209,8 +298,8 @@ export default function TripwireProfile() {
           }
 
           module.lessons.push({
-            id: item.lesson.id,
-            title: item.lesson.title,
+            id: item.lesson_id,
+            title: `Lesson ${item.lesson_id}`,
             is_completed: item.is_completed,
             video_progress_percent: item.video_progress_percent,
             watch_time_seconds: item.watch_time_seconds,
@@ -251,7 +340,7 @@ export default function TripwireProfile() {
         throw new Error(result.error || 'Failed to generate certificate');
       }
 
-      if (result.data?.certificate_url) {
+      if (result.data?.pdf_url || result.data?.certificate_url) {
         toast({
           title: "Сертификат готов!",
           description: "Сертификат успешно сгенерирован",
@@ -372,11 +461,6 @@ export default function TripwireProfile() {
 
         {/* Achievements */}
         <Achievements achievements={achievements} />
-
-        {/* Детальная аналитика */}
-        {detailedProgress.length > 0 && (
-          <ModuleProgress modules={detailedProgress} />
-        )}
 
         {/* Сертификат */}
         <CertificateSection

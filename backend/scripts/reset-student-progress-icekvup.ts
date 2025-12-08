@@ -17,17 +17,17 @@ async function resetProgress() {
     const userId = userResult.rows[0].id;
     console.log(`✅ Found user: ${userResult.rows[0].email} (UUID: ${userId})`);
 
-    // 2. Удаляем весь прогресс из student_progress
-    await tripwirePool.query(`DELETE FROM student_progress WHERE user_id = $1`, [userId]);
-    console.log('✅ Deleted student_progress records');
-
-    // 3. Удаляем прогресс видео из tripwire_progress
+    // 2. Удаляем прогресс видео из tripwire_progress
     await tripwirePool.query(`DELETE FROM tripwire_progress WHERE tripwire_user_id = $1`, [userId]);
     console.log('✅ Deleted tripwire_progress records');
 
-    // 4. Удаляем достижения из user_achievements
+    // 3. Удаляем достижения из user_achievements
     await tripwirePool.query(`DELETE FROM user_achievements WHERE user_id = $1`, [userId]);
     console.log('✅ Deleted user_achievements');
+
+    // 4. Удаляем достижения из tripwire_achievements
+    await tripwirePool.query(`DELETE FROM tripwire_achievements WHERE user_id = $1`, [userId]);
+    console.log('✅ Deleted tripwire_achievements');
 
     // 5. Удаляем разблокировки модулей из module_unlocks
     await tripwirePool.query(`DELETE FROM module_unlocks WHERE user_id = $1`, [userId]);
@@ -42,11 +42,11 @@ async function resetProgress() {
 
     // 7. Создаем начальный прогресс для Module 16, Lesson 67
     await tripwirePool.query(`
-      INSERT INTO student_progress (
-        user_id, module_id, lesson_id, status, created_at, updated_at
+      INSERT INTO tripwire_progress (
+        tripwire_user_id, module_id, lesson_id, is_completed, created_at, updated_at
       )
-      VALUES ($1, 16, 67, 'not_started', NOW(), NOW())
-      ON CONFLICT (user_id, module_id, lesson_id) DO NOTHING
+      VALUES ($1, 16, 67, FALSE, NOW(), NOW())
+      ON CONFLICT (tripwire_user_id, lesson_id) DO NOTHING
     `, [userId]);
     console.log('✅ Created initial progress for Module 16');
 

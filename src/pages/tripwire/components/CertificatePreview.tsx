@@ -36,7 +36,9 @@ export function CertificatePreview({
   return (
     <div className="relative w-full">
       {/* A4 Landscape Container */}
-      <div className="relative w-full aspect-[1.414/1] bg-gradient-to-br from-[#030303] via-[#0A0A0A] to-[#050505] rounded-xl overflow-hidden shadow-2xl">
+      <div className="relative w-full aspect-[1.414/1] rounded-xl overflow-hidden shadow-2xl" style={{
+        background: 'radial-gradient(ellipse at center, #1A1A1A 0%, #0F0F0F 50%, #000000 100%)'
+      }}>
         <svg 
           width="100%" 
           height="100%" 
@@ -47,11 +49,11 @@ export function CertificatePreview({
         >
           <defs>
             {/* Градиенты */}
-            <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style={{ stopColor: '#030303', stopOpacity: 1 }} />
-              <stop offset="50%" style={{ stopColor: '#0A0A0A', stopOpacity: 1 }} />
-              <stop offset="100%" style={{ stopColor: '#050505', stopOpacity: 1 }} />
-            </linearGradient>
+            <radialGradient id="bgGradient" cx="50%" cy="50%">
+              <stop offset="0%" style={{ stopColor: '#1A1A1A', stopOpacity: 1 }} />
+              <stop offset="50%" style={{ stopColor: '#0F0F0F', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: '#000000', stopOpacity: 1 }} />
+            </radialGradient>
             
             <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style={{ stopColor: '#00FF94', stopOpacity: 0.6 }} />
