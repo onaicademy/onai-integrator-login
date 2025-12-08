@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
+import { apiClient } from '@/utils/apiClient'; // ✅ API Client
 import { Loader2 } from 'lucide-react';
 import { 
   TripwireUserProfile, 
@@ -322,21 +323,13 @@ export default function TripwireProfile() {
     try {
       setIsLoading(true);
       
-      // ✅ PHASE 3: Use new Tripwire Certificate API
-      const response = await fetch('/api/tripwire/certificates/issue', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          full_name: profile.full_name
-        })
+      // ✅ PHASE 3: Use new Tripwire Certificate API via apiClient
+      const result = await apiClient.post('/api/tripwire/certificates/issue', {
+        user_id: user.id,
+        full_name: profile.full_name
       });
 
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.error || 'Failed to generate certificate');
       }
 
