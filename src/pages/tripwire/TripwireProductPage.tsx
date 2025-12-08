@@ -64,18 +64,6 @@ const tripwireModules = [
     gradient: "from-blue-500/20 via-transparent to-transparent",
     lessonId: 69,
   },
-  {
-    id: 999, // ❌ ЗАБЛОКИРОВАН - Только в основном курсе
-    title: "И еще 50+ модулей",
-    subtitle: "Доступно на основном курсе",
-    description: "Полная программа включает глубокое изучение AI-инструментов, автоматизацию бизнеса и масштабирование до $10k/мес.",
-    duration: "200+ часов",
-    lessons: 50,
-    icon: Sparkles,
-    status: "main_course_only",
-    gradient: "from-amber-500/20 via-transparent to-transparent",
-    lessonId: null,
-  },
 ];
 
 /**
@@ -419,14 +407,26 @@ export default function TripwireProductPage() {
             Кибернетическая платформа для освоения AI-интеграции. Начните свой путь от нуля до первых $1000.
           </p>
 
-          {/* 🟢 AI CURATOR BUTTON - PREMIUM DESIGN */}
+          {/* 🟢 AI CURATOR BUTTON - LOCKED FOR STUDENTS */}
           <motion.button
-            whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(0,255,136,0.4)' }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsAIChatOpen(true)}
-            className="group relative px-10 py-5 overflow-hidden rounded-2xl flex items-center gap-5 border-2 border-[#00FF88]/40 hover:border-[#00FF88] transition-all duration-300"
+            whileHover={{ scale: isAdmin ? 1.05 : 1.02, boxShadow: isAdmin ? '0 0 40px rgba(0,255,136,0.4)' : 'none' }}
+            whileTap={{ scale: isAdmin ? 0.98 : 1 }}
+            onClick={() => {
+              if (isAdmin) {
+                setIsAIChatOpen(true);
+              } else {
+                alert('🔒 AI Куратор доступен только на полной версии продукта');
+              }
+            }}
+            className={`group relative px-10 py-5 overflow-hidden rounded-2xl flex items-center gap-5 border-2 transition-all duration-300 ${
+              isAdmin 
+                ? 'border-[#00FF88]/40 hover:border-[#00FF88] cursor-pointer' 
+                : 'border-white/10 cursor-not-allowed opacity-50'
+            }`}
             style={{
-              background: `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`,
+              background: isAdmin 
+                ? `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`
+                : `linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)`,
               backdropFilter: 'blur(20px)',
             }}
           >
@@ -452,11 +452,13 @@ export default function TripwireProductPage() {
 
             {/* Text */}
             <div className="relative z-10 text-left">
-              <p className="text-white font-bold font-mono text-lg leading-none mb-2 group-hover:text-[#00FF88] transition-colors">
+              <p className={`font-bold font-mono text-lg leading-none mb-2 transition-colors ${
+                isAdmin ? 'text-white group-hover:text-[#00FF88]' : 'text-white/60'
+              }`}>
                 AI Куратор
               </p>
               <p className="text-[10px] text-white/60 font-mono tracking-wide leading-none">
-                Твой личный помощник 24/7
+                {isAdmin ? 'Твой личный помощник 24/7' : '🔒 Доступно на полной версии'}
               </p>
             </div>
 
@@ -541,21 +543,21 @@ export default function TripwireProductPage() {
 
                     {/* Icon */}
                     <div 
-                      className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500"
+                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500"
                       style={{
                         background: `${BRAND.colors.neon_green}15`,
                         border: `2px solid ${BRAND.colors.neon_green}40`,
                       }}
                     >
                       <featuredModule.icon 
-                        className="w-10 h-10" 
+                        className="w-7 h-7" 
                         style={{ color: BRAND.colors.neon_green }}
                       />
                     </div>
 
                     {/* Title */}
                     <h2 
-                      className="text-4xl lg:text-5xl font-bold uppercase mb-3 leading-tight"
+                      className="text-2xl lg:text-3xl font-bold uppercase mb-2 leading-tight"
                       style={{ 
                         fontFamily: BRAND.fonts.main,
                         color: '#FFFFFF'
@@ -565,7 +567,7 @@ export default function TripwireProductPage() {
                     </h2>
                     
                     <p 
-                      className="text-sm uppercase mb-4 tracking-widest"
+                      className="text-xs uppercase mb-3 tracking-widest"
                       style={{ 
                         fontFamily: BRAND.fonts.mono,
                         color: BRAND.colors.neon_green 
@@ -575,7 +577,7 @@ export default function TripwireProductPage() {
                     </p>
 
                     <p 
-                      className="text-lg leading-relaxed max-w-lg"
+                      className="text-sm leading-relaxed max-w-lg"
                       style={{ color: BRAND.colors.text_dim }}
                     >
                       {featuredModule.description}
@@ -610,14 +612,14 @@ export default function TripwireProductPage() {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="relative px-8 py-4 font-bold uppercase tracking-wider overflow-hidden"
+                      className="relative px-6 py-3 font-bold uppercase tracking-wider overflow-hidden"
                       style={{
                         background: BRAND.colors.neon_green,
                         color: '#000000',
                         transform: 'skewX(-10deg)',
                         borderRadius: '8px',
                         fontFamily: BRAND.fonts.main,
-                        fontSize: '14px',
+                        fontSize: '12px',
                       }}
                     >
                       <span style={{ display: 'block', transform: 'skewX(10deg)' }}>
@@ -655,7 +657,7 @@ export default function TripwireProductPage() {
                 onClick={() => handleModuleClick(module)}
                 onMouseEnter={() => setHoveredModule(module.id)}
                 onMouseLeave={() => setHoveredModule(null)}
-                className="relative rounded-[20px] p-6 lg:p-8 cursor-pointer group overflow-hidden"
+                className="relative rounded-[16px] p-4 lg:p-6 cursor-pointer group overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
                   border: `2px solid ${hoveredModule === module.id ? BRAND.colors.neon_green : 'rgba(0, 255, 148, 0.2)'}`,
@@ -671,17 +673,17 @@ export default function TripwireProductPage() {
                   className={`absolute inset-0 bg-gradient-to-br ${module.gradient} opacity-30`}
                 />
 
-                <div className="relative z-10 flex items-start gap-4">
+                <div className="relative z-10 flex items-start gap-3">
                   {/* Icon */}
                   <div 
-                    className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
+                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
                     style={{
                       background: `${BRAND.colors.neon_green}20`,
                       border: `1px solid ${BRAND.colors.neon_green}30`
                     }}
                   >
                     <module.icon 
-                      className="w-8 h-8"
+                      className="w-6 h-6"
                       style={{ color: BRAND.colors.neon_green }}
                     />
                   </div>
@@ -689,7 +691,7 @@ export default function TripwireProductPage() {
                   {/* Text */}
                   <div className="flex-1">
                     <h3 
-                      className="text-xl lg:text-2xl font-bold mb-2 uppercase"
+                      className="text-lg lg:text-xl font-bold mb-1 uppercase"
                       style={{ 
                         color: '#FFFFFF',
                         fontFamily: BRAND.fonts.main
@@ -698,7 +700,7 @@ export default function TripwireProductPage() {
                       {module.title}
                     </h3>
                     <p 
-                      className="text-sm mb-3"
+                      className="text-xs mb-2"
                       style={{ 
                         color: BRAND.colors.text_dim,
                         fontFamily: BRAND.fonts.body,
@@ -708,7 +710,7 @@ export default function TripwireProductPage() {
                       {module.subtitle}
                     </p>
                     <p 
-                      className="text-xs mb-4"
+                      className="text-xs mb-3"
                       style={{ 
                         color: BRAND.colors.text_dim,
                         fontFamily: BRAND.fonts.body,

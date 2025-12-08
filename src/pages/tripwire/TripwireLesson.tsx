@@ -671,8 +671,8 @@ const TripwireLesson = () => {
               >
                 МОДУЛЬ {module?.order_index !== undefined ? module.order_index + 1 : moduleId} • УРОК {currentLessonIndex + 1} / {allLessons.length}
               </motion.p>
-              <motion.h1 
-                className="text-5xl lg:text-6xl font-bold text-white font-sans uppercase mb-4 leading-tight tracking-wide"
+              <motion.h1
+                className="text-2xl md:text-3xl lg:text-4xl font-bold text-white font-sans uppercase mb-4 leading-tight tracking-wide line-clamp-2"
                 style={{
                   textShadow: '0 0 40px rgba(0, 255, 136, 0.3), 0 0 80px rgba(0, 255, 136, 0.1)'
                 }}
@@ -972,30 +972,52 @@ const TripwireLesson = () => {
               }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-[#00FF88]" />
+                <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${
+                  isAdmin 
+                    ? 'bg-[#00FF88]/10 border-[#00FF88]/30' 
+                    : 'bg-white/5 border-white/10'
+                }`}>
+                  <Bot className={`w-6 h-6 ${isAdmin ? 'text-[#00FF88]' : 'text-white/40'}`} />
                 </div>
                 <div>
-                  <h3 className="text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider">AI-Куратор</h3>
-                  <p className="text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">Онлайн 24/7</p>
+                  <h3 className={`font-['Space_Grotesk'] font-bold uppercase tracking-wider ${
+                    isAdmin ? 'text-white' : 'text-white/50'
+                  }`}>AI-Куратор</h3>
+                  <p className="text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">
+                    {isAdmin ? 'Онлайн 24/7' : '🔒 Полная версия'}
+                  </p>
                 </div>
               </div>
               
               <p className="text-sm text-gray-400 font-['Manrope'] mb-4 leading-relaxed">
-                Задавайте вопросы, отправляйте голосовые сообщения и файлы
+                {isAdmin 
+                  ? 'Задавайте вопросы, отправляйте голосовые сообщения и файлы'
+                  : 'Доступно на полной версии продукта'
+                }
               </p>
               
               <motion.button
-                onClick={() => setIsAIChatOpen(true)}
-                className="w-full group relative px-4 sm:px-6 py-3 bg-[#00FF88] text-black font-sans font-bold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 overflow-hidden hover:shadow-[0_0_40px_rgba(0,255,136,0.6)]"
+                onClick={() => {
+                  if (isAdmin) {
+                    setIsAIChatOpen(true);
+                  } else {
+                    alert('🔒 AI Куратор доступен только на полной версии продукта');
+                  }
+                }}
+                disabled={!isAdmin}
+                className={`w-full group relative px-4 sm:px-6 py-3 font-sans font-bold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 overflow-hidden ${
+                  isAdmin 
+                    ? 'bg-[#00FF88] text-black hover:shadow-[0_0_40px_rgba(0,255,136,0.6)] cursor-pointer'
+                    : 'bg-white/10 text-white/40 cursor-not-allowed'
+                }`}
                 style={{
                   transform: 'skewX(-10deg)',
-                  boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)'
+                  boxShadow: isAdmin ? '0 0 20px rgba(0, 255, 136, 0.3)' : 'none'
                 }}
               >
                 <span className="flex items-center justify-center gap-2 not-italic" style={{ transform: 'skewX(10deg)' }}>
                   <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Написать куратору
+                  {isAdmin ? 'Написать куратору' : 'Заблокировано'}
                 </span>
               </motion.button>
             </motion.div>
