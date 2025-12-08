@@ -283,6 +283,9 @@ export const api = {
     apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
 };
 
+// ✅ Export as both 'api' and 'apiClient' for compatibility
+export const apiClient = api;
+
 /**
  * Примеры использования:
  * 
