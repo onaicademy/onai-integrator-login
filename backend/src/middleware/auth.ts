@@ -74,7 +74,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       // Tripwire endpoint → используем Tripwire DB
       supabase = createClient(
         process.env.TRIPWIRE_SUPABASE_URL!,
-        process.env.TRIPWIRE_SUPABASE_SERVICE_KEY!
+        process.env.TRIPWIRE_SERVICE_ROLE_KEY!
       );
       console.log('✅ [requireAdmin] Using TRIPWIRE DB');
     } else {
