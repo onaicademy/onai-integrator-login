@@ -64,6 +64,18 @@ const tripwireModules = [
     gradient: "from-blue-500/20 via-transparent to-transparent",
     lessonId: 69,
   },
+  {
+    id: 999, // ❌ ЗАБЛОКИРОВАН - Только в основном курсе
+    title: "И еще 50+ модулей",
+    subtitle: "Доступно на основном курсе",
+    description: "Полная программа включает глубокое изучение AI-инструментов, автоматизацию бизнеса и масштабирование до $10k/мес.",
+    duration: "200+ часов",
+    lessons: 50,
+    icon: Sparkles,
+    status: "main_course_only",
+    gradient: "from-amber-500/20 via-transparent to-transparent",
+    lessonId: null,
+  },
 ];
 
 /**
@@ -385,7 +397,7 @@ export default function TripwireProductPage() {
 
           {/* Main Title with GLOW effect */}
           <h1 
-            className="text-6xl lg:text-8xl font-bold uppercase mb-6 leading-none"
+            className="text-3xl lg:text-5xl font-bold uppercase mb-4 leading-tight"
             style={{ 
               fontFamily: BRAND.fonts.main,
               color: '#FFFFFF',
@@ -396,23 +408,15 @@ export default function TripwireProductPage() {
               `
             }}
           >
-            INTEGRATOR
-            <span 
-              className="block mt-2"
-              style={{ color: BRAND.colors.neon_green }}
-            >
-              V3.0
-            </span>
+            INTEGRATOR <span style={{ color: BRAND.colors.neon_green }}>V3.0</span>
           </h1>
 
           {/* Subtitle */}
           <p 
-            className="text-xl lg:text-2xl max-w-3xl mb-8"
+            className="text-sm lg:text-base max-w-2xl mb-6"
             style={{ color: BRAND.colors.text_dim }}
           >
-            Кибернетическая платформа для освоения AI-интеграции.
-            <br />
-            Начните свой путь от нуля до первых $1000.
+            Кибернетическая платформа для освоения AI-интеграции. Начните свой путь от нуля до первых $1000.
           </p>
 
           {/* 🟢 AI CURATOR BUTTON - PREMIUM DESIGN */}
@@ -747,10 +751,10 @@ export default function TripwireProductPage() {
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.1, duration: 0.6 }}
-                onClick={() => handleModuleClick(module)}  // ✅ FIXED: Added onClick handler for admin access
+                onClick={() => module.status !== 'main_course_only' && isAdmin ? handleModuleClick(module) : null}  // ✅ main_course_only - полностью заблокирован
                 onMouseEnter={() => setHoveredModule(module.id)}
                 onMouseLeave={() => setHoveredModule(null)}
-                className={`relative rounded-[24px] overflow-hidden group ${isAdmin ? 'cursor-pointer' : 'cursor-not-allowed'}`}  // ✅ ADMIN GOD MODE: clickable for admin
+                className={`relative rounded-[24px] overflow-hidden group cursor-not-allowed`}
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
                   border: '1px solid rgba(255,255,255,0.05)',
@@ -766,20 +770,18 @@ export default function TripwireProductPage() {
                 {/* Content */}
                 <div className="relative z-10 h-full flex flex-col justify-between p-6 lg:p-8">
                   <div>
-                    {/* Lock Badge - Hidden for Admin */}
-                    {!isAdmin && (  // ✅ ADMIN GOD MODE: Hide lock for admin
-                      <Badge 
-                        className="mb-4 px-3 py-1.5 text-xs uppercase tracking-wider border-0"
-                        style={{
-                          background: 'rgba(255,255,255,0.05)',
-                          color: BRAND.colors.text_dim,
-                          fontFamily: BRAND.fonts.mono
-                        }}
-                      >
-                        <Lock className="w-3 h-3 mr-1.5" />
-                        LOCKED
-                      </Badge>
-                    )}
+                    {/* Lock Badge */}
+                    <Badge 
+                      className="mb-4 px-3 py-1.5 text-xs uppercase tracking-wider border-0"
+                      style={{
+                        background: module.status === 'main_course_only' ? 'rgba(255, 183, 0, 0.1)' : 'rgba(255,255,255,0.05)',
+                        color: module.status === 'main_course_only' ? '#FFB700' : BRAND.colors.text_dim,
+                        fontFamily: BRAND.fonts.mono
+                      }}
+                    >
+                      <Lock className="w-3 h-3 mr-1.5" />
+                      {module.status === 'main_course_only' ? 'ОСНОВНОЙ КУРС' : 'LOCKED'}
+                    </Badge>
 
                     {/* Icon */}
                     <div 
@@ -878,54 +880,24 @@ export default function TripwireProductPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════
-            BOTTOM INFO PANEL
+            BOTTOM: COPYRIGHT
             ═══════════════════════════════════════════════════════ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-12 lg:mt-16 rounded-[24px] overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
-            border: '1px solid rgba(255,255,255,0.05)',
-            backdropFilter: 'blur(40px)',
-          }}
+          className="mt-12 lg:mt-16 text-center"
         >
-          <div className="p-8 lg:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div>
-              <h3 
-                className="text-2xl font-bold uppercase mb-2"
-                style={{ 
-                  fontFamily: BRAND.fonts.main,
-                  color: '#FFFFFF'
-                }}
-              >
-                Пробная версия
-              </h3>
-              <p style={{ color: BRAND.colors.text_dim }}>
-                Вы проходите бесплатную trial-версию курса. Получите доступ ко всем 50+ модулям в полной программе.
-              </p>
-            </div>
-            
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 font-bold uppercase tracking-wider whitespace-nowrap"
-              style={{
-                background: BRAND.colors.neon_green,
-                color: '#000000',
-                transform: 'skewX(-10deg)',
-                borderRadius: '8px',
-                fontFamily: BRAND.fonts.main,
-                fontSize: '14px',
-              }}
-              onClick={() => alert('🚀 Функция апгрейда в разработке')}
-            >
-              <span style={{ display: 'block', transform: 'skewX(10deg)' }}>
-                UPGRADE TO FULL
-              </span>
-            </motion.button>
-          </div>
+          <p 
+            className="text-xs"
+            style={{ 
+              color: BRAND.colors.text_dim,
+              opacity: 0.5,
+              fontFamily: BRAND.fonts.mono
+            }}
+          >
+            onAI Academy © 2025. Все права защищены.
+          </p>
         </motion.div>
       </div>
 
