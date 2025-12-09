@@ -16,10 +16,9 @@ interface ManagerStats {
 
 interface SalesLeaderboardProps {
   currentManagerId?: string;
-  onManagerSelect?: (managerId: string) => void;
 }
 
-export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: SalesLeaderboardProps) {
+export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardProps) {
   const [managers, setManagers] = useState<ManagerStats[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -84,8 +83,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
             return (
               <div
                 key={manager.manager_id}
-                onClick={() => onManagerSelect?.(manager.manager_id)}
-                className={`relative group cursor-pointer transition-all duration-300 ${
+                className={`relative group transition-all duration-300 ${
                   isCurrentManager ? 'ring-2 ring-[#00FF94]' : ''
                 }`}
               >
@@ -177,7 +175,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                   </div>
 
                   {/* Bottom bar - Performance indicators */}
-                  <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="mt-4 pt-4 border-t border-white/10">
                     <div className="flex items-center gap-6 text-sm">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -192,24 +190,6 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                         </span>
                       </div>
                     </div>
-
-                    {onManagerSelect && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onManagerSelect(manager.manager_id);
-                          // 🎯 ARCHITECT SOLUTION #2: Scroll to users table
-                          setTimeout(() => {
-                            const usersSection = document.getElementById('users-table-section');
-                            usersSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 100);
-                        }}
-                        className="px-4 py-2 bg-[#00FF94]/10 hover:bg-[#00FF94]/20 border border-[#00FF94]/30 
-                                 rounded-lg text-sm font-['JetBrains_Mono'] text-[#00FF94] transition-colors"
-                      >
-                        СМОТРЕТЬ УЧЕНИКОВ
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>

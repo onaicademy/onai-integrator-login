@@ -200,7 +200,6 @@ export default function TripwireManager() {
         >
           <SalesLeaderboard
             currentManagerId={tripwireUser?.id}
-            onManagerSelect={(managerId) => setSelectedManagerId(managerId)}
           />
         </div>
 

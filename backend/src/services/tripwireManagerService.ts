@@ -368,15 +368,34 @@ export async function getSalesActivityLog(managerId: string, limit = 50, startDa
  */
 export async function getSalesLeaderboard() {
   try {
-    const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_sales_leaderboard');
+    console.log('📊 [LEADERBOARD] Fetching sales leaderboard via DIRECT SQL');
+    
+    const client = await tripwirePool.connect();
+    try {
+      const result = await client.query(`
+        SELECT 
+          granted_by as manager_id,
+          manager_name,
+          COUNT(*) as total_sales,
+          SUM(price) as total_revenue,
+          SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_users,
+          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_users,
+          SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN 1 ELSE 0 END) as this_month_sales,
+          SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN price ELSE 0 END) as this_month_revenue
+        FROM public.tripwire_users
+        WHERE granted_by IS NOT NULL
+        GROUP BY granted_by, manager_name
+        ORDER BY total_sales DESC
+        LIMIT 10
+      `);
 
-    if (error) {
-      throw new Error(`RPC error: ${error.message}`);
+      console.log(`✅ [LEADERBOARD] Found ${result.rows.length} managers`);
+      return result.rows;
+    } finally {
+      client.release();
     }
-
-    return data;
   } catch (error: any) {
-    console.error('❌ Error fetching sales leaderboard via RPC:', error);
+    console.error('❌ Error fetching sales leaderboard:', error);
     throw error;
   }
 }
