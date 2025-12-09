@@ -1,9 +1,11 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 /**
  * Email Service для отправки приветственных писем
- * Использует Google Workspace SMTP
+ * Использует Resend API (HTTPS, без SMTP портов)
  */
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface WelcomeEmailParams {
   toEmail: string;
@@ -28,22 +30,11 @@ interface PasswordChangeNotificationParams {
  */
 export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<boolean> {
   try {
-    // Проверяем наличие SMTP настроек
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('⚠️ SMTP credentials not configured, skipping email send');
+    // Проверяем наличие Resend API ключа
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ RESEND_API_KEY not configured, skipping email send');
       return false;
     }
-
-    // Создаем транспорт для Gmail
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: process.env.SMTP_SECURE === 'true', // true для порта 465
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     // HTML шаблон письма (Gmail-compatible, table-based)
     const htmlContent = `<!DOCTYPE html>
@@ -199,15 +190,20 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
 </body>
 </html>`;
 
-    // Отправка email
-    await transporter.sendMail({
-      from: `"onAI Academy" <${process.env.SMTP_USER}>`,
+    // Отправка email через Resend
+    const { data, error } = await resend.emails.send({
+      from: 'onAI Academy <noreply@onai.academy>',
       to: params.toEmail,
       subject: '🚀 Добро пожаловать в Интегратор 3.0 — Ваш путь к AI начинается здесь!',
       html: htmlContent,
     });
 
-    console.log(`✅ Welcome email sent to ${params.toEmail}`);
+    if (error) {
+      console.error(`❌ Resend error:`, error);
+      return false;
+    }
+
+    console.log(`✅ Welcome email sent to ${params.toEmail} (ID: ${data?.id})`);
     return true;
   } catch (error: any) {
     console.error(`❌ Error sending welcome email:`, error.message);
@@ -220,20 +216,10 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
  */
 export async function sendEmailChangeNotification(params: EmailChangeNotificationParams): Promise<boolean> {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('⚠️ SMTP credentials not configured, skipping email send');
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ RESEND_API_KEY not configured, skipping email send');
       return false;
     }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -329,14 +315,19 @@ export async function sendEmailChangeNotification(params: EmailChangeNotificatio
 </html>
     `;
 
-    await transporter.sendMail({
-      from: `"onAI Academy Security" <${process.env.SMTP_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: 'onAI Academy Security <noreply@onai.academy>',
       to: params.toEmail,
       subject: '🔐 Уведомление о смене email — onAI Academy',
       html: htmlContent,
     });
 
-    console.log(`✅ Email change notification sent to ${params.toEmail}`);
+    if (error) {
+      console.error(`❌ Resend error:`, error);
+      return false;
+    }
+
+    console.log(`✅ Email change notification sent to ${params.toEmail} (ID: ${data?.id})`);
     return true;
   } catch (error: any) {
     console.error(`❌ Error sending email change notification:`, error.message);
@@ -349,20 +340,10 @@ export async function sendEmailChangeNotification(params: EmailChangeNotificatio
  */
 export async function sendPasswordChangeNotification(params: PasswordChangeNotificationParams): Promise<boolean> {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('⚠️ SMTP credentials not configured, skipping email send');
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ RESEND_API_KEY not configured, skipping email send');
       return false;
     }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -443,14 +424,19 @@ export async function sendPasswordChangeNotification(params: PasswordChangeNotif
 </html>
     `;
 
-    await transporter.sendMail({
-      from: `"onAI Academy Security" <${process.env.SMTP_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: 'onAI Academy Security <noreply@onai.academy>',
       to: params.toEmail,
       subject: '🔐 Пароль успешно изменен — onAI Academy',
       html: htmlContent,
     });
 
-    console.log(`✅ Password change notification sent to ${params.toEmail}`);
+    if (error) {
+      console.error(`❌ Resend error:`, error);
+      return false;
+    }
+
+    console.log(`✅ Password change notification sent to ${params.toEmail} (ID: ${data?.id})`);
     return true;
   } catch (error: any) {
     console.error(`❌ Error sending password change notification:`, error.message);
