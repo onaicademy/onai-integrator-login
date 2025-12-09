@@ -57,10 +57,11 @@ export const getStreamTime = (): string => {
   
   const currentHour = almatyTime.getHours();
   
-  if (currentHour < 20) {
-    return "Эфир сегодня в 20:00";
+  // Если до 18:00 Алматы → "Сегодня", после 18:00 → "Завтра"
+  if (currentHour < 18) {
+    return "Сегодня в 20:00";
   } else {
-    return "Эфир завтра в 20:00";
+    return "Завтра в 20:00";
   }
 };
 

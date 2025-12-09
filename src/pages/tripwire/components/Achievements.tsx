@@ -10,31 +10,31 @@ interface AchievementsProps {
 
 const ACHIEVEMENT_CONFIG = [
   {
-    id: 'first_module_complete',  // ✅ CORRECT ID from DB!
-    icon: 'solar:cup-star-bold-duotone',
-    title: 'ПЕРВЫЙ ШАГ',
-    description: 'Завершите первый модуль',
-    color: '#00FF94',
-    shadowColor: 'rgba(0, 255, 148, 0.6)',
-    gradient: 'from-green-500/30 via-emerald-500/20 to-transparent',
+    id: 'first_module_complete',
+    icon: 'carbon:chart-network',  // 3D иконка: сеть/направление AI
+    title: 'ПУТЬ НАЙДЕН',
+    description: 'Определено твое направление в AI',
+    color: '#00D9FF',  // Премиальный неоновый голубой
+    shadowColor: 'rgba(0, 217, 255, 0.8)',
+    gradient: 'from-cyan-400/40 via-blue-500/30 to-transparent',
   },
   {
-    id: 'second_module_complete',  // ✅ CORRECT ID from DB!
-    icon: 'fluent:rocket-24-filled',
-    title: 'НА ПУТИ К МАСТЕРСТВУ',
-    description: 'Завершите второй модуль',
-    color: '#3B82F6',
-    shadowColor: 'rgba(59, 130, 246, 0.6)',
-    gradient: 'from-blue-500/30 via-cyan-500/20 to-transparent',
+    id: 'second_module_complete',
+    icon: 'mdi:robot-outline',  // 3D иконка: GPT-бот / AI интеграция
+    title: 'AI ИНТЕГРАТОР',
+    description: 'Создан первый GPT-бот',
+    color: '#B794F6',  // Премиальный фиолетовый (AI)
+    shadowColor: 'rgba(183, 148, 246, 0.8)',
+    gradient: 'from-purple-400/40 via-violet-500/30 to-transparent',
   },
   {
-    id: 'third_module_complete',  // ✅ CORRECT ID from DB!
-    icon: 'solar:bolt-circle-bold-duotone',
-    title: 'ПОЧТИ У ЦЕЛИ',
-    description: 'Завершите третий модуль',
-    color: '#F59E0B',
-    shadowColor: 'rgba(245, 158, 11, 0.6)',
-    gradient: 'from-amber-500/30 via-orange-500/20 to-transparent',
+    id: 'third_module_complete',
+    icon: 'tabler:video-plus',  // 3D иконка: вирусное видео / медиа
+    title: 'ВИРУСНЫЙ CREATOR',
+    description: 'Освоено создание вирусных Reels',
+    color: '#FFD700',  // Премиальный золотой
+    shadowColor: 'rgba(255, 215, 0, 0.8)',
+    gradient: 'from-yellow-400/40 via-amber-500/30 to-transparent',
   }
 ];
 

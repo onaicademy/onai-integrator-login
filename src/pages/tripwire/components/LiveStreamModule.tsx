@@ -36,20 +36,7 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
         }
       `}
     >
-      {/* Анимированный фон для разблокированного */}
-      {isUnlocked && (
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FF3366]/10 to-transparent"
-          animate={{
-            x: ['-100%', '100%'],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            repeatDelay: 1,
-          }}
-        />
-      )}
+      {/* Анимация отключена по запросу пользователя */}
 
       <div className="relative z-10">
         {/* Заголовок с LIVE иконкой */}
@@ -125,7 +112,7 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
              <div className="mt-0.5 text-[#00FF94] flex-shrink-0">✅</div>
              <p className="text-xs sm:text-sm text-[#00FF94] font-['Manrope'] break-words 
                           leading-relaxed min-w-0 flex-1">
-               Вы получите ссылку на эфир после завершения всех модулей
+               Ссылка на эфир будет доступна вам в WhatsApp сообществе
              </p>
           </div>
         )}

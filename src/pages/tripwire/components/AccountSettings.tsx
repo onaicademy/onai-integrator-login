@@ -55,16 +55,18 @@ export default function AccountSettings({ email, created_at, full_name }: Accoun
 
     setIsUpdatingPassword(true);
     try {
-      const result = await api.post('/api/users/update-password', {
-        newPassword,
-        userName: full_name || 'Пользователь',
+      // ✅ ИСПОЛЬЗУЕМ SUPABASE НАПРЯМУЮ - НЕ СБРАСЫВАЕТ СЕССИЮ!
+      const { error } = await tripwireSupabase.auth.updateUser({
+        password: newPassword
       });
 
-      console.log('✅ Пароль успешно обновлен через backend:', result);
+      if (error) throw error;
+
+      console.log('✅ Пароль успешно обновлен');
 
       toast({
         title: "Пароль изменен",
-        description: "Ваш пароль успешно обновлен",
+        description: "Ваш пароль успешно обновлен. Сессия сохранена.",
       });
       setNewPassword('');
       setConfirmPassword('');

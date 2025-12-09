@@ -130,7 +130,7 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
       
       // ✅ КРИТИЧЕСКИ ВАЖНО ДЛЯ HLS
         captions: {
-        active: true,        // Включить по умолчанию
+        active: false,       // Выключены по умолчанию (включаются по желанию)
           language: 'ru',
         update: true         // ✅ ОБЯЗАТЕЛЬНО!
       },
