@@ -416,16 +416,16 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-800/50">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-2">
-                <p className="text-[10px] text-gray-600 text-center md:text-left opacity-50">
+            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-800">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                <p className="text-xs sm:text-sm text-gray-500 text-center md:text-left">
                   © {new Date().getFullYear()} onAI Academy. Все права защищены
                 </p>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-gray-700 font-['JetBrains_Mono'] text-[9px] uppercase tracking-wider opacity-40">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 font-['JetBrains_Mono'] text-xs uppercase tracking-wider">
                     Версия платформы:
                   </span>
-                  <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00FF88] bg-[#00FF88]/5 px-1.5 py-0.5 rounded border border-[#00FF88]/10 opacity-60">
+                  <span className="font-['JetBrains_Mono'] text-xs font-bold text-[#00FF88] bg-[#00FF88]/10 px-2 py-1 rounded border border-[#00FF88]/20">
                     v1.10.00
                   </span>
                 </div>

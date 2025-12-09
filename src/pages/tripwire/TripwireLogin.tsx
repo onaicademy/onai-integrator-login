@@ -107,15 +107,15 @@ export default function TripwireLogin() {
           transition={{ delay: 0.7 }}
           className="mt-12"
         >
-          <div className="flex flex-col items-center gap-2 text-center">
-            <p className="text-gray-700 text-[10px] opacity-40">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-gray-600 text-xs">
               © {new Date().getFullYear()} onAI Academy. Все права защищены
             </p>
-            <div className="flex items-center gap-1.5">
-              <span className="text-gray-800 font-['JetBrains_Mono'] text-[9px] uppercase tracking-wider opacity-30">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-['JetBrains_Mono'] text-xs uppercase tracking-wider">
                 Версия платформы:
               </span>
-              <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00FF88] bg-[#00FF88]/5 px-1.5 py-0.5 rounded border border-[#00FF88]/10 opacity-50">
+              <span className="font-['JetBrains_Mono'] text-xs font-bold text-[#00FF88] bg-[#00FF88]/10 px-2 py-1 rounded border border-[#00FF88]/20">
                 v1.10.00
               </span>
             </div>

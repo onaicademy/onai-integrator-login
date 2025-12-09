@@ -14,7 +14,6 @@ export default function AdminDashboard() {
   const [studentStats, setStudentStats] = useState<any>(null);
   const [tripwireStats, setTripwireStats] = useState<any>(null);
   const [myStats, setMyStats] = useState<any>(null);
-  const [transcriptionStats, setTranscriptionStats] = useState<any>(null);
 
   // Загружаем все статистики при монтировании
   useEffect(() => {
@@ -22,7 +21,6 @@ export default function AdminDashboard() {
     loadStudentStats();
     loadTripwireStats();
     loadMyStats();
-    loadTranscriptionStats();
   }, []);
 
   const loadTokenStats = async () => {
@@ -111,20 +109,6 @@ export default function AdminDashboard() {
       console.log('[AdminDashboard] ✅ МОЯ статистика загружена:', stats);
     } catch (error) {
       console.error('[AdminDashboard] ❌ Ошибка загрузки МОЕй статистики:', error);
-    }
-  };
-
-  const loadTranscriptionStats = async () => {
-    try {
-      console.log('[AdminDashboard] Загружаем статистику транскрипций...');
-      const response = await api.get('/api/admin/transcriptions/stats');
-      const data = response.data || response;
-      
-      setTranscriptionStats(data.stats);
-
-      console.log('[AdminDashboard] ✅ Статистика транскрипций загружена:', data.stats);
-    } catch (error) {
-      console.error('[AdminDashboard] ❌ Ошибка загрузки статистики транскрипций:', error);
     }
   };
 
@@ -271,9 +255,9 @@ export default function AdminDashboard() {
             icon={<Mic className="w-8 h-8" />}
             onClick={() => navigate("/admin/transcriptions")}
             stats={[
-              { label: "Всего уроков", value: transcriptionStats?.total?.toString() || "..." },
-              { label: "Готовых", value: transcriptionStats?.completed?.toString() || "..." },
-              { label: "Ожидают", value: transcriptionStats?.pending?.toString() || "..." },
+              { label: "Статус", value: "Groq AI" },
+              { label: "Формат", value: "SRT/VTT" },
+              { label: "Язык", value: "RU" },
             ]}
           />
         </div>

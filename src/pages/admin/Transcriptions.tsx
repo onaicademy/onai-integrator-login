@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { getAuthToken, apiRequest } from '@/utils/apiClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { apiRequest } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
@@ -19,7 +19,8 @@ interface Lesson {
   transcribed_at: string | null;
 }
 
-export default function MainPlatformTranscriptions() {
+export default function Transcriptions() {
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [expandedLessonId, setExpandedLessonId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,25 +34,21 @@ export default function MainPlatformTranscriptions() {
 
   // Загрузить список уроков
   const { data: lessons, isLoading } = useQuery({
-    queryKey: ['admin', 'transcriptions', 'main-platform'],
+    queryKey: ['tripwire', 'admin', 'transcriptions'],
     queryFn: async () => {
-      const data = await apiRequest('/api/admin/transcriptions/lessons', {
-        method: 'GET'
-      });
-      return data.lessons as Lesson[];
+      const data = await apiRequest<{ lessons: Lesson[] }>('/api/tripwire/admin/transcriptions/lessons');
+      return data.lessons;
     }
   });
 
   // Транскрибировать все
   const transcribeAllMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/transcriptions/transcribe-all', {
-        method: 'POST'
-      });
+      return apiRequest('/api/tripwire/admin/transcriptions/transcribe-all', { method: 'POST' });
     },
     onSuccess: (data) => {
       toast.success(`Запущена транскрибация ${data.total_lessons} уроков`);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'transcriptions', 'main-platform'] });
+      queryClient.invalidateQueries({ queryKey: ['tripwire', 'admin', 'transcriptions'] });
     },
     onError: () => {
       toast.error('Ошибка запуска транскрибации');
@@ -84,9 +81,9 @@ export default function MainPlatformTranscriptions() {
         }} />
       </div>
 
-      {/* ✅ HEADER */}
+      {/* ✅ HEADER (NOT FIXED) */}
       <div className="relative z-10 px-8 py-8 border-b border-white/5">
-        <Link to="/admin/dashboard" className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#00FF94] transition-colors" >
+        <Link to="/tripwire/admin" className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#00FF94] transition-colors" >
           <ArrowLeft size={20} />
           Назад в админку
         </Link>
@@ -99,7 +96,7 @@ export default function MainPlatformTranscriptions() {
         </h1>
         
         <p className="text-[#9CA3AF] mb-12">
-          Управление автоматическими транскрибациями видео через Groq Whisper (Основная платформа)
+          Управление автоматическими транскрибациями видео через Groq Whisper
         </p>
 
         {/* Stats */}
@@ -238,8 +235,8 @@ export default function MainPlatformTranscriptions() {
             <p className="text-sm mt-2">Попробуйте изменить фильтры</p>
           </div>
         )}
+
       </div>
     </div>
   );
 }
-
