@@ -187,3 +187,4 @@ pm2 logs
 - ✅ Groq API работает (Whisper, Vision, Chat)
 - ✅ PDF автоматически конвертируется в PNG
 
+

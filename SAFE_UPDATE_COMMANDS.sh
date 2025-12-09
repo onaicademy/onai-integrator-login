@@ -78,3 +78,4 @@ echo "   2. Skip to 80%"
 echo "   3. Click 'ЗАВЕРШИТЬ УРОК'"
 echo "   4. Should work without 500 error"
 
+

@@ -138,3 +138,4 @@ const handlePrevious = () => { ... };
 - ✅ Кнопка "СЛЕДУЮЩИЙ МОДУЛЬ" (M17→M18) → `/tripwire/lesson/69`
 - ✅ НЕТ старых URL вида `/tripwire/module/17/lesson/...`
 
+

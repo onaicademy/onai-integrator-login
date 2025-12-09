@@ -35,3 +35,4 @@ pm2 logs --lines 20
 
 echo "✅ Backend updated! Test at: https://api.onai.academy"
 
+
