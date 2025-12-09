@@ -44,20 +44,17 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
   try {
     console.log(`🚀 [DIRECT DB] Creating Tripwire user: ${email}`);
 
-    // 🔒 STEP 0: CHECK IF EMAIL ALREADY EXISTS
-    const { data: existingUsers, error: checkError } = await tripwireAdminSupabase.auth.admin.listUsers();
+    // 🔒 STEP 0: CHECK IF EMAIL ALREADY EXISTS (FAST VERSION)
+    const { data: existingUser, error: checkError } = await tripwireAdminSupabase.auth.admin.getUserByEmail(email);
     
-    if (checkError) {
-      console.error('❌ Error checking existing users:', checkError);
+    if (existingUser?.user) {
+      console.warn(`⚠️ Email already exists: ${email}`);
+      throw new Error(`User with email ${email} already exists`);
     }
     
-    if (existingUsers) {
-      const emailExists = existingUsers.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
-      
-      if (emailExists) {
-        console.warn(`⚠️ Email already exists: ${email}`);
-        throw new Error(`User with email ${email} already exists`);
-      }
+    if (checkError && checkError.message !== 'User not found') {
+      console.error('❌ Error checking existing user:', checkError);
+      throw new Error(`Error checking existing user: ${checkError.message}`);
     }
 
     // 1️⃣ CREATE USER IN auth.users
