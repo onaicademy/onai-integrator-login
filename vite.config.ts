@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import fs from "fs";
+import viteCompression from 'vite-plugin-compression';
 
 // Проверяем наличие SSL сертификатов
 const useHttps = fs.existsSync(path.resolve(__dirname, "ssl/cert.pem")) && 
@@ -66,7 +67,24 @@ export default defineConfig(({ mode }) => {
       },
     }),
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(), 
+    mode === "development" && componentTagger(),
+    // 🗜️ COMPRESSION: Gzip для production (60-70% меньше размер)
+    mode === "production" && viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 10240, // Сжимать файлы > 10KB
+      deleteOriginFile: false,
+    }),
+    // 🗜️ COMPRESSION: Brotli для modern browsers (еще лучше сжатие)
+    mode === "production" && viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 10240,
+      deleteOriginFile: false,
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

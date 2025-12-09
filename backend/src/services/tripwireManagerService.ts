@@ -44,17 +44,19 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
   try {
     console.log(`🚀 [DIRECT DB] Creating Tripwire user: ${email}`);
 
-    // 🔒 STEP 0: CHECK IF EMAIL ALREADY EXISTS (FAST VERSION)
-    const { data: existingUser, error: checkError } = await tripwireAdminSupabase.auth.admin.getUserByEmail(email);
+    // 🔒 STEP 0: CHECK IF EMAIL ALREADY EXISTS
+    // Используем listUsers вместо getUserByEmail (которого не существует)
+    const { data: existingUsers, error: checkError } = await tripwireAdminSupabase.auth.admin.listUsers();
     
-    if (existingUser?.user) {
-      console.warn(`⚠️ Email already exists: ${email}`);
-      throw new Error(`User with email ${email} already exists`);
+    if (checkError) {
+      console.error('❌ Error checking existing users:', checkError);
+      throw new Error(`Error checking existing user: ${checkError.message}`);
     }
     
-    if (checkError && checkError.message !== 'User not found') {
-      console.error('❌ Error checking existing user:', checkError);
-      throw new Error(`Error checking existing user: ${checkError.message}`);
+    const emailExists = existingUsers?.users?.some(u => u.email === email);
+    if (emailExists) {
+      console.warn(`⚠️ Email already exists: ${email}`);
+      throw new Error(`User with email ${email} already exists`);
     }
 
     // 1️⃣ CREATE USER IN auth.users
@@ -374,17 +376,19 @@ export async function getSalesLeaderboard() {
     try {
       const result = await client.query(`
         SELECT 
-          granted_by as manager_id,
-          manager_name,
+          tu.granted_by as manager_id,
+          tu.manager_name,
           COUNT(*) as total_sales,
-          SUM(price) as total_revenue,
-          SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_users,
-          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_users,
-          SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN 1 ELSE 0 END) as this_month_sales,
-          SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN price ELSE 0 END) as this_month_revenue
-        FROM public.tripwire_users
-        WHERE granted_by IS NOT NULL
-        GROUP BY granted_by, manager_name
+          SUM(tu.price) as total_revenue,
+          SUM(CASE WHEN tu.status = 'active' THEN 1 ELSE 0 END) as active_users,
+          SUM(CASE WHEN tu.status = 'completed' THEN 1 ELSE 0 END) as completed_users,
+          SUM(CASE WHEN tup.modules_completed >= 3 THEN 1 ELSE 0 END) as course_completed_users,
+          SUM(CASE WHEN DATE_TRUNC('month', tu.created_at) = DATE_TRUNC('month', NOW()) THEN 1 ELSE 0 END) as this_month_sales,
+          SUM(CASE WHEN DATE_TRUNC('month', tu.created_at) = DATE_TRUNC('month', NOW()) THEN tu.price ELSE 0 END) as this_month_revenue
+        FROM public.tripwire_users tu
+        LEFT JOIN public.tripwire_user_profile tup ON tu.user_id = tup.user_id
+        WHERE tu.granted_by IS NOT NULL
+        GROUP BY tu.granted_by, tu.manager_name
         ORDER BY total_sales DESC
         LIMIT 10
       `);

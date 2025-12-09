@@ -119,7 +119,8 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     
     // 6. Загружаем PDF в Supabase Storage
     console.log('📦 [Certificate] Uploading to storage...');
-    const fileName = `${certificateNumber}-${uuidv4()}.pdf`;
+    // ✅ FIX: Используем только UUID для имени файла (без кириллицы!)
+    const fileName = `${uuidv4()}.pdf`;
     const storagePath = `users/${userId}/certificates/${fileName}`;
     
     const { error: uploadError } = await supabase.storage

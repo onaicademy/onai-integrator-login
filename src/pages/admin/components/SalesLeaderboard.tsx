@@ -10,6 +10,7 @@ interface ManagerStats {
   total_revenue: number;
   active_users: number;
   completed_users: number;
+  course_completed_users: number; // 🎓 Количество завершивших курс (modules_completed >= 3)
   this_month_sales: number;
   this_month_revenue: number;
 }
@@ -184,9 +185,9 @@ export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardP
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        <Icon icon="mdi:school-outline" className="w-4 h-4 text-[#F59E0B]" />
                         <span className="font-['JetBrains_Mono'] text-gray-400">
-                          Завершили: {manager.completed_users}
+                          Завершили курс: {manager.course_completed_users || 0}
                         </span>
                       </div>
                     </div>

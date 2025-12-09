@@ -5,6 +5,7 @@ interface Stats {
   total_students: number; // 🔥 FIX: Changed from total_users
   active_students: number; // 🔥 FIX: Changed from active_users
   completed_students: number;
+  course_completed_students?: number; // 🎓 Количество завершивших курс (modules_completed >= 3)
   students_this_month: number; // 🔥 FIX: Changed from this_month
   total_revenue?: string | number; // 🔥 FIX: Can be string from RPC
   revenue_this_month?: string | number; // 🔥 FIX: Changed from monthly_revenue
@@ -44,7 +45,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'ЗАВЕРШИЛИ КУРС',
-      value: stats.completed_students,
+      value: stats.course_completed_students || 0, // 🎓 Показываем тех, кто прошел все 3 модуля
       icon: Trophy,
       iconifyIcon: 'solar:cup-star-bold-duotone',
       color: '#F59E0B',

@@ -1,5 +1,5 @@
 import { MatrixRainingLetters } from 'react-mdr';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 interface MatrixRainBackgroundProps {
   opacity?: number;
