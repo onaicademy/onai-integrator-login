@@ -37,7 +37,7 @@ export default function ProgressOverview({ modulesCompleted, moduleProgress }: P
     <div className="space-y-8">
       <div>
         <h2 
-          className="text-3xl font-bold text-white mb-2 font-['Space_Grotesk'] uppercase tracking-wider"
+          className="text-3xl font-bold text-white mb-2 font-['JetBrains_Mono'] uppercase tracking-wider"
           style={{ textShadow: '0 0 30px rgba(0, 255, 148, 0.4)' }}
         >
           ПРОГРЕСС ПО МОДУЛЯМ
@@ -121,7 +121,7 @@ export default function ProgressOverview({ modulesCompleted, moduleProgress }: P
                         )}
                       </div>
                       
-                      <h3 className={`text-2xl font-bold font-['Space_Grotesk'] uppercase leading-tight mb-2
+                      <h3 className={`text-2xl font-bold font-['JetBrains_Mono'] uppercase leading-tight mb-2
                                     ${isLocked ? 'text-white/30' : 'text-white'}`}>
                         {moduleInfo.title}
                       </h3>

@@ -582,8 +582,20 @@ export default function TripwireLanding() {
             ЗАНЯТЬ МЕСТО
           </button>
         </div>
-        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto mt-2 sm:mt-3 md:mt-4 text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs text-gray-600 font-mono uppercase px-1 text-center">
-          <a href="#">onAI Academy © 2025</a>
+        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto mt-2 sm:mt-3 md:mt-4 px-1">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
+            <p className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs text-gray-600 font-mono uppercase text-center md:text-left">
+              onAI Academy © {new Date().getFullYear()}. Все права защищены
+            </p>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <span className="text-[6px] sm:text-[8px] md:text-[9px] lg:text-[10px] text-gray-700 font-['JetBrains_Mono'] uppercase tracking-wider">
+                Версия:
+              </span>
+              <span className="font-['JetBrains_Mono'] text-[7px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold text-[#00FF88] bg-[#00FF88]/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded border border-[#00FF88]/20">
+                v1.10.00
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 

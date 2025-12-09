@@ -292,7 +292,7 @@ export default function TripwireHome() {
                 <Bot className="w-8 h-8 text-[#00FF88]" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white font-['Space_Grotesk']">
+                <h3 className="text-2xl font-bold text-white font-['JetBrains_Mono']">
                   AI-Куратор
                 </h3>
                 <p className="text-sm text-gray-400 uppercase tracking-wider">

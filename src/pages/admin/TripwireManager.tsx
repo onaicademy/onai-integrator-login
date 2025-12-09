@@ -143,26 +143,27 @@ export default function TripwireManager() {
       />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-6 sm:space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <OnAILogo variant="full" className="h-12 w-auto text-white" />
-              <div className="h-12 w-px bg-gradient-to-b from-transparent via-[#00FF94] to-transparent" />
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
+            {/* Logo - скрыт на мобильных */}
+            <div className="hidden sm:flex items-center gap-3">
+              <OnAILogo variant="full" className="h-10 sm:h-12 w-auto text-white" />
+              <div className="h-10 sm:h-12 w-px bg-gradient-to-b from-transparent via-[#00FF94] to-transparent" />
             </div>
             
             {/* Title */}
-            <div>
+            <div className="w-full sm:w-auto">
               <h1
-                className="text-4xl lg:text-5xl font-bold text-white font-['Space_Grotesk'] 
-                           uppercase tracking-wider mb-2"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-['JetBrains_Mono'] 
+                           uppercase tracking-wider mb-2 break-words leading-tight"
               >
                 SALES MANAGER
               </h1>
-              <p className="text-[#9CA3AF] text-lg font-['JetBrains_Mono']">
-                /// СИСТЕМА УПРАВЛЕНИЯ ПРОДАЖАМИ TRIPWIRE
+              <p className="text-[#9CA3AF] text-sm sm:text-base lg:text-lg font-['JetBrains_Mono'] break-words">
+                /// СИСТЕМА УПРАВЛЕНИЯ
+                <span className="hidden sm:inline"> ПРОДАЖАМИ TRIPWIRE</span>
               </p>
             </div>
           </div>
@@ -170,13 +171,13 @@ export default function TripwireManager() {
           {/* Create User Button */}
           <button
             onClick={() => setShowCreateForm(true)}
-            className="group relative px-8 py-4 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
+            className="group relative w-full lg:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
                      hover:from-[#00CC6A] hover:to-[#00FF94]
-                     text-black font-bold font-['JetBrains_Mono'] uppercase tracking-wider
-                     rounded-xl transition-all duration-300 flex items-center gap-3"
+                     text-black font-bold font-['JetBrains_Mono'] uppercase tracking-wider text-sm sm:text-base
+                     rounded-xl transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
           >
-            <UserPlus className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            <span>ДОБАВИТЬ УЧЕНИКА</span>
+            <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform flex-shrink-0" />
+            <span className="whitespace-nowrap">ДОБАВИТЬ УЧЕНИКА</span>
           </button>
         </div>
 

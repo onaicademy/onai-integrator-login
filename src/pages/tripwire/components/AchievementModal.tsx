@@ -47,7 +47,7 @@ export default function AchievementModal({ achievement, open, onClose }: Achieve
           {/* Заголовок с glow эффектом */}
           <div>
             <h2 
-              className="text-4xl font-bold text-[#00FF94] font-['Space_Grotesk'] mb-2"
+              className="text-4xl font-bold text-[#00FF94] font-['JetBrains_Mono'] mb-2"
               style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.8)' }}
             >
               Поздравляем!

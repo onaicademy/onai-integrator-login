@@ -156,7 +156,7 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
                         shadow-[0_0_40px_rgba(0,255,148,0.2)]">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-['Space_Grotesk'] text-white font-bold">
+            <h3 className="font-['JetBrains_Mono'] text-white font-bold">
               Выберите диапазон дат
             </h3>
             <button
@@ -171,7 +171,7 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
           <div className="space-y-4">
             {/* From Date */}
             <div className="space-y-2">
-              <label className="text-sm font-['Space_Grotesk'] text-white">
+              <label className="text-sm font-['JetBrains_Mono'] text-white">
                 С какого числа:
               </label>
               <input
@@ -186,7 +186,7 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
 
             {/* To Date */}
             <div className="space-y-2">
-              <label className="text-sm font-['Space_Grotesk'] text-white">
+              <label className="text-sm font-['JetBrains_Mono'] text-white">
                 По какое число:
               </label>
               <input

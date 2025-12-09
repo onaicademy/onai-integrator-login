@@ -149,7 +149,7 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
 
       <div className="flex items-center justify-between">
         <h2
-          className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"
+          className="text-xl md:text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider break-words"
           style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
         >
           МОИ УЧЕНИКИ
@@ -169,36 +169,38 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
       ) : (
         <>
           {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-800">
-                  <th className="text-left py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                    ФИО
-                  </th>
-                  <th className="text-left py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                    EMAIL
-                  </th>
-                  <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                    СТАТУС
-                  </th>
-                  <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                    МОДУЛИ
-                  </th>
-                  <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                    EMAIL ОТПРАВЛЕН
-                  </th>
-                  <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                    ДОБАВЛЕН
-                  </th>
-                  {/* 🔥 ДЕЙСТВИЯ - только для admin */}
-                  {currentUserEmail === 'smmmcwin@gmail.com' && (
-                    <th className="text-center py-4 px-4 text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
-                      ДЕЙСТВИЯ
-                    </th>
-                  )}
-                </tr>
-              </thead>
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden">
+                <table className="min-w-full w-full">
+                  <thead>
+                    <tr className="border-b border-gray-800">
+                      <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                        ФИО
+                      </th>
+                      <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                        EMAIL
+                      </th>
+                      <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                        СТАТУС
+                      </th>
+                      <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                        МОДУЛИ
+                      </th>
+                      <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap hidden md:table-cell">
+                        EMAIL ОТПРАВЛЕН
+                      </th>
+                      <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                        ДОБАВЛЕН
+                      </th>
+                      {/* 🔥 ДЕЙСТВИЯ - только для admin */}
+                      {currentUserEmail === 'smmmcwin@gmail.com' && (
+                        <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                          ДЕЙСТВИЯ
+                        </th>
+                      )}
+                    </tr>
+                  </thead>
               <tbody>
                 {users.map((user) => {
                   const statusInfo = statusConfig[user.status] || statusConfig.inactive;
@@ -208,18 +210,18 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                       key={user.id}
                       className="border-b border-gray-800/50 hover:bg-white/5 transition-colors"
                     >
-                      <td className="py-4 px-4">
-                        <span className="text-white font-medium">{user.full_name}</span>
+                      <td className="py-3 sm:py-4 px-2 sm:px-4">
+                        <span className="text-white font-medium text-sm sm:text-base truncate block max-w-[150px] sm:max-w-none">{user.full_name}</span>
                       </td>
-                      <td className="py-4 px-4">
-                        <span className="text-[#9CA3AF] font-['JetBrains_Mono'] text-sm">
+                      <td className="py-3 sm:py-4 px-2 sm:px-4">
+                        <span className="text-[#9CA3AF] font-['JetBrains_Mono'] text-xs sm:text-sm truncate block max-w-[180px] sm:max-w-none">
                           {user.email}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 sm:py-4 px-2 sm:px-4">
                         <div className="flex justify-center">
                           <span
-                            className={`px-3 py-1.5 rounded-full text-xs font-['JetBrains_Mono'] uppercase 
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-['JetBrains_Mono'] uppercase whitespace-nowrap
                                      ${statusInfo.bg} border ${statusInfo.border}`}
                             style={{ color: statusInfo.color }}
                           >
@@ -227,23 +229,23 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                           </span>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="text-lg font-bold text-white font-['Space_Grotesk']">
+                      <td className="py-3 sm:py-4 px-2 sm:px-4 text-center">
+                        <span className="text-base sm:text-lg font-bold text-white font-['JetBrains_Mono']">
                           {user.modules_completed}
                           <span className="text-[#00FF94]">/3</span>
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
                         <div className="flex justify-center">
                           {user.welcome_email_sent ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                           ) : (
-                            <XCircle className="w-5 h-5 text-red-500" />
+                            <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
                           )}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="text-sm text-[#9CA3AF]">
+                      <td className="py-3 sm:py-4 px-2 sm:px-4 text-center">
+                        <span className="text-xs sm:text-sm text-[#9CA3AF] whitespace-nowrap">
                           {new Date(user.created_at).toLocaleDateString('ru-RU')}
                         </span>
                       </td>
@@ -271,8 +273,10 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                     </tr>
                   );
                 })}
-              </tbody>
-            </table>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           {/* Pagination */}

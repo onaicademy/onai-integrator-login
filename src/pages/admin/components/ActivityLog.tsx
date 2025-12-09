@@ -101,7 +101,7 @@ export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogPr
       <div className="flex items-center gap-3">
         <Activity className="w-6 h-6 text-[#00FF94]" />
         <h2
-          className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"
+          className="text-xl md:text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider break-words"
           style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
         >
           ИСТОРИЯ ДЕЙСТВИЙ
@@ -121,41 +121,42 @@ export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogPr
             return (
               <div
                 key={activity.id}
-                className="flex items-start gap-4 p-4 bg-white/5 hover:bg-white/10 
+                className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-white/5 hover:bg-white/10 
                            rounded-xl border border-white/10 transition-all duration-200"
               >
                 {/* Icon */}
-                <div className="relative mt-1">
+                <div className="relative">
                   <div
                     className="absolute inset-0 blur-lg opacity-50"
                     style={{ backgroundColor: config.color }}
                   />
                   <div
-                    className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-white/5 to-white/0
-                                flex items-center justify-center border border-white/10"
+                    className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-white/5 to-white/0
+                                flex items-center justify-center border border-white/10 flex-shrink-0"
                   >
                     <Icon
                       icon={config.iconifyIcon}
-                      style={{ fontSize: '20px', color: config.color }}
+                      style={{ fontSize: '18px', color: config.color }}
+                      className="sm:text-xl"
                     />
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-white font-medium font-['Space_Grotesk']">
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium font-['JetBrains_Mono'] text-sm sm:text-base">
                         {config.label}
                       </p>
-                      <div className="mt-1 text-sm text-[#9CA3AF]">
+                      <div className="mt-1 text-xs sm:text-sm text-[#9CA3AF] break-words">
                         {activity.details?.full_name && (
                           <span className="font-['JetBrains_Mono']">
                             {activity.details.full_name}
                           </span>
                         )}
                         {activity.details?.email && (
-                          <span className="ml-2 text-xs">
+                          <span className="ml-2 text-xs truncate block sm:inline max-w-[250px] sm:max-w-none">
                             ({activity.details.email})
                           </span>
                         )}
@@ -167,7 +168,7 @@ export default function ActivityLog({ refreshTrigger, dateRange }: ActivityLogPr
                       </div>
                     </div>
 
-                    <span className="text-xs text-[#9CA3AF] font-['JetBrains_Mono'] whitespace-nowrap">
+                    <span className="text-[10px] sm:text-xs text-[#9CA3AF] font-['JetBrains_Mono'] whitespace-nowrap self-start sm:self-auto">
                       {activity.created_at 
                         ? new Date(activity.created_at).toLocaleString('ru-RU', {
                             day: '2-digit',

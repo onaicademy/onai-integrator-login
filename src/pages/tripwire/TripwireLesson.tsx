@@ -617,7 +617,7 @@ const TripwireLesson = () => {
   if (!loading && !lesson) {
     return (
       <div className="min-h-screen bg-[#030303] flex items-center justify-center">
-        <div className="text-white font-['Space_Grotesk'] text-xl">Урок не найден</div>
+        <div className="text-white font-['JetBrains_Mono'] text-xl">Урок не найден</div>
       </div>
     );
   }
@@ -846,7 +846,7 @@ const TripwireLesson = () => {
                   <Book className="w-6 h-6 text-[#00FF88]" />
                 </div>
                 <div>
-                  <h3 className="text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider">Информация</h3>
+                  <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider">Информация</h3>
                   <p className="text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">О уроке</p>
                 </div>
               </div>
@@ -877,7 +877,7 @@ const TripwireLesson = () => {
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
                 }}
               >
-                <h3 className="text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#00FF88]" />
                   Материалы
                 </h3>
@@ -933,7 +933,7 @@ const TripwireLesson = () => {
                 }}
               >
                 {/* Заголовок с лампочкой */}
-                <h3 className="text-[#00FF88] font-['Space_Grotesk'] font-bold uppercase tracking-wider mb-4 flex items-center gap-2 text-sm sm:text-base">
+                <h3 className="text-[#00FF88] font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-4 flex items-center gap-2 text-sm sm:text-base">
                   {/* 💡 Пульсирующая лампочка */}
                   <motion.span
                     animate={{ 
@@ -980,7 +980,7 @@ const TripwireLesson = () => {
                   <Bot className={`w-6 h-6 ${isAdmin ? 'text-[#00FF88]' : 'text-white/40'}`} />
                 </div>
                 <div>
-                  <h3 className={`font-['Space_Grotesk'] font-bold uppercase tracking-wider ${
+                  <h3 className={`font-['JetBrains_Mono'] font-bold uppercase tracking-wider ${
                     isAdmin ? 'text-white' : 'text-white/50'
                   }`}>AI-Куратор</h3>
                   <p className="text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">
@@ -1032,7 +1032,7 @@ const TripwireLesson = () => {
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
               }}
             >
-              <h3 className="text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider mb-4">Прогресс видео</h3>
+              <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-4">Прогресс видео</h3>
               <div className="relative">
                 <Progress 
                   value={videoProgress} 

@@ -65,7 +65,7 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
           
           <h2 
             className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold uppercase 
-                       tracking-wider font-['Space_Grotesk'] break-words leading-tight
+                       tracking-wider font-['JetBrains_Mono'] break-words leading-tight
                        ${isUnlocked ? 'text-[#FF3366]' : 'text-white/40'}`}
           >
             ЗАКЛЮЧИТЕЛЬНЫЙ ПРЯМОЙ ЭФИР

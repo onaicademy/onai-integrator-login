@@ -90,7 +90,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
           <div className="relative flex items-center justify-between">
             <div>
               <h2
-                className="text-3xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"
+                className="text-3xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider"
                 style={{ textShadow: '0 0 30px rgba(0, 255, 148, 0.5)' }}
               >
                 СОЗДАТЬ АККАУНТ
@@ -227,7 +227,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
               </div>
 
               <div>
-                <h3 className="text-3xl font-bold text-white font-['Space_Grotesk'] mb-2">
+                <h3 className="text-3xl font-bold text-white font-['JetBrains_Mono'] mb-2">
                   АККАУНТ СОЗДАН!
                 </h3>
                 <p className="text-[#9CA3AF]">
@@ -263,5 +263,6 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
     </Dialog>
   );
 }
+
 
 

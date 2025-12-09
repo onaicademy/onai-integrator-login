@@ -40,7 +40,7 @@ export default function ModuleProgress({ modules }: ModuleProgressProps) {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white font-['Space_Grotesk']
+        <h2 className="text-3xl lg:text-4xl font-bold text-white font-['JetBrains_Mono']
                      uppercase tracking-wider mb-2"
             style={{ textShadow: '0 0 30px rgba(0, 255, 148, 0.4)' }}>
           ПРОГРЕСС ПО МОДУЛЯМ
@@ -151,7 +151,7 @@ export default function ModuleProgress({ modules }: ModuleProgressProps) {
                           )}
                         </div>
                         
-                        <h3 className="text-2xl lg:text-3xl font-bold text-white font-['Space_Grotesk'] 
+                        <h3 className="text-2xl lg:text-3xl font-bold text-white font-['JetBrains_Mono'] 
                                      uppercase leading-tight">
                           {title}
                         </h3>
@@ -169,7 +169,7 @@ export default function ModuleProgress({ modules }: ModuleProgressProps) {
                                   ПРОСМОТР
                                 </span>
                               </div>
-                              <p className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                              <p className="text-3xl font-bold text-white font-['JetBrains_Mono']">
                                 {calculatedCompletion}%
                               </p>
                             </div>
@@ -182,7 +182,7 @@ export default function ModuleProgress({ modules }: ModuleProgressProps) {
                                   ВРЕМЯ
                                 </span>
                               </div>
-                              <p className="text-3xl font-bold text-white font-['Space_Grotesk'] flex items-baseline gap-1">
+                              <p className="text-3xl font-bold text-white font-['JetBrains_Mono'] flex items-baseline gap-1">
                                 {Math.floor(calculatedTime / 60)}
                                 <span className="text-lg text-[#9CA3AF]">мин</span>
                               </p>
@@ -194,7 +194,7 @@ export default function ModuleProgress({ modules }: ModuleProgressProps) {
                                 <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block">
                                   ЗАВЕРШЕНО
                                 </span>
-                                <p className="text-lg font-bold text-[#00FF94] font-['Space_Grotesk']">
+                                <p className="text-lg font-bold text-[#00FF94] font-['JetBrains_Mono']">
                                   {new Date(module.completed_at).toLocaleDateString('ru-RU', {
                                     day: 'numeric',
                                     month: 'short'

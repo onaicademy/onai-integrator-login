@@ -82,7 +82,7 @@ export default function Achievements({ achievements }: AchievementsProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-white font-['Space_Grotesk']
+          <h2 className="text-3xl font-bold text-white font-['JetBrains_Mono']
                        uppercase tracking-wider mb-2"
               style={{ textShadow: '0 0 30px rgba(0, 255, 148, 0.4)' }}>
             ДОСТИЖЕНИЯ
@@ -93,7 +93,7 @@ export default function Achievements({ achievements }: AchievementsProps) {
         </div>
 
         <div className="text-right">
-          <div className="text-4xl font-bold text-white font-['Space_Grotesk']">
+          <div className="text-4xl font-bold text-white font-['JetBrains_Mono']">
             {unlockedCount}
             <span className="text-[#00FF94]">/{totalCount}</span>
           </div>
@@ -184,7 +184,7 @@ export default function Achievements({ achievements }: AchievementsProps) {
 
                 {/* Text Content Area - High Contrast */}
                 <div className="p-6 pt-4 flex-1 flex flex-col text-center bg-white/[0.02]">
-                  <h3 className={`text-xl font-bold font-['Space_Grotesk'] mb-2 uppercase leading-tight
+                  <h3 className={`text-xl font-bold font-['JetBrains_Mono'] mb-2 uppercase leading-tight
                                 ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
                     {config.title}
                   </h3>

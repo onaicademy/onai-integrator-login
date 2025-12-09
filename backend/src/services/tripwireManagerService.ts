@@ -44,6 +44,22 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
   try {
     console.log(`🚀 [DIRECT DB] Creating Tripwire user: ${email}`);
 
+    // 🔒 STEP 0: CHECK IF EMAIL ALREADY EXISTS
+    const { data: existingUsers, error: checkError } = await tripwireAdminSupabase.auth.admin.listUsers();
+    
+    if (checkError) {
+      console.error('❌ Error checking existing users:', checkError);
+    }
+    
+    if (existingUsers) {
+      const emailExists = existingUsers.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      if (emailExists) {
+        console.warn(`⚠️ Email already exists: ${email}`);
+        throw new Error(`User with email ${email} already exists`);
+      }
+    }
+
     // 1️⃣ CREATE USER IN auth.users
     const { data: newUser, error: authError } = await tripwireAdminSupabase.auth.admin.createUser({
       email: email,
@@ -59,6 +75,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     });
 
     if (authError || !newUser?.user) {
+      console.error('❌ Auth creation failed:', authError);
       throw new Error(`Auth error: ${authError?.message || 'No user returned'}`);
     }
 
@@ -174,6 +191,16 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     } catch (dbError) {
       await client.query('ROLLBACK');
       console.error('❌ [DIRECT DB] Transaction failed:', dbError);
+      
+      // 🔥 ROLLBACK: DELETE USER FROM auth.users если DB transaction failed
+      try {
+        console.log(`🗑️ Rolling back auth user ${userId}...`);
+        await tripwireAdminSupabase.auth.admin.deleteUser(userId);
+        console.log(`✅ Auth user deleted (rollback)`);
+      } catch (rollbackError: any) {
+        console.error('❌ Failed to rollback auth user:', rollbackError.message);
+      }
+      
       throw dbError;
     } finally {
       client.release();

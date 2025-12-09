@@ -104,7 +104,7 @@ export default function AccountSettings({ email, created_at, full_name }: Accoun
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white font-['Space_Grotesk']
+        <h2 className="text-3xl lg:text-4xl font-bold text-white font-['JetBrains_Mono']
                      uppercase tracking-wider mb-2"
             style={{ textShadow: '0 0 30px rgba(0, 255, 148, 0.4)' }}>
           НАСТРОЙКИ АККАУНТА
@@ -123,7 +123,7 @@ export default function AccountSettings({ email, created_at, full_name }: Accoun
               <div className="p-2 rounded-lg bg-[#00FF94]/10 border border-[#00FF94]/20">
                 <User className="w-6 h-6 text-[#00FF94]" />
               </div>
-              <h3 className="text-xl font-bold text-white font-['Space_Grotesk'] uppercase">
+              <h3 className="text-xl font-bold text-white font-['JetBrains_Mono'] uppercase">
                 ИНФОРМАЦИЯ
               </h3>
             </div>
@@ -157,7 +157,7 @@ export default function AccountSettings({ email, created_at, full_name }: Accoun
               <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                 <Shield className="w-6 h-6 text-purple-500" />
               </div>
-              <h3 className="text-xl font-bold text-white font-['Space_Grotesk'] uppercase">
+              <h3 className="text-xl font-bold text-white font-['JetBrains_Mono'] uppercase">
                 БЕЗОПАСНОСТЬ
               </h3>
             </div>
@@ -218,7 +218,7 @@ export default function AccountSettings({ email, created_at, full_name }: Accoun
               <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
                 <LogOut className="w-6 h-6 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-white font-['Space_Grotesk'] uppercase">
+              <h3 className="text-xl font-bold text-white font-['JetBrains_Mono'] uppercase">
                 ВЫХОД
               </h3>
             </div>

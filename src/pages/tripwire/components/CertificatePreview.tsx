@@ -375,7 +375,7 @@ export function CertificatePreview({
               <div className="flex items-center gap-4 mb-4">
                 <Lock className="w-12 h-12 text-[#9CA3AF]" />
                 <div>
-                  <h3 className="text-xl text-white font-['Space_Grotesk'] font-bold uppercase tracking-wider mb-1">
+                  <h3 className="text-xl text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-1">
                     Сертификат заблокирован
                   </h3>
                   <p className="text-sm text-gray-400 font-['Manrope']">

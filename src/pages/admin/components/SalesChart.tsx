@@ -74,7 +74,7 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
         <div className="flex items-center gap-3">
           <Calendar className="w-6 h-6 text-[#00FF94]" />
           <h2
-            className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"
+            className="text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider"
             style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
           >
             ДИНАМИКА ПРОДАЖ
@@ -162,5 +162,6 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
     </div>
   );
 }
+
 
 

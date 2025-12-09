@@ -62,7 +62,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
       <div className="flex items-center gap-3">
         <Trophy className="w-6 h-6 text-[#F59E0B]" />
         <h2
-          className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider"
+          className="text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider"
           style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
         >
           РЕЙТИНГ МЕНЕДЖЕРОВ
@@ -117,7 +117,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                           style={{ borderColor: medalColor, backgroundColor: 'rgba(0,0,0,0.5)' }}
                         >
                           <span
-                            className="text-3xl font-bold font-['Space_Grotesk']"
+                            className="text-3xl font-bold font-['JetBrains_Mono']"
                             style={{ color: medalColor }}
                           >
                             {index + 1}
@@ -129,7 +129,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <User className="w-5 h-5 text-[#00FF94]" />
-                          <h3 className="text-xl font-bold text-white font-['Space_Grotesk']">
+                          <h3 className="text-xl font-bold text-white font-['JetBrains_Mono']">
                             {manager.manager_name}
                           </h3>
                           {isCurrentManager && (
@@ -145,7 +145,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                             <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
                               Всего продаж
                             </span>
-                            <p className="text-lg font-bold text-white font-['Space_Grotesk']">
+                            <p className="text-lg font-bold text-white font-['JetBrains_Mono']">
                               {manager.total_sales}
                             </p>
                           </div>
@@ -153,7 +153,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                             <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
                               Этот месяц
                             </span>
-                            <p className="text-lg font-bold text-[#00FF94] font-['Space_Grotesk']">
+                            <p className="text-lg font-bold text-[#00FF94] font-['JetBrains_Mono']">
                               {manager.this_month_sales}
                             </p>
                           </div>
@@ -166,7 +166,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                       <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block mb-2">
                         Общая выручка
                       </span>
-                      <p className="text-3xl font-bold text-white font-['Space_Grotesk'] mb-1">
+                      <p className="text-3xl font-bold text-white font-['JetBrains_Mono'] mb-1">
                         {formatCurrency(manager.total_revenue)}
                       </p>
                       <span className="text-sm font-['JetBrains_Mono'] text-[#00FF94]">
@@ -219,5 +219,6 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
     </div>
   );
 }
+
 
 

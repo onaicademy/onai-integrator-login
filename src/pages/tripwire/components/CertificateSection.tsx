@@ -138,7 +138,7 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                 <CheckCircle className="w-10 h-10 text-black" />
               </motion.div>
               <div>
-                <h3 className="text-2xl font-bold text-white font-['Space_Grotesk'] mb-2">
+                <h3 className="text-2xl font-bold text-white font-['JetBrains_Mono'] mb-2">
                   СЕРТИФИКАТ РАЗБЛОКИРОВАН!
                 </h3>
                 <p className="text-[#9CA3AF] font-['JetBrains_Mono'] text-sm">
@@ -160,7 +160,7 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
         <div className="p-8 border-b border-white/5">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wider">
+              <h2 className="text-3xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider">
                 СЕРТИФИКАТ
               </h2>
               <p className="text-sm text-[#9CA3AF] font-['JetBrains_Mono'] uppercase">
@@ -252,11 +252,11 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                   /// ПРОГРЕСС ДО СЕРТИФИКАТА
                 </p>
                 <div className="flex items-center justify-center gap-3">
-                  <span className="text-3xl font-bold text-white font-['Space_Grotesk']">
+                  <span className="text-3xl font-bold text-white font-['JetBrains_Mono']">
                     {profile.modules_completed}
                   </span>
                   <span className="text-xl text-gray-600">/</span>
-                  <span className="text-3xl font-bold text-gray-600 font-['Space_Grotesk']">
+                  <span className="text-3xl font-bold text-gray-600 font-['JetBrains_Mono']">
                     {profile.total_modules}
                   </span>
                   <span className="text-sm text-gray-500 ml-2 font-['Manrope']">

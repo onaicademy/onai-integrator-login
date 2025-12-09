@@ -105,10 +105,21 @@ export default function TripwireLogin() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className="mt-12 text-center text-gray-600 text-xs"
+          className="mt-12"
         >
-          <p>© 2025 onAI Academy</p>
-          <p className="mt-1">Premium AI Learning Platform</p>
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-gray-600 text-xs">
+              © {new Date().getFullYear()} onAI Academy. Все права защищены
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-['JetBrains_Mono'] text-xs uppercase tracking-wider">
+                Версия платформы:
+              </span>
+              <span className="font-['JetBrains_Mono'] text-xs font-bold text-[#00FF88] bg-[#00FF88]/10 px-2 py-1 rounded border border-[#00FF88]/20">
+                v1.10.00
+              </span>
+            </div>
+          </div>
         </motion.footer>
       </div>
 

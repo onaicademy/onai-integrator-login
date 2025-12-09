@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { Footer } from '@/components/Footer';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -43,6 +44,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <main className="flex-1 overflow-auto">
             {children}
           </main>
+          <Footer />
         </div>
       </div>
     </SidebarProvider>

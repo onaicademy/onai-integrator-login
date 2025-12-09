@@ -221,7 +221,7 @@ export function ModuleUnlockAnimation({
             </motion.div>
             
             <motion.h2
-              className="text-4xl font-bold text-white font-['Space_Grotesk'] uppercase"
+              className="text-4xl font-bold text-white font-['JetBrains_Mono'] uppercase"
               animate={{ 
                 scale: [1, 1.05, 1]
               }}

@@ -82,7 +82,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
                 <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase tracking-wider block mb-2">
                   /// {card.title}
                 </span>
-                <p className="text-4xl font-bold text-white font-['Space_Grotesk']">
+                <p className="text-4xl font-bold text-white font-['JetBrains_Mono']">
                   {card.value}
                 </p>
                 {(card as any).subtitle && (
@@ -119,4 +119,5 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     </div>
   );
 }
+
 

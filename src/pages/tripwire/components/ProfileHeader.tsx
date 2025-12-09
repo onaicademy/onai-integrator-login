@@ -36,7 +36,7 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
         <div className="flex flex-col lg:flex-row items-start justify-between gap-8 w-full">
           {/* Name & Email Block */}
           <div className="space-y-3 flex-1">
-            <h1 className="text-4xl lg:text-6xl font-bold text-white font-['Space_Grotesk'] 
+            <h1 className="text-4xl lg:text-6xl font-bold text-white font-['JetBrains_Mono'] 
                          uppercase tracking-wider leading-tight"
                 style={{ 
                   textShadow: '0 0 40px rgba(0, 255, 148, 0.5), 0 0 80px rgba(0, 255, 148, 0.2)' 

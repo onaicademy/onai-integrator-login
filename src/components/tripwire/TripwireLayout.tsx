@@ -9,6 +9,7 @@ import { List } from "@phosphor-icons/react";
 import { Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TripwireAIChatDialog } from "./TripwireAIChatDialog";
+import { Footer } from "@/components/Footer";
 
 interface TripwireLayoutProps {
   children: React.ReactNode;
@@ -103,6 +104,9 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
         <div className="p-4 lg:p-8 max-w-[1600px] mx-auto">
           {children}
         </div>
+        
+        {/* Footer */}
+        <Footer />
       </main>
 
       {/* AI Chat Dialog */}
