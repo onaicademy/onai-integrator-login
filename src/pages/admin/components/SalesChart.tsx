@@ -47,7 +47,8 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
         console.log('📊 [SalesChart] API Request:', `/api/admin/tripwire/sales-chart?${params}`);
         const result = await api.get(`/api/admin/tripwire/sales-chart?${params}`);
         console.log('📊 [SalesChart] API Response:', result);
-        setData(result.data || []);
+        // API возвращает массив напрямую, не обернутый в объект
+        setData(Array.isArray(result) ? result : []);
       } catch (error) {
         console.error('❌ [SalesChart] Error loading chart data:', error);
       } finally {
@@ -74,7 +75,7 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
         <div className="flex items-center gap-3">
           <Calendar className="w-6 h-6 text-[#00FF94]" />
           <h2
-            className="text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider"
+            className="text-xl md:text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider break-words"
             style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
           >
             ДИНАМИКА ПРОДАЖ
@@ -162,6 +163,5 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
     </div>
   );
 }
-
 
 

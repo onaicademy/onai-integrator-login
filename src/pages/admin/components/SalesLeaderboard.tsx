@@ -28,7 +28,8 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
       try {
         setLoading(true);
         const data = await api.get('/api/admin/tripwire/leaderboard');
-          setManagers(data.managers || []);
+        // API возвращает массив напрямую, не обернутый в объект
+        setManagers(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error loading leaderboard:', error);
       } finally {
@@ -62,7 +63,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
       <div className="flex items-center gap-3">
         <Trophy className="w-6 h-6 text-[#F59E0B]" />
         <h2
-          className="text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider"
+          className="text-xl md:text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider break-words"
           style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
         >
           РЕЙТИНГ МЕНЕДЖЕРОВ
@@ -129,7 +130,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <User className="w-5 h-5 text-[#00FF94]" />
-                          <h3 className="text-xl font-bold text-white font-['JetBrains_Mono']">
+                          <h3 className="text-lg md:text-xl font-bold text-white font-['JetBrains_Mono'] break-words">
                             {manager.manager_name}
                           </h3>
                           {isCurrentManager && (
@@ -166,7 +167,7 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
                       <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block mb-2">
                         Общая выручка
                       </span>
-                      <p className="text-3xl font-bold text-white font-['JetBrains_Mono'] mb-1">
+                      <p className="text-2xl md:text-3xl font-bold text-white font-['JetBrains_Mono'] mb-1 break-words">
                         {formatCurrency(manager.total_revenue)}
                       </p>
                       <span className="text-sm font-['JetBrains_Mono'] text-[#00FF94]">
@@ -219,6 +220,5 @@ export default function SalesLeaderboard({ currentManagerId, onManagerSelect }: 
     </div>
   );
 }
-
 
 
