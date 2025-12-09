@@ -401,7 +401,7 @@ export async function getSalesLeaderboard() {
 }
 
 /**
- * Получает данные для графика продаж (via RPC)
+ * Получает данные для графика продаж (via DIRECT SQL)
  */
 export async function getSalesChartData(
   managerId?: string,
@@ -410,6 +410,8 @@ export async function getSalesChartData(
   customEndDate?: string
 ) {
   try {
+    console.log('📊 [SALES_CHART] Fetching chart data via DIRECT SQL');
+    
     // Вычисляем даты если не указаны
     const now = new Date();
     let startDate: string;
@@ -427,19 +429,33 @@ export async function getSalesChartData(
       startDate = startDateObj.toISOString();
     }
 
-    const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_sales_chart_data', {
-      p_manager_id: managerId || null,
-      p_start_date: startDate,
-      p_end_date: endDate,
-    });
+    const client = await tripwirePool.connect();
+    try {
+      const query = `
+        SELECT 
+          DATE(created_at) as date,
+          COUNT(*) as sales,
+          SUM(price) as revenue
+        FROM public.tripwire_users
+        WHERE created_at >= $1 AND created_at <= $2
+          ${managerId ? 'AND granted_by = $3' : ''}
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `;
 
-    if (error) {
-      throw new Error(`RPC error: ${error.message}`);
+      const params = managerId 
+        ? [startDate, endDate, managerId]
+        : [startDate, endDate];
+
+      const result = await client.query(query, params);
+      
+      console.log(`✅ [SALES_CHART] Found ${result.rows.length} data points`);
+      return result.rows;
+    } finally {
+      client.release();
     }
-
-    return data;
   } catch (error: any) {
-    console.error('❌ Error fetching sales chart data via RPC:', error);
+    console.error('❌ Error fetching sales chart data:', error);
     throw error;
   }
 }

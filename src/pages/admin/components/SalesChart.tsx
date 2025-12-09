@@ -71,31 +71,14 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-[#00FF94]" />
-          <h2
-            className="text-xl md:text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider break-words"
-            style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
-          >
-            ДИНАМИКА ПРОДАЖ
-          </h2>
-        </div>
-
-        <div className="flex items-center gap-2 bg-[rgba(15,15,15,0.6)] rounded-lg p-1">
-          {['week', 'month', 'year'].map((p) => (
-            <button
-              key={p}
-              className={`px-4 py-2 rounded-lg font-['JetBrains_Mono'] text-sm uppercase transition-all ${
-                period === p
-                  ? 'bg-[#00FF94] text-black'
-                  : 'text-[#9CA3AF] hover:text-white'
-              }`}
-            >
-              {p === 'week' ? 'Неделя' : p === 'month' ? 'Месяц' : 'Год'}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-3">
+        <TrendingUp className="w-6 h-6 text-[#00FF94]" />
+        <h2
+          className="text-xl md:text-2xl font-bold text-white font-['JetBrains_Mono'] uppercase tracking-wider break-words"
+          style={{ textShadow: '0 0 20px rgba(0, 255, 148, 0.3)' }}
+        >
+          ДИНАМИКА ПРОДАЖ
+        </h2>
       </div>
 
       {data.length === 0 ? (

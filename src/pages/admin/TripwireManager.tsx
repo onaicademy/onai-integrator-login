@@ -203,6 +203,11 @@ export default function TripwireManager() {
           />
         </div>
 
+        {/* Date Filter */}
+        <div className="flex justify-center">
+          <SafeDateFilter value={dateRange} onChange={setDateRange} />
+        </div>
+
         {/* Sales Chart - График продаж */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
