@@ -125,12 +125,12 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
               if (data.progress === 100 && data.data?.pdfUrl) {
                 console.log('✅ [SSE] Certificate ready:', data.data.pdfUrl);
                 setPdfUrl(data.data.pdfUrl);
-                
+      
                 // Перезагружаем профиль чтобы обновить UI
-                await onGenerateCertificate();
-                
+      await onGenerateCertificate();
+      
                 // Показываем успех еще 1 секунду
-                await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
               }
               
               // Ошибка
@@ -331,8 +331,8 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                     {/* Текст статуса */}
                     <div className="flex items-center justify-between text-sm">
                       <p className="text-[#00FF94] font-['JetBrains_Mono'] uppercase tracking-wider">
-                        {generationStep}
-                      </p>
+                      {generationStep}
+                    </p>
                       <p className="text-white font-['JetBrains_Mono'] font-bold">
                         {generationProgress}%
                       </p>
