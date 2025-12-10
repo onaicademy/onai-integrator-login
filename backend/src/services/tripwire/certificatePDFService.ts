@@ -68,7 +68,7 @@ export class CertificatePDFService {
           .container {
             width: 1200px;
             height: 848px;
-            background: radial-gradient(ellipse at 15% 50%, #151515 0%, #2C2A2A 69%, #1F1F1F 100%);
+            background: radial-gradient(ellipse at 15% 50%, #0A0A0A 0%, #1A1818 69%, #111111 100%);
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -83,11 +83,11 @@ export class CertificatePDFService {
         <div class="container">
           <svg width="1200" height="848" viewBox="0 0 1200 848" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
-              <!-- Градиенты - НОВЫЙ ФОН -->
+              <!-- Градиенты - НОВЫЙ ФОН (ТЕМНЕЕ НА 30%) -->
               <radialGradient id="bgGradient" cx="15%" cy="50%">
-                <stop offset="0%" style="stop-color:#151515;stop-opacity:1" />
-                <stop offset="69%" style="stop-color:#2C2A2A;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#1F1F1F;stop-opacity:1" />
+                <stop offset="0%" style="stop-color:#0A0A0A;stop-opacity:1" />
+                <stop offset="69%" style="stop-color:#1A1818;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#111111;stop-opacity:1" />
               </radialGradient>
               
               <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -185,8 +185,8 @@ export class CertificatePDFService {
               успешно завершил(а) интенсивный курс
             </text>
 
-            <!-- Название курса -->
-            <text x="600" y="450" text-anchor="middle" fill="#FFFFFF" font-size="36" font-family="Space Grotesk, sans-serif" font-weight="bold" letter-spacing="4">
+            <!-- Название курса - ЗЕЛЁНЫЙ ЦВЕТ БРЕНДА -->
+            <text x="600" y="450" text-anchor="middle" fill="#00FF94" font-size="36" font-family="Space Grotesk, sans-serif" font-weight="bold" letter-spacing="4">
               ${data.courseTitle.toUpperCase()}
             </text>
 

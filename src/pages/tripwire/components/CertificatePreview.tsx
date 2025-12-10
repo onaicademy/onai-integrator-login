@@ -37,7 +37,7 @@ export function CertificatePreview({
     <div className="relative w-full">
       {/* A4 Landscape Container */}
       <div className="relative w-full aspect-[1.414/1] rounded-xl overflow-hidden shadow-2xl" style={{
-        background: 'radial-gradient(ellipse at 15% 50%, #151515 0%, #2C2A2A 69%, #1F1F1F 100%)'
+        background: 'radial-gradient(ellipse at 15% 50%, #0A0A0A 0%, #1A1818 69%, #111111 100%)'
       }}>
         <svg 
           width="100%" 
@@ -48,11 +48,11 @@ export function CertificatePreview({
           className="w-full h-full"
         >
           <defs>
-            {/* Градиенты - НОВЫЙ ФОН */}
+            {/* Градиенты - НОВЫЙ ФОН (ТЕМНЕЕ НА 30%) */}
             <radialGradient id="bgGradient" cx="15%" cy="50%">
-              <stop offset="0%" style={{ stopColor: '#151515', stopOpacity: 1 }} />
-              <stop offset="69%" style={{ stopColor: '#2C2A2A', stopOpacity: 1 }} />
-              <stop offset="100%" style={{ stopColor: '#1F1F1F', stopOpacity: 1 }} />
+              <stop offset="0%" style={{ stopColor: '#0A0A0A', stopOpacity: 1 }} />
+              <stop offset="69%" style={{ stopColor: '#1A1818', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: '#111111', stopOpacity: 1 }} />
             </radialGradient>
             
             <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -225,12 +225,12 @@ export function CertificatePreview({
             успешно завершил(а) интенсивный курс
           </text>
 
-          {/* Название курса */}
+          {/* Название курса - ЗЕЛЁНЫЙ ЦВЕТ БРЕНДА */}
           <text 
             x="600" 
             y="450" 
             textAnchor="middle" 
-            fill="#FFFFFF" 
+            fill="#00FF94" 
             fontSize="36" 
             fontFamily="Space Grotesk, sans-serif" 
             fontWeight="bold"
