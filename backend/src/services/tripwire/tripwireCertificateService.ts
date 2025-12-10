@@ -99,10 +99,11 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
       studentName = tripwireUser?.full_name || 'Tripwire Student';
     }
     
-    // 4. Генерируем уникальный номер сертификата
+    // 4. Генерируем уникальный номер сертификата (ASCII-safe!)
     const timestamp = Date.now().toString().slice(-6);
-    const namePrefix = (studentName || 'USER').split(' ')[0]?.toUpperCase() || 'USER';
-    const certificateNumber = `TW-${namePrefix}-${timestamp}`;
+    // 🔥 FIX: Используем userId вместо имени (избегаем кириллицу в filename)
+    const userIdShort = userId.slice(0, 8).toUpperCase(); // Первые 8 символов UUID
+    const certificateNumber = `TW-USER-${userIdShort}-${timestamp}`;
     
     // 5. Генерируем PDF сертификата
     console.log('📄 [Certificate] Generating PDF...');

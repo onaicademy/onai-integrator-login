@@ -81,8 +81,9 @@ export async function issueCertificateStream(req: Request, res: Response): Promi
     sendProgress(20, 'Генерация номера сертификата...');
     
     const timestamp = Date.now().toString().slice(-6);
-    const namePrefix = (studentName || 'USER').split(' ')[0]?.toUpperCase() || 'USER';
-    const certificateNumber = `TW-${namePrefix}-${timestamp}`;
+    // 🔥 FIX: Используем userId вместо имени (избегаем кириллицу в filename)
+    const userIdShort = user_id.slice(0, 8).toUpperCase(); // Первые 8 символов UUID
+    const certificateNumber = `TW-USER-${userIdShort}-${timestamp}`;
 
     // ЭТАП 3: Генерация PDF (25-50%)
     sendProgress(25, 'Создание PDF документа...');
