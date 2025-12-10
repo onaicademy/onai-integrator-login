@@ -67,26 +67,30 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
           С основателями академии
         </p>
 
-        {/* Время эфира и обратный отсчёт */}
-        {isUnlocked && (
-          <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4 md:mb-6">
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#FF3366]/20 
-                           border border-[#FF3366]/40 rounded-full">
-              <span className="text-xs sm:text-sm font-bold text-[#FF3366] font-['JetBrains_Mono'] whitespace-nowrap">
-                {streamTime}
-              </span>
-            </div>
-            
-            {/* Обратный отсчёт */}
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#00FF94]/10 
-                           border border-[#00FF94]/30 rounded-full">
-              <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#00FF94]" />
-              <span className="text-[10px] sm:text-xs font-semibold text-[#00FF94] font-['JetBrains_Mono'] whitespace-nowrap">
-                До эфира: {countdown}
-              </span>
-            </div>
+        {/* Время эфира и обратный отсчёт - ПОКАЗЫВАЕТСЯ ВСЕГДА */}
+        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4 md:mb-6">
+          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
+                          ${isUnlocked 
+                            ? 'bg-[#FF3366]/20 border border-[#FF3366]/40' 
+                            : 'bg-white/5 border border-white/10'}`}>
+            <span className={`text-xs sm:text-sm font-bold font-['JetBrains_Mono'] whitespace-nowrap
+                            ${isUnlocked ? 'text-[#FF3366]' : 'text-white/40'}`}>
+              {streamTime}
+            </span>
           </div>
-        )}
+          
+          {/* Обратный отсчёт */}
+          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
+                          ${isUnlocked 
+                            ? 'bg-[#00FF94]/10 border border-[#00FF94]/30' 
+                            : 'bg-white/5 border border-white/10'}`}>
+            <Clock className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isUnlocked ? 'text-[#00FF94]' : 'text-white/30'}`} />
+            <span className={`text-[10px] sm:text-xs font-semibold font-['JetBrains_Mono'] whitespace-nowrap
+                            ${isUnlocked ? 'text-[#00FF94]' : 'text-white/40'}`}>
+              До эфира: {countdown}
+            </span>
+          </div>
+        </div>
 
         {/* Описание */}
         <div className="space-y-2 mb-4 sm:mb-6">
