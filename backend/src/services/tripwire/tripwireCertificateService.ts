@@ -1,10 +1,10 @@
 /**
  * Tripwire Certificate Service
  * Сервис для генерации и выдачи сертификатов
- * ✅ ИСПОЛЬЗУЕТ MAIN PLATFORM DB (pjmvxecykysfrzppdcto)
+ * ✅ ИСПОЛЬЗУЕТ TRIPWIRE DB (pjmvxecykysfrzppdcto)
  */
 
-import { adminSupabase as supabase } from '../../config/supabase';
+import { tripwireAdminSupabase as supabase } from '../../config/supabase-tripwire';
 import { certificatePDFService } from './certificatePDFService';
 import { v4 as uuidv4 } from 'uuid';
 

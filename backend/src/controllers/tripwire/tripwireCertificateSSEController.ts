@@ -1,11 +1,11 @@
 /**
  * Tripwire Certificate SSE Controller
  * Server-Sent Events для реального отслеживания прогресса генерации сертификата
- * ✅ ИСПОЛЬЗУЕТ MAIN PLATFORM DB (pjmvxecykysfrzppdcto)
+ * ✅ ИСПОЛЬЗУЕТ TRIPWIRE DB (pjmvxecykysfrzppdcto)
  */
 
 import { Request, Response } from 'express';
-import { adminSupabase as supabase } from '../../config/supabase';
+import { tripwireAdminSupabase as supabase } from '../../config/supabase-tripwire';
 import { certificatePDFService } from '../../services/tripwire/certificatePDFService';
 import { v4 as uuidv4 } from 'uuid';
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 Для Tripwire Auth
-import { supabase } from '@/lib/supabase'; // 🔥 Main Platform - для сертификатов
+import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 Для Tripwire Auth И сертификатов
 import { apiClient } from '@/utils/apiClient'; // ✅ API Client
 import { Loader2 } from 'lucide-react';
 import { 
@@ -195,8 +194,8 @@ export default function TripwireProfile() {
         setAchievements(achievementsData as any);
       }
 
-      // 3. Сертификаты (используем Main Platform Supabase!)
-      const { data: certificateData } = await supabase
+      // 3. Сертификаты (используем Tripwire Supabase!)
+      const { data: certificateData } = await tripwireSupabase
         .from('certificates')
         .select('*')
         .eq('user_id', user.id)
