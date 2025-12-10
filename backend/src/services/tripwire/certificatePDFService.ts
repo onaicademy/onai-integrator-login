@@ -68,7 +68,7 @@ export class CertificatePDFService {
           .container {
             width: 1200px;
             height: 848px;
-            background: radial-gradient(ellipse at center, #1A1A1A 0%, #0F0F0F 50%, #000000 100%);
+            background: radial-gradient(ellipse at 15% 50%, #151515 0%, #2C2A2A 69%, #1F1F1F 100%);
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -83,11 +83,11 @@ export class CertificatePDFService {
         <div class="container">
           <svg width="1200" height="848" viewBox="0 0 1200 848" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
-              <!-- Градиенты -->
-              <radialGradient id="bgGradient" cx="50%" cy="50%">
-                <stop offset="0%" style="stop-color:#1A1A1A;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#0F0F0F;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+              <!-- Градиенты - НОВЫЙ ФОН -->
+              <radialGradient id="bgGradient" cx="15%" cy="50%">
+                <stop offset="0%" style="stop-color:#151515;stop-opacity:1" />
+                <stop offset="69%" style="stop-color:#2C2A2A;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#1F1F1F;stop-opacity:1" />
               </radialGradient>
               
               <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="0%">

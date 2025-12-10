@@ -90,7 +90,7 @@ export async function issueCertificateStream(req: Request, res: Response): Promi
     
     const pdfBuffer = await certificatePDFService.generatePDF({
       userName: studentName,
-      courseTitle: 'Интегратор (быстрый старт)',
+      courseTitle: '"Интегратор 3.0 Экспресс-курс"',
       completionDate: new Date().toLocaleDateString('ru-RU', {
         day: '2-digit',
         month: 'long',
