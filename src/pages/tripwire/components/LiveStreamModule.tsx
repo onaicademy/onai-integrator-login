@@ -68,7 +68,7 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
         </p>
 
         {/* Время эфира и обратный отсчёт - ПОКАЗЫВАЕТСЯ ВСЕГДА */}
-        <div className="flex flex-col gap-2 sm:gap-2.5 md:gap-3 mb-3 sm:mb-4 md:mb-6">
+        <div className="flex flex-col gap-3 sm:gap-3.5 md:gap-4 lg:gap-5 mb-3 sm:mb-4 md:mb-6">
           {/* Дата эфира */}
           <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit
                           ${isUnlocked 
