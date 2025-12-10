@@ -49,7 +49,7 @@ export async function issueCertificateStream(req: Request, res: Response): Promi
       .from('certificates')
       .select('pdf_url, certificate_number, issued_at')
       .eq('user_id', user_id)
-      .single();
+      .maybeSingle(); // ✅ Возвращает null если сертификата нет
 
     if (existing?.pdf_url) {
       console.log('✅ [SSE] Certificate already exists, returning cached version');

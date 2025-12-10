@@ -199,7 +199,7 @@ export default function TripwireProfile() {
         .from('certificates')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // ✅ Возвращает null если сертификата нет (вместо 406)
 
       if (certificateData) {
         setCertificate(certificateData as any);

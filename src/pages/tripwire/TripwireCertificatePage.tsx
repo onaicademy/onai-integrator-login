@@ -26,7 +26,7 @@ export default function TripwireCertificatePage() {
         .from('certificates')
         .select('*')
         .eq('certificate_number', certificateNumber)
-        .single();
+        .maybeSingle(); // ✅ Возвращает null если сертификата нет (вместо 406)
 
       if (fetchError) throw fetchError;
       if (!data) throw new Error('Сертификат не найден');

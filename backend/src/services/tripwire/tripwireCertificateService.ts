@@ -72,7 +72,7 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
       .from('certificates')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle(); // ✅ Возвращает null если сертификата нет
     
     if (existingCert) {
       console.log('⚠️ [Tripwire CertificateService] Найден старый сертификат, удаляем для регенерации...');
@@ -198,7 +198,7 @@ export async function getUserCertificate(userId: string): Promise<Certificate | 
       .from('certificates')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle(); // ✅ Возвращает null если сертификата нет
     
     if (error) {
       if (error.code === 'PGRST116') {
