@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, BookOpen, Lock, Zap, Code, Briefcase, Rocket, Brain, Bot, Clapperboard, Sparkles } from "lucide-react";
+import { Clock, BookOpen, Lock, Zap, Code, Briefcase, Rocket, Brain, Bot, Clapperboard, Sparkles, MessageSquare } from "lucide-react";
 import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
 import { api } from "@/utils/apiClient";
 import LiveStreamModule from "./components/LiveStreamModule";
@@ -30,30 +30,33 @@ const BRAND = {
 const tripwireModules = [
   {
     id: 16, // ✅ Модуль 1: Основы AI в БД
+    moduleNumber: 1,
     title: "Вводный модуль",
     subtitle: "Определим какое направление в ИИ твое",
     description: "Базовое погружение в нейросети. Разбор основных инструментов и выбор специализации для заработка.",
     duration: "45 мин",
     lessons: 1,
-    icon: Brain,
+    icon: Rocket,
     status: "active",
     gradient: "from-[#00FF88]/20 via-transparent to-transparent",
     lessonId: 67,
   },
   {
     id: 17, // ✅ Модуль 2: Практика с AI в БД
+    moduleNumber: 2,
     title: "Создание GPT-бота",
     subtitle: "Instagram, WhatsApp интеграции",
     description: "Практический модуль по созданию умных ассистентов. Подключение к соцсетям и автоматизация общения.",
     duration: "60 мин",
     lessons: 1,
-    icon: Bot,
+    icon: MessageSquare,
     status: "locked",
     gradient: "from-purple-500/20 via-transparent to-transparent",
     lessonId: 68,
   },
   {
     id: 18, // ✅ Модуль 3: AI в бизнесе в БД
+    moduleNumber: 3,
     title: "Создание вирусных Reels",
     subtitle: "100 000 👁️ | Сценарий, видео, монтаж",
     description: "Генерация контента с помощью AI. Создание сценариев, цифровых аватаров и автоматический монтаж.",
@@ -348,7 +351,7 @@ export default function TripwireProductPage() {
       {/* ═══════════════════════════════════════════════════════════
           MAIN CONTENT
           ═══════════════════════════════════════════════════════ */}
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 py-12 lg:py-20">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 pt-6 sm:pt-8 lg:pt-12 pb-12 lg:pb-20">
         
         {/* ═══════════════════════════════════════════════════════════
             HERO HEADER - CYBER STYLE
@@ -357,10 +360,10 @@ export default function TripwireProductPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 lg:mb-20"
+          className="mb-8 sm:mb-10 lg:mb-12"
         >
           {/* System Label */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5 lg:mb-6">
             <motion.div
               animate={{
                 boxShadow: ['0 0 4px #00FF88', '0 0 8px #00FF88', '0 0 4px #00FF88'],
@@ -370,130 +373,111 @@ export default function TripwireProductPage() {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="w-3 h-3 rounded-full bg-[#00FF88]"
+              className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#00FF88]"
             />
             <span 
-              className="text-xs tracking-[0.3em] uppercase"
+              className="text-[10px] sm:text-xs md:text-sm tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.3em] uppercase"
               style={{ 
                 fontFamily: BRAND.fonts.mono,
                 color: BRAND.colors.neon_green 
               }}
             >
-              /// SYSTEM ACTIVE • V3.0 STABLE
+              (EXPRESS COURSE)
             </span>
           </div>
 
-          {/* Main Title with GLOW effect */}
-          <h1 
-            className="text-3xl lg:text-5xl font-bold uppercase mb-4 leading-tight"
-            style={{ 
-              fontFamily: BRAND.fonts.main,
-              color: '#FFFFFF',
-              textShadow: `
-                0 0 20px rgba(0, 255, 148, 0.3),
-                0 0 40px rgba(0, 255, 148, 0.2),
-                0 0 60px rgba(0, 255, 148, 0.1)
-              `
-            }}
-          >
-            INTEGRATOR <span style={{ color: BRAND.colors.neon_green }}>V3.0</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p 
-            className="text-sm lg:text-base max-w-2xl mb-6"
-            style={{ color: BRAND.colors.text_dim }}
-          >
-            Кибернетическая платформа для освоения AI-интеграции. Начните свой путь от нуля до первых $1000.
-          </p>
-
-          {/* 🟢 AI CURATOR BUTTON - LOCKED FOR STUDENTS */}
-          <motion.button
-            whileHover={{ scale: isAdmin ? 1.05 : 1.02, boxShadow: isAdmin ? '0 0 40px rgba(0,255,136,0.4)' : 'none' }}
-            whileTap={{ scale: isAdmin ? 0.98 : 1 }}
-            onClick={() => {
-              if (isAdmin) {
-                setIsAIChatOpen(true);
-              } else {
-                showLocked('AI Куратор');
-              }
-            }}
-            className={`group relative px-10 py-5 overflow-hidden rounded-2xl flex items-center gap-5 border-2 transition-all duration-300 ${
-              isAdmin 
-                ? 'border-[#00FF88]/40 hover:border-[#00FF88] cursor-pointer' 
-                : 'border-white/10 cursor-not-allowed opacity-50'
-            }`}
-            style={{
-              background: isAdmin 
-                ? `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`
-                : `linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)`,
-              backdropFilter: 'blur(20px)',
-            }}
-          >
-            {/* Shimmer Effect */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-              initial={{ x: '-200%' }}
-              animate={{ x: '200%' }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatDelay: 1,
-                ease: "easeInOut"
-              }}
-            />
-            
-            {/* Icon Container */}
-            <div className="relative z-10 w-14 h-14 rounded-xl bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/30 group-hover:bg-[#00FF88]/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-              <Bot className="w-7 h-7 text-[#00FF88]" />
-              {/* Pulsing ring */}
-              <div className="absolute inset-0 rounded-xl border-2 border-[#00FF88]/40 animate-ping opacity-30" />
-            </div>
-
-            {/* Text */}
-            <div className="relative z-10 text-left">
-              <p className={`font-bold font-mono text-lg leading-none mb-2 transition-colors ${
-                isAdmin ? 'text-white group-hover:text-[#00FF88]' : 'text-white/60'
-              }`}>
-                AI Куратор
-              </p>
-              <p className="text-[10px] text-white/60 font-mono tracking-wide leading-none">
-                {isAdmin ? 'Твой личный помощник 24/7' : '🔒 Доступно на полной версии'}
-              </p>
-            </div>
-
-            {/* Glow Effect */}
-            <div className="absolute inset-0 bg-[#00FF88]/5 group-hover:bg-[#00FF88]/10 transition-colors duration-500 pointer-events-none" />
-            
-            {/* Fingerprint Icon */}
-            <div className="relative z-10 ml-auto">
-              <svg 
-                className="w-8 h-8 text-[#00FF88] opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
+          {/* Container for Title, Subtitle and Button */}
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            <div className="flex-1">
+              {/* Main Title with GLOW effect */}
+              <h1 
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold uppercase mb-3 sm:mb-4 leading-tight"
+                style={{ 
+                  fontFamily: BRAND.fonts.main,
+                  color: '#FFFFFF',
+                  textShadow: `
+                    0 0 20px rgba(0, 255, 148, 0.3),
+                    0 0 40px rgba(0, 255, 148, 0.2),
+                    0 0 60px rgba(0, 255, 148, 0.1)
+                  `
+                }}
               >
-                <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
-                <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
-                <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
-                <path d="M2 12a10 10 0 0 1 18-6"/>
-                <path d="M2 16h.01"/>
-                <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
-                <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
-                <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
-                <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
-              </svg>
+                INTEGRATOR <span style={{ color: BRAND.colors.neon_green }}>V3.0</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p 
+                className="text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg max-w-2xl leading-relaxed"
+                style={{ color: BRAND.colors.text_dim }}
+              >
+                Кибернетическая платформа для освоения AI-интеграции.<br />
+                Начните свой путь от нуля до первых $1000.
+              </p>
             </div>
-          </motion.button>
+
+            {/* 🟢 AI CURATOR BUTTON - LOCKED FOR STUDENTS - COMPACT VERSION */}
+            <motion.button
+              whileHover={{ scale: isAdmin ? 1.02 : 1, boxShadow: isAdmin ? '0 0 30px rgba(0,255,136,0.3)' : 'none' }}
+              whileTap={{ scale: isAdmin ? 0.98 : 1 }}
+              onClick={() => {
+                if (isAdmin) {
+                  setIsAIChatOpen(true);
+                } else {
+                  showLocked('AI Куратор');
+                }
+              }}
+              className={`group relative px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2.5 overflow-hidden rounded-md sm:rounded-lg flex items-center gap-2 sm:gap-2.5 border transition-all duration-300 flex-shrink-0 md:w-auto ${
+                isAdmin 
+                  ? 'border-[#00FF88]/40 hover:border-[#00FF88] cursor-pointer' 
+                  : 'border-white/10 cursor-not-allowed opacity-50'
+              }`}
+              style={{
+                background: isAdmin 
+                  ? `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`
+                  : `linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)`,
+                backdropFilter: 'blur(20px)',
+              }}
+            >
+              {/* Shimmer Effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                initial={{ x: '-200%' }}
+                animate={{ x: '200%' }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1,
+                  ease: "easeInOut"
+                }}
+              />
+              
+              {/* Icon Container */}
+              <div className="relative z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-sm sm:rounded-md bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/30 group-hover:bg-[#00FF88]/20 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
+                <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-5 lg:h-5 text-[#00FF88]" />
+              </div>
+
+              {/* Text */}
+              <div className="relative z-10 text-left flex-1 min-w-0">
+                <p className={`font-bold font-mono text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs leading-none mb-0.5 transition-colors ${
+                  isAdmin ? 'text-white group-hover:text-[#00FF88]' : 'text-white/60'
+                }`}>
+                  AI Куратор
+                </p>
+                <p className="text-[7px] sm:text-[8px] md:text-[8px] lg:text-[9px] text-white/60 font-mono tracking-wide leading-none truncate">
+                  {isAdmin ? 'Онлайн 24/7' : '🔒 Доступно на полной версии'}
+                </p>
+              </div>
+
+              {/* Glow Effect */}
+              <div className="absolute inset-0 bg-[#00FF88]/5 group-hover:bg-[#00FF88]/10 transition-colors duration-500 pointer-events-none" />
+            </motion.button>
+          </div>
         </motion.header>
 
         {/* ═══════════════════════════════════════════════════════════
-            BENTO GRID LAYOUT
+            BENTO GRID LAYOUT - NARROWER ON LARGE SCREENS
             ═══════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:gap-8 max-w-[1200px] mx-auto">
           
           {/* ═══════════════════════════════════════════════════════════
               LEFT COLUMN: ACTIVE MODULE (HERO CARD)
@@ -503,13 +487,13 @@ export default function TripwireProductPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="lg:col-span-7"
+              className="lg:col-span-6 flex"
             >
               <div
                 onClick={() => handleModuleClick(featuredModule)}
                 onMouseEnter={() => setHoveredModule(featuredModule.id)}
                 onMouseLeave={() => setHoveredModule(null)}
-                className="relative h-full min-h-[500px] lg:min-h-[600px] rounded-[24px] overflow-hidden cursor-pointer group"
+                className="relative w-full min-h-[500px] rounded-[24px] overflow-hidden cursor-pointer group flex flex-col"
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
                   border: `1px solid ${hoveredModule === featuredModule.id ? BRAND.colors.neon_green : 'rgba(255,255,255,0.05)'}`,
@@ -529,55 +513,62 @@ export default function TripwireProductPage() {
                 <div className="relative z-10 h-full flex flex-col justify-between p-8 lg:p-12">
                   {/* Top */}
                   <div>
-                    {/* Status Badge */}
-                    <Badge 
-                      className="mb-6 px-4 py-2 text-xs uppercase tracking-wider border-0"
-                      style={{
-                        background: `${BRAND.colors.neon_green}20`,
-                        color: BRAND.colors.neon_green,
-                        fontFamily: BRAND.fonts.mono
-                      }}
-                    >
-                      ⚡ ACTIVE MODULE
-                    </Badge>
+                    {/* Icon + Title in one line */}
+                    <div className="flex items-start gap-4 mb-4">
+                      {/* Icon with Badge */}
+                      <div className="relative flex-shrink-0">
+                        <div 
+                          className="w-14 h-14 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500"
+                          style={{
+                            background: `${BRAND.colors.neon_green}15`,
+                            border: `2px solid ${BRAND.colors.neon_green}40`,
+                          }}
+                        >
+                          <featuredModule.icon 
+                            className="w-7 h-7" 
+                            style={{ color: BRAND.colors.neon_green }}
+                          />
+                        </div>
+                        {/* Module Number Badge */}
+                        <div 
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                          style={{
+                            background: BRAND.colors.neon_green,
+                            color: '#000000',
+                            fontFamily: BRAND.fonts.mono,
+                            boxShadow: `0 0 10px ${BRAND.colors.neon_green}`,
+                          }}
+                        >
+                          {featuredModule.moduleNumber}
+                        </div>
+                      </div>
 
-                    {/* Icon */}
-                    <div 
-                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500"
-                      style={{
-                        background: `${BRAND.colors.neon_green}15`,
-                        border: `2px solid ${BRAND.colors.neon_green}40`,
-                      }}
-                    >
-                      <featuredModule.icon 
-                        className="w-7 h-7" 
-                        style={{ color: BRAND.colors.neon_green }}
-                      />
+                      {/* Title */}
+                      <div className="flex-1">
+                        <h2 
+                          className="text-2xl lg:text-3xl font-bold uppercase leading-tight mb-2"
+                          style={{ 
+                            fontFamily: BRAND.fonts.main,
+                            color: '#FFFFFF'
+                          }}
+                        >
+                          {featuredModule.title}
+                        </h2>
+                        
+                        <p 
+                          className="text-xs uppercase tracking-widest"
+                          style={{ 
+                            fontFamily: BRAND.fonts.mono,
+                            color: BRAND.colors.neon_green 
+                          }}
+                        >
+                          {featuredModule.subtitle}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Title */}
-                    <h2 
-                      className="text-2xl lg:text-3xl font-bold uppercase mb-2 leading-tight"
-                      style={{ 
-                        fontFamily: BRAND.fonts.main,
-                        color: '#FFFFFF'
-                      }}
-                    >
-                      {featuredModule.title}
-                    </h2>
-                    
                     <p 
-                      className="text-xs uppercase mb-3 tracking-widest"
-                      style={{ 
-                        fontFamily: BRAND.fonts.mono,
-                        color: BRAND.colors.neon_green 
-                      }}
-                    >
-                      {featuredModule.subtitle}
-                    </p>
-
-                    <p 
-                      className="text-sm leading-relaxed max-w-lg"
+                      className="text-sm leading-relaxed max-w-lg mb-4"
                       style={{ color: BRAND.colors.text_dim }}
                     >
                       {featuredModule.description}
@@ -610,21 +601,27 @@ export default function TripwireProductPage() {
 
                     {/* SKEWED CTA BUTTON */}
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
+                      initial={{ skewX: -10 }}
+                      animate={{ skewX: -10 }}
+                      whileHover={{ scale: 1.02, skewX: 0 }}
                       whileTap={{ scale: 0.98 }}
-                      className="relative px-6 py-3 font-bold uppercase tracking-wider overflow-hidden"
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="relative px-4 py-2 font-bold uppercase tracking-wider overflow-hidden"
                       style={{
                         background: BRAND.colors.neon_green,
                         color: '#000000',
-                        transform: 'skewX(-10deg)',
-                        borderRadius: '8px',
+                        borderRadius: '6px',
                         fontFamily: BRAND.fonts.main,
-                        fontSize: '12px',
+                        fontSize: '10px',
                       }}
                     >
-                      <span style={{ display: 'block', transform: 'skewX(10deg)' }}>
+                      <motion.span 
+                        initial={{ skewX: 10 }}
+                        animate={{ skewX: 10 }}
+                        style={{ display: 'block' }}
+                      >
                         → НАЧАТЬ МОДУЛЬ
-                      </span>
+                      </motion.span>
                     </motion.button>
                   </div>
                 </div>
@@ -646,7 +643,7 @@ export default function TripwireProductPage() {
           {/* ═══════════════════════════════════════════════════════════
               RIGHT COLUMN: OTHER ACTIVE + LOCKED MODULES
               ═══════════════════════════════════════════════════════ */}
-          <div className="lg:col-span-5 space-y-6 lg:space-y-8">
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8">
             {/* Other Active Modules (разблокированные, кроме первого) */}
             {otherActiveModules.map((module, index) => (
               <motion.div
@@ -657,7 +654,7 @@ export default function TripwireProductPage() {
                 onClick={() => handleModuleClick(module)}
                 onMouseEnter={() => setHoveredModule(module.id)}
                 onMouseLeave={() => setHoveredModule(null)}
-                className="relative rounded-[16px] p-4 lg:p-6 cursor-pointer group overflow-hidden"
+                className="relative rounded-[16px] p-4 lg:p-6 cursor-pointer group overflow-hidden flex-1"
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
                   border: `2px solid ${hoveredModule === module.id ? BRAND.colors.neon_green : 'rgba(0, 255, 148, 0.2)'}`,
@@ -674,24 +671,38 @@ export default function TripwireProductPage() {
                 />
 
                 <div className="relative z-10 flex items-start gap-3">
-                  {/* Icon */}
-                  <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
-                    style={{
-                      background: `${BRAND.colors.neon_green}20`,
-                      border: `1px solid ${BRAND.colors.neon_green}30`
-                    }}
-                  >
-                    <module.icon 
-                      className="w-6 h-6"
-                      style={{ color: BRAND.colors.neon_green }}
-                    />
+                  {/* Icon with Badge */}
+                  <div className="relative flex-shrink-0">
+                    <div 
+                      className="w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                      style={{
+                        background: `${BRAND.colors.neon_green}20`,
+                        border: `1px solid ${BRAND.colors.neon_green}30`
+                      }}
+                    >
+                      <module.icon 
+                        className="w-6 h-6"
+                        style={{ color: BRAND.colors.neon_green }}
+                      />
+                    </div>
+                    {/* Module Number Badge */}
+                    <div 
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                      style={{
+                        background: BRAND.colors.neon_green,
+                        color: '#000000',
+                        fontFamily: BRAND.fonts.mono,
+                        boxShadow: `0 0 8px ${BRAND.colors.neon_green}`,
+                      }}
+                    >
+                      {module.moduleNumber}
+                    </div>
                   </div>
 
                   {/* Text */}
                   <div className="flex-1">
                     <h3 
-                      className="text-lg lg:text-xl font-bold mb-1 uppercase"
+                      className="text-lg lg:text-xl font-bold uppercase mb-1"
                       style={{ 
                         color: '#FFFFFF',
                         fontFamily: BRAND.fonts.main
@@ -721,7 +732,7 @@ export default function TripwireProductPage() {
                     </p>
 
                     {/* Stats */}
-                    <div className="flex items-center gap-4 text-xs">
+                    <div className="flex items-center gap-4 text-xs mb-3">
                       <div className="flex items-center gap-1.5">
                         <Clock 
                           className="w-4 h-4" 
@@ -741,6 +752,31 @@ export default function TripwireProductPage() {
                         </span>
                       </div>
                     </div>
+
+                    {/* CTA Button */}
+                    <motion.button
+                      initial={{ skewX: -10 }}
+                      animate={{ skewX: -10 }}
+                      whileHover={{ scale: 1.02, skewX: 0 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="relative px-4 py-2 font-bold uppercase tracking-wider overflow-hidden"
+                      style={{
+                        background: BRAND.colors.neon_green,
+                        color: '#000000',
+                        borderRadius: '6px',
+                        fontFamily: BRAND.fonts.main,
+                        fontSize: '10px',
+                      }}
+                    >
+                      <motion.span 
+                        initial={{ skewX: 10 }}
+                        animate={{ skewX: 10 }}
+                        style={{ display: 'block' }}
+                      >
+                        → НАЧАТЬ МОДУЛЬ
+                      </motion.span>
+                    </motion.button>
                   </div>
                 </div>
               </motion.div>
@@ -756,12 +792,11 @@ export default function TripwireProductPage() {
                 onClick={() => module.status !== 'main_course_only' && isAdmin ? handleModuleClick(module) : null}  // ✅ main_course_only - полностью заблокирован
                 onMouseEnter={() => setHoveredModule(module.id)}
                 onMouseLeave={() => setHoveredModule(null)}
-                className={`relative rounded-[24px] overflow-hidden group cursor-not-allowed`}
+                className={`relative rounded-[24px] overflow-hidden group cursor-not-allowed flex-1`}
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
                   border: '1px solid rgba(255,255,255,0.05)',
                   backdropFilter: 'blur(40px)',
-                  minHeight: index === 0 ? '320px' : '240px',
                 }}
               >
                 {/* Gradient Overlay */}
@@ -774,7 +809,7 @@ export default function TripwireProductPage() {
                   <div>
                     {/* Lock Badge */}
                     <Badge 
-                      className="mb-4 px-3 py-1.5 text-xs uppercase tracking-wider border-0"
+                      className="px-3 py-1.5 text-xs uppercase tracking-wider border-0 mb-4"
                       style={{
                         background: module.status === 'main_course_only' ? 'rgba(255, 183, 0, 0.1)' : 'rgba(255,255,255,0.05)',
                         color: module.status === 'main_course_only' ? '#FFB700' : BRAND.colors.text_dim,
@@ -785,18 +820,32 @@ export default function TripwireProductPage() {
                       {module.status === 'main_course_only' ? 'ОСНОВНОЙ КУРС' : 'LOCKED'}
                     </Badge>
 
-                    {/* Icon */}
-                    <div 
-                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
-                      style={{
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                      }}
-                    >
-                      <module.icon 
-                        className="w-7 h-7" 
-                        style={{ color: BRAND.colors.text_dim }}
-                      />
+                    {/* Icon with Badge */}
+                    <div className="relative inline-block mb-4">
+                      <div 
+                        className="w-14 h-14 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.05)',
+                        }}
+                      >
+                        <module.icon 
+                          className="w-7 h-7" 
+                          style={{ color: BRAND.colors.text_dim }}
+                        />
+                      </div>
+                      {/* Module Number Badge */}
+                      <div 
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                        style={{
+                          background: 'rgba(255,255,255,0.1)',
+                          color: BRAND.colors.text_dim,
+                          fontFamily: BRAND.fonts.mono,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                        }}
+                      >
+                        {module.moduleNumber}
+                      </div>
                     </div>
 
                     {/* Title */}
@@ -869,38 +918,19 @@ export default function TripwireProductPage() {
                 </div>
               </motion.div>
             ))}
-
-            {/* 🔴 LIVE STREAM BANNER */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-            >
-              <LiveStreamModule modulesCompleted={completedModulesCount} />
-            </motion.div>
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════
-            BOTTOM: COPYRIGHT
-            ═══════════════════════════════════════════════════════ */}
+        {/* 🔴 LIVE STREAM BANNER - FULL WIDTH BELOW ALL MODULES */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-12 lg:mt-16 text-center"
+          transition={{ delay: 0.6, duration: 0.6 }}
+          className="mt-6 lg:mt-8 max-w-[1200px] mx-auto"
         >
-          <p 
-            className="text-xs"
-            style={{ 
-              color: BRAND.colors.text_dim,
-              opacity: 0.5,
-              fontFamily: BRAND.fonts.mono
-            }}
-          >
-            onAI Academy © 2025. Все права защищены.
-          </p>
+          <LiveStreamModule modulesCompleted={completedModulesCount} />
         </motion.div>
+
       </div>
 
       {/* 🎮 GAMIFICATION: Module Unlock Animation */}

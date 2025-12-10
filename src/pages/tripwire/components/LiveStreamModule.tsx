@@ -29,7 +29,7 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
   return (
     <Card 
       className={`
-        p-4 sm:p-6 md:p-8 rounded-3xl border transition-all duration-300 relative overflow-hidden
+        p-3 sm:p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl border transition-all duration-300 relative overflow-hidden
         ${isUnlocked 
           ? 'bg-[rgba(255,51,102,0.1)] border-[#FF3366]/50' 
           : 'bg-[#0A0A0A]/90 border-white/10'
@@ -44,15 +44,15 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
           {isUnlocked ? (
             <div className="relative flex-shrink-0 mt-1">
                <div className="absolute inset-0 bg-[#FF3366] blur-lg opacity-50 animate-pulse" />
-               <Radio className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF3366] animate-pulse relative z-10" />
+               <Radio className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#FF3366] animate-pulse relative z-10" />
             </div>
           ) : (
-            <Radio className="w-6 h-6 sm:w-8 sm:h-8 text-white/20 flex-shrink-0 mt-1" />
+            <Radio className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white/20 flex-shrink-0 mt-1" />
           )}
           
           <h2 
-            className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold uppercase 
-                       tracking-wider font-['JetBrains_Mono'] break-words leading-tight
+            className={`text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl font-bold uppercase 
+                       tracking-wide md:tracking-wider font-['JetBrains_Mono'] break-words leading-tight
                        ${isUnlocked ? 'text-[#FF3366]' : 'text-white/40'}`}
           >
             ЗАКЛЮЧИТЕЛЬНЫЙ ПРЯМОЙ ЭФИР
@@ -60,16 +60,16 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
         </div>
 
         {/* Подзаголовок */}
-        <p className={`text-base sm:text-lg mb-4 sm:mb-6 font-['Manrope'] break-words 
+        <p className={`text-sm sm:text-base md:text-lg mb-3 sm:mb-4 md:mb-6 font-['Manrope'] break-words 
                       ${isUnlocked ? 'text-white/80' : 'text-white/40'}`}>
           С основателями академии
         </p>
 
         {/* Время эфира */}
         {isUnlocked && (
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#FF3366]/20 
-                         border border-[#FF3366]/40 rounded-full mb-4 sm:mb-6">
-            <span className="text-xs sm:text-sm font-bold text-[#FF3366] font-['JetBrains_Mono']">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#FF3366]/20 
+                         border border-[#FF3366]/40 rounded-full mb-3 sm:mb-4 md:mb-6">
+            <span className="text-xs sm:text-sm font-bold text-[#FF3366] font-['JetBrains_Mono'] whitespace-nowrap">
               {streamTime}
             </span>
           </div>
@@ -77,12 +77,13 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
 
         {/* Описание */}
         <div className="space-y-2 mb-4 sm:mb-6">
-          <p className={`text-base sm:text-lg font-bold font-['JetBrains_Mono'] 
-                        tracking-wide break-words leading-snug
+          <p className={`text-sm sm:text-base md:text-lg font-bold font-['JetBrains_Mono'] 
+                        tracking-tight sm:tracking-normal md:tracking-wide break-words leading-snug
                         ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
-            Как создать платформу стоимостью 10 000$
+            Как создать платформу стоимостью 20 000$
           </p>
-          <p className={`text-xs sm:text-sm font-['Manrope'] uppercase tracking-wider break-words 
+          <p className={`text-[10px] sm:text-xs md:text-sm font-['Manrope'] uppercase 
+                        tracking-wide sm:tracking-wider break-words 
                         ${isUnlocked ? 'text-white/70' : 'text-white/30'}`}>
             БЕЗ НАВЫКОВ ПРОГРАММИРОВАНИЯ
           </p>
@@ -107,10 +108,10 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
         )}
 
         {isUnlocked && (
-          <div className="p-3 sm:p-4 bg-[#00FF94]/10 border border-[#00FF94]/30 rounded-xl 
+          <div className="p-3 sm:p-4 md:p-5 bg-[#00FF94]/10 border border-[#00FF94]/30 rounded-xl 
                          flex items-start gap-2 sm:gap-3">
-             <div className="mt-0.5 text-[#00FF94] flex-shrink-0">✅</div>
-             <p className="text-xs sm:text-sm text-[#00FF94] font-['Manrope'] break-words 
+             <div className="mt-0.5 text-base sm:text-lg text-[#00FF94] flex-shrink-0">✅</div>
+             <p className="text-xs sm:text-sm md:text-base text-[#00FF94] font-['Manrope'] break-words 
                           leading-relaxed min-w-0 flex-1">
                Ссылка на эфир будет доступна вам в WhatsApp сообществе
              </p>
