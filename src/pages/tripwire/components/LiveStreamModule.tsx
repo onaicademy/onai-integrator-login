@@ -18,12 +18,12 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
   const [countdown, setCountdown] = useState(getStreamCountdown());
   const isUnlocked = modulesCompleted >= 3;
 
-  // Обновляем время каждую минуту
+  // Обновляем время каждую секунду для точности
   useEffect(() => {
     const interval = setInterval(() => {
       setStreamTime(getStreamTime());
       setCountdown(getStreamCountdown());
-    }, 60000); // каждую минуту
+    }, 1000); // каждую секунду
 
     return () => clearInterval(interval);
   }, []);
@@ -68,8 +68,9 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
         </p>
 
         {/* Время эфира и обратный отсчёт - ПОКАЗЫВАЕТСЯ ВСЕГДА */}
-        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4 md:mb-6">
-          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
+        <div className="flex flex-col gap-2 sm:gap-2.5 md:gap-3 mb-3 sm:mb-4 md:mb-6">
+          {/* Дата эфира */}
+          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit
                           ${isUnlocked 
                             ? 'bg-[#FF3366]/20 border border-[#FF3366]/40' 
                             : 'bg-white/5 border border-white/10'}`}>
@@ -80,11 +81,11 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
           </div>
           
           {/* Обратный отсчёт */}
-          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
+          <div className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit
                           ${isUnlocked 
                             ? 'bg-[#00FF94]/10 border border-[#00FF94]/30' 
                             : 'bg-white/5 border border-white/10'}`}>
-            <Clock className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isUnlocked ? 'text-[#00FF94]' : 'text-white/30'}`} />
+            <Clock className={`w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 ${isUnlocked ? 'text-[#00FF94]' : 'text-white/30'}`} />
             <span className={`text-[10px] sm:text-xs font-semibold font-['JetBrains_Mono'] whitespace-nowrap
                             ${isUnlocked ? 'text-[#00FF94]' : 'text-white/40'}`}>
               До эфира: {countdown}

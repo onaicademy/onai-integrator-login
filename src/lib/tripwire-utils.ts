@@ -49,10 +49,11 @@ export interface TripwireCertificate {
  * Возвращает дату следующего эфира: "11 декабря в 20:00"
  * Если сейчас < 20:00 → дата сегодня
  * Если сейчас >= 20:00 → дата завтра
+ * Часовой пояс: UTC+5 (Алма-Ата)
  */
 export const getStreamTime = (): string => {
   const now = new Date();
-  const almatyOffset = 6 * 60; // UTC+6 в минутах
+  const almatyOffset = 5 * 60; // UTC+5 в минутах (Алма-Ата)
   const localOffset = now.getTimezoneOffset(); // Локальное смещение
   const almatyTime = new Date(now.getTime() + (almatyOffset + localOffset) * 60000);
   
@@ -78,11 +79,12 @@ export const getStreamTime = (): string => {
 
 /**
  * Получить обратный отсчёт до эфира
- * Возвращает строку вида "5 ч 30 мин" или "менее часа"
+ * Возвращает строку вида "5 ч 30 мин 15 сек"
+ * Часовой пояс: UTC+5 (Алма-Ата)
  */
 export const getStreamCountdown = (): string => {
   const now = new Date();
-  const almatyOffset = 6 * 60; // UTC+6 в минутах
+  const almatyOffset = 5 * 60; // UTC+5 в минутах (Алма-Ата)
   const localOffset = now.getTimezoneOffset(); // Локальное смещение
   const almatyTime = new Date(now.getTime() + (almatyOffset + localOffset) * 60000);
   
@@ -98,17 +100,18 @@ export const getStreamCountdown = (): string => {
   // Вычисляем разницу в миллисекундах
   const diff = streamDateTime.getTime() - almatyTime.getTime();
   
-  // Конвертируем в часы и минуты
+  // Конвертируем в часы, минуты и секунды
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
   
-  if (hours === 0) {
-    return `${minutes} мин`;
-  } else if (minutes === 0) {
-    return `${hours} ч`;
-  } else {
-    return `${hours} ч ${minutes} мин`;
-  }
+  // Форматируем вывод
+  const parts = [];
+  if (hours > 0) parts.push(`${hours} ч`);
+  if (minutes > 0) parts.push(`${minutes} мин`);
+  parts.push(`${seconds} сек`);
+  
+  return parts.join(' ');
 };
 
 /**
