@@ -382,7 +382,7 @@ export default function TripwireProductPage() {
                 color: BRAND.colors.neon_green 
               }}
             >
-              (EXPRESS COURSE)
+              /// EXPRESS COURSE
             </span>
           </div>
 
