@@ -34,7 +34,11 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
 
   // ✅ Сертификат показывается ТОЛЬКО когда ВСЕ 3 модуля завершены!
   const isEligibleForCertificate = data.modules_completed >= 3;
-  const isIssued = data.certificate_issued && isEligibleForCertificate;
+  
+  // 🎯 КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: проверяем наличие PDF URL, а не флаг certificate_issued
+  const hasPdfUrl = !!pdfUrl || !!certificate?.pdf_url;
+  const isIssued = hasPdfUrl && isEligibleForCertificate;
+  
   const progress = data.total_modules > 0 ? (data.modules_completed / data.total_modules) * 100 : 0;
 
   // 🎯 ОТСЛЕЖИВАЕМ РАЗБЛОКИРОВКУ СЕРТИФИКАТА
@@ -167,11 +171,13 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
 
   const handleDownload = () => {
     // ✅ ТОЛЬКО ПРЯМОЕ СКАЧИВАНИЕ, БЕЗ РЕДИРЕКТОВ!
-    if (certificate?.pdf_url) {
-      console.log('📥 Скачиваем сертификат:', certificate.pdf_url);
+    const urlToDownload = pdfUrl || certificate?.pdf_url;
+    
+    if (urlToDownload) {
+      console.log('📥 Скачиваем сертификат:', urlToDownload);
       
       const link = document.createElement('a');
-      link.href = certificate.pdf_url;
+      link.href = urlToDownload;
       link.download = `Certificate-${profile.full_name || 'Student'}.pdf`;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
@@ -248,7 +254,7 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
 
         <div className="p-8">
           {isIssued ? (
-            // === СЕРТИФИКАТ ВЫДАН - МОЖНО СКАЧАТЬ ===
+            // === СОСТОЯНИЕ 3: PDF СГЕНЕРИРОВАН - МОЖНО СКАЧАТЬ ===
             <div className="space-y-8">
               <CertificatePreview 
                 profile={profile}
@@ -270,7 +276,7 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
               </button>
             </div>
           ) : isEligibleForCertificate ? (
-            // === ВСЕ МОДУЛИ ЗАВЕРШЕНЫ - МОЖНО СГЕНЕРИРОВАТЬ ===
+            // === СОСТОЯНИЕ 1: 100% ЗАВЕРШЕНО, НО PDF ЕЩЕ НЕТ - МОЖНО ПОЛУЧИТЬ ===
             <div className="space-y-8">
               <CertificatePreview 
                 profile={profile}
@@ -293,13 +299,13 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                     </>
                   ) : (
                     <>
-                      <Download className="w-5 h-5" />
-                      <span>СГЕНЕРИРОВАТЬ СЕРТИФИКАТ</span>
+                      <CheckCircle className="w-5 h-5" />
+                      <span>ПОЛУЧИТЬ СЕРТИФИКАТ</span>
                     </>
                   )}
                 </button>
 
-                {/* 🔥 ПРОГРЕСС-БАР */}
+                {/* 🔥 СОСТОЯНИЕ 2: ПРОГРЕСС-БАР ГЕНЕРАЦИИ */}
                 {isGenerating && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
