@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
-import { getStreamTime } from '@/lib/tripwire-utils';
+import { getStreamTime, getStreamCountdown } from '@/lib/tripwire-utils';
 import { motion } from 'framer-motion';
-import { Lock, Radio } from 'lucide-react';
+import { Lock, Radio, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface LiveStreamModuleProps {
@@ -15,12 +15,14 @@ interface LiveStreamModuleProps {
  */
 export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleProps) {
   const [streamTime, setStreamTime] = useState(getStreamTime());
+  const [countdown, setCountdown] = useState(getStreamCountdown());
   const isUnlocked = modulesCompleted >= 3;
 
   // Обновляем время каждую минуту
   useEffect(() => {
     const interval = setInterval(() => {
       setStreamTime(getStreamTime());
+      setCountdown(getStreamCountdown());
     }, 60000); // каждую минуту
 
     return () => clearInterval(interval);
@@ -29,7 +31,7 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
   return (
     <Card 
       className={`
-        p-3 sm:p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl border transition-all duration-300 relative overflow-hidden
+        p-2 sm:p-3 md:p-4 lg:p-6 rounded-2xl md:rounded-3xl border transition-all duration-300 relative overflow-hidden
         ${isUnlocked 
           ? 'bg-[rgba(255,51,102,0.1)] border-[#FF3366]/50' 
           : 'bg-[#0A0A0A]/90 border-white/10'
@@ -65,13 +67,24 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
           С основателями академии
         </p>
 
-        {/* Время эфира */}
+        {/* Время эфира и обратный отсчёт */}
         {isUnlocked && (
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#FF3366]/20 
-                         border border-[#FF3366]/40 rounded-full mb-3 sm:mb-4 md:mb-6">
-            <span className="text-xs sm:text-sm font-bold text-[#FF3366] font-['JetBrains_Mono'] whitespace-nowrap">
-              {streamTime}
-            </span>
+          <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4 md:mb-6">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#FF3366]/20 
+                           border border-[#FF3366]/40 rounded-full">
+              <span className="text-xs sm:text-sm font-bold text-[#FF3366] font-['JetBrains_Mono'] whitespace-nowrap">
+                {streamTime}
+              </span>
+            </div>
+            
+            {/* Обратный отсчёт */}
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#00FF94]/10 
+                           border border-[#00FF94]/30 rounded-full">
+              <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#00FF94]" />
+              <span className="text-[10px] sm:text-xs font-semibold text-[#00FF94] font-['JetBrains_Mono'] whitespace-nowrap">
+                До эфира: {countdown}
+              </span>
+            </div>
           </div>
         )}
 

@@ -46,8 +46,9 @@ export interface TripwireCertificate {
 
 /**
  * Получить время для прямого эфира (динамический текст)
- * Если сейчас < 20:00 по Алма-Ате: "Эфир сегодня в 20:00"
- * Если сейчас >= 20:00: "Эфир завтра в 20:00"
+ * Возвращает дату следующего эфира: "11 декабря в 20:00"
+ * Если сейчас < 20:00 → дата сегодня
+ * Если сейчас >= 20:00 → дата завтра
  */
 export const getStreamTime = (): string => {
   const now = new Date();
@@ -57,11 +58,56 @@ export const getStreamTime = (): string => {
   
   const currentHour = almatyTime.getHours();
   
-  // Если до 18:00 Алматы → "Сегодня", после 18:00 → "Завтра"
-  if (currentHour < 18) {
-    return "Сегодня в 20:00";
+  // Определяем дату следующего эфира
+  let streamDate = new Date(almatyTime);
+  if (currentHour >= 20) {
+    // Если уже после 20:00, эфир завтра
+    streamDate.setDate(streamDate.getDate() + 1);
+  }
+  
+  // Форматируем дату по-русски
+  const day = streamDate.getDate();
+  const months = [
+    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+  ];
+  const month = months[streamDate.getMonth()];
+  
+  return `${day} ${month} в 20:00`;
+};
+
+/**
+ * Получить обратный отсчёт до эфира
+ * Возвращает строку вида "5 ч 30 мин" или "менее часа"
+ */
+export const getStreamCountdown = (): string => {
+  const now = new Date();
+  const almatyOffset = 6 * 60; // UTC+6 в минутах
+  const localOffset = now.getTimezoneOffset(); // Локальное смещение
+  const almatyTime = new Date(now.getTime() + (almatyOffset + localOffset) * 60000);
+  
+  // Определяем время следующего эфира (20:00)
+  let streamDateTime = new Date(almatyTime);
+  streamDateTime.setHours(20, 0, 0, 0);
+  
+  // Если уже после 20:00, эфир завтра
+  if (almatyTime.getHours() >= 20) {
+    streamDateTime.setDate(streamDateTime.getDate() + 1);
+  }
+  
+  // Вычисляем разницу в миллисекундах
+  const diff = streamDateTime.getTime() - almatyTime.getTime();
+  
+  // Конвертируем в часы и минуты
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (hours === 0) {
+    return `${minutes} мин`;
+  } else if (minutes === 0) {
+    return `${hours} ч`;
   } else {
-    return "Завтра в 20:00";
+    return `${hours} ч ${minutes} мин`;
   }
 };
 
