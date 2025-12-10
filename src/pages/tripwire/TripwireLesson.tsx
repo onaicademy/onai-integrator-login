@@ -492,14 +492,14 @@ const TripwireLesson = () => {
             console.log('🗑️ Cache invalidated - will reload fresh unlocks');
           }
           
-          navigate('/tripwire', {
+          navigate('/integrator', {
             state: {
               unlockedModuleId: response.data.unlockedModuleId,
               showUnlockAnimation: true,
             },
           });
         } else {
-          navigate('/tripwire');
+          navigate('/integrator');
         }
       }, 2000);
       
@@ -571,7 +571,7 @@ const TripwireLesson = () => {
 
           // Редиректим на профиль через 1 секунду (чтобы пользователь увидел confetti)
           setTimeout(() => {
-            navigate('/tripwire/profile');
+            navigate('/integrator/profile');
           }, 1000);
         }
       }
@@ -647,7 +647,7 @@ const TripwireLesson = () => {
           className="mb-8"
         >
           <button
-            onClick={() => navigate('/tripwire')}
+            onClick={() => navigate('/integrator')}
             className="text-gray-500 hover:text-[#00FF88] transition-all duration-300 flex items-center gap-2 font-['Manrope'] text-sm group"
           >
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -807,7 +807,7 @@ const TripwireLesson = () => {
                     const nextLessonId = moduleId === 16 ? 68 : moduleId === 17 ? 69 : null;
                     console.log(`🚀 Переход: Module ${moduleId} → Lesson ${nextLessonId}`);
                     if (nextLessonId) {
-                      navigate(`/tripwire/lesson/${nextLessonId}`);
+                      navigate(`/integrator/lesson/${nextLessonId}`);
                     }
                   }}
                   className="flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-sans font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 not-italic bg-[#00FF88] text-black border-2 border-[#00FF88] hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]"
@@ -1102,9 +1102,9 @@ const TripwireLesson = () => {
           moduleNumber={unlockedModuleNumber}
           onClose={() => setUnlockedModuleNumber(null)}
           onNavigate={() => {
-            // Navigate back to Tripwire homepage where user will see unlocked modules
+            // Navigate back to Integrator homepage where user will see unlocked modules
             setUnlockedModuleNumber(null);
-            navigate('/tripwire');
+            navigate('/integrator');
           }}
         />
       )}

@@ -205,9 +205,9 @@ export async function apiRequest<T = any>(
           const currentPath = window.location.pathname;
           const returnUrl = encodeURIComponent(currentPath);
           
-          // Check if it's a Tripwire route
-          if (currentPath.startsWith('/tripwire')) {
-            window.location.href = `/tripwire/login?returnUrl=${returnUrl}`;
+          // Check if it's an Integrator route (or legacy Tripwire route)
+          if (currentPath.startsWith('/integrator') || currentPath.startsWith('/tripwire')) {
+            window.location.href = `/integrator/login?returnUrl=${returnUrl}`;
           } else {
             window.location.href = '/login';
           }

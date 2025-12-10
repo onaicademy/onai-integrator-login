@@ -91,7 +91,7 @@ export default function AccountSettings({ email, created_at, full_name }: Accoun
         title: "Выход выполнен",
         description: "Вы успешно вышли из системы",
       });
-      navigate('/tripwire/login');
+      navigate('/integrator/login');
     } catch (error: any) {
       console.error('❌ Ошибка выхода:', error);
       toast({

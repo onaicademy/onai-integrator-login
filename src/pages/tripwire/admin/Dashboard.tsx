@@ -84,7 +84,7 @@ export default function TripwireAdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Card 1: Аналитика */}
-          <Link to="/tripwire/admin/analytics" className="group relative block">
+          <Link to="/integrator/admin/analytics" className="group relative block">
             {/* Glow Effect */}
             <div 
               className="absolute -inset-0.5 bg-[#00FF00] rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500"
@@ -164,7 +164,7 @@ export default function TripwireAdminDashboard() {
           </Link>
 
           {/* Card 2: Студенты */}
-          <Link to="/tripwire/admin/students" className="group relative block">
+          <Link to="/integrator/admin/students" className="group relative block">
             <div className="absolute -inset-0.5 bg-blue-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500" />
             
             <div 
@@ -223,7 +223,7 @@ export default function TripwireAdminDashboard() {
           </Link>
 
           {/* Card 3: Транскрибации */}
-          <Link to="/tripwire/admin/transcriptions" className="group relative block">
+          <Link to="/integrator/admin/transcriptions" className="group relative block">
             <div className="absolute -inset-0.5 bg-yellow-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500" />
             
             <div 
@@ -282,7 +282,7 @@ export default function TripwireAdminDashboard() {
           </Link>
 
           {/* Card 4: Затраты AI */}
-          <Link to="/tripwire/admin/costs" className="group relative block">
+          <Link to="/integrator/admin/costs" className="group relative block">
             <div className="absolute -inset-0.5 bg-red-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500" />
             
             <div 
@@ -345,7 +345,7 @@ export default function TripwireAdminDashboard() {
         {/* Back Link */}
         <div className="mt-12 text-center">
           <Link
-            to="/tripwire"
+            to="/integrator"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-[#00FF00] transition-colors"
           >
             ← Вернуться на платформу

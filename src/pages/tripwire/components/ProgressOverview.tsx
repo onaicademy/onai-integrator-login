@@ -30,7 +30,7 @@ export default function ProgressOverview({ modulesCompleted, moduleProgress }: P
   const navigate = useNavigate();
 
   const handleModuleClick = (moduleNumber: number) => {
-    navigate('/tripwire');
+    navigate('/integrator');
   };
 
   return (

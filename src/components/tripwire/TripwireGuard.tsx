@@ -87,11 +87,11 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
   // STEP 2: Not authorized - redirect to login
   if (!isAuthorized) {
     const returnUrl = encodeURIComponent(location.pathname + location.search);
-    console.log('❌ TripwireGuard: Редирект на /tripwire/login');
+    console.log('❌ TripwireGuard: Редирект на /integrator/login');
     
     return (
       <Navigate 
-        to={`/tripwire/login?returnUrl=${returnUrl}`} 
+        to={`/integrator/login?returnUrl=${returnUrl}`} 
         replace 
       />
     );

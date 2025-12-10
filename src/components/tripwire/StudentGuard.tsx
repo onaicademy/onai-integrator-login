@@ -70,10 +70,10 @@ export function StudentGuard({ children }: StudentGuardProps) {
     );
   }
 
-  // Если не авторизован - редирект на Tripwire Login
+  // Если не авторизован - редирект на Integrator Login
   if (!isAuthorized || !userRole) {
-    console.log('❌ StudentGuard: Редирект на /tripwire/login');
-    return <Navigate to="/tripwire/login" replace />;
+    console.log('❌ StudentGuard: Редирект на /integrator/login');
+    return <Navigate to="/integrator/login" replace />;
   }
 
   // Доступ разрешён

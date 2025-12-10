@@ -35,12 +35,12 @@ interface MenuItem {
 
 // 🎯 EXACT menu items from main platform (Russian names)
 const menuItems: MenuItem[] = [
-  { title: "Главная", url: "/tripwire", icon: House, locked: false },
+  { title: "Главная", url: "/integrator", icon: House, locked: false },
   { title: "NeuroHUB", url: "/neurohub", icon: Brain, locked: true },
-  { title: "Мой профиль", url: "/tripwire/profile", icon: User, locked: false },
+  { title: "Мой профиль", url: "/integrator/profile", icon: User, locked: false },
   { title: "Достижения", url: "/achievements", icon: Trophy, locked: true },
   { title: "onAIgram", url: "/messages", icon: GridNine, locked: true },
-  { title: "Админ панель", url: "/tripwire/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
+  { title: "Админ панель", url: "/integrator/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
   // ❌ Sales Manager НЕ должен быть в Tripwire сайдбаре! Только в основной админ-панели
 ];
 
@@ -172,7 +172,7 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
                     <NavLink
                       to={item.url}
                       onClick={() => isMobile && onClose?.()}
-                      end={item.url === "/tripwire"}
+                      end={item.url === "/integrator"}
                       className={({ isActive }) =>
                         cn(
                           "group relative flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-300",

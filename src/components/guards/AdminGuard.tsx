@@ -31,7 +31,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   // Если не админ - редирект на главную
   if (userRole !== 'admin') {
-    return <Navigate to="/tripwire" replace />;
+    return <Navigate to="/integrator" replace />;
   }
 
   // Все проверки прошли - показываем контент

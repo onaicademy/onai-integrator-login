@@ -261,7 +261,7 @@ export default function TripwireProductPage() {
     }
 
     // ✅ FIX: Правильный URL format без /module/${module.id}
-    navigate(`/tripwire/lesson/${module.lessonId}`);
+    navigate(`/integrator/lesson/${module.lessonId}`);
   };
 
   // ✅ DYNAMICALLY unlock modules based on userUnlockedModuleIds
@@ -918,7 +918,7 @@ export default function TripwireProductPage() {
             // Map module_id to lesson_id
             const lessonMap = { 16: 67, 17: 68, 18: 69 };
             const lessonId = lessonMap[currentUnlock.module_id as keyof typeof lessonMap] || currentUnlock.module_id;
-            navigate(`/tripwire/lesson/${lessonId}`);
+            navigate(`/integrator/lesson/${lessonId}`);
           }}
         />
       )}

@@ -76,6 +76,13 @@ const SuspenseLoader = () => (
   </div>
 );
 
+// Helper component for redirecting with params
+const RedirectWithParams = ({ from, to }: { from: string; to: string }) => {
+  const location = useLocation();
+  const newPath = location.pathname.replace(from, to);
+  return <Navigate replace to={newPath + location.search} />;
+};
+
 const AppRoutes = () => {
   const location = useLocation();
   const isWelcomePage = location.pathname === '/welcome';
@@ -184,37 +191,40 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Tripwire (Trial Version - Now Requires Real Authentication) */}
+      {/* ========================================
+          INTEGRATOR ROUTES (NEW)
+          ======================================== */}
+      
       {/* Public: Login page */}
-      <Route path="/tripwire/login" element={<TripwireLogin />} />
+      <Route path="/integrator/login" element={<TripwireLogin />} />
       
       {/* Public: Landing page (no auth required) - для сбора заявок */}
       <Route path="/twland" element={<TripwireLanding />} />
       <Route path="/twland/pay" element={<TripwirePayment />} />
       
       {/* Public: Password Reset (no auth required) */}
-      <Route path="/tripwire/update-password" element={<TripwireUpdatePassword />} />
+      <Route path="/integrator/update-password" element={<TripwireUpdatePassword />} />
       
       {/* Public: Certificate page (no auth required for sharing) */}
-      <Route path="/tripwire/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
+      <Route path="/integrator/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
       
-      {/* STUDENT ROUTES: Tripwire студенческие маршруты (student, admin, sales могут заходить) */}
-      <Route path="/tripwire" element={
+      {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
+      <Route path="/integrator" element={
         <StudentGuard>
           <TripwireLayout>
             <TripwireProductPage />
           </TripwireLayout>
         </StudentGuard>
       } />
-      {/* ✅ Единственный роут для Tripwire уроков */}
-      <Route path="/tripwire/lesson/:lessonId" element={
+      {/* ✅ Единственный роут для Integrator уроков */}
+      <Route path="/integrator/lesson/:lessonId" element={
         <StudentGuard>
           <TripwireLayout>
             <TripwireLesson />
           </TripwireLayout>
         </StudentGuard>
       } />
-      <Route path="/tripwire/profile" element={
+      <Route path="/integrator/profile" element={
         <StudentGuard>
           <TripwireLayout>
             <TripwireProfile />
@@ -222,42 +232,64 @@ const AppRoutes = () => {
         </StudentGuard>
       } />
       
-      {/* ADMIN ROUTES: Tripwire админские маршруты - ТОЛЬКО для admin роли */}
-      <Route path="/tripwire/admin" element={
+      {/* ADMIN ROUTES: Integrator админские маршруты - ТОЛЬКО для admin роли */}
+      <Route path="/integrator/admin" element={
         <TripwireAdminGuard>
           <TripwireLayout>
             <TripwireAdminDashboard />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
-      <Route path="/tripwire/admin/analytics" element={
+      <Route path="/integrator/admin/analytics" element={
         <TripwireAdminGuard>
           <TripwireLayout>
             <TripwireAnalytics />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
-      <Route path="/tripwire/admin/students" element={
+      <Route path="/integrator/admin/students" element={
         <TripwireAdminGuard>
           <TripwireLayout>
             <TripwireStudents />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
-      <Route path="/tripwire/admin/costs" element={
+      <Route path="/integrator/admin/costs" element={
         <TripwireAdminGuard>
           <TripwireLayout>
             <TripwireCosts />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
-      <Route path="/tripwire/admin/transcriptions" element={
+      <Route path="/integrator/admin/transcriptions" element={
         <TripwireAdminGuard>
           <TripwireLayout>
             <Transcriptions />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
+      
+      {/* ========================================
+          LEGACY TRIPWIRE REDIRECTS
+          DO NOT DELETE - Required for old links
+          ======================================== */}
+      
+      {/* Public routes - redirect to /integrator */}
+      <Route path="/tripwire/login" element={<Navigate replace to="/integrator/login" />} />
+      <Route path="/tripwire/update-password" element={<Navigate replace to="/integrator/update-password" />} />
+      <Route path="/tripwire/certificate/:certificateNumber" element={<RedirectWithParams from="/tripwire" to="/integrator" />} />
+      
+      {/* Student routes - redirect to /integrator */}
+      <Route path="/tripwire" element={<Navigate replace to="/integrator" />} />
+      <Route path="/tripwire/lesson/:lessonId" element={<RedirectWithParams from="/tripwire" to="/integrator" />} />
+      <Route path="/tripwire/profile" element={<Navigate replace to="/integrator/profile" />} />
+      
+      {/* Admin routes - redirect to /integrator/admin */}
+      <Route path="/tripwire/admin" element={<Navigate replace to="/integrator/admin" />} />
+      <Route path="/tripwire/admin/analytics" element={<Navigate replace to="/integrator/admin/analytics" />} />
+      <Route path="/tripwire/admin/students" element={<Navigate replace to="/integrator/admin/students" />} />
+      <Route path="/tripwire/admin/costs" element={<Navigate replace to="/integrator/admin/costs" />} />
+      <Route path="/tripwire/admin/transcriptions" element={<Navigate replace to="/integrator/admin/transcriptions" />} />
       
       {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}
       {/* <Route path="/test-query" element={<TestQuery />} /> */}

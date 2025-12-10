@@ -54,7 +54,7 @@ export default function TripwireUpdatePassword() {
         console.error('❌ No active session for password update');
         toast.error('Ссылка недействительна или истекла');
         setTimeout(() => {
-          navigate('/tripwire/login');
+          navigate('/integrator/login');
         }, 2000);
       } else {
         console.log('✅ Valid session for password update:', session.user.email);
@@ -81,11 +81,11 @@ export default function TripwireUpdatePassword() {
 
       console.log('✅ [TripwireUpdatePassword] Password updated successfully');
       setIsSuccess(true);
-      toast.success('Пароль успешно обновлен!');
+      toast.success('Пароль успешно изменен');
 
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        navigate('/tripwire/login');
+        navigate('/integrator/login');
       }, 2000);
     } catch (error: any) {
       console.error('❌ [TripwireUpdatePassword] Error:', error);
@@ -117,7 +117,7 @@ export default function TripwireUpdatePassword() {
           className="text-center mb-8"
         >
           <h1 className="text-3xl font-bold text-white mb-3 font-display">
-            {isSuccess ? 'ПАРОЛЬ ОБНОВЛЕН!' : 'НОВЫЙ ПАРОЛЬ'}
+            {isSuccess ? 'ПАРОЛЬ ИЗМЕНЕН!' : 'СОЗДАНИЕ НОВОГО ПАРОЛЯ'}
           </h1>
           <p className="text-gray-400 text-sm">
             {isSuccess 
@@ -178,7 +178,7 @@ export default function TripwireUpdatePassword() {
                 <div>
                   <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                     <Lock size={16} />
-                    <span>Подтвердите пароль</span>
+                    <span>Повторите пароль</span>
                   </label>
                   <div className="relative">
                     <Input
@@ -212,7 +212,7 @@ export default function TripwireUpdatePassword() {
                     boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
                   }}
                 >
-                  {isLoading ? 'Обновление...' : 'Обновить пароль'}
+                  {isLoading ? 'Сохранение...' : 'СОХРАНИТЬ И ВОЙТИ'}
                 </Button>
               </form>
             ) : (
@@ -251,7 +251,7 @@ export default function TripwireUpdatePassword() {
             className="text-center mt-6"
           >
             <button
-              onClick={() => navigate('/tripwire/login')}
+              onClick={() => navigate('/integrator/login')}
               className="text-gray-400 hover:text-white text-sm transition-colors"
             >
               Вернуться на страницу входа

@@ -49,7 +49,7 @@ export default function TripwireStudents() {
       {/* ✅ HEADER (NOT FIXED) */}
       <div className="relative z-10 px-8 py-8 border-b border-white/5">
         <Link 
-          to="/tripwire/admin" 
+          to="/integrator/admin" 
           className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#00FF94] transition-colors"
         >
           <ArrowLeft size={20} />

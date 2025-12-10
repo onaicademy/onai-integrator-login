@@ -100,8 +100,8 @@ export function useTripwireAuth() {
         return;
       }
 
-      // Students and others → Get returnUrl from query params (or default to /tripwire)
-      const returnUrl = searchParams.get('returnUrl') || '/tripwire';
+      // Students and others → Get returnUrl from query params (or default to /integrator)
+      const returnUrl = searchParams.get('returnUrl') || '/integrator';
       const decodedReturnUrl = decodeURIComponent(returnUrl);
       
       console.log('🔄 Redirecting to:', decodedReturnUrl);
