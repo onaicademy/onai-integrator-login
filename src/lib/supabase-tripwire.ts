@@ -45,6 +45,15 @@ export const tripwireSupabase = createClient(tripwireUrl, tripwireKey, {
     detectSessionInUrl: true,
     storage: window.localStorage,
     storageKey: 'sb-tripwire-auth-token', // 🔥 УНИКАЛЬНЫЙ ключ для Tripwire
+  },
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
   }
 })
 

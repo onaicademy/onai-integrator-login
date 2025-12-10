@@ -3,6 +3,7 @@ import multer from 'multer';
 import axios from 'axios';
 import { adminSupabase } from '../config/supabase';
 import crypto from 'crypto';
+import { amoCrmService } from '../services/amoCrmService';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -313,6 +314,51 @@ router.post('/complete', async (req, res) => {
       await client.query('COMMIT');
       transactionStarted = false;
       console.log(`✅ [SUCCESS] Lesson completion successful!`);
+
+      // ============================================
+      // 🔥 AMOCRM INTEGRATION - Update deal stage
+      // ============================================
+      // Получаем email пользователя для поиска сделки в amoCRM
+      try {
+        const userEmailResult = await client.query(`
+          SELECT u.email 
+          FROM users u
+          INNER JOIN tripwire_users tu ON tu.user_id = u.id
+          WHERE tu.id = $1::uuid
+        `, [tripwire_user_id]);
+
+        const userEmail = userEmailResult.rows[0]?.email;
+
+        if (userEmail) {
+          // Маппинг lesson_id на номер урока для Tripwire воронки
+          // Module 16 → Lesson 67 → Урок 1
+          // Module 17 → Lesson 68 → Урок 2
+          // Module 18 → Lesson 69 → Урок 3
+          const lessonNumberMap: Record<number, number> = {
+            67: 1,
+            68: 2,
+            69: 3,
+          };
+
+          const lessonNumber = lessonNumberMap[lesson_id];
+
+          if (lessonNumber) {
+            console.log(`[AMOCRM] Отправляем обновление в amoCRM для ${userEmail}, урок ${lessonNumber}`);
+            
+            // 🔥 ВАЖНО: Запускаем асинхронно (fire-and-forget)
+            // Не блокируем ответ пользователю, если amoCRM недоступен
+            amoCrmService.onLessonCompleted(userEmail, lessonNumber)
+              .catch(err => console.error('[AMOCRM] Фоновая ошибка:', err.message));
+          } else {
+            console.log(`[AMOCRM] Lesson ${lesson_id} не привязан к Tripwire воронке, пропускаем amoCRM`);
+          }
+        } else {
+          console.log(`[AMOCRM] Email пользователя ${tripwire_user_id} не найден`);
+        }
+      } catch (amoCrmError: any) {
+        // Логируем ошибку, но не падаем - amoCRM не должен ломать UX студента
+        console.error('[AMOCRM] Ошибка при обновлении сделки:', amoCrmError.message);
+      }
 
       // Return success response
       res.json({

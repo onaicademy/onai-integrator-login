@@ -1,10 +1,10 @@
 /**
  * Tripwire Certificate Service
  * Сервис для генерации и выдачи сертификатов
- * ИЗОЛИРОВАННЫЙ для Tripwire DB
+ * ✅ ИСПОЛЬЗУЕТ MAIN PLATFORM DB (pjmvxecykysfrzppdcto)
  */
 
-import { tripwireAdminSupabase as supabase } from '../../config/supabase-tripwire';
+import { adminSupabase as supabase } from '../../config/supabase';
 import { certificatePDFService } from './certificatePDFService';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -69,14 +69,14 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     // 1. Проверяем, не выдан ли уже сертификат
     // ВРЕМЕННО ОТКЛЮЧЕНО - ВСЕГДА ГЕНЕРИРУЕМ НОВЫЙ ДЛЯ ТЕСТИРОВАНИЯ
     const { data: existingCert, error: checkError } = await supabase
-      .from('tripwire_certificates')
+      .from('certificates')
       .select('*')
       .eq('user_id', userId)
       .single();
     
     if (existingCert) {
       console.log('⚠️ [Tripwire CertificateService] Найден старый сертификат, удаляем для регенерации...');
-      await supabase.from('tripwire_certificates').delete().eq('user_id', userId);
+      await supabase.from('certificates').delete().eq('user_id', userId);
     }
     
     // 2. Проверяем, завершил ли пользователь все модули
@@ -122,28 +122,36 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     const fileName = `${certificateNumber}-${uuidv4()}.pdf`;
     const storagePath = `users/${userId}/certificates/${fileName}`;
     
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('certificates')
       .upload(storagePath, pdfBuffer, {
         contentType: 'application/pdf',
         cacheControl: '3600',
+        upsert: true, // Перезаписываем если существует
       });
     
     if (uploadError) {
       console.error('❌ [Certificate] Storage upload failed:', uploadError);
-      // Continue anyway - we'll use fallback
+      throw new Error(`Failed to upload certificate to storage: ${uploadError.message}`);
     }
+    
+    console.log('✅ [Certificate] Uploaded to storage:', uploadData?.path);
     
     // 7. Получаем публичную ссылку
     const { data: urlData } = supabase.storage
       .from('certificates')
       .getPublicUrl(storagePath);
     
-    const certificateUrl = urlData?.publicUrl || `/tripwire/certificate/${certificateNumber}`;
+    if (!urlData?.publicUrl) {
+      throw new Error('Failed to get public URL for certificate');
+    }
+    
+    const certificateUrl = urlData.publicUrl;
+    console.log('🔗 [Certificate] Public URL:', certificateUrl);
     
     // 8. Сохраняем сертификат в БД
     const { data: newCert, error: insertError } = await supabase
-      .from('tripwire_certificates')
+      .from('certificates')
       .insert({
         user_id: userId,
         certificate_number: certificateNumber,
@@ -187,7 +195,7 @@ export async function getUserCertificate(userId: string): Promise<Certificate | 
     console.log('🎓 [Tripwire CertificateService] Получаем сертификат для:', userId);
     
     const { data, error } = await supabase
-      .from('tripwire_certificates')
+      .from('certificates')
       .select('*')
       .eq('user_id', userId)
       .single();

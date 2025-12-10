@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
+import { supabase } from '@/lib/supabase'; // 🔥 Main Platform - для сертификатов
 import { Loader2 } from 'lucide-react';
 
 /**
@@ -21,9 +21,9 @@ export default function TripwireCertificatePage() {
     try {
       setIsLoading(true);
       
-      // Загружаем сертификат по номеру
-      const { data, error: fetchError } = await tripwireSupabase
-        .from('tripwire_certificates')
+      // Загружаем сертификат по номеру (Main Platform DB!)
+      const { data, error: fetchError } = await supabase
+        .from('certificates')
         .select('*')
         .eq('certificate_number', certificateNumber)
         .single();
@@ -34,8 +34,8 @@ export default function TripwireCertificatePage() {
       setCertificate(data);
 
       // Обновляем счетчик скачиваний
-      await tripwireSupabase
-        .from('tripwire_certificates')
+      await supabase
+        .from('certificates')
         .update({ 
           download_count: (data.download_count || 0) + 1,
           downloaded_at: new Date().toISOString() 

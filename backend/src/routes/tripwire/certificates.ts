@@ -6,12 +6,19 @@
 import express from 'express';
 import { authenticateJWT } from '../../middleware/auth';
 import * as tripwireCertificateController from '../../controllers/tripwire/tripwireCertificateController';
+import * as tripwireCertificateSSEController from '../../controllers/tripwire/tripwireCertificateSSEController';
 
 const router = express.Router();
 
 /**
+ * POST /api/tripwire/certificates/issue-stream
+ * 🔥 NEW: Выдать сертификат с реальным прогрессом через SSE
+ */
+router.post('/issue-stream', tripwireCertificateSSEController.issueCertificateStream);
+
+/**
  * POST /api/tripwire/certificates/issue
- * Выдать сертификат пользователю
+ * Выдать сертификат пользователю (старый метод, для обратной совместимости)
  */
 router.post('/issue', authenticateJWT, tripwireCertificateController.issue);
 

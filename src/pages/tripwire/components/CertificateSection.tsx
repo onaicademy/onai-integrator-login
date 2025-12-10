@@ -15,9 +15,11 @@ interface CertificateSectionProps {
  * - Использование точного SVG из техзадания
  * - Полный перевод
  * - Точный копирайтинг
+ * - Реальный прогресс-бар генерации
  */
 export default function CertificateSection({ profile, certificate, onGenerateCertificate }: CertificateSectionProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0); // 0-100
   const [generationStep, setGenerationStep] = useState('');
   const [pdfUrl, setPdfUrl] = useState<string | null>(certificate?.pdf_url || null);
   const [showUnlockAnimation, setShowUnlockAnimation] = useState(false);
@@ -64,27 +66,96 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
 
   const handleGeneratePDF = async () => {
     setIsGenerating(true);
-    setGenerationStep('Создаем ваш сертификат...');
+    setGenerationProgress(0);
+    setGenerationStep('Инициализация...');
     
     try {
-      // Задержка для UI
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 🔥 SSE: Реальный прогресс с бэкенда
+      const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+      const token = localStorage.getItem('tripwire_supabase_token');
+
+      console.log('🚀 [SSE] Starting certificate generation...');
+
+      const response = await fetch(`${API_URL}/api/tripwire/certificates/issue-stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({
+          user_id: profile.user_id || (window as any).currentUserId, // fallback
+          full_name: profile.full_name,
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error(`HTTP ${response.status}: Ошибка соединения`);
+      }
+
+      // Читаем SSE поток
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        
+        if (!value) continue;
+
+        const chunkValue = decoder.decode(value);
+        
+        // Парсим SSE формат "data: {...}\n\n"
+        const lines = chunkValue.split('\n\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.replace('data: ', '').trim();
+            
+            try {
+              const data = JSON.parse(jsonStr);
+              
+              console.log('📊 [SSE] Progress:', data);
+              
+              // Обновляем UI
+              setGenerationProgress(data.progress);
+              setGenerationStep(data.message);
+
+              // Завершено
+              if (data.progress === 100 && data.data?.pdfUrl) {
+                console.log('✅ [SSE] Certificate ready:', data.data.pdfUrl);
+                setPdfUrl(data.data.pdfUrl);
+                
+                // Перезагружаем профиль чтобы обновить UI
+                await onGenerateCertificate();
+                
+                // Показываем успех еще 1 секунду
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+              
+              // Ошибка
+              if (data.data?.error) {
+                throw new Error(data.data.error);
+              }
+            } catch (e) {
+              // Ignore JSON parse errors (usually fragments)
+              console.log('🔍 [SSE] Parse skip:', e);
+            }
+          }
+        }
+      }
+
+      console.log('✅ [SSE] Stream completed');
       
-      setGenerationStep('Подписываем ваш сертификат...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Вызываем API генерации
-      await onGenerateCertificate();
-      
-      setGenerationStep('Готово!');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // НЕ перезагружаем - пусть onGenerateCertificate сам обновит данные
+      // Сброс UI
       setIsGenerating(false);
+      setGenerationProgress(0);
       setGenerationStep('');
+
     } catch (error: any) {
-      console.error('❌ Error generating certificate:', error);
+      console.error('❌ [SSE] Error:', error);
       setGenerationStep(`Ошибка: ${error.message || 'Не удалось создать сертификат'}`);
+      setGenerationProgress(0);
       
       // Держим ошибку 3 секунды
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -95,19 +166,21 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
   };
 
   const handleDownload = () => {
-    // Скачиваем PDF напрямую если есть ссылка
+    // ✅ ТОЛЬКО ПРЯМОЕ СКАЧИВАНИЕ, БЕЗ РЕДИРЕКТОВ!
     if (certificate?.pdf_url) {
+      console.log('📥 Скачиваем сертификат:', certificate.pdf_url);
+      
       const link = document.createElement('a');
       link.href = certificate.pdf_url;
       link.download = `Certificate-${profile.full_name || 'Student'}.pdf`;
       link.target = '_blank';
+      link.rel = 'noopener noreferrer';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } else {
-      // Фоллбэк - открываем страницу сертификата
-      const certificateNumber = certificate?.certificate_number || `TW-${profile.full_name?.split(' ')[0] || 'USER'}-${Date.now().toString().slice(-6)}`;
-      window.open(`/tripwire/certificate/${certificateNumber}`, '_blank');
+      console.error('❌ PDF URL не найден в сертификате');
+      alert('Ошибка: PDF сертификата не найден. Попробуйте сгенерировать заново.');
     }
   };
 
@@ -226,15 +299,44 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                   )}
                 </button>
 
-                {isGenerating && generationStep && (
+                {/* 🔥 ПРОГРЕСС-БАР */}
+                {isGenerating && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-center"
+                    className="space-y-3"
                   >
-                    <p className="text-[#00FF94] text-sm font-['JetBrains_Mono'] uppercase tracking-wider">
-                      {generationStep}
-                    </p>
+                    {/* Прогресс-бар */}
+                    <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] rounded-full"
+                        initial={{ width: '0%' }}
+                        animate={{ width: `${generationProgress}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                      {/* Глиттер эффект */}
+                      <motion.div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-20"
+                        animate={{
+                          x: ['-100%', '400%'],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: 'linear',
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Текст статуса */}
+                    <div className="flex items-center justify-between text-sm">
+                      <p className="text-[#00FF94] font-['JetBrains_Mono'] uppercase tracking-wider">
+                        {generationStep}
+                      </p>
+                      <p className="text-white font-['JetBrains_Mono'] font-bold">
+                        {generationProgress}%
+                      </p>
+                    </div>
                   </motion.div>
                 )}
               </div>
