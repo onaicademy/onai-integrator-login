@@ -687,12 +687,24 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
           border: none !important;
         }
 
-        /* Play button - ЗЕЛЁНАЯ */
+        /* Play button - ЗЕЛЁНЫЙ КРУГ С БЕЛОЙ СТРЕЛКОЙ */
         .plyr__control--overlaid {
           background: rgba(0, 255, 136, 0.9) !important;
           width: 60px !important;
           height: 60px !important;
           border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+        }
+
+        /* ✅ БЕЛАЯ СТРЕЛКА В ЗЕЛЕНОМ КРУЖКЕ */
+        .plyr__control--overlaid svg {
+          fill: #FFFFFF !important;
+          width: 28px !important;
+          height: 28px !important;
+          margin-left: 3px !important; /* Визуально центрируем треугольник */
         }
 
         /* ✅ МОБИЛЬНАЯ АДАПТАЦИЯ PLAY BUTTON */
@@ -703,15 +715,20 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
           }
           
           .plyr__control--overlaid svg {
-            width: 24px !important;
-            height: 24px !important;
+            width: 22px !important;
+            height: 22px !important;
+            margin-left: 2px !important;
           }
         }
 
+        /* ✅ HOVER - ЯРЧЕ ЗЕЛЁНЫЙ */
         .plyr__control--overlaid:hover {
           background: rgba(0, 255, 136, 1) !important;
+          transform: scale(1.05) !important;
+          transition: all 0.2s ease !important;
         }
 
+        /* ✅ МАЛЕНЬКАЯ КНОПКА PLAY В КОНТРОЛАХ (тоже зелёная) */
         .plyr__control[data-plyr="play"] svg {
           fill: #00FF88 !important;
         }

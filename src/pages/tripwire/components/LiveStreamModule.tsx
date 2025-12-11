@@ -43,14 +43,59 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
       <div className="relative z-10">
         {/* Заголовок с LIVE иконкой */}
         <div className="flex items-start gap-3 sm:gap-4 mb-4">
-          {isUnlocked ? (
-            <div className="relative flex-shrink-0 mt-1">
-               <div className="absolute inset-0 bg-[#FF3366] blur-lg opacity-50 animate-pulse" />
-               <Radio className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#FF3366] animate-pulse relative z-10" />
-            </div>
-          ) : (
-            <Radio className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white/20 flex-shrink-0 mt-1" />
-          )}
+          {/* Icon with Badge - КАК У МОДУЛЕЙ */}
+          <div className="relative flex-shrink-0">
+            {isUnlocked ? (
+              <div className="relative">
+                <div 
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: 'rgba(255, 51, 102, 0.2)',
+                    border: '1px solid rgba(255, 51, 102, 0.3)'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-[#FF3366] blur-lg opacity-50 animate-pulse" />
+                  <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-[#FF3366] animate-pulse relative z-10" />
+                </div>
+                {/* Module Number Badge */}
+                <div 
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                  style={{
+                    background: '#FF3366',
+                    color: '#000000',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    boxShadow: '0 0 8px #FF3366',
+                  }}
+                >
+                  4
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <div 
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                  }}
+                >
+                  <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-white/20" />
+                </div>
+                {/* Module Number Badge */}
+                <div 
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    color: 'rgba(156, 163, 175, 0.6)',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  4
+                </div>
+              </div>
+            )}
+          </div>
           
           <h2 
             className={`text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl font-bold uppercase 
