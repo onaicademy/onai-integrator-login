@@ -413,16 +413,16 @@ export default function TripwireProfile() {
           CYBER GRID BACKGROUND (КАК НА /integrator)
           ═══════════════════════════════════════════════════════ */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div 
+      <div 
           className="absolute inset-0"
-          style={{
-            backgroundImage: `
+        style={{
+          backgroundImage: `
               linear-gradient(#00FF8833 1px, transparent 1px),
               linear-gradient(90deg, #00FF8833 1px, transparent 1px)
-            `,
+          `,
             backgroundSize: '80px 80px',
-          }}
-        />
+        }}
+      />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════

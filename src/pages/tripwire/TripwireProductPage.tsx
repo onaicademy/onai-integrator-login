@@ -309,13 +309,11 @@ export default function TripwireProductPage() {
   
   console.log('🎯 Completed modules count:', completedModulesCount, 'completedLessons:', completedLessons);
   
-  // ✅ ПРАВИЛЬНЫЙ ПОРЯДОК:
-  // Левая колонка: Вводный модуль (id: 16)
-  // Правая колонка: Reels (id: 18), GPT (id: 17)
-  const featuredModule = modulesWithDynamicStatus.find(m => m.id === 16); // Вводный - СЛЕВА
-  const reelsModule = modulesWithDynamicStatus.find(m => m.id === 18); // Reels - СПРАВА ПЕРВЫЙ
-  const gptModule = modulesWithDynamicStatus.find(m => m.id === 17); // GPT - СПРАВА ВТОРОЙ
-  const otherActiveModules = [reelsModule, gptModule].filter(Boolean); // Убираем null
+  // ✅ ПРАВИЛЬНАЯ РАСКЛАДКА:
+  // LEFT COLUMN (lg:col-span-6): Модуль 1 (Вводный) + Модуль 2 (GPT)
+  // RIGHT COLUMN (lg:col-span-4): Модуль 3 (Reels) + Прямой эфир (4)
+  const leftColumnModules = modulesWithDynamicStatus.filter(m => m.id === 16 || m.id === 17); // Вводный + GPT
+  const rightColumnModules = modulesWithDynamicStatus.filter(m => m.id === 18); // Reels
 
   // Get current unlock module data
   const currentUnlockModule = currentUnlock 
@@ -479,166 +477,223 @@ export default function TripwireProductPage() {
         </motion.header>
 
         {/* ═══════════════════════════════════════════════════════════
-            BENTO GRID LAYOUT - ВВОДНЫЙ СЛЕВА, REELS+GPT СПРАВА
+            GRID LAYOUT: LEFT (Вводный+GPT) + RIGHT (Reels+Эфир)
             ═══════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:gap-8 max-w-[1200px] mx-auto">
           
           {/* ═══════════════════════════════════════════════════════════
-              LEFT COLUMN: ВВОДНЫЙ МОДУЛЬ (УРЕЗАННЫЙ!)
+              LEFT COLUMN (lg:col-span-6): ВВОДНЫЙ + GPT
               ═══════════════════════════════════════════════════════ */}
-          {featuredModule && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="lg:col-span-6 flex"
-            >
-              <div
-                onClick={() => handleModuleClick(featuredModule)}
-                onMouseEnter={() => setHoveredModule(featuredModule.id)}
+          <div className="lg:col-span-6 flex flex-col gap-6 lg:gap-8">
+            {leftColumnModules.map((module, index) => {
+              const isLocked = module.status === 'locked';
+            
+            return (
+              <motion.div
+                key={module.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.1, duration: 0.6 }}
+                onClick={() => !isLocked ? handleModuleClick(module) : null}
+                onMouseEnter={() => setHoveredModule(module.id)}
                 onMouseLeave={() => setHoveredModule(null)}
-                className="relative w-full rounded-[16px] p-4 lg:p-6 cursor-pointer group overflow-hidden"
+                className={`relative rounded-[16px] p-4 lg:p-6 group overflow-hidden flex-1 ${
+                  isLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                }`}
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.colors.panel} 0%, ${BRAND.colors.surface} 100%)`,
-                  border: `2px solid ${hoveredModule === featuredModule.id ? BRAND.colors.neon_green : 'rgba(0, 255, 148, 0.2)'}`,
+                  border: `2px solid ${
+                    isLocked 
+                      ? 'rgba(255,255,255,0.05)' 
+                      : hoveredModule === module.id 
+                        ? BRAND.colors.neon_green 
+                        : 'rgba(0, 255, 148, 0.2)'
+                  }`,
                   backdropFilter: 'blur(40px)',
                   transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                  boxShadow: hoveredModule === featuredModule.id 
+                  boxShadow: !isLocked && hoveredModule === module.id 
                     ? `0 0 40px rgba(0, 255, 148, 0.3)` 
-                    : '0 0 20px rgba(0, 255, 148, 0.1)'
+                    : !isLocked 
+                      ? '0 0 20px rgba(0, 255, 148, 0.1)'
+                      : 'none'
                 }}
               >
                 {/* Gradient Overlay */}
                 <div 
-                  className={`absolute inset-0 bg-gradient-to-br ${featuredModule.gradient} opacity-30`}
+                  className={`absolute inset-0 bg-gradient-to-br ${module.gradient} ${isLocked ? 'opacity-20' : 'opacity-30'}`}
                 />
 
-                <div className="relative z-10 flex items-start gap-3">
-                  {/* Icon with Badge */}
-                  <div className="relative flex-shrink-0">
+                  <div className="relative z-10 flex items-start gap-3">
+                    {/* Icon with Badge */}
+                    <div className="relative flex-shrink-0">
+                      <div 
+                        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center ${
+                          isLocked ? '' : 'group-hover:scale-110'
+                        } transition-transform duration-300`}
+                        style={{
+                          background: isLocked 
+                            ? 'rgba(255,255,255,0.03)' 
+                            : `${BRAND.colors.neon_green}20`,
+                          border: isLocked 
+                            ? '1px solid rgba(255,255,255,0.05)' 
+                            : `1px solid ${BRAND.colors.neon_green}30`
+                        }}
+                      >
+                        <module.icon 
+                          className="w-5 h-5 sm:w-6 sm:h-6"
+                          style={{ color: isLocked ? BRAND.colors.text_dim : BRAND.colors.neon_green }}
+                        />
+                      </div>
+                      {/* Module Number Badge */}
+                      <div 
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                        style={{
+                          background: isLocked ? 'rgba(255,255,255,0.1)' : BRAND.colors.neon_green,
+                          color: isLocked ? BRAND.colors.text_dim : '#000000',
+                          fontFamily: BRAND.fonts.mono,
+                          boxShadow: isLocked ? 'none' : `0 0 8px ${BRAND.colors.neon_green}`,
+                          border: isLocked ? '1px solid rgba(255,255,255,0.1)' : 'none'
+                        }}
+                      >
+                        {module.moduleNumber}
+                      </div>
+                    </div>
+
+                    {/* Text */}
+                    <div className="flex-1 min-w-0">
+                      <h3 
+                        className="text-base sm:text-lg font-bold uppercase mb-1 line-clamp-1"
+                        style={{ 
+                          color: isLocked ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
+                          fontFamily: BRAND.fonts.main
+                        }}
+                      >
+                        {module.title}
+                      </h3>
+                      <p 
+                        className="text-[10px] sm:text-xs mb-1.5 line-clamp-1"
+                        style={{ 
+                          color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
+                          fontFamily: BRAND.fonts.body,
+                          opacity: isLocked ? 0.5 : 0.8
+                        }}
+                      >
+                        {module.subtitle}
+                      </p>
+                      <p 
+                        className="text-[10px] sm:text-xs mb-2 line-clamp-2"
+                        style={{ 
+                          color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
+                          fontFamily: BRAND.fonts.body,
+                          opacity: isLocked ? 0.4 : 0.6
+                        }}
+                      >
+                        {module.description}
+                      </p>
+
+                      {/* Stats */}
+                      <div className="flex items-center gap-3 text-[10px] sm:text-xs mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <Clock 
+                            className="w-3 h-3 sm:w-4 sm:h-4" 
+                            style={{ 
+                              color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                              opacity: 0.7 
+                            }}
+                          />
+                          <span style={{ 
+                            color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
+                            opacity: 0.7 
+                          }}>
+                            {module.duration}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <BookOpen 
+                            className="w-3 h-3 sm:w-4 sm:h-4" 
+                            style={{ 
+                              color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                              opacity: 0.7 
+                            }}
+                          />
+                          <span style={{ 
+                            color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
+                            opacity: 0.7 
+                          }}>
+                            {module.lessons} урок
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* CTA Button */}
+                      {!isLocked && (
+                        <motion.button
+                          initial={{ skewX: -10 }}
+                          animate={{ skewX: -10 }}
+                          whileHover={{ scale: 1.02, skewX: 0 }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          className="relative px-3 py-1.5 sm:px-4 sm:py-2 font-bold uppercase tracking-wider overflow-hidden"
+                          style={{
+                            background: BRAND.colors.neon_green,
+                            color: '#000000',
+                            borderRadius: '6px',
+                            fontFamily: BRAND.fonts.main,
+                            fontSize: '10px',
+                          }}
+                        >
+                          <motion.span 
+                            initial={{ skewX: 10 }}
+                            animate={{ skewX: 10 }}
+                            style={{ display: 'block' }}
+                          >
+                            → НАЧАТЬ МОДУЛЬ
+                          </motion.span>
+                        </motion.button>
+                      )}
+                      
+                      {isLocked && (
+                        <div className="flex items-center gap-1.5 text-[10px] sm:text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
+                          <Lock className="w-3 h-3" />
+                          <span>ЗАБЛОКИРОВАНО</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Glassmorphic Lock Overlay */}
+                  {isLocked && (
                     <div 
-                      className="w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                      className="absolute inset-0 backdrop-blur-[2px] flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       style={{
-                        background: `${BRAND.colors.neon_green}20`,
-                        border: `1px solid ${BRAND.colors.neon_green}30`
+                        background: 'rgba(0,0,0,0.3)'
                       }}
                     >
-                      <featuredModule.icon 
-                        className="w-6 h-6"
-                        style={{ color: BRAND.colors.neon_green }}
+                      <Lock 
+                        className="w-10 h-10 sm:w-12 sm:h-12" 
+                        style={{ color: BRAND.colors.text_dim }}
                       />
                     </div>
-                    {/* Module Number Badge */}
-                    <div 
-                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-                      style={{
-                        background: BRAND.colors.neon_green,
-                        color: '#000000',
-                        fontFamily: BRAND.fonts.mono,
-                        boxShadow: `0 0 8px ${BRAND.colors.neon_green}`,
-                      }}
-                    >
-                      {featuredModule.moduleNumber}
-                    </div>
-                  </div>
-
-                  {/* Text */}
-                  <div className="flex-1">
-                    <h3 
-                      className="text-lg lg:text-xl font-bold uppercase mb-1"
-                      style={{ 
-                        color: '#FFFFFF',
-                        fontFamily: BRAND.fonts.main
-                      }}
-                    >
-                      {featuredModule.title}
-                    </h3>
-                    <p 
-                      className="text-xs mb-2"
-                      style={{ 
-                        color: BRAND.colors.text_dim,
-                        fontFamily: BRAND.fonts.body,
-                        opacity: 0.8
-                      }}
-                    >
-                      {featuredModule.subtitle}
-                    </p>
-                    <p 
-                      className="text-xs mb-3"
-                      style={{ 
-                        color: BRAND.colors.text_dim,
-                        fontFamily: BRAND.fonts.body,
-                        opacity: 0.6
-                      }}
-                    >
-                      {featuredModule.description}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="flex items-center gap-4 text-xs mb-3">
-                      <div className="flex items-center gap-1.5">
-                        <Clock 
-                          className="w-4 h-4" 
-                          style={{ color: BRAND.colors.neon_green, opacity: 0.7 }}
-                        />
-                        <span style={{ color: BRAND.colors.neon_green, opacity: 0.7 }}>
-                          {featuredModule.duration}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <BookOpen 
-                          className="w-4 h-4" 
-                          style={{ color: BRAND.colors.neon_green, opacity: 0.7 }}
-                        />
-                        <span style={{ color: BRAND.colors.neon_green, opacity: 0.7 }}>
-                          {featuredModule.lessons} урок
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* CTA Button */}
-                    <motion.button
-                      initial={{ skewX: -10 }}
-                      animate={{ skewX: -10 }}
-                      whileHover={{ scale: 1.02, skewX: 0 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="relative px-4 py-2 font-bold uppercase tracking-wider overflow-hidden"
-                      style={{
-                        background: BRAND.colors.neon_green,
-                        color: '#000000',
-                        borderRadius: '6px',
-                        fontFamily: BRAND.fonts.main,
-                        fontSize: '10px',
-                      }}
-                    >
-                      <motion.span 
-                        initial={{ skewX: 10 }}
-                        animate={{ skewX: 10 }}
-                        style={{ display: 'block' }}
-                      >
-                        → НАЧАТЬ МОДУЛЬ
-                      </motion.span>
-                    </motion.button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
 
           {/* ═══════════════════════════════════════════════════════════
-              RIGHT COLUMN: REELS (ПЕРВЫЙ) + GPT (ВТОРОЙ)
+              RIGHT COLUMN (lg:col-span-4): REELS + ПРЯМОЙ ЭФИР
               ═══════════════════════════════════════════════════════ */}
           <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8">
-            {otherActiveModules.map((module, index) => {
+            {/* МОДУЛЬ 3: REELS */}
+            {rightColumnModules.map((module, index) => {
               const isLocked = module.status === 'locked';
               
               return (
                 <motion.div
                   key={module.id}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1, duration: 0.6 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
                   onClick={() => !isLocked ? handleModuleClick(module) : null}
                   onMouseEnter={() => setHoveredModule(module.id)}
                   onMouseLeave={() => setHoveredModule(null)}
@@ -823,18 +878,17 @@ export default function TripwireProductPage() {
                 </motion.div>
               );
             })}
+            
+            {/* ПРЯМОЙ ЭФИР (4) - ПОД REELS */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <LiveStreamModule modulesCompleted={completedModulesCount} />
+            </motion.div>
           </div>
         </div>
-
-        {/* 🔴 LIVE STREAM BANNER - FULL WIDTH BELOW ALL MODULES */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="mt-6 lg:mt-8 max-w-[1200px] mx-auto"
-        >
-          <LiveStreamModule modulesCompleted={completedModulesCount} />
-        </motion.div>
 
       </div>
 
