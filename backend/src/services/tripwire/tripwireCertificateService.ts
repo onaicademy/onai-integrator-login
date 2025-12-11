@@ -8,6 +8,26 @@ import { tripwireAdminSupabase as supabase } from '../../config/supabase-tripwir
 import { certificatePDFService } from './certificatePDFService';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Транслитерация кириллицы в латиницу для путей файлов
+ */
+function transliterate(text: string): string {
+  const map: { [key: string]: string } = {
+    'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+    'Ж': 'ZH', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+    'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+    'Ф': 'F', 'Х': 'KH', 'Ц': 'TS', 'Ч': 'CH', 'Ш': 'SH', 'Щ': 'SHCH',
+    'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'YU', 'Я': 'YA',
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+    'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+    'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+    'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+    'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+  };
+  
+  return text.split('').map(char => map[char] || char).join('');
+}
+
 interface Certificate {
   id: string;
   user_id: string;
@@ -120,11 +140,13 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     
     // 6. Загружаем PDF в Supabase Storage
     console.log('📦 [Certificate] Uploading to storage...');
-    const fileName = `${certificateNumber}-${uuidv4()}.pdf`;
-    const storagePath = `users/${userId}/certificates/${fileName}`;
+    // ✅ CRITICAL FIX: Используем только UUID в имени файла (БЕЗ certificateNumber с кириллицей)
+    const fileId = uuidv4();
+    const fileName = `cert-${fileId}.pdf`;
+    const storagePath = `${userId}/${fileName}`; // ✅ Упрощенный путь БЕЗ вложенных папок
     
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('certificates')
+    const { error: uploadError } = await supabase.storage
+      .from('tripwire-certificates')
       .upload(storagePath, pdfBuffer, {
         contentType: 'application/pdf',
         cacheControl: '3600',
@@ -140,7 +162,7 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     
     // 7. Получаем публичную ссылку
     const { data: urlData } = supabase.storage
-      .from('certificates')
+      .from('tripwire-certificates')
       .getPublicUrl(storagePath);
     
     if (!urlData?.publicUrl) {

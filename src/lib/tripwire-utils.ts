@@ -6,11 +6,13 @@
 export interface TripwireAchievement {
   id: string;
   user_id: string;
+  achievement_id: string; // ✅ NEW: ID достижения (first_module_complete, etc)
   achievement_type: 'module_1_completed' | 'module_2_completed' | 'module_3_completed';
   title: string;
   description: string;
   icon: string;
   unlocked: boolean;
+  is_completed: boolean; // ✅ NEW: Статус завершения
   unlocked_at: string | null;
   notification_shown: boolean;
   created_at: string;

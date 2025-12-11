@@ -116,14 +116,10 @@ export async function apiRequest<T = any>(
   
   const baseUrl = import.meta.env.VITE_API_URL || defaultApiUrl;
   
-  // 🔌 Логирование для отладки (только при первом вызове)
-  if (!window.__apiClientInitialized) {
-    console.log('🔌 API Client initialized with URL:', baseUrl);
-    console.log('📍 Mode:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
-    console.log('🔧 import.meta.env.DEV:', import.meta.env.DEV);
-    console.log('🔧 import.meta.env.PROD:', import.meta.env.PROD);
-    console.log('🔧 import.meta.env.MODE:', import.meta.env.MODE);
-    console.log('🔧 VITE_API_URL:', import.meta.env.VITE_API_URL);
+  // 🔌 Логирование для отладки (ТОЛЬКО в development!)
+  if (!window.__apiClientInitialized && isDevelopment) {
+    console.log('🔌 API Client initialized');
+    console.log('📍 URL:', baseUrl);
     window.__apiClientInitialized = true;
   }
   
@@ -158,25 +154,27 @@ export async function apiRequest<T = any>(
   }
   
   try {
-    console.log('='.repeat(80));
-    console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
-    console.log('📦 Body type:', isFormData ? 'FormData' : typeof options.body);
-    console.log('📋 Headers:', headers);
-    
-    if (isFormData) {
-      console.log('📤 FormData detected - checking entries:');
-      const formData = options.body as FormData;
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`  - ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-        } else {
-          console.log(`  - ${key}: ${value}`);
+    // 🔒 Логи ТОЛЬКО в development (безопасность в production!)
+    if (isDevelopment) {
+      console.log('='.repeat(80));
+      console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
+      console.log('📦 Body type:', isFormData ? 'FormData' : typeof options.body);
+      
+      if (isFormData) {
+        console.log('📤 FormData detected - checking entries:');
+        const formData = options.body as FormData;
+        for (const [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`  - ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          } else {
+            console.log(`  - ${key}: ${value}`);
+          }
         }
+      } else if (options.body) {
+        console.log('📤 Body:', options.body);
       }
-    } else if (options.body) {
-      console.log('📤 Body:', options.body);
+      console.log('='.repeat(80));
     }
-    console.log('='.repeat(80));
     
     const response = await fetch(url, {
       ...options,
@@ -189,11 +187,19 @@ export async function apiRequest<T = any>(
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error || errorData.message || `HTTP Error ${response.status}`;
       
-      console.error(`❌ API Error: ${errorMessage}`, errorData);
+      // 🔒 Логи ТОЛЬКО в development
+      if (isDevelopment) {
+        console.error(`❌ API Error: ${errorMessage}`, errorData);
+      } else {
+        // Production: только Error ID
+        console.error(`Error ID: ERR-${Date.now()}`);
+      }
       
       // 🚨 CRITICAL SECURITY: Force logout on 401 Unauthorized
       if (response.status === 401) {
-        console.error('🚨 401 UNAUTHORIZED: Принудительный выход из системы');
+        if (isDevelopment) {
+          console.error('🚨 401 UNAUTHORIZED: Принудительный выход');
+        }
         
         // Clear all auth data
         localStorage.removeItem('supabase_token');
@@ -219,9 +225,13 @@ export async function apiRequest<T = any>(
     
     // Парсим JSON ответ
     const data = await response.json();
-    console.log('='.repeat(80));
-    console.log(`✅ API Response ${response.status}:`, data);
-    console.log('='.repeat(80));
+    
+    // 🔒 Логи ТОЛЬКО в development
+    if (isDevelopment) {
+      console.log('='.repeat(80));
+      console.log(`✅ API Response ${response.status}:`, data);
+      console.log('='.repeat(80));
+    }
 
     // 🚀 ОПТИМИЗАЦИЯ: Сохраняем в кэш для GET запросов
     if (method === 'GET' && cache && response.ok) {
@@ -230,17 +240,29 @@ export async function apiRequest<T = any>(
         timestamp: Date.now(),
         ttl: cacheTTL
       });
-      console.log(`💾 [API Cache SAVE] ${endpoint} (TTL: ${cacheTTL}ms)`);
+      
+      if (isDevelopment) {
+        console.log(`💾 [API Cache SAVE] ${endpoint} (TTL: ${cacheTTL}ms)`);
+      }
     }
 
     return data as T;
     
   } catch (error: any) {
-    console.error(`❌ API Request Failed: ${options.method || 'GET'} ${url}`, error);
+    // 🔒 Логи ТОЛЬКО в development
+    if (isDevelopment) {
+      console.error(`❌ API Request Failed: ${options.method || 'GET'} ${url}`, error);
+    } else {
+      // Production: только Error ID
+      console.error(`Error ID: ERR-${Date.now()}`);
+    }
     
     // Если Backend недоступен - показываем понятное сообщение
     if (error.message.includes('Failed to fetch')) {
-      throw new Error('Backend API недоступен. Убедитесь, что сервер запущен на ' + baseUrl);
+      const message = isDevelopment 
+        ? `Backend API недоступен: ${baseUrl}`
+        : 'Service temporarily unavailable';
+      throw new Error(message);
     }
     
     throw error;

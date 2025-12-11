@@ -89,19 +89,14 @@ router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
     let completedTranscriptions = 0;
 
     if (videoIds.length > 0) {
-      const { count: totalCount } = await supabase
+      // ✅ Получаем данные и считаем на клиенте (надежнее чем count)
+      const { data: allTranscriptions } = await supabase
         .from('video_transcriptions')
-        .select('*', { count: 'exact', head: true })
+        .select('video_id, status')
         .in('video_id', videoIds);
 
-      const { count: completedCount } = await supabase
-        .from('video_transcriptions')
-        .select('*', { count: 'exact', head: true })
-        .in('video_id', videoIds)
-        .eq('status', 'completed');
-
-      totalTranscriptions = totalCount || 0;
-      completedTranscriptions = completedCount || 0;
+      totalTranscriptions = allTranscriptions?.length || 0;
+      completedTranscriptions = allTranscriptions?.filter(t => t.status === 'completed').length || 0;
     }
 
     // ✅ ШАГ 7: Затраты из ОТДЕЛЬНОЙ таблицы tripwire_ai_costs

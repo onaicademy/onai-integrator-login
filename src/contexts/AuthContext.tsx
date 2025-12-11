@@ -2,6 +2,18 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
+// 🔒 Security: Логи ТОЛЬКО в development
+const isDev = import.meta.env.DEV;
+const devLog = (...args: any[]) => isDev && console.log(...args);
+const devWarn = (...args: any[]) => isDev && console.warn(...args);
+const devError = (...args: any[]) => {
+  if (isDev) {
+    console.error(...args);
+  } else {
+    console.error(`Auth Error: ERR-${Date.now()}`);
+  }
+};
+
 // ✅ Расширенный тип User с данными из profiles
 interface ExtendedUser extends User {
   full_name?: string;

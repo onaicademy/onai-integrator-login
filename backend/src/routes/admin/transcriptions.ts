@@ -40,6 +40,51 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Получить статистику транскрибаций (для админ-дашборда)
+router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
+  try {
+    // ✅ Получить module_id модулей Tripwire (course_id = 13)
+    const { data: tripwireModules } = await supabase
+      .from('modules')
+      .select('id')
+      .eq('course_id', 13);
+    
+    const tripwireModuleIds = tripwireModules?.map((m: any) => m.id) || [];
+
+    // ✅ Получить все уроки основной платформы (ИСКЛЮЧАЯ Tripwire)
+    let query = supabase
+      .from('lessons')
+      .select('id, bunny_video_id', { count: 'exact', head: true })
+      .not('bunny_video_id', 'is', null);
+    
+    if (tripwireModuleIds.length > 0) {
+      query = query.not('module_id', 'in', `(${tripwireModuleIds.join(',')})`);
+    }
+    
+    const { count: totalLessons } = await query;
+
+    // ✅ Получить completed транскрипции
+    const { data: transcriptions } = await supabase
+      .from('video_transcriptions')
+      .select('video_id, status')
+      .eq('status', 'completed');
+
+    const completedCount = transcriptions?.length || 0;
+
+    res.json({
+      success: true,
+      stats: {
+        total: totalLessons || 0,
+        completed: completedCount,
+        pending: (totalLessons || 0) - completedCount
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching transcription stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Получить список всех уроков с транскрибациями (ОСНОВНАЯ ПЛАТФОРМА, НЕ TRIPWIRE)
 router.get('/lessons', authenticateJWT, requireAdmin, async (req, res) => {
   try {
