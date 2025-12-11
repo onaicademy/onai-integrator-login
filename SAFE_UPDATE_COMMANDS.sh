@@ -79,3 +79,6 @@ echo "   3. Click 'ЗАВЕРШИТЬ УРОК'"
 echo "   4. Should work without 500 error"
 
 
+
+
+

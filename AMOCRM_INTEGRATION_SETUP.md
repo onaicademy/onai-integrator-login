@@ -342,3 +342,6 @@ pm2 logs backend --lines 100 | grep AMOCRM
 Теперь при завершении уроков Tripwire сделки в amoCRM будут автоматически перемещаться по воронке.
 
 **Вопросы?** Проверьте раздел [Troubleshooting](#-troubleshooting) или логи бэкенда.
+
+
+

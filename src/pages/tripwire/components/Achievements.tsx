@@ -11,30 +11,33 @@ interface AchievementsProps {
 const ACHIEVEMENT_CONFIG = [
   {
     id: 'first_module_complete',
-    icon: 'carbon:chart-network',  // 3D иконка: сеть/направление AI
+    icon: 'fluent:target-arrow-24-filled',  // Премиум иконка: цель/направление
     title: 'ПУТЬ НАЙДЕН',
-    description: 'Определено твое направление в AI',
-    color: '#00D9FF',  // Премиальный неоновый голубой
-    shadowColor: 'rgba(0, 217, 255, 0.8)',
-    gradient: 'from-cyan-400/40 via-blue-500/30 to-transparent',
+    description: 'Определено направление в AI',
+    badge: '01',
+    color: '#00FF88',
+    shadowColor: 'rgba(0, 255, 136, 0.15)',
+    gradient: 'from-[#00FF88]/5 via-transparent to-transparent',
   },
   {
     id: 'second_module_complete',
-    icon: 'mdi:robot-outline',  // 3D иконка: GPT-бот / AI интеграция
+    icon: 'fluent:brain-circuit-24-filled',  // Премиум иконка: AI интеграция
     title: 'AI ИНТЕГРАТОР',
     description: 'Создан первый GPT-бот',
-    color: '#B794F6',  // Премиальный фиолетовый (AI)
-    shadowColor: 'rgba(183, 148, 246, 0.8)',
-    gradient: 'from-purple-400/40 via-violet-500/30 to-transparent',
+    badge: '02',
+    color: '#00FF88',
+    shadowColor: 'rgba(0, 255, 136, 0.15)',
+    gradient: 'from-[#00FF88]/5 via-transparent to-transparent',
   },
   {
     id: 'third_module_complete',
-    icon: 'tabler:video-plus',  // 3D иконка: вирусное видео / медиа
-    title: 'ВИРУСНЫЙ CREATOR',
+    icon: 'fluent:video-clip-24-filled',  // Премиум иконка: вирусное видео
+    title: 'CREATOR',
     description: 'Освоено создание вирусных Reels',
-    color: '#FFD700',  // Премиальный золотой
-    shadowColor: 'rgba(255, 215, 0, 0.8)',
-    gradient: 'from-yellow-400/40 via-amber-500/30 to-transparent',
+    badge: '03',
+    color: '#00FF88',
+    shadowColor: 'rgba(0, 255, 136, 0.15)',
+    gradient: 'from-[#00FF88]/5 via-transparent to-transparent',
   }
 ];
 
@@ -143,53 +146,54 @@ export default function Achievements({ achievements }: AchievementsProps) {
                 />
               )}
 
-              {/* Card container - Lighter background for readability */}
+              {/* Card container - Premium cyber style */}
               <motion.div 
                 className={`
-                  relative rounded-3xl overflow-hidden transition-all duration-500 h-full
-                  flex flex-col
+                  relative rounded-2xl overflow-hidden transition-all duration-500 h-full
+                  flex flex-col backdrop-blur-xl
                   ${isUnlocked 
-                    ? 'bg-[#1A1A1A]/80 border-2 border-white/10 hover:scale-105 hover:border-opacity-50' 
-                    : 'bg-[#111]/60 border border-white/5'
+                    ? 'bg-[#0A0A0A]/90 border-2 hover:scale-[1.02]' 
+                    : 'bg-[#0A0A0A]/60 border'
                   }
                 `}
                    style={{
-                     borderColor: isUnlocked ? config.color : undefined,
-                     boxShadow: isUnlocked ? `0 0 30px ${config.shadowColor}` : 'none'
+                     borderColor: isUnlocked ? config.color : 'rgba(255,255,255,0.05)',
+                     boxShadow: isUnlocked ? `0 0 40px ${config.shadowColor}, inset 0 0 20px rgba(0,255,136,0.05)` : 'none'
                    }}>
                 
                 {/* Image/Icon Area */}
-                <div className="relative h-40 flex items-center justify-center bg-gradient-to-b from-white/5 to-transparent">
+                <div className="relative h-40 flex items-center justify-center bg-gradient-to-b from-[#00FF88]/5 to-transparent">
                    {/* Lock overlay */}
                    {!isUnlocked && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] z-10">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10">
                         <Lock className="w-12 h-12 text-white/20" />
                       </div>
                    )}
 
-                   <div className={`relative transition-transform duration-500 ${isUnlocked ? 'scale-110' : 'scale-90 grayscale opacity-50'}`}>
+                   <div className={`relative transition-transform duration-500 ${isUnlocked ? 'scale-110' : 'scale-90 grayscale opacity-40'}`}>
                       {isUnlocked && (
-                        <div className="absolute inset-0 blur-xl opacity-50" style={{ backgroundColor: config.color }} />
+                        <div className="absolute inset-0 blur-2xl opacity-60" style={{ backgroundColor: config.color }} />
                       )}
                       <Icon 
                         icon={config.icon} 
                         style={{ 
                           fontSize: '80px',
-                          color: isUnlocked ? config.color : '#666',
-                          filter: isUnlocked ? 'drop-shadow(0 0 20px rgba(0,0,0,0.5))' : 'none'
+                          color: isUnlocked ? config.color : '#444',
+                          filter: isUnlocked ? `drop-shadow(0 0 30px ${config.color})` : 'none'
                         }}
                       />
                    </div>
                 </div>
 
-                {/* Text Content Area - High Contrast */}
-                <div className="p-6 pt-4 flex-1 flex flex-col text-center bg-white/[0.02]">
-                  <h3 className={`text-xl font-bold font-['JetBrains_Mono'] mb-2 uppercase leading-tight
-                                ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
+                {/* Text Content Area - Premium Cyber */}
+                <div className="p-6 pt-4 flex-1 flex flex-col text-center bg-gradient-to-b from-transparent to-[#00FF88]/[0.02]">
+                  <h3 className={`text-xl font-bold font-['JetBrains_Mono'] mb-2 uppercase leading-tight tracking-wider
+                                ${isUnlocked ? 'text-white' : 'text-white/30'}`}
+                      style={isUnlocked ? { textShadow: '0 0 20px rgba(0,255,136,0.3)' } : {}}>
                     {config.title}
                   </h3>
                   <p className={`text-sm leading-relaxed font-['Manrope']
-                                ${isUnlocked ? 'text-[#CCC]' : 'text-[#555]'}`}>
+                                ${isUnlocked ? 'text-[#9CA3AF]' : 'text-[#444]'}`}>
                     {config.description}
                   </p>
                   

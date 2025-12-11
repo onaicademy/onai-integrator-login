@@ -78,3 +78,6 @@ WHERE ua.user_id = (
   WHERE u.email = 'zankachidix.ai@gmail.com'
 )
 ORDER BY ua.completed_at;
+
+
+

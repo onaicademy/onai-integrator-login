@@ -362,3 +362,6 @@ await amoCrm.onLessonCompleted('student@example.com', 1);
 **Дата создания:** 2025-12-10  
 **Версия:** 1.0  
 **Статус:** ✅ Готово к использованию
+
+
+

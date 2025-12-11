@@ -9,3 +9,6 @@ Node.js/PostgreSQL/React приложение, 3 критические ошиб
 Stack: Node.js 20, PostgreSQL 17.6 (Supabase), React 18, TypeScript, Express. Нужны Best Practices, SQL миграции, код примеры и ссылки на документацию.
 
 
+
+
+

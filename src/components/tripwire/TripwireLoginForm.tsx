@@ -208,7 +208,7 @@ export function TripwireLoginForm({ onForgotPassword }: TripwireLoginFormProps) 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="flex items-center justify-end"
+        className="flex items-center justify-center"
       >
         {/* Remember checkbox removed - auto-fill from URL */}
 

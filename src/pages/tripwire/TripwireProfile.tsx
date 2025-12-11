@@ -19,6 +19,7 @@ import CertificateSection from './components/CertificateSection';
 import AccountSettings from './components/AccountSettings';
 import DigitalFireworks from './components/DigitalFireworks';
 import AchievementModal from './components/AchievementModal';
+import { MatrixRain } from '@/components/MatrixRain';
 import { useToast } from '@/hooks/use-toast';
 
 /**
@@ -405,15 +406,30 @@ export default function TripwireProfile() {
 
   return (
     <div className="min-h-screen bg-[#030303] relative overflow-hidden">
-      {/* Cyber Grid Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-        {[20, 40, 60, 80].map((top) => (
+      {/* 🔢 MATRIX RAIN - Едва заметные падающие цифры */}
+      <MatrixRain opacity={0.05} />
+
+      {/* 🌐 CYBER GRID - Полная сетка (вертикаль + горизонталь) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.08]">
+        {/* Горизонтальные линии */}
+        {Array.from({ length: 20 }).map((_, i) => (
           <div 
-            key={top}
+            key={`h-${i}`}
             className="absolute left-0 right-0 h-px"
             style={{ 
-              top: `${top}%`,
-              background: 'linear-gradient(90deg, transparent, rgba(0, 255, 148, 0.2), transparent)' 
+              top: `${(i + 1) * 5}%`,
+              background: 'linear-gradient(90deg, transparent, rgba(0, 255, 148, 0.3), transparent)' 
+            }} 
+          />
+        ))}
+        {/* Вертикальные линии */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div 
+            key={`v-${i}`}
+            className="absolute top-0 bottom-0 w-px"
+            style={{ 
+              left: `${(i + 1) * 5}%`,
+              background: 'linear-gradient(180deg, transparent, rgba(0, 255, 148, 0.3), transparent)' 
             }} 
           />
         ))}
@@ -422,7 +438,7 @@ export default function TripwireProfile() {
       {/* Radial gradient */}
       <div 
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(0, 255, 148, 0.05) 0%, transparent 60%)' }} 
+        style={{ background: 'radial-gradient(circle at 50% 30%, rgba(0, 255, 148, 0.03) 0%, transparent 60%)' }} 
       />
 
       {/* Corner accents - REMOVED for cleaner look */}

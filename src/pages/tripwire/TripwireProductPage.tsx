@@ -38,7 +38,7 @@ const tripwireModules = [
     lessons: 1,
     icon: Rocket,
     status: "active",
-    gradient: "from-[#00FF88]/20 via-transparent to-transparent",
+    gradient: "from-[#00FF88]/10 via-[#00FF88]/5 to-transparent",
     lessonId: 67,
   },
   {
@@ -51,7 +51,7 @@ const tripwireModules = [
     lessons: 1,
     icon: MessageSquare,
     status: "locked",
-    gradient: "from-purple-500/20 via-transparent to-transparent",
+    gradient: "from-[#00FF88]/10 via-[#00FF88]/5 to-transparent",
     lessonId: 68,
   },
   {
@@ -64,7 +64,7 @@ const tripwireModules = [
     lessons: 1,
     icon: Clapperboard,
     status: "locked",
-    gradient: "from-blue-500/20 via-transparent to-transparent",
+    gradient: "from-[#00FF88]/10 via-[#00FF88]/5 to-transparent",
     lessonId: 69,
   },
 ];
