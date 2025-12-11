@@ -9,6 +9,7 @@ import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { OnAILogo } from '@/components/OnAILogo';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+  const [isPasswordRecoveryOpen, setIsPasswordRecoveryOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -345,17 +347,14 @@ export default function Login() {
               </Button>
             </form>
 
-            {/* Подсказки */}
-            <div className="mt-6 sm:mt-8 text-center space-y-2 px-4">
-              <p className="text-xs sm:text-sm text-gray-400">
-                Нет аккаунта?{' '}
-                <span className="text-[#00FF88] cursor-pointer hover:underline">
-                  Обратитесь к администратору
-                </span>
-              </p>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Забыли пароль? Свяжитесь с поддержкой
-              </p>
+            {/* Забыли пароль */}
+            <div className="mt-6 sm:mt-8 text-center px-4">
+              <button
+                onClick={() => setIsPasswordRecoveryOpen(true)}
+                className="text-sm text-[#00FF88] hover:text-[#00cc88] transition-colors font-medium"
+              >
+                Забыли пароль?
+              </button>
             </div>
           </motion.div>
         </div>
@@ -436,6 +435,12 @@ export default function Login() {
       </div>
     </div>
       )}
+
+      {/* Password Recovery Modal */}
+      <PasswordRecoveryModal
+        isOpen={isPasswordRecoveryOpen}
+        onClose={() => setIsPasswordRecoveryOpen(false)}
+      />
     </>
   );
 }

@@ -6,7 +6,7 @@ import { X, Mail, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { passwordRecoverySchema, type PasswordRecoveryFormData } from '@/lib/validation';
-import { tripwireSupabase } from '@/lib/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
+import { supabase } from '@/lib/supabase'; // 🔥 Main Platform Supabase
 import { toast } from 'sonner';
 
 interface PasswordRecoveryModalProps {
@@ -31,19 +31,25 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
     setIsLoading(true);
     
     try {
-      // ✅ ИЗОЛИРОВАННАЯ БАЗА: Отправляем запрос на сброс пароля через Tripwire Supabase
-      const { error } = await tripwireSupabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/tripwire/update-password`,
+      console.log('🔐 [PasswordRecovery] Sending reset email...');
+      console.log('📧 Email:', data.email);
+      console.log('🔗 Redirect URL:', `${window.location.origin}/update-password`);
+      
+      // ✅ Main Platform: Отправляем запрос на сброс пароля через Main Platform Supabase
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/update-password`,
       });
 
       if (error) {
+        console.error('❌ Reset password error:', error);
         throw error;
       }
 
+      console.log('✅ Reset email sent successfully');
       setIsSuccess(true);
       toast.success('Письмо отправлено! Проверьте почту');
     } catch (error: any) {
-      console.error('❌ Tripwire Password Reset Error:', error);
+      console.error('❌ Main Platform Password Reset Error:', error);
       toast.error(error.message || 'Не удалось отправить письмо');
     } finally {
       setIsLoading(false);
@@ -133,10 +139,10 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
                     <Button
                       type="submit"
                       disabled={isLoading}
-                    className="w-full h-12 bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold transition-all duration-300 hover:scale-[1.02]"
-                    style={{
-                      boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
-                    }}
+                      className="w-full h-12 bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold transition-all duration-300 hover:scale-[1.02]"
+                      style={{
+                        boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
+                      }}
                     >
                       {isLoading ? 'Отправка...' : 'Отправить ссылку'}
                     </Button>
@@ -181,4 +187,3 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
     </AnimatePresence>
   );
 }
-

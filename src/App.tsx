@@ -19,6 +19,7 @@ import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGua
 
 // 🚀 ОПТИМИЗАЦИЯ: Синхронные импорты только для критичных страниц
 import Login from "./pages/Login";
+import UpdatePassword from "./pages/UpdatePassword";
 import NotFound from "./pages/NotFound";
 import AccessDenied from "./pages/AccessDenied";
 import { Loader2 } from "lucide-react";
@@ -92,6 +93,7 @@ const AppRoutes = () => {
       <Routes>
       {/* Публичные страницы (без авторизации) */}
       <Route path="/login" element={<Login />} />
+      <Route path="/update-password" element={<UpdatePassword />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/access-denied" element={<AccessDenied />} />
       
