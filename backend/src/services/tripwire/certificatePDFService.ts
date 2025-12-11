@@ -176,7 +176,7 @@ export class CertificatePDFService {
             <line x1="400" y1="220" x2="800" y2="220" stroke="#00FF94" stroke-width="1" opacity="0.3" />
 
             <!-- ИМЯ СТУДЕНТА -->
-            <text x="600" y="330" text-anchor="middle" fill="#FFFFFF" font-size="64" font-family="Space Grotesk, sans-serif" font-weight="bold" letter-spacing="4" text-transform="uppercase">
+            <text x="600" y="330" text-anchor="middle" fill="#FFFFFF" font-size="48" font-family="Space Grotesk, sans-serif" font-weight="bold" letter-spacing="4" text-transform="uppercase">
               ${data.userName.toUpperCase()}
             </text>
 
