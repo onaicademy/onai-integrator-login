@@ -100,16 +100,16 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
   };
 
   return (
-    <div className="relative">
-      <div className="flex items-center gap-2">
+    <div className="relative w-full">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         {/* Preset Pills */}
-        <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
+        <div className="flex flex-wrap items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
           {presets.map((preset) => (
             <button
               key={preset.key}
               onClick={() => handlePresetClick(preset)}
               className={`
-                px-3 py-1.5 rounded-md text-xs font-['JetBrains_Mono'] transition-all
+                px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-['JetBrains_Mono'] transition-all whitespace-nowrap
                 ${
                   activePreset === preset.key
                     ? 'bg-[#00FF94] text-black shadow-[0_0_10px_rgba(0,255,148,0.3)]'
@@ -126,8 +126,8 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
         <button
           onClick={handleCustomClick}
           className={`
-            px-3 py-1.5 rounded-lg text-xs font-['JetBrains_Mono'] transition-all
-            flex items-center gap-2 border
+            px-2 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-['JetBrains_Mono'] transition-all
+            flex items-center gap-1 sm:gap-2 border whitespace-nowrap
             ${
               activePreset === 'custom'
                 ? 'bg-[#00FF94] text-black border-[#00FF94]'
@@ -135,14 +135,14 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
             }
           `}
         >
-          <Settings className="w-4 h-4" />
+          <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
           Кастом
         </button>
 
         {/* Current Range Display */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-          <Calendar className="w-3.5 h-3.5 text-[#00FF94]" />
-          <span className="text-xs font-['JetBrains_Mono'] text-white">
+        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
+          <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#00FF94] flex-shrink-0" />
+          <span className="text-[10px] sm:text-xs font-['JetBrains_Mono'] text-white whitespace-nowrap">
             {format(value.from, 'dd MMM', { locale: ru })} -{' '}
             {format(value.to, 'dd MMM yyyy', { locale: ru })}
           </span>
@@ -151,42 +151,45 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
 
       {/* Custom Date Inputs (Conditional Render - NO DIALOG!) */}
       {showCustomInputs && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-[400px]
-                        bg-[#0A0A0A] border border-white/20 rounded-xl p-6
-                        shadow-[0_0_40px_rgba(0,255,148,0.2)]">
+        <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                        w-[90vw] sm:w-[400px] max-w-[95vw]
+                        bg-[#0A0A0A] border border-white/20 rounded-xl p-4 sm:p-6
+                        shadow-[0_0_40px_rgba(0,255,148,0.2)]
+                        max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-['JetBrains_Mono'] text-white font-bold">
+            <h3 className="font-['JetBrains_Mono'] text-white font-bold text-sm sm:text-base">
               Выберите диапазон дат
             </h3>
             <button
               onClick={() => setShowCustomInputs(false)}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors flex-shrink-0"
+              aria-label="Закрыть"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Date Inputs */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* From Date */}
             <div className="space-y-2">
-              <label className="text-sm font-['JetBrains_Mono'] text-white">
+              <label className="text-xs sm:text-sm font-['JetBrains_Mono'] text-white block">
                 С какого числа:
               </label>
               <input
                 type="date"
                 value={customFrom}
                 onChange={(e) => setCustomFrom(e.target.value)}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg
-                           text-white font-['JetBrains_Mono'] text-sm
+                className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-lg
+                           text-white font-['JetBrains_Mono'] text-xs sm:text-sm
                            focus:border-[#00FF94] focus:outline-none transition-colors"
               />
             </div>
 
             {/* To Date */}
             <div className="space-y-2">
-              <label className="text-sm font-['JetBrains_Mono'] text-white">
+              <label className="text-xs sm:text-sm font-['JetBrains_Mono'] text-white block">
                 По какое число:
               </label>
               <input
@@ -194,17 +197,17 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
                 value={customTo}
                 onChange={(e) => setCustomTo(e.target.value)}
                 min={customFrom}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg
-                           text-white font-['JetBrains_Mono'] text-sm
+                className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-lg
+                           text-white font-['JetBrains_Mono'] text-xs sm:text-sm
                            focus:border-[#00FF94] focus:outline-none transition-colors"
               />
             </div>
 
             {/* Preview */}
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-xs text-gray-400 font-['JetBrains_Mono']">
+            <div className="pt-3 sm:pt-4 border-t border-white/10">
+              <p className="text-[10px] sm:text-xs text-gray-400 font-['JetBrains_Mono'] break-words">
                 Выбранный период:{' '}
-                <span className="text-[#00FF94]">
+                <span className="text-[#00FF94] block sm:inline mt-1 sm:mt-0">
                   {format(new Date(customFrom), 'dd MMM yyyy', { locale: ru })} -{' '}
                   {format(new Date(customTo), 'dd MMM yyyy', { locale: ru })}
                 </span>
@@ -213,19 +216,19 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3 mt-6">
+          <div className="flex items-center gap-2 sm:gap-3 mt-4 sm:mt-6">
             <button
               onClick={() => setShowCustomInputs(false)}
-              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg
-                         text-white font-['JetBrains_Mono'] text-sm
+              className="flex-1 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-lg
+                         text-white font-['JetBrains_Mono'] text-xs sm:text-sm
                          hover:bg-white/10 transition-colors"
             >
               Отмена
             </button>
             <button
               onClick={handleCustomApply}
-              className="flex-1 px-4 py-2 bg-[#00FF94] rounded-lg
-                         text-black font-['JetBrains_Mono'] text-sm font-bold
+              className="flex-1 px-3 sm:px-4 py-2 bg-[#00FF94] rounded-lg
+                         text-black font-['JetBrains_Mono'] text-xs sm:text-sm font-bold
                          hover:bg-[#00FF94]/80 transition-colors
                          shadow-[0_0_20px_rgba(0,255,148,0.3)]"
             >
