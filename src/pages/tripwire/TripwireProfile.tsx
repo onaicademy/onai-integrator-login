@@ -406,40 +406,30 @@ export default function TripwireProfile() {
 
   return (
     <div className="min-h-screen bg-[#030303] relative overflow-hidden">
-      {/* 🔢 MATRIX RAIN - Едва заметные падающие цифры */}
-      <MatrixRain opacity={0.05} />
+      {/* 🔢 MATRIX RAIN - Падающие цифры (интенсивность +5%) */}
+      <MatrixRain opacity={0.10} />
 
-      {/* 🌐 CYBER GRID - Полная сетка (вертикаль + горизонталь) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.08]">
-        {/* Горизонтальные линии */}
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div 
-            key={`h-${i}`}
-            className="absolute left-0 right-0 h-px"
-            style={{ 
-              top: `${(i + 1) * 5}%`,
-              background: 'linear-gradient(90deg, transparent, rgba(0, 255, 148, 0.3), transparent)' 
-            }} 
-          />
-        ))}
-        {/* Вертикальные линии */}
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div 
-            key={`v-${i}`}
-            className="absolute top-0 bottom-0 w-px"
-            style={{ 
-              left: `${(i + 1) * 5}%`,
-              background: 'linear-gradient(180deg, transparent, rgba(0, 255, 148, 0.3), transparent)' 
-            }} 
-          />
-        ))}
+      {/* ═══════════════════════════════════════════════════════════
+          CYBER GRID BACKGROUND (КАК НА /integrator)
+          ═══════════════════════════════════════════════════════ */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(#00FF8833 1px, transparent 1px),
+              linear-gradient(90deg, #00FF8833 1px, transparent 1px)
+            `,
+            backgroundSize: '80px 80px',
+          }}
+        />
       </div>
 
-      {/* Radial gradient */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 30%, rgba(0, 255, 148, 0.03) 0%, transparent 60%)' }} 
-      />
+      {/* ═══════════════════════════════════════════════════════════
+          AMBIENT GLOW EFFECTS (КАК НА /integrator)
+          ═══════════════════════════════════════════════════════ */}
+      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-[#00FF88]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-[600px] h-[600px] bg-[#00FF88]/3 rounded-full blur-[150px] pointer-events-none" />
 
       {/* Corner accents - REMOVED for cleaner look */}
       {/* <div className="absolute top-0 left-0 w-32 h-32 pointer-events-none">
