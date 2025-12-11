@@ -145,7 +145,7 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     const fileName = `cert-${fileId}.pdf`;
     const storagePath = `${userId}/${fileName}`; // ✅ Упрощенный путь БЕЗ вложенных папок
     
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('tripwire-certificates')
       .upload(storagePath, pdfBuffer, {
         contentType: 'application/pdf',
