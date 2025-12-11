@@ -110,7 +110,7 @@ export async function issueCertificateStream(req: Request, res: Response): Promi
     sendProgress(60, 'Загрузка в облачное хранилище...');
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('certificates')
+      .from('tripwire-certificates')
       .upload(storagePath, pdfBuffer, {
         contentType: 'application/pdf',
         cacheControl: '3600',
@@ -129,7 +129,7 @@ export async function issueCertificateStream(req: Request, res: Response): Promi
     sendProgress(75, 'Получение публичной ссылки...');
 
     const { data: urlData } = supabase.storage
-      .from('certificates')
+      .from('tripwire-certificates')
       .getPublicUrl(storagePath);
 
     if (!urlData?.publicUrl) {
