@@ -201,30 +201,19 @@ export class CertificatePDFService {
               работы с нейросетями и AI-инструментами
             </text>
 
-            <!-- Подписи директоров -->
-            <g transform="translate(120, 650)">
-              <line x1="0" y1="0" x2="160" y2="0" stroke="#333333" stroke-width="1.5" />
-              <text x="80" y="25" text-anchor="middle" fill="#666666" font-size="13" font-family="Manrope, sans-serif">
+            <!-- Подписи директора -->
+            <g transform="translate(220, 650)">
+              <line x1="0" y1="0" x2="200" y2="0" stroke="#333333" stroke-width="1.5" />
+              <text x="100" y="25" text-anchor="middle" fill="#666666" font-size="13" font-family="Manrope, sans-serif">
                 Директор onAI Academy
               </text>
-              <text x="80" y="45" text-anchor="middle" fill="#9CA3AF" font-size="10" font-family="JetBrains Mono, monospace">
+              <text x="100" y="45" text-anchor="middle" fill="#9CA3AF" font-size="10" font-family="JetBrains Mono, monospace">
                 Александр Тарарушкин
               </text>
             </g>
 
-            <!-- Вторая подпись директора -->
-            <g transform="translate(920, 650)">
-              <line x1="0" y1="0" x2="160" y2="0" stroke="#333333" stroke-width="1.5" />
-              <text x="80" y="25" text-anchor="middle" fill="#666666" font-size="13" font-family="Manrope, sans-serif">
-                Директор onAI Academy
-              </text>
-              <text x="80" y="45" text-anchor="middle" fill="#9CA3AF" font-size="10" font-family="JetBrains Mono, monospace">
-                Диас Серекбай
-              </text>
-            </g>
-
             <!-- Дата выдачи -->
-            <g transform="translate(500, 650)">
+            <g transform="translate(780, 650)">
               <line x1="0" y1="0" x2="200" y2="0" stroke="#333333" stroke-width="1.5" />
               <text x="100" y="25" text-anchor="middle" fill="#666666" font-size="13" font-family="Manrope, sans-serif">
                 Дата выдачи

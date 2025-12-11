@@ -690,6 +690,22 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
         /* Play button - ЗЕЛЁНАЯ */
         .plyr__control--overlaid {
           background: rgba(0, 255, 136, 0.9) !important;
+          width: 60px !important;
+          height: 60px !important;
+          border-radius: 50% !important;
+        }
+
+        /* ✅ МОБИЛЬНАЯ АДАПТАЦИЯ PLAY BUTTON */
+        @media (max-width: 640px) {
+          .plyr__control--overlaid {
+            width: 50px !important;
+            height: 50px !important;
+          }
+          
+          .plyr__control--overlaid svg {
+            width: 24px !important;
+            height: 24px !important;
+          }
         }
 
         .plyr__control--overlaid:hover {
@@ -802,6 +818,69 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
         /* Hover */
         .plyr__control:hover {
           background: rgba(0, 255, 148, 0.1) !important;
+        }
+
+        /* ✅ АДАПТАЦИЯ КОНТРОЛОВ ДЛЯ МОБИЛЬНЫХ */
+        @media (max-width: 640px) {
+          /* Уменьшаем размер кнопок */
+          .plyr__controls button {
+            padding: 6px !important;
+          }
+          
+          /* Уменьшаем иконки */
+          .plyr__controls svg {
+            width: 16px !important;
+            height: 16px !important;
+          }
+          
+          /* Адаптивный размер времени */
+          .plyr__time {
+            font-size: 11px !important;
+          }
+          
+          /* Адаптивный прогресс бар */
+          .plyr__progress input[type=range] {
+            height: 4px !important;
+          }
+          
+          /* Адаптивный volume */
+          .plyr__volume {
+            max-width: 60px !important;
+          }
+          
+          /* Скрыть некоторые кнопки на очень маленьких экранах */
+          @media (max-width: 400px) {
+            .plyr__control[data-plyr="pip"] {
+              display: none !important;
+            }
+          }
+        }
+
+        /* ✅ АДАПТАЦИЯ СУБТИТРОВ ДЛЯ МОБИЛЬНЫХ */
+        @media (max-width: 640px) {
+          .plyr__captions--small {
+            font-size: 0.8em !important;
+          }
+          
+          .plyr__captions--medium {
+            font-size: 1.1em !important;
+          }
+          
+          .plyr__captions--large {
+            font-size: 1.5em !important;
+          }
+          
+          .plyr__caption {
+            padding: 2px 8px !important;
+          }
+        }
+
+        /* ✅ АДАПТАЦИЯ МЕНЮ НАСТРОЕК ДЛЯ МОБИЛЬНЫХ */
+        @media (max-width: 640px) {
+          .plyr__menu__container {
+            max-width: 90vw !important;
+            right: 5px !important;
+          }
         }
       ` }} />
       </div>

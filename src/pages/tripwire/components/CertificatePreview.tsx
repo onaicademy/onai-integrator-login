@@ -274,11 +274,11 @@ export function CertificatePreview({
 
           {/* Печать УБРАНА по запросу пользователя */}
 
-          {/* Подписи директоров */}
-          <g transform="translate(120, 650)">
-            <line x1="0" y1="0" x2="160" y2="0" stroke="#333333" strokeWidth="1.5" />
+          {/* Подпись директора */}
+          <g transform="translate(220, 650)">
+            <line x1="0" y1="0" x2="200" y2="0" stroke="#333333" strokeWidth="1.5" />
             <text 
-              x="80" 
+              x="100" 
               y="25" 
               textAnchor="middle" 
               fill="#666666" 
@@ -288,7 +288,7 @@ export function CertificatePreview({
               Директор onAI Academy
             </text>
             <text 
-              x="80" 
+              x="100" 
               y="45" 
               textAnchor="middle" 
               fill="#9CA3AF" 
@@ -299,33 +299,8 @@ export function CertificatePreview({
             </text>
           </g>
 
-          {/* Вторая подпись директора */}
-          <g transform="translate(920, 650)">
-            <line x1="0" y1="0" x2="160" y2="0" stroke="#333333" strokeWidth="1.5" />
-            <text 
-              x="80" 
-              y="25" 
-              textAnchor="middle" 
-              fill="#666666" 
-              fontSize="13" 
-              fontFamily="Manrope, sans-serif"
-            >
-              Директор onAI Academy
-            </text>
-            <text 
-              x="80" 
-              y="45" 
-              textAnchor="middle" 
-              fill="#9CA3AF" 
-              fontSize="10" 
-              fontFamily="JetBrains Mono, monospace"
-            >
-              Диас Серекбай
-            </text>
-          </g>
-
-          {/* Дата выдачи - перемещена в центр */}
-          <g transform="translate(500, 650)">
+          {/* Дата выдачи */}
+          <g transform="translate(780, 650)">
             <line x1="0" y1="0" x2="200" y2="0" stroke="#333333" strokeWidth="1.5" />
             <text 
               x="100" 

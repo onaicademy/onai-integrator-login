@@ -672,7 +672,7 @@ const TripwireLesson = () => {
                 МОДУЛЬ {module?.order_index !== undefined ? module.order_index + 1 : moduleId} • УРОК {currentLessonIndex + 1} / {allLessons.length}
               </motion.p>
               <motion.h1
-                className="text-2xl md:text-3xl lg:text-4xl font-bold text-white font-sans uppercase mb-4 leading-tight tracking-wide line-clamp-2"
+                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white font-sans uppercase mb-4 leading-tight tracking-wide line-clamp-2 px-2 sm:px-0"
                 style={{
                   textShadow: '0 0 40px rgba(0, 255, 136, 0.3), 0 0 80px rgba(0, 255, 136, 0.1)'
                 }}
@@ -684,7 +684,7 @@ const TripwireLesson = () => {
               </motion.h1>
               {lesson.description && (
                 <motion.p 
-                  className="text-gray-400 font-['Manrope'] text-lg max-w-3xl leading-relaxed"
+                  className="text-gray-400 font-['Manrope'] text-sm sm:text-base md:text-lg max-w-3xl leading-relaxed px-2 sm:px-0"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
@@ -731,13 +731,13 @@ const TripwireLesson = () => {
         </motion.div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {/* Video Section */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-2 space-y-6"
+            className="lg:col-span-2 space-y-4 sm:space-y-6"
           >
             {/* 🎥 SMART VIDEO PLAYER - DIRECT HLS STREAMING (Plyr + HLS.js) */}
             {video?.bunny_video_id ? (
@@ -745,6 +745,7 @@ const TripwireLesson = () => {
                 <SmartVideoPlayer 
                   videoId={video.bunny_video_id}
                   videoUrl={`https://video.onai.academy/${video.bunny_video_id}/playlist.m3u8`}
+                  enableAutoSubtitles={true}
                   onProgress={(progress, currentTime, duration) => {
                     // 🎯 Честный трекинг (не засчитывает перемотку!)
                     trackVideoTime(currentTime, duration);
@@ -830,35 +831,35 @@ const TripwireLesson = () => {
           </motion.section>
 
           {/* ⚡ CYBER SIDEBAR */}
-          <aside className="space-y-6">
+          <aside className="space-y-4 sm:space-y-6">
             {/* ⚡ GLASS PANEL: Lesson Info */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl"
+              className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
               style={{
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
               }}
             >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center">
-                  <Book className="w-6 h-6 text-[#00FF88]" />
+              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center flex-shrink-0">
+                  <Book className="w-5 h-5 sm:w-6 sm:h-6 text-[#00FF88]" />
                 </div>
-                <div>
-                  <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider">Информация</h3>
-                  <p className="text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">О уроке</p>
+                <div className="min-w-0">
+                  <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-sm sm:text-base truncate">Информация</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">О уроке</p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Адаптивный блок длительности */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/5 rounded-xl border border-white/5 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/5 rounded-lg sm:rounded-xl border border-white/5 backdrop-blur-sm">
                   <div className="flex items-center gap-2 text-white/60">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm font-medium">Длительность</span>
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="text-xs sm:text-sm font-medium">Длительность</span>
                   </div>
-                  <span className="text-[#00FF88] font-mono font-bold text-lg">
+                  <span className="text-[#00FF88] font-mono font-bold text-base sm:text-lg">
                     {lesson.duration_minutes || 0} мин
                   </span>
                 </div>
@@ -872,13 +873,13 @@ const TripwireLesson = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl"
+                className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
                 style={{
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
                 }}
               >
-                <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#00FF88]" />
+                <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF88]" />
                   Материалы
                 </h3>
                 
@@ -962,28 +963,28 @@ const TripwireLesson = () => {
             )}
 
             {/* 🤖 GLASS PANEL: AI Curator - ВТОРОЙ */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-              className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl"
-              style={{
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-              }}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+                className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
+                style={{
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                }}
+              >
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl border flex items-center justify-center flex-shrink-0 ${
                   isAdmin 
                     ? 'bg-[#00FF88]/10 border-[#00FF88]/30' 
                     : 'bg-white/5 border-white/10'
                 }`}>
-                  <Bot className={`w-6 h-6 ${isAdmin ? 'text-[#00FF88]' : 'text-white/40'}`} />
+                  <Bot className={`w-5 h-5 sm:w-6 sm:h-6 ${isAdmin ? 'text-[#00FF88]' : 'text-white/40'}`} />
                 </div>
-                <div>
-                  <h3 className={`font-['JetBrains_Mono'] font-bold uppercase tracking-wider ${
+                <div className="min-w-0">
+                  <h3 className={`font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-sm sm:text-base truncate ${
                     isAdmin ? 'text-white' : 'text-white/50'
                   }`}>AI-Куратор</h3>
-                  <p className="text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">
                     {isAdmin ? 'Онлайн 24/7' : '🔒 Полная версия'}
                   </p>
                 </div>
@@ -1027,12 +1028,12 @@ const TripwireLesson = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.65 }}
-              className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl"
+              className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
               style={{
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
               }}
             >
-              <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-4">Прогресс видео</h3>
+              <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-3 sm:mb-4 text-sm sm:text-base">Прогресс видео</h3>
               <div className="relative">
                 <Progress 
                   value={videoProgress} 
@@ -1049,9 +1050,9 @@ const TripwireLesson = () => {
                   }}
                 />
               </div>
-              <p className="text-sm text-gray-400 font-['Manrope'] flex items-center justify-between">
-                <span>{isVideoCompleted ? '✅ Урок можно завершить' : `⏳ Просмотрено ${Math.round(totalWatchedSeconds)}сек`}</span>
-                <span className="text-[#00FF88] font-bold">
+              <p className="text-xs sm:text-sm text-gray-400 font-['Manrope'] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-0">
+                <span className="text-[10px] sm:text-sm">{isVideoCompleted ? '✅ Урок можно завершить' : `⏳ Просмотрено ${Math.round(totalWatchedSeconds)}сек`}</span>
+                <span className="text-[#00FF88] font-bold text-sm sm:text-base">
                   {Math.round(videoProgress)}%
                 </span>
               </p>
