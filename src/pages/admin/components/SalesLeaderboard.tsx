@@ -101,22 +101,23 @@ export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardP
                 />
 
                 {/* Card */}
-                <div className="relative bg-[rgba(10,10,10,0.9)] backdrop-blur-xl border-2 border-white/10 hover:border-[#00FF94]/60 rounded-2xl p-6 transition-all duration-300">
-                  <div className="flex items-center justify-between">
+                <div className="relative bg-[rgba(10,10,10,0.9)] backdrop-blur-xl border-2 border-white/10 hover:border-[#00FF94]/60 rounded-2xl p-4 sm:p-6 transition-all duration-300">
+                  {/* 🔥 MOBILE: Вертикальный layout на маленьких экранах */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
                     {/* Left: Position & Manager Info */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                       {/* Position Badge */}
-                      <div className="relative">
+                      <div className="relative flex-shrink-0">
                         <div
                           className="absolute inset-0 blur-xl opacity-50"
                           style={{ backgroundColor: medalColor }}
                         />
                         <div
-                          className="relative w-16 h-16 rounded-full flex items-center justify-center border-4"
+                          className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-4"
                           style={{ borderColor: medalColor, backgroundColor: 'rgba(0,0,0,0.5)' }}
                         >
                           <span
-                            className="text-3xl font-bold font-['JetBrains_Mono']"
+                            className="text-2xl sm:text-3xl font-bold font-['JetBrains_Mono']"
                             style={{ color: medalColor }}
                           >
                             {index + 1}
@@ -125,10 +126,10 @@ export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardP
                       </div>
 
                       {/* Manager Info */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="w-5 h-5 text-[#00FF94]" />
-                          <h3 className="text-lg md:text-xl font-bold text-white font-['JetBrains_Mono'] break-words">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF94] flex-shrink-0" />
+                          <h3 className="text-base sm:text-lg md:text-xl font-bold text-white font-['JetBrains_Mono'] truncate">
                             {manager.manager_name}
                           </h3>
                           {isCurrentManager && (
@@ -138,21 +139,21 @@ export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardP
                           )}
                         </div>
 
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Stats Grid - Mobile: Компактный, Desktop: Полный */}
+                        <div className="grid grid-cols-2 gap-2 sm:gap-4">
                           <div>
-                            <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
+                            <span className="text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block">
                               Всего продаж
                             </span>
-                            <p className="text-lg font-bold text-white font-['JetBrains_Mono']">
+                            <p className="text-sm sm:text-lg font-bold text-white font-['JetBrains_Mono']">
                               {manager.total_sales}
                             </p>
                           </div>
                           <div>
-                            <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase">
+                            <span className="text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block">
                               Этот месяц
                             </span>
-                            <p className="text-lg font-bold text-[#00FF94] font-['JetBrains_Mono']">
+                            <p className="text-sm sm:text-lg font-bold text-[#00FF94] font-['JetBrains_Mono']">
                               {manager.this_month_sales}
                             </p>
                           </div>
@@ -160,15 +161,15 @@ export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardP
                       </div>
                     </div>
 
-                    {/* Right: Revenue */}
-                    <div className="text-right">
-                      <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block mb-2">
+                    {/* Right: Revenue - Mobile: Полная ширина снизу, Desktop: Справа */}
+                    <div className="text-left sm:text-right border-t sm:border-t-0 pt-4 sm:pt-0 border-white/10 sm:border-none">
+                      <span className="text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase block mb-1 sm:mb-2">
                         Общая выручка
                       </span>
-                      <p className="text-2xl md:text-3xl font-bold text-white font-['JetBrains_Mono'] mb-1 break-words">
+                      <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-['JetBrains_Mono'] mb-1 break-words">
                         {formatCurrency(manager.total_revenue)}
                       </p>
-                      <span className="text-sm font-['JetBrains_Mono'] text-[#00FF94]">
+                      <span className="text-xs sm:text-sm font-['JetBrains_Mono'] text-[#00FF94]">
                         {formatCurrency(manager.this_month_revenue)} / месяц
                       </span>
                     </div>
@@ -176,16 +177,16 @@ export default function SalesLeaderboard({ currentManagerId }: SalesLeaderboardP
 
                   {/* Bottom bar - Performance indicators */}
                   <div className="mt-4 pt-4 border-t border-white/10">
-                    <div className="flex items-center gap-6 text-sm">
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="font-['JetBrains_Mono'] text-gray-400">
+                        <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                        <span className="font-['JetBrains_Mono'] text-gray-400 whitespace-nowrap">
                           Активных: {manager.active_users}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span className="font-['JetBrains_Mono'] text-gray-400">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
+                        <span className="font-['JetBrains_Mono'] text-gray-400 whitespace-nowrap">
                           Завершили: {manager.completed_users}
                         </span>
                       </div>

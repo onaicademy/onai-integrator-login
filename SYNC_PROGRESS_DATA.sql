@@ -49,3 +49,4 @@ GROUP BY tp.tripwire_user_id
 ORDER BY total_watch_time_seconds DESC;
 
 -- ✅ Готово! Теперь данные синхронизированы
+

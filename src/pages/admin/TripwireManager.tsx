@@ -185,7 +185,7 @@ export default function TripwireManager() {
         {/* Stats Cards */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-[#00FF94] text-xl font-['JetBrains_Mono']">
+            <div className="text-[#00FF94] text-base sm:text-xl font-['JetBrains_Mono']">
               ЗАГРУЗКА...
             </div>
           </div>
@@ -196,7 +196,7 @@ export default function TripwireManager() {
         {/* Sales Leaderboard - Рейтинг менеджеров */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8"
+                      rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8"
         >
           <SalesLeaderboard
             currentManagerId={tripwireUser?.id}
@@ -204,14 +204,14 @@ export default function TripwireManager() {
         </div>
 
         {/* Date Filter */}
-        <div className="flex justify-center">
+        <div className="flex justify-center px-4">
           <SafeDateFilter value={dateRange} onChange={setDateRange} />
         </div>
 
         {/* Sales Chart - График продаж */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8"
+                      rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8"
         >
           <SalesChart managerId={selectedManagerId} period="custom" dateRange={dateRange} />
         </div>
@@ -237,7 +237,7 @@ export default function TripwireManager() {
         {/* Users Table */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8"
+                      rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8"
         >
           <UsersTable refreshTrigger={refreshTrigger} managerId={selectedManagerId} dateRange={dateRange} />
         </div>
@@ -245,7 +245,7 @@ export default function TripwireManager() {
         {/* Activity Log */}
         <div
           className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 
-                      rounded-3xl p-8"
+                      rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8"
         >
           <ActivityLog refreshTrigger={refreshTrigger} dateRange={dateRange} />
         </div>

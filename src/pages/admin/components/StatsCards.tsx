@@ -74,34 +74,34 @@ export default function StatsCards({ stats }: StatsCardsProps) {
           {/* Card */}
           <div
             className="relative bg-[rgba(10,10,10,0.9)] backdrop-blur-xl border-2 border-white/10 
-                        rounded-2xl p-6 hover:border-[#00FF94]/60 transition-all duration-300
+                        rounded-2xl p-4 sm:p-5 md:p-6 hover:border-[#00FF94]/60 transition-all duration-300
                         shadow-[0_0_40px_rgba(0,255,148,0.015)]"
           >
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <span className="text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase tracking-wider block mb-2">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
+              <div className="flex-1 min-w-0 pr-2">
+                <span className="text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase tracking-wider block mb-1 sm:mb-2">
                   /// {card.title}
                 </span>
-                <p className="text-4xl font-bold text-white font-['JetBrains_Mono']">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-['JetBrains_Mono']">
                   {card.value}
                 </p>
                 {(card as any).subtitle && (
-                  <p className="text-sm font-['JetBrains_Mono'] text-[#00FF94] mt-2">
+                  <p className="text-xs sm:text-sm font-['JetBrains_Mono'] text-[#00FF94] mt-1 sm:mt-2 truncate">
                     {(card as any).subtitle}
                   </p>
                 )}
               </div>
 
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <div
                   className="absolute inset-0 blur-xl opacity-50"
                   style={{ backgroundColor: card.color }}
                 />
                 <div
-                  className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-white/5 to-white/0
+                  className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-white/5 to-white/0
                               flex items-center justify-center border border-white/10"
                 >
-                  <Icon icon={card.iconifyIcon} style={{ fontSize: '32px', color: card.color }} />
+                  <Icon icon={card.iconifyIcon} style={{ fontSize: '24px', color: card.color }} className="sm:text-[28px] md:text-[32px]" />
                 </div>
               </div>
             </div>

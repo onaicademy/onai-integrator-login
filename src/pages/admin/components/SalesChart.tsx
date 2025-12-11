@@ -88,8 +88,9 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
           <p className="text-sm text-gray-500 mt-2">Создайте первую продажу чтобы увидеть график</p>
         </div>
       ) : (
-        <div className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <ResponsiveContainer width="100%" height={400}>
+        <div className="bg-[rgba(15,15,15,0.6)] backdrop-blur-xl border border-white/10 rounded-2xl p-2 sm:p-4 md:p-6">
+          {/* 🔥 MOBILE: Высота графика меньше на мобильных */}
+          <ResponsiveContainer width="100%" height={300} className="sm:!h-[400px]">
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -105,9 +106,18 @@ export default function SalesChart({ managerId, period = 'month', dateRange }: S
               <XAxis
                 dataKey="date"
                 stroke="#9CA3AF"
-                style={{ fontFamily: 'JetBrains Mono', fontSize: 12 }}
+                style={{ fontFamily: 'JetBrains Mono', fontSize: 10 }}
+                tick={{ fontSize: 10 }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
-              <YAxis stroke="#9CA3AF" style={{ fontFamily: 'JetBrains Mono', fontSize: 12 }} />
+              <YAxis 
+                stroke="#9CA3AF" 
+                style={{ fontFamily: 'JetBrains Mono', fontSize: 10 }} 
+                tick={{ fontSize: 10 }}
+                width={40}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#0A0A0A',
