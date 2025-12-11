@@ -25,13 +25,13 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
   onPause,
   onSeeking,
   onSeeked,
-  enableAutoSubtitles = true,
+  enableAutoSubtitles = false, // 🔒 ПО УМОЛЧАНИЮ ВЫКЛЮЧЕНО
   userSubtitles
 }: SmartVideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [subtitlesVTT, setSubtitlesVTT] = useState<string | null>(null);
   const [captionSize, setCaptionSize] = useState<'small' | 'medium' | 'large'>('medium');
-  const [captionsEnabled, setCaptionsEnabled] = useState(true);
+  const [captionsEnabled, setCaptionsEnabled] = useState(false); // 🔒 ПО УМОЛЧАНИЮ ВЫКЛЮЧЕНО
   const [showCaptionsMenu, setShowCaptionsMenu] = useState(false);
   const [transcodingStatus, setTranscodingStatus] = useState<'processing' | 'ready' | 'failed' | null>(null);
   const [transcodingProgress, setTranscodingProgress] = useState(0);
@@ -62,7 +62,7 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
       track.kind = 'captions';
       track.label = 'Русский (авто)';
       track.srclang = 'ru';
-      track.default = true;
+      track.default = false; // 🔒 НЕ ВКЛЮЧАТЬ ПО УМОЛЧАНИЮ
       
       // ✅ ИСПОЛЬЗУЕМ BLOB URL
       const blob = new Blob([vtt], { type: 'text/vtt' });
@@ -406,17 +406,7 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
     console.log('🎬 Adding subtitles to existing player...');
     addSubtitleTrack(videoRef.current, subtitlesVTT);
     
-    // ✅ ОПТИМИЗАЦИЯ: Включаем субтитры автоматически после загрузки
-    setTimeout(() => {
-      if (playerRef.current && captionsEnabled) {
-        try {
-          playerRef.current.captions.active = true;
-          console.log('✅ Auto-enabled captions after subtitle load');
-        } catch (error) {
-          console.error('❌ Failed to auto-enable captions:', error);
-        }
-      }
-    }, 200);
+    // 🔒 НЕ ВКЛЮЧАЕМ АВТОМАТИЧЕСКИ - пользователь сам включит если нужно
   }, [subtitlesVTT, isPlayerReady]); // 🔥 Зависимость от isPlayerReady!
 
   // ШАГ 4: Изменить размер субтитров
