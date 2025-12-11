@@ -13,7 +13,7 @@ interface ProfileHeaderProps {
  */
 export default function ProfileHeader({ profile }: ProfileHeaderProps) {
   // Clean name and get initial
-  const cleanName = (profile.full_name || 'ПОЛЬЗОВАТЕЛЬ').replace(/\[CEO\]/g, '').trim();
+  const cleanName = (profile.full_name || profile.email?.split('@')[0] || 'СТУДЕНТ').replace(/\[CEO\]/g, '').trim();
   
   return (
     <div className="relative">
@@ -43,7 +43,7 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                 }}>
               {cleanName}
               <span className="block text-2xl lg:text-3xl text-[#00FF94] mt-2 font-['JetBrains_Mono'] tracking-wider">
-                ДИРЕКТОР
+                СТУДЕНТ
               </span>
             </h1>
             
