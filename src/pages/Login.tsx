@@ -348,13 +348,25 @@ export default function Login() {
             </form>
 
             {/* Забыли пароль */}
-            <div className="mt-6 sm:mt-8 text-center px-4">
+            <div className="mt-6 sm:mt-8 text-center px-4 space-y-3">
               <button
                 onClick={() => setIsPasswordRecoveryOpen(true)}
                 className="text-sm text-[#00FF88] hover:text-[#00cc88] transition-colors font-medium"
               >
                 Забыли пароль?
               </button>
+              
+              <p className="text-sm text-gray-400">
+                Нет доступа?{' '}
+                <a
+                  href="https://api.whatsapp.com/send/?phone=77066523203&text&type=phone_number&app_absent=0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00FF88] hover:text-[#00cc88] transition-colors"
+                >
+                  Свяжитесь с нами →
+                </a>
+              </p>
             </div>
           </motion.div>
         </div>

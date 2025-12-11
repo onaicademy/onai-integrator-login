@@ -92,7 +92,9 @@ export default function TripwireLogin() {
           <p className="text-gray-400 text-sm">
             У вас нет доступа?{' '}
             <a 
-              href="mailto:feedback@onaiacademy.kz" 
+              href="https://api.whatsapp.com/send/?phone=77066523203&text&type=phone_number&app_absent=0"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[#00FF88] hover:text-[#00cc88] transition-colors"
             >
               Свяжитесь с нами →
