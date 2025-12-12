@@ -7,7 +7,9 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// ✅ IMPORTANT: DO NOT call dotenv.config() here!
+// server.ts already loaded backend/env.env
+// ❌ REMOVED: dotenv.config(); - causes env override bug
 
 const connectionString = process.env.TRIPWIRE_DATABASE_URL!;
 

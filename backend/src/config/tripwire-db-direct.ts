@@ -6,7 +6,9 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env' });
+// ✅ IMPORTANT: DO NOT call dotenv.config() here!
+// server.ts already loaded backend/env.env
+// ❌ REMOVED: dotenv.config({ path: '.env' }); - causes env override bug
 
 const TRIPWIRE_DB_PASSWORD = process.env.TRIPWIRE_DB_PASSWORD!;
 const TRIPWIRE_SUPABASE_URL = process.env.TRIPWIRE_SUPABASE_URL!;

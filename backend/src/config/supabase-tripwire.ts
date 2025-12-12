@@ -5,9 +5,11 @@
  * Использует независимую базу данных.
  */
 
-// ✅ Загружаем .env для scripts (в production через pm2 ecosystem)
+// ✅ IMPORTANT: DO NOT call dotenv.config() here!
+// server.ts already loaded backend/env.env
+// Calling dotenv.config() again would override correct values!
 import dotenv from 'dotenv';
-dotenv.config();
+// ❌ REMOVED: dotenv.config(); - causes env override bug
 
 import { createClient } from '@supabase/supabase-js';
 
