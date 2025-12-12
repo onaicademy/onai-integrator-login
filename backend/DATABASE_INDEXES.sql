@@ -73,3 +73,5 @@ LIMIT 10;
 -- DROP INDEX IF EXISTS idx_tripwire_progress_user_lesson;
 -- DROP INDEX IF EXISTS idx_lessons_module_id;
 -- DROP INDEX IF EXISTS idx_students_email;
+
+

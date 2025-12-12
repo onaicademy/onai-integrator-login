@@ -279,3 +279,5 @@ curl https://api.tripwire.onai.academy/api/health
 
 **Создано:** 12.12.2025  
 **Автор:** Claude AI
+
+

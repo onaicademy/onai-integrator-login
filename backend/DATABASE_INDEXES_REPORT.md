@@ -132,3 +132,5 @@ PostgreSQL использует **Sequential Scan** (а не Index Scan) пот�
 
 **Протестировано:** 12.12.2025  
 **База:** pjmvxecykysfrzppdcto.supabase.co (Tripwire)
+
+
