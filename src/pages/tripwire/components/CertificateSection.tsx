@@ -131,10 +131,10 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                 setPdfUrl(data.data.pdfUrl);
       
                 // Перезагружаем профиль чтобы обновить UI
-      await onGenerateCertificate();
+                await onGenerateCertificate();
       
                 // Показываем успех еще 1 секунду
-      await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
               }
               
               // Ошибка
@@ -142,8 +142,12 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
                 throw new Error(data.data.error);
               }
             } catch (e) {
-              // Ignore JSON parse errors (usually fragments)
-              console.log('🔍 [SSE] Parse skip:', e);
+              // ✅ FIX: Логируем только валидные ошибки парсинга
+              if (e instanceof SyntaxError && jsonStr.length > 10) {
+                console.debug('🔍 [SSE] JSON fragment skipped');
+              } else if (!(e instanceof SyntaxError)) {
+                console.error('❌ [SSE] Unexpected error:', e);
+              }
             }
           }
         }

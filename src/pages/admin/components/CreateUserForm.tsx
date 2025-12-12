@@ -35,6 +35,25 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
     setLoading(true);
     setError('');
 
+    // ✅ FIX: Валидация перед отправкой
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      setError('Неверный формат email адреса');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Пароль должен быть минимум 8 символов');
+      setLoading(false);
+      return;
+    }
+
+    if (fullName.trim().length < 2) {
+      setError('ФИО должно содержать минимум 2 символа');
+      setLoading(false);
+      return;
+    }
+
     try {
       const {
         data: { session },

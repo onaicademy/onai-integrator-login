@@ -70,10 +70,13 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
     {
       key: 'all' as PresetKey,
       label: 'Весь период',
-      getValue: () => ({
-        from: new Date(2024, 0, 1), // 1 января 2024
-        to: new Date(),
-      }),
+      getValue: () => {
+        const currentYear = new Date().getFullYear();
+        return {
+          from: new Date(currentYear - 1, 0, 1), // 1 января прошлого года
+          to: new Date(),
+        };
+      },
     },
   ];
 
@@ -152,7 +155,7 @@ export function SafeDateFilter({ value, onChange }: SafeDateFilterProps) {
       {/* Custom Date Inputs (Conditional Render - NO DIALOG!) */}
       {showCustomInputs && (
         <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50
-                        w-[90vw] sm:w-[400px] max-w-[95vw]
+                        w-[90vw] sm:w-[400px] max-w-[95vw] min-w-[280px]
                         bg-[#0A0A0A] border border-white/20 rounded-xl p-4 sm:p-6
                         shadow-[0_0_40px_rgba(0,255,148,0.2)]
                         max-h-[90vh] overflow-y-auto">

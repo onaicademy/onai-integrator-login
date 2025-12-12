@@ -456,11 +456,12 @@ const TripwireLesson = () => {
         return Math.random() * (max - min) + min;
       };
 
-      const interval: any = setInterval(function() {
+      const interval = setInterval(function() {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
-          return clearInterval(interval);
+          clearInterval(interval);
+          return;
         }
 
         const particleCount = 50 * (timeLeft / duration);
@@ -479,6 +480,9 @@ const TripwireLesson = () => {
           colors: ['#00FF88', '#00cc88', '#FFFFFF', '#00FFAA']
         });
       }, 250);
+      
+      // ✅ FIX: Cleanup interval on unmount
+      return () => clearInterval(interval);
 
       // ✅ Navigate to main page after confetti (with unlock animation if module completed)
       setTimeout(() => {
