@@ -29,18 +29,32 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    // Decode without verification (we trust Supabase's JWT)
-    // In production, you should verify the JWT with Supabase's JWKS endpoint
-    const decoded = jwt.decode(token) as any;
+    // ✅ FIX: Verify JWT signature using Supabase JWT secret
+    // This prevents token forgery attacks
+    const jwtSecret = process.env.SUPABASE_JWT_SECRET || process.env.TRIPWIRE_JWT_SECRET;
     
-    console.log('🔍 [authenticateJWT] Decoded token:', {
+    if (!jwtSecret) {
+      console.error('❌ [authenticateJWT] JWT_SECRET not configured');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    let decoded: any;
+    try {
+      // ✅ SECURE: Verify signature before trusting the token
+      decoded = jwt.verify(token, jwtSecret) as any;
+    } catch (verifyError: any) {
+      console.error('❌ [authenticateJWT] Token verification failed:', verifyError.message);
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+    
+    console.log('🔍 [authenticateJWT] Verified token:', {
       sub: decoded?.sub,
       email: decoded?.email,
       iss: decoded?.iss
     });
     
     if (!decoded || !decoded.sub) {
-      console.error('❌ [authenticateJWT] Invalid token format');
+      console.error('❌ [authenticateJWT] Invalid token payload');
       return res.status(401).json({ error: 'Invalid token format' });
     }
     

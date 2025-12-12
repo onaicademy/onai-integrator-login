@@ -152,7 +152,7 @@ export default function TripwireProfile() {
         .eq('user_id', user.id)
         .single();
 
-      // 1.5. Получаем full_name из tripwire_users
+      // 1.5. ✅ FIX: Получаем full_name из tripwire_users с лучшим fallback
       const { data: tripwireUserData, error: tripwireUserError } = await tripwireSupabase
         .from('tripwire_users')
         .select('full_name, email')
@@ -160,6 +160,12 @@ export default function TripwireProfile() {
         .single();
 
       console.log('🔍 DEBUG: tripwireUserData:', tripwireUserData, 'error:', tripwireUserError, 'user.id:', user.id);
+      
+      // ✅ FIX: Безопасно получаем full_name
+      const fullName = tripwireUserData?.full_name || 
+                       user.user_metadata?.full_name || 
+                       user.email?.split('@')[0] || 
+                       'Студент OnAI';
 
       if (profileError && profileError.code === 'PGRST116') {
         // Профиль не существует - показываем дефолтный
@@ -171,16 +177,16 @@ export default function TripwireProfile() {
           completion_percentage: 0,
           certificate_issued: false,
           certificate_url: null,
-          full_name: tripwireUserData?.full_name || tripwireUserData?.email || user.email || 'Студент',
-          email: tripwireUserData?.email || user.email,
+          full_name: fullName, // ✅ FIX: Используем безопасный fullName
+          email: tripwireUserData?.email || user.email || '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         } as any);
       } else if (existingProfile) {
         setProfile({
           ...existingProfile,
-          full_name: tripwireUserData?.full_name || tripwireUserData?.email || user.email || 'Студент',
-          email: tripwireUserData?.email || user.email,
+          full_name: fullName, // ✅ FIX: Используем безопасный fullName
+          email: tripwireUserData?.email || user.email || '',
         } as any);
       }
 

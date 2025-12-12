@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from 'react';
 import { Trophy, TrendingUp, User } from 'lucide-react';
 import { Icon } from '@iconify/react';

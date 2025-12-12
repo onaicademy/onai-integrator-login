@@ -232,17 +232,9 @@ router.post('/complete', async (req, res) => {
       const progress = progressResult.rows[0];
       console.log(`✅ [STEP 2 SUCCESS] Lesson marked as completed, progress ID:`, progress?.id);
 
-      // ✅ STEP 3: HARDCODED - Each Tripwire module has exactly 1 lesson
-      // Module 16 → Lesson 67
-      // Module 17 → Lesson 68
-      // Module 18 → Lesson 69
-      const moduleLessonMap: Record<number, number[]> = {
-        16: [67],
-        17: [68],
-        18: [69]
-      };
-
-      const allLessonIds = moduleLessonMap[module_id] || [];
+      // ✅ STEP 3: Get lessons from centralized config
+      const { getModuleLessons } = await import('../config/tripwire-mappings');
+      const allLessonIds = getModuleLessons(module_id);
       console.log(`[STEP 3] Module ${module_id} has ${allLessonIds.length} lesson(s): [${allLessonIds.join(', ')}]`);
 
       // ✅ STEP 4: Get completed lessons for this user in current module
@@ -330,17 +322,9 @@ router.post('/complete', async (req, res) => {
         const userEmail = userEmailResult.rows[0]?.email;
 
         if (userEmail) {
-          // Маппинг lesson_id на номер урока для Tripwire воронки
-          // Module 16 → Lesson 67 → Урок 1
-          // Module 17 → Lesson 68 → Урок 2
-          // Module 18 → Lesson 69 → Урок 3
-          const lessonNumberMap: Record<number, number> = {
-            67: 1,
-            68: 2,
-            69: 3,
-          };
-
-          const lessonNumber = lessonNumberMap[lesson_id];
+          // ✅ FIX: Use centralized mapping
+          const { getLessonNumber } = await import('../config/tripwire-mappings');
+          const lessonNumber = getLessonNumber(lesson_id);
 
           if (lessonNumber) {
             console.log(`[AMOCRM] Отправляем обновление в amoCRM для ${userEmail}, урок ${lessonNumber}`);

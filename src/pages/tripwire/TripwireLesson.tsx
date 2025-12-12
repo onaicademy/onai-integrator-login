@@ -806,10 +806,9 @@ const TripwireLesson = () => {
               {isCompleted && moduleId && moduleId < 18 && (
                 <motion.button
                   onClick={() => {
-                    // ✅ 100% ПРАВИЛЬНЫЙ MAPPING:
-                    // Module 16 (lesson 67) → Module 17 (lesson 68)
-                    // Module 17 (lesson 68) → Module 18 (lesson 69)
-                    const nextLessonId = moduleId === 16 ? 68 : moduleId === 17 ? 69 : null;
+                    // ✅ FIX: Use centralized mapping instead of hardcode
+                    const { getNextLessonId } = require('@/config/tripwire-mappings');
+                    const nextLessonId = getNextLessonId(moduleId);
                     console.log(`🚀 Переход: Module ${moduleId} → Lesson ${nextLessonId}`);
                     if (nextLessonId) {
                       navigate(`/integrator/lesson/${nextLessonId}`);

@@ -12,8 +12,12 @@ interface ProfileHeaderProps {
  * - Центрирование контента на мобильных, выравнивание влево на desktop
  */
 export default function ProfileHeader({ profile }: ProfileHeaderProps) {
-  // Clean name and get initial
-  const cleanName = (profile.full_name || profile.email?.split('@')[0] || 'СТУДЕНТ').replace(/\[CEO\]/g, '').trim();
+  // ✅ FIX: Безопасное получение имени с правильным fallback
+  const cleanName = (
+    profile.full_name || 
+    profile.email?.split('@')[0]?.toUpperCase() || 
+    'СТУДЕНТ ONAI'
+  ).replace(/\[CEO\]/g, '').trim();
   
   return (
     <div className="relative">
