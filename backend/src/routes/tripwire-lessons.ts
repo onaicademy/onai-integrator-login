@@ -167,11 +167,14 @@ router.post('/complete', async (req, res) => {
   let transactionStarted = false;
 
   try {
+    // ✅ LOG: Raw body перед validation (для debugging)
+    console.log('[COMPLETE] Raw request body:', JSON.stringify(req.body));
+    
     // ✅ SECURITY: Validate input with Zod (replaces manual validation)
     const validated = await validateRequest(CompleteLessonSchema, req.body);
     const { lesson_id, module_id, tripwire_user_id, watched_percentage = 100 } = validated;
 
-    console.log(`[COMPLETE] Request body (validated):`, { lesson_id, module_id, tripwire_user_id });
+    console.log(`[COMPLETE] Validated successfully:`, { lesson_id, module_id, tripwire_user_id, watched_percentage });
 
     console.log(`🎯 [Complete] User ${tripwire_user_id} completing lesson ${lesson_id} (module ${module_id})`);
 
@@ -358,13 +361,26 @@ router.post('/complete', async (req, res) => {
     }
 
   } catch (error: any) {
+    // ✅ IMPROVED: Детальная обработка разных типов ошибок
+    
+    // 1. Validation errors (Zod) - возвращаем 400
+    if (error.status === 400 && error.errors) {
+      console.warn('⚠️ [VALIDATION ERROR]', error.errors);
+      return res.status(400).json({
+        status: 'validation_error',
+        message: error.message,
+        errors: error.errors,
+      });
+    }
+    
+    // 2. Database/Transaction errors - логируем и rollback
     console.error('❌ [ERROR] Exception occurred:', {
       message: error.message,
       code: error.code,
       detail: error.detail,
       hint: error.hint,
       context: error.context,
-      stack: error.stack?.split('\n')[0], // First line of stack trace
+      stack: error.stack?.split('\n')[0],
     });
 
     // Rollback if transaction is still open

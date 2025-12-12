@@ -26,16 +26,15 @@ export const SignupSchema = z.object({
 
 // ✅ Tripwire schemas
 export const CompleteLessonSchema = z.object({
-  lesson_id: z.union([
-    z.string().transform(val => parseInt(val, 10)),
-    z.number().int().positive('Invalid lesson ID')
-  ]),
-  module_id: z.union([
-    z.string().transform(val => parseInt(val, 10)),
-    z.number().int().positive('Invalid module ID')
-  ]),
-  tripwire_user_id: z.string().uuid('Invalid user ID'),
-  watched_percentage: z.number().min(0).max(100).optional(),
+  // ✅ FIXED: z.coerce автоматически конвертирует string → number (безопасно)
+  lesson_id: z.coerce.number().int().positive('lesson_id must be positive integer'),
+  module_id: z.coerce.number().int().positive('module_id must be positive integer'),
+  tripwire_user_id: z.string().uuid('Invalid user ID format'),
+  watched_percentage: z.coerce.number().min(0).max(100).default(100),
+  
+  // ✅ Опциональные поля для будущих расширений (backwards compatible)
+  timestamp: z.string().datetime().optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const CreateUserSchema = z.object({
@@ -52,13 +51,11 @@ export const CreateCourseSchema = z.object({
 });
 
 export const UpdateProgressSchema = z.object({
-  lesson_id: z.union([
-    z.string().transform(val => parseInt(val, 10)),
-    z.number().int().positive()
-  ]),
-  tripwire_user_id: z.string().uuid(),
-  video_progress_percent: z.number().min(0).max(100),
-  watch_time_seconds: z.number().min(0),
+  // ✅ FIXED: z.coerce для гибкости типов
+  lesson_id: z.coerce.number().int().positive('lesson_id must be positive integer'),
+  tripwire_user_id: z.string().uuid('Invalid user ID format'),
+  video_progress_percent: z.coerce.number().min(0).max(100),
+  watch_time_seconds: z.coerce.number().min(0),
 });
 
 // ✅ Helper function to validate and handle errors
@@ -67,12 +64,15 @@ export const validateRequest = async <T>(schema: z.ZodSchema<T>, data: unknown):
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // ✅ IMPROVED: Детальные сообщения об ошибках с типами
       throw {
         status: 400,
         message: 'Validation failed',
         errors: error.issues.map((e: z.ZodIssue) => ({
           field: e.path.join('.'),
           message: e.message,
+          received: e.code === 'invalid_type' ? typeof (e as any).received : undefined,
+          expected: e.code === 'invalid_type' ? (e as any).expected : undefined,
         })),
       };
     }

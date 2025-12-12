@@ -128,14 +128,28 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Для inline скриптов (если нужно)
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", 'https://api.openai.com', 'https://*.supabase.co'],
-      fontSrc: ["'self'", 'data:'],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      imgSrc: ["'self'", 'data:', 'https:', 'https://onai.b-cdn.net'],
+      connectSrc: ["'self'", 'https://api.openai.com', 'https://*.supabase.co', 'https://bunny.com'],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'", 'https:'],
-      frameSrc: ["'none'"],
+      // ✅ FIXED: Разрешаем BunnyCDN для видео
+      mediaSrc: [
+        "'self'",
+        'https://video.onai.academy',    // BunnyCDN main domain
+        'https://*.cdn.bunny.com',       // BunnyCDN fallback
+        'https://onai.b-cdn.net',        // BunnyCDN CDN
+        'blob:',                         // WebRTC и media обработка
+        'data:',                         // Embedded video
+      ],
+      // ✅ FIXED: Разрешаем iframes для видео (если используются)
+      frameSrc: [
+        "'self'",
+        'https://video.onai.academy',
+        'https://*.bunny.com',
+      ],
+      childSrc: ["'self'"],
     },
   },
   hsts: {
@@ -155,35 +169,53 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS конфигурация
-// Поддержка и localhost (для разработки) и production (https://onai.academy + tripwire)
-const allowedOrigins = [
-  'https://onai.academy',
-  'https://tripwire.onai.academy', // ✅ ADDED: Tripwire production domain
-  'http://localhost:8080',
-  'http://localhost:8081',
-  'http://localhost:5173',
-  'http://localhost:4173',
-  process.env.FRONTEND_URL
-].filter(Boolean); // Убираем undefined значения
-
+// ✅ IMPROVED: Flexible CORS configuration по NODE_ENV
 app.use(cors({
   origin: (origin, callback) => {
-    // Разрешаем запросы без origin (например, Postman, curl)
+    // Разрешаем запросы без origin (Postman, curl, server-to-server)
     if (!origin) {
       return callback(null, true);
     }
     
-    // Проверяем разрешённые origins
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      // В production используем https://onai.academy, в dev - localhost
-      const defaultOrigin = process.env.NODE_ENV === 'production' 
-        ? 'https://onai.academy' 
-        : 'http://localhost:8081'; // UPDATED PORT!
-      callback(null, defaultOrigin);
+    // ✅ PRODUCTION: Строгий whitelist
+    if (process.env.NODE_ENV === 'production') {
+      const allowedProd = [
+        'https://onai.academy',
+        'https://tripwire.onai.academy',
+      ];
+      if (allowedProd.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn(`⚠️ CORS blocked in production: ${origin}`);
+      return callback(new Error('CORS not allowed'), false);
     }
+    
+    // ✅ STAGING: Vercel/Netlify preview deployments
+    if (process.env.NODE_ENV === 'staging') {
+      const stagingPatterns = [
+        /https:\/\/(.*\.)?vercel\.app$/,
+        /https:\/\/(.*\.)?netlify\.app$/,
+        /https:\/\/(.*\.)?onai\.academy$/,
+      ];
+      if (stagingPatterns.some(pattern => pattern.test(origin))) {
+        return callback(null, true);
+      }
+      console.warn(`⚠️ CORS blocked in staging: ${origin}`);
+      return callback(new Error('CORS not allowed'), false);
+    }
+    
+    // ✅ DEVELOPMENT: Любой localhost на любом порту (максимально гибко)
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    
+    // Разрешаем custom FRONTEND_URL из env
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+      return callback(null, true);
+    }
+    
+    console.warn(`⚠️ CORS blocked: ${origin}`);
+    callback(new Error('CORS not allowed'), false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -191,11 +223,21 @@ app.use(cors({
     'Content-Type',
     'Authorization',
     'X-Requested-With',
-    'Accept'
+    'Accept',
+    'X-Retry-Attempt', // ✅ Для smart retries
   ],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  exposedHeaders: [
+    'Content-Range',
+    'X-Content-Range',
+    'Retry-After', // ✅ Для rate limiting
+    'X-Total-Count',
+  ],
   maxAge: 600
 }));
+
+// ✅ CORS Monitoring (логирует все rejections)
+import corsMonitoringMiddleware from './monitoring/cors-monitor';
+app.use(corsMonitoringMiddleware);
 
 // ✅ Apply Rate Limiting to API routes
 // ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes
