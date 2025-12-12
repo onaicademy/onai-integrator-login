@@ -4,6 +4,7 @@ import axios from 'axios';
 import { adminSupabase } from '../config/supabase';
 import crypto from 'crypto';
 import { amoCrmService } from '../services/amoCrmService';
+import { CompleteLessonSchema, UpdateProgressSchema, validateRequest } from '../types/validation';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -166,22 +167,11 @@ router.post('/complete', async (req, res) => {
   let transactionStarted = false;
 
   try {
-    const { lesson_id, module_id, tripwire_user_id } = req.body;
+    // ✅ SECURITY: Validate input with Zod (replaces manual validation)
+    const validated = await validateRequest(CompleteLessonSchema, req.body);
+    const { lesson_id, module_id, tripwire_user_id, watched_percentage = 100 } = validated;
 
-    console.log(`[COMPLETE] Request body:`, { lesson_id, module_id, tripwire_user_id });
-
-    // ✅ Validation
-    if (!lesson_id) {
-      return res.status(400).json({ error: 'lesson_id is required' });
-    }
-
-    if (!module_id) {
-      return res.status(400).json({ error: 'module_id is required' });
-    }
-
-    if (!tripwire_user_id) {
-      return res.status(400).json({ error: 'tripwire_user_id is required' });
-    }
+    console.log(`[COMPLETE] Request body (validated):`, { lesson_id, module_id, tripwire_user_id });
 
     console.log(`🎯 [Complete] User ${tripwire_user_id} completing lesson ${lesson_id} (module ${module_id})`);
 

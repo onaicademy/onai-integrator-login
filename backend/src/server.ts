@@ -4,9 +4,14 @@ import helmet from 'helmet';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// Явно загружаем .env файл из директории backend
-// __dirname = backend/src, поэтому идем на уровень выше к backend/.env
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+// ✅ FIXED: Загружаем env.env файл из директории backend
+// __dirname = backend/src, поэтому идем на уровень выше к backend/env.env
+// ВАЖНО: Все backend ключи должны быть в backend/env.env
+dotenv.config({ path: path.join(__dirname, '..', 'env.env') });
+
+// ✅ Validate environment variables IMMEDIATELY after loading
+import { validateEnvironment } from './config/env';
+validateEnvironment();
 
 // ═══════════════════════════════════════════════════════════════
 // 🔍 ДИАГНОСТИКА .ENV VARIABLES
@@ -111,16 +116,54 @@ import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware безопасности
-app.use(helmet());
+// ✅ Rate Limiting (защита от DDoS и brute-force)
+import { 
+  aiLimiter, 
+  apiLimiter, 
+  authLimiter 
+} from './middleware/rate-limit';
+
+// ✅ Enhanced Security Headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Для inline скриптов (если нужно)
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'", 'https://api.openai.com', 'https://*.supabase.co'],
+      fontSrc: ["'self'", 'data:'],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'", 'https:'],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+
+// ✅ Additional security headers
+app.use((req, res, next) => {
+  res.removeHeader('X-Powered-By'); // Не показываем что используем Express
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // CORS конфигурация
-// Поддержка и localhost (для разработки) и production (https://onai.academy)
+// Поддержка и localhost (для разработки) и production (https://onai.academy + tripwire)
 const allowedOrigins = [
   'https://onai.academy',
+  'https://tripwire.onai.academy', // ✅ ADDED: Tripwire production domain
   'http://localhost:8080',
-  'http://localhost:8081', // NEW PORT!
+  'http://localhost:8081',
   'http://localhost:5173',
+  'http://localhost:4173',
   process.env.FRONTEND_URL
 ].filter(Boolean); // Убираем undefined значения
 
@@ -153,6 +196,13 @@ app.use(cors({
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
   maxAge: 600
 }));
+
+// ✅ Apply Rate Limiting to API routes
+// ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes
+app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
+app.use('/api/tripwire/', apiLimiter); // 100 req/15min для tripwire
+app.use('/api/admin/', apiLimiter);    // 100 req/15min для admin
+// AI endpoints получат строгий лимит в своих роутах (10 req/min)
 
 // Увеличиваем timeout для массовой загрузки видео
 app.use((req, res, next) => {
