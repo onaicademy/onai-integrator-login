@@ -14,6 +14,7 @@ dist-ssr
 
 # Vite cache
 .vite
+.vite-fresh-*
 
 # Environment variables
 .env
