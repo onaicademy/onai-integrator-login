@@ -1,14 +1,18 @@
 # 📋 ENV FILES USAGE GUIDE
 
-## Структура Environment файлов
+## ⚡ ВАЖНО: Структура Environment файлов
 
 ```
-onai-integrator-login/
-├── .env                    ← FRONTEND env (Vite)
-├── backend/
-│   ├── env.env            ← BACKEND env (Express.js)
-│   └── .env               ← НЕ ИСПОЛЬЗУЕТСЯ (legacy)
+C:\onai-integrator-login\onai-integrator-login\
+├── .env                    ← FRONTEND ENV (VITE_* публичные ключи)
+└── backend\
+    └── env.env             ← BACKEND ENV (ВСЕ приватные ключи: Supabase, OpenAI, AmoCRM, Bunny, Telegram)
 ```
+
+**🔥 КРИТИЧНО:**
+- **Backend читает ТОЛЬКО из `backend/env.env`** (dotenv path настроен в server.ts)
+- **НЕ создавай `backend/.env`** - это вызовет конфликт!
+- **Frontend читает ТОЛЬКО из `.env` в корне** (автоматически Vite)
 
 ---
 
@@ -16,13 +20,23 @@ onai-integrator-login/
 
 **Файл:** `backend/env.env`
 
+**Местоположение:** `C:\onai-integrator-login\onai-integrator-login\backend\env.env`
+
 **Используется в:** Backend API (Express.js server)
 
 **Как загружается:**
 ```typescript
-// backend/src/server.ts
+// backend/src/server.ts (строка 10)
 dotenv.config({ path: path.join(__dirname, '..', 'env.env') });
+// __dirname = backend/src
+// .. = backend
+// env.env = backend/env.env
 ```
+
+**⚠️ ВНИМАНИЕ:**
+- Backend читает **ТОЛЬКО `env.env`**, НЕ `.env`!
+- После изменения `env.env` ОБЯЗАТЕЛЬНО перезапусти backend: `npm run dev`
+- Если создашь `backend/.env` - будет конфликт, удали его!
 
 **Ключи в backend/env.env:**
 ```bash
@@ -75,22 +89,33 @@ FRONTEND_URL=http://localhost:5173
 
 **Файл:** `.env` (в корне проекта)
 
+**Местоположение:** `C:\onai-integrator-login\onai-integrator-login\.env`
+
 **Используется в:** Frontend (Vite React app)
 
 **Как загружается:** Автоматически Vite (при `npm run dev`)
 
+**⚠️ ВАЖНО:** 
+- Все переменные ДОЛЖНЫ начинаться с `VITE_*`
+- Только **публичные** ключи (anon_key, НЕ service_role_key)!
+- После изменения `.env` ОБЯЗАТЕЛЬНО перезапусти frontend: `npm run dev`
+
 **Ключи в .env:**
 ```bash
-# Supabase Main (публичные ключи)
-VITE_SUPABASE_URL=https://...
+# Supabase Main (ТОЛЬКО публичные ключи!)
+VITE_SUPABASE_URL=https://arqhkacellqbhjhbebfh.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGc...
 
-# Supabase Tripwire (публичные ключи)
-VITE_TRIPWIRE_SUPABASE_URL=https://...
-VITE_TRIPWIRE_ANON_KEY=eyJhbGc...
+# Supabase Tripwire (ТОЛЬКО публичные ключи!)
+VITE_TRIPWIRE_SUPABASE_URL=https://pjmvxecykysfrzppdcto.supabase.co
+VITE_TRIPWIRE_SUPABASE_ANON_KEY=eyJhbGc...
 
-# Backend API URL
-VITE_BACKEND_URL=http://localhost:3000
+# Backend API URL (localhost для dev, production URL для prod)
+VITE_API_URL=http://localhost:3000
+
+# Bunny CDN (публичные)
+VITE_BUNNY_VIDEO_LIBRARY_ID=551815
+VITE_BUNNY_CDN_HOSTNAME=video.onai.academy
 ```
 
 ---
@@ -167,12 +192,29 @@ npm run dev
 ### Проблема: "OPENAI_API_KEY is not defined"
 
 **Решение:**
-1. Проверить что файл `backend/env.env` существует
-2. Проверить что в server.ts правильный путь:
+1. ✅ Проверь что файл `backend/env.env` существует:
+   ```powershell
+   Test-Path "C:\onai-integrator-login\onai-integrator-login\backend\env.env"
+   # Должно вернуть: True
+   ```
+
+2. ❌ Проверь что НЕТ файла `backend/.env` (он вызовет конфликт):
+   ```powershell
+   Test-Path "C:\onai-integrator-login\onai-integrator-login\backend\.env"
+   # Должно вернуть: False
+   # Если True - удали: Remove-Item backend\.env -Force
+   ```
+
+3. ✅ Проверь что в server.ts правильный путь (строка 10):
    ```typescript
    dotenv.config({ path: path.join(__dirname, '..', 'env.env') });
    ```
-3. Перезапустить backend сервер
+
+4. 🔄 Перезапусти backend сервер:
+   ```bash
+   cd backend
+   npm run dev
+   ```
 
 ### Проблема: "Cannot connect to Supabase"
 
@@ -239,5 +281,50 @@ cat .env | sed 's/=.*/=YOUR_KEY_HERE/' > .env.example
 
 ---
 
-**Последнее обновление:** 12.12.2025  
-**Автор:** Claude AI
+---
+
+## ✅ Проверка правильности настройки
+
+### Быстрая проверка (PowerShell):
+
+```powershell
+# 1. Проверка Backend env
+Write-Host "Backend env.env:" (Test-Path "backend\env.env")
+Write-Host "Backend .env (должен быть False):" (Test-Path "backend\.env")
+
+# 2. Проверка Frontend env  
+Write-Host "Frontend .env:" (Test-Path ".env")
+
+# 3. Проверка что backend читает правильные ключи
+cd backend
+npm run dev
+# Должно показать: ✅ OPENAI_API_KEY: Exists: true
+
+# 4. Проверка что frontend читает правильные ключи
+cd ..
+npm run dev
+# Должно показать в console: [DEV] ✅ Supabase config ready
+```
+
+### Если что-то не работает:
+
+1. **Backend не видит OPENAI_API_KEY:**
+   - Проверь что `backend/env.env` существует
+   - Удали `backend/.env` если он есть
+   - Перезапусти backend
+
+2. **Frontend показывает "Missing Supabase environment variables":**
+   - Проверь что `.env` в корне существует  
+   - Проверь что все переменные начинаются с `VITE_*`
+   - Перезапусти frontend
+
+3. **CORS errors:**
+   - Проверь что `VITE_API_URL` в `.env` = `http://localhost:3000`
+   - Проверь что backend запущен на порту 3000
+
+---
+
+**Последнее обновление:** 12.12.2025 03:20 UTC  
+**Автор:** Claude AI  
+**Протестировано:** ✅ Windows 10, PowerShell, Node.js
+
