@@ -1,20 +1,20 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Lazy initialization of Supabase client
-let tripwireSupabase: SupabaseClient | null = null;
+// Lazy initialization of Supabase client (using LANDING Supabase)
+let landingSupabase: SupabaseClient | null = null;
 
-function getTripwireSupabase() {
-  if (!tripwireSupabase) {
-    const url = process.env.TRIPWIRE_SUPABASE_URL || '';
-    const key = process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || '';
+function getLandingSupabase() {
+  if (!landingSupabase) {
+    const url = process.env.LANDING_SUPABASE_URL || '';
+    const key = process.env.LANDING_SUPABASE_SERVICE_KEY || '';
     
     console.log('🔧 [unified-tracking] Creating Supabase client:');
     console.log('   URL exists:', !!url, url ? `(${url.substring(0, 30)}...)` : '(empty)');
     console.log('   KEY exists:', !!key, key ? `(${key.substring(0, 20)}...)` : '(empty)');
     
-    tripwireSupabase = createClient(url, key);
+    landingSupabase = createClient(url, key);
   }
-  return tripwireSupabase;
+  return landingSupabase;
 }
 
 export class UnifiedTrackingService {
@@ -22,7 +22,7 @@ export class UnifiedTrackingService {
    * Get all leads with aggregated statistics
    */
   async getAllLeads() {
-    const { data, error } = await getTripwireSupabase()
+    const { data, error } = await getLandingSupabase()
       .from('unified_lead_tracking')
       .select('*')
       .order('created_at', { ascending: false });
@@ -50,7 +50,7 @@ export class UnifiedTrackingService {
    * Get lead by email
    */
   async getLeadByEmail(email: string) {
-    const { data, error } = await getTripwireSupabase()
+    const { data, error } = await getLandingSupabase()
       .from('unified_lead_tracking')
       .select('*')
       .eq('email', email)
@@ -64,7 +64,7 @@ export class UnifiedTrackingService {
    * Get lead by source_lead_id (landing_leads.id)
    */
   async getLeadBySourceId(sourceLeadId: string) {
-    const { data, error } = await getTripwireSupabase()
+    const { data, error } = await getLandingSupabase()
       .from('unified_lead_tracking')
       .select('*')
       .eq('source_lead_id', sourceLeadId)
@@ -81,7 +81,7 @@ export class UnifiedTrackingService {
     const lead = await this.getLeadByEmail(email);
     if (!lead) return null;
 
-    const { error } = await getTripwireSupabase()
+    const { error } = await getLandingSupabase()
       .from('unified_lead_tracking')
       .update({
         landing_visited: true,
@@ -115,7 +115,7 @@ export class UnifiedTrackingService {
       updateData.email_failed_reason = reason;
     }
 
-    const { error } = await getTripwireSupabase()
+    const { error } = await getLandingSupabase()
       .from('unified_lead_tracking')
       .update(updateData)
       .eq('id', leadId);
@@ -144,7 +144,7 @@ export class UnifiedTrackingService {
       updateData.sms_failed_reason = reason;
     }
 
-    const { error } = await getTripwireSupabase()
+    const { error } = await getLandingSupabase()
       .from('unified_lead_tracking')
       .update(updateData)
       .eq('id', leadId);
