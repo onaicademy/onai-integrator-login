@@ -318,6 +318,18 @@ router.post('/submit', async (req: Request, res: Response) => {
 
         if (amocrmResult) {
           console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+          
+          // ✅ UPDATE БД с AmoCRM ID
+          const { error: updateError } = await landingSupabase
+            .from('landing_leads')
+            .update({ amocrm_lead_id: amocrmResult.leadId.toString() })
+            .eq('id', supabaseLead.id);
+          
+          if (updateError) {
+            console.error('⚠️ Failed to update amocrm_lead_id in DB:', updateError);
+          } else {
+            console.log('✅ Database updated with AmoCRM ID');
+          }
         } else {
           console.error('❌ AmoCRM: Failed after all retries');
         }
@@ -658,6 +670,18 @@ router.post('/proftest', async (req: Request, res: Response) => {
 
         if (amocrmResult) {
           console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+          
+          // ✅ UPDATE БД с AmoCRM ID
+          const { error: updateError } = await landingSupabase
+            .from('landing_leads')
+            .update({ amocrm_lead_id: amocrmResult.leadId.toString() })
+            .eq('id', supabaseLead.id);
+          
+          if (updateError) {
+            console.error('⚠️ Failed to update amocrm_lead_id in DB:', updateError);
+          } else {
+            console.log('✅ Database updated with AmoCRM ID');
+          }
         } else {
           console.error('❌ AmoCRM: Failed after all retries');
         }
