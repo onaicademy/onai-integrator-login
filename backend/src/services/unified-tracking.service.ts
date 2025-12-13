@@ -5,10 +5,14 @@ let tripwireSupabase: SupabaseClient | null = null;
 
 function getTripwireSupabase() {
   if (!tripwireSupabase) {
-    tripwireSupabase = createClient(
-      process.env.TRIPWIRE_SUPABASE_URL || '',
-      process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
-    );
+    const url = process.env.TRIPWIRE_SUPABASE_URL || '';
+    const key = process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || '';
+    
+    console.log('🔧 [unified-tracking] Creating Supabase client:');
+    console.log('   URL exists:', !!url, url ? `(${url.substring(0, 30)}...)` : '(empty)');
+    console.log('   KEY exists:', !!key, key ? `(${key.substring(0, 20)}...)` : '(empty)');
+    
+    tripwireSupabase = createClient(url, key);
   }
   return tripwireSupabase;
 }
