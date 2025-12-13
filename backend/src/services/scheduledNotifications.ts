@@ -3,7 +3,7 @@ import { sendProftestResultSMS } from './mobizon.js';
 import { generateProftestResultEmail } from '../templates/proftest-result-email.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const NOTIFICATION_DELAY_MS = 13 * 60 * 1000; // 13 минут
+const NOTIFICATION_DELAY_MS = 10 * 60 * 1000; // 10 минут
 const PRODUCT_URL = 'https://onai.academy/integrator/expresscourse';
 
 interface ScheduledNotification {
