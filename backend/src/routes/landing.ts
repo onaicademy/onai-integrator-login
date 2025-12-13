@@ -293,20 +293,37 @@ router.post('/submit', async (req: Request, res: Response) => {
 
     console.log(`✅ Lead saved to Supabase: ${supabaseLead.id}`);
 
-    // 2. Create or update in AmoCRM with deduplication and stage update
-    try {
-      const amocrmResult = await createOrUpdateLead({
-        name,
-        email: email || undefined,
-        phone,
-        paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
-      });
+    // ⚡ OPTIMIZATION: Return response immediately to user
+    // All following operations run in background (non-blocking)
+    res.status(200).json({
+      success: true,
+      leadId: supabaseLead.id,
+      message: 'Заявка успешно отправлена!'
+    });
 
-      console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+    // 2. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
+    (async () => {
+      try {
+        // 2a. Create or update in AmoCRM with deduplication and stage update (with retry)
+        const amocrmResult = await retryWithBackoff(
+          () => createOrUpdateLead({
+            name,
+            email: email || undefined,
+            phone,
+            paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
+          }),
+          3, // 3 retries
+          2000 // 2s initial delay
+        );
 
-      // 3. Send Facebook Conversion API Event (server-side tracking) - если указан campaignSlug
-      if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
-        try {
+        if (amocrmResult) {
+          console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+        } else {
+          console.error('❌ AmoCRM: Failed after all retries');
+        }
+
+        // 2b. Send Facebook Conversion API Event (server-side tracking) - если указан campaignSlug
+        if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
           const pixelConfig = PIXEL_CONFIGS[campaignSlug];
           const userAgent = req.headers['user-agent'] || undefined;
           const ipAddress = 
@@ -318,47 +335,33 @@ router.post('/submit', async (req: Request, res: Response) => {
           const fbc = req.cookies?._fbc;
           const fbp = req.cookies?._fbp;
 
-          await sendConversionApiEvent(
-            pixelConfig,
-            'Lead',
-            { email: email || '', phone, name },
-            referer,
-            userAgent,
-            ipAddress,
-            fbc,
-            fbp
+          const fbResult = await retryWithBackoff(
+            () => sendConversionApiEvent(
+              pixelConfig,
+              'Lead',
+              { email: email || '', phone, name },
+              referer,
+              userAgent,
+              ipAddress,
+              fbc,
+              fbp
+            ),
+            2, // 2 retries
+            1000 // 1s initial delay
           );
-          console.log('✅ Facebook Conversion API: Lead event sent');
-        } catch (conversionError) {
-          console.error('❌ Failed to send Conversion API event:', conversionError);
-          // Don't fail the request if Conversion API fails
+
+          if (fbResult !== null) {
+            console.log('✅ Facebook Conversion API: Lead event sent');
+          } else {
+            console.error('❌ Facebook Conversion API: Failed after all retries');
+          }
         }
+
+      } catch (bgError: any) {
+        console.error('❌ Background task error:', bgError.message);
+        // Don't crash the server, just log the error
       }
-
-      return res.status(200).json({
-        success: true,
-        leadId: supabaseLead.id,
-        amocrm: {
-          leadId: amocrmResult.leadId,
-          isNew: amocrmResult.isNew,
-          action: amocrmResult.action,
-        },
-        message: 'Заявка успешно отправлена!'
-      });
-
-    } catch (amocrmError: any) {
-      console.error('⚠️ AmoCRM error (non-critical):', amocrmError.message);
-
-      // Return success even if AmoCRM fails (lead is saved in Supabase)
-      return res.status(200).json({
-        success: true,
-        leadId: supabaseLead.id,
-        amocrm: {
-          error: amocrmError.message,
-        },
-        message: 'Заявка успешно отправлена!'
-      });
-    }
+    })();
 
   } catch (error: any) {
     console.error('❌ Error processing lead:', error);
@@ -538,6 +541,30 @@ router.get('/amocrm/callback', async (req: Request, res: Response) => {
 });
 
 // ============================================
+// HELPER: RETRY WITH EXPONENTIAL BACKOFF
+// ============================================
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<T | null> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (attempt === maxRetries) {
+        console.error(`❌ Failed after ${maxRetries} attempts:`, error.message);
+        return null;
+      }
+      const delay = initialDelay * Math.pow(2, attempt - 1);
+      console.log(`⚠️ Attempt ${attempt} failed, retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  return null;
+}
+
+// ============================================
 // PROFTEST LEAD SUBMISSION WITH DEDUPLICATION
 // ============================================
 router.post('/proftest', async (req: Request, res: Response) => {
@@ -578,7 +605,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
     }
     */
 
-    // 2. Save to Supabase (landing DB)
+    // 2. Save to Supabase (landing DB) - CRITICAL, MUST SUCCEED
     const { data: supabaseLead, error: supabaseError } = await landingSupabase
       .from('landing_leads')
       .insert({
@@ -605,22 +632,38 @@ router.post('/proftest', async (req: Request, res: Response) => {
 
     console.log('✅ Lead saved to Supabase:', supabaseLead.id);
 
-    // 3. Create or update in AmoCRM with deduplication
-    try {
-      const amocrmResult = await createOrUpdateLead({
-        name,
-        email: email || undefined, // Email опциональный
-        phone,
-        utmParams,
-        proftestAnswers: proftestAnswers || answers, // Используем новый формат если есть
-        campaignSlug,
-      });
+    // ⚡ OPTIMIZATION: Return response immediately to user
+    // All following operations run in background (non-blocking)
+    res.json({
+      success: true,
+      leadId: supabaseLead.id,
+    });
 
-      console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+    // 3. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
+    (async () => {
+      try {
+        // 3a. Create or update in AmoCRM with deduplication (with retry)
+        const amocrmResult = await retryWithBackoff(
+          () => createOrUpdateLead({
+            name,
+            email: email || undefined,
+            phone,
+            utmParams,
+            proftestAnswers: proftestAnswers || answers,
+            campaignSlug,
+          }),
+          3, // 3 retries
+          2000 // 2s initial delay
+        );
 
-      // 4. Send Facebook Conversion API Event (server-side tracking)
-      if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
-        try {
+        if (amocrmResult) {
+          console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+        } else {
+          console.error('❌ AmoCRM: Failed after all retries');
+        }
+
+        // 3b. Send Facebook Conversion API Event (with retry)
+        if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
           const pixelConfig = PIXEL_CONFIGS[campaignSlug];
           const userAgent = req.headers['user-agent'] || undefined;
           const ipAddress = 
@@ -632,52 +675,43 @@ router.post('/proftest', async (req: Request, res: Response) => {
           const fbc = req.cookies?._fbc;
           const fbp = req.cookies?._fbp;
 
-          await sendConversionApiEvent(
-            pixelConfig,
-            'Lead',
-            { email: email || '', phone, name }, // Email может быть пустым
-            referer,
-            userAgent,
-            ipAddress,
-            fbc,
-            fbp
+          const fbResult = await retryWithBackoff(
+            () => sendConversionApiEvent(
+              pixelConfig,
+              'Lead',
+              { email: email || '', phone, name },
+              referer,
+              userAgent,
+              ipAddress,
+              fbc,
+              fbp
+            ),
+            2, // 2 retries
+            1000 // 1s initial delay
           );
-          console.log('✅ Facebook Conversion API: Lead event sent');
-        } catch (conversionError) {
-          console.error('❌ Failed to send Conversion API event:', conversionError);
-          // Don't fail the request if Conversion API fails
+
+          if (fbResult !== null) {
+            console.log('✅ Facebook Conversion API: Lead event sent');
+          } else {
+            console.error('❌ Facebook Conversion API: Failed after all retries');
+          }
         }
+
+        // 3c. Schedule email + SMS notifications (10 minutes delay)
+        scheduleProftestNotifications({
+          name,
+          email,
+          phone,
+          leadId: supabaseLead.id,
+        });
+        console.log('✅ Notifications scheduled');
+
+      } catch (bgError: any) {
+        console.error('❌ Background task error:', bgError.message);
+        // Don't crash the server, just log the error
       }
+    })();
 
-      // 5. Schedule email + SMS notifications (10 minutes delay)
-      scheduleProftestNotifications({
-        name,
-        email,
-        phone,
-        leadId: supabaseLead.id,
-      });
-
-      return res.json({
-        success: true,
-        leadId: supabaseLead.id,
-        amocrm: {
-          leadId: amocrmResult.leadId,
-          isNew: amocrmResult.isNew,
-          action: amocrmResult.action,
-        },
-      });
-    } catch (amocrmError: any) {
-      console.error('⚠️ AmoCRM error (non-critical):', amocrmError.message);
-      
-      // Return success even if AmoCRM fails (lead is saved in Supabase)
-      return res.json({
-        success: true,
-        leadId: supabaseLead.id,
-        amocrm: {
-          error: amocrmError.message,
-        },
-      });
-    }
   } catch (error: any) {
     console.error('❌ Error processing proftest lead:', error);
     return res.status(500).json({
