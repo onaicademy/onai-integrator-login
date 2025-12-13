@@ -5,6 +5,7 @@ import { CheckoutForm } from '@/components/landing/CheckoutForm';
 import { Logo } from '@/components/Logo';
 import FacebookPixel from '@/components/FacebookPixel';
 import { getPixelConfig } from '@/config/pixels';
+import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
 
 export default function TripwireLanding() {
   const { campaignSlug = 'kenesary' } = useParams<{ campaignSlug?: string }>(); // Default to kenesary for /integrator/expresscourse
@@ -406,14 +407,18 @@ export default function TripwireLanding() {
                   
                   <div className="flex gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-6">
                     <div className="flex-1 bg-[#1a1a1a] rounded-lg p-2 md:p-3 lg:p-4 border border-white/5 flex items-center gap-2 md:gap-3">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-green-500 flex-shrink-0" />
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-green-500 flex-shrink-0 flex items-center justify-center">
+                        <FaWhatsapp className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
+                      </div>
                       <div className="w-full space-y-1 md:space-y-1.5 lg:space-y-2">
                         <div className="h-1 sm:h-1.5 md:h-2 w-8 sm:w-10 md:w-12 lg:w-16 bg-white/20 rounded-full" />
                         <div className="h-1 sm:h-1.5 md:h-2 w-16 sm:w-20 md:w-24 lg:w-32 bg-[#00FF94]/20 rounded-full" />
                       </div>
                     </div>
                     <div className="flex-1 bg-[#1a1a1a] rounded-lg p-2 md:p-3 lg:p-4 border border-white/5 flex items-center gap-2 md:gap-3">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-tr from-purple-500 to-orange-500 flex-shrink-0" />
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-tr from-purple-500 to-orange-500 flex-shrink-0 flex items-center justify-center">
+                        <FaInstagram className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
+                      </div>
                       <div className="w-full space-y-1 md:space-y-1.5 lg:space-y-2">
                         <div className="h-1 sm:h-1.5 md:h-2 w-8 sm:w-10 md:w-12 lg:w-16 bg-white/20 rounded-full" />
                         <div className="h-1 sm:h-1.5 md:h-2 w-16 sm:w-20 md:w-24 lg:w-32 bg-white/10 rounded-full" />
