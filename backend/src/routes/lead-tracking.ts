@@ -5,17 +5,24 @@ import axios from 'axios';
 const router = express.Router();
 
 // ============================================
-// SUPABASE CLIENT
+// SUPABASE CLIENT (Lazy Initialization)
 // ============================================
-const TRIPWIRE_SUPABASE_URL = process.env.TRIPWIRE_SUPABASE_URL || '';
-const TRIPWIRE_SUPABASE_SERVICE_KEY = process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || '';
+let supabase: any = null;
 
-const supabase = createClient(TRIPWIRE_SUPABASE_URL, TRIPWIRE_SUPABASE_SERVICE_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+function getSupabase() {
+  if (!supabase) {
+    const TRIPWIRE_SUPABASE_URL = process.env.TRIPWIRE_SUPABASE_URL || '';
+    const TRIPWIRE_SUPABASE_SERVICE_KEY = process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || '';
+    
+    supabase = createClient(TRIPWIRE_SUPABASE_URL, TRIPWIRE_SUPABASE_SERVICE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
   }
-});
+  return supabase;
+}
 
 // ============================================
 // AMOCRM CONFIG
@@ -542,7 +549,7 @@ router.post('/track-click', async (req: Request, res: Response) => {
     }
 
     // Находим лида по email или телефону
-    let query = supabase.from('lead_tracking').select('*');
+    let query = getSupabase().from('lead_tracking').select('*');
     
     if (email) {
       query = query.eq('email', email);
