@@ -53,7 +53,7 @@ function simpleValidate() {
   console.log(`  ✅ OpenAI: YES`);
   console.log(`  ${process.env.GROQ_API_KEY ? '✅' : '⚠️ '} Groq: ${process.env.GROQ_API_KEY ? 'YES' : 'NO'}`);
   console.log(`  ${process.env.TELEGRAM_BOT_TOKEN_MENTOR ? '✅' : '⚠️ '} Telegram: ${process.env.TELEGRAM_BOT_TOKEN_MENTOR ? 'YES' : 'NO'}`);
-  console.log(`  ${process.env.AMOCRM_CLIENT_ID ? '✅' : '⚠️ '} AmoCRM: ${process.env.AMOCRM_CLIENT_ID ? 'YES' : 'NO'}`);
+  console.log(`  ${process.env.AMOCRM_ACCESS_TOKEN ? '✅' : '⚠️ '} AmoCRM: ${process.env.AMOCRM_ACCESS_TOKEN ? 'YES' : 'NO'}`);
   console.log(`  ${process.env.BUNNY_STREAM_API_KEY ? '✅' : '⚠️ '} Bunny CDN: ${process.env.BUNNY_STREAM_API_KEY ? 'YES' : 'NO'}`);
   console.log(`  ${process.env.RESEND_API_KEY ? '✅' : '⚠️ '} Email: ${process.env.RESEND_API_KEY ? 'YES' : 'NO'}`);
   console.log('\n✅ Environment validation complete!\n');
