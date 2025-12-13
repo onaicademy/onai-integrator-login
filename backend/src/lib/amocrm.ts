@@ -50,6 +50,7 @@ interface ExistingLead {
   name: string;
   status_id: number;
   pipeline_id: number;
+  contactId?: number; // ID найденного контакта (даже если нет сделки)
 }
 
 function getStageName(stageId: number): string {
@@ -58,14 +59,12 @@ function getStageName(stageId: number): string {
 }
 
 /**
- * Search for existing lead by email OR phone
- * Uses contacts API for more reliable deduplication
+ * Search for existing contact by email OR phone
  */
-async function findExistingLead(email?: string, phone?: string): Promise<ExistingLead | null> {
+async function findExistingContact(email?: string, phone?: string): Promise<number | null> {
   if (!AMOCRM_TOKEN || (!email && !phone)) return null;
 
   try {
-    // Step 1: Search for contact by email OR phone
     const searchQuery = email || phone || '';
     
     const contactsResponse = await fetchWithTimeout(
@@ -88,10 +87,31 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       return null;
     }
 
-    // Step 2: Get first contact's leads (filter by our pipeline, sort by update date DESC)
     const contactId = contacts[0].id;
     console.log(`👤 Found contact: ID ${contactId}`);
+    return contactId;
+  } catch (error) {
+    console.error('Error searching for contact:', error);
+    return null;
+  }
+}
 
+/**
+ * Search for existing lead by email OR phone
+ * Uses contacts API for more reliable deduplication
+ */
+async function findExistingLead(email?: string, phone?: string): Promise<ExistingLead | null> {
+  if (!AMOCRM_TOKEN || (!email && !phone)) return null;
+
+  try {
+    // Step 1: Search for contact by email OR phone
+    const contactId = await findExistingContact(email, phone);
+    
+    if (!contactId) {
+      return null;
+    }
+
+    // Step 2: Get contact's leads (filter by our pipeline, sort by update date DESC)
     const leadsResponse = await fetchWithTimeout(
       `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[contacts][]=${contactId}&filter[pipeline_id]=${AMOCRM_CONFIG.PIPELINE_ID}&order[updated_at]=desc`,
       {
@@ -121,6 +141,7 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       name: lead.name,
       status_id: lead.status_id,
       pipeline_id: lead.pipeline_id,
+      contactId, // Включаем найденный contactId
     };
   } catch (error) {
     console.error('Error searching for lead:', error);
@@ -311,8 +332,15 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
   // 3. Create new lead
   console.log(`✨ Creating new lead in stage: ${getStageName(targetStage)}`);
 
-  // Create contact first
-  const contactId = await createContact(data);
+  // Try to find existing contact first, if not found - create new
+  let contactId = await findExistingContact(data.email, data.phone);
+  
+  if (!contactId) {
+    console.log(`🆕 Creating new contact for: ${data.name}`);
+    contactId = await createContact(data);
+  } else {
+    console.log(`✅ Using existing contact: ID ${contactId}`);
+  }
 
   // Build custom fields for UTM
   const customFields: any[] = [];
