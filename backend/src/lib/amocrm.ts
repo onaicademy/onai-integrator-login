@@ -88,12 +88,12 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       return null;
     }
 
-    // Step 2: Get first contact's leads
+    // Step 2: Get first contact's leads (filter by our pipeline, sort by update date DESC)
     const contactId = contacts[0].id;
     console.log(`👤 Found contact: ID ${contactId}`);
 
     const leadsResponse = await fetchWithTimeout(
-      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[contacts][]=${contactId}`,
+      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[contacts][]=${contactId}&filter[pipeline_id]=${AMOCRM_CONFIG.PIPELINE_ID}&order[updated_at]=desc`,
       {
         headers: {
           Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -104,17 +104,17 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
 
     if (!leadsResponse.ok) return null;
 
-    const leadsData: any = await leadsResponse.json();
+    const leadsData: any = await leadsData.json();
     const leads = leadsData._embedded?.leads || [];
 
     if (leads.length === 0) {
-      console.log(`🔍 No leads found for contact ${contactId}`);
+      console.log(`🔍 No leads found for contact ${contactId} in pipeline ${AMOCRM_CONFIG.PIPELINE_ID}`);
       return null;
     }
 
-    // Return the most recent lead (first in array)
+    // Return the most recently updated lead
     const lead = leads[0];
-    console.log(`✅ Found existing lead: ID ${lead.id}, Stage: ${getStageName(lead.status_id)}, Contact: ${contactId}`);
+    console.log(`✅ Found existing lead: ID ${lead.id}, Stage: ${getStageName(lead.status_id)}, Contact: ${contactId}, Pipeline: ${lead.pipeline_id}`);
 
     return {
       id: lead.id,
