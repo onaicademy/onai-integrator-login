@@ -311,13 +311,21 @@ export default function TripwireProductPage() {
       return { ...module, status: 'active' };
     }
     
-    // 🔥 Остальные модули открываются через userUnlockedModuleIds
-    const isUnlocked = userUnlockedModuleIds.includes(module.id);
-    console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
+    // 🔒 ВРЕМЕННАЯ БЛОКИРОВКА ДО СТАРТА КУРСА
+    // Модули 17, 18 заблокированы для всех студентов до официального запуска
+    console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (старт отложен)`);
     return {
       ...module,
-      status: isUnlocked ? 'active' : 'locked'
+      status: 'locked'
     };
+    
+    // 🔥 Остальные модули открываются через userUnlockedModuleIds (ЗАКОММЕНТИРОВАНО)
+    // const isUnlocked = userUnlockedModuleIds.includes(module.id);
+    // console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
+    // return {
+    //   ...module,
+    //   status: isUnlocked ? 'active' : 'locked'
+    // };
   });
 
   const activeModules = modulesWithDynamicStatus.filter(m => m.status === 'active');
