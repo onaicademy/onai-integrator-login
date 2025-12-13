@@ -748,6 +748,7 @@ export default function ProfTest() {
 
               <h2 className="font-display font-bold text-xl sm:text-2xl md:text-3xl mb-1.5 sm:mb-2">ТЕСТ ПРИНЯТ</h2>
               <p className="text-gray-400 text-xs sm:text-sm mb-4 sm:mb-5 md:mb-6">Результаты будут высланы по SMS.</p>
+              {/* Removed AI text per user request */}
 
               <div className="bg-white/5 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-5 md:mb-6 border border-white/10 text-left">
                 <p className="text-[10px] sm:text-xs text-gray-400 font-mono mb-1.5 sm:mb-2">SYSTEM MESSAGE:</p>
