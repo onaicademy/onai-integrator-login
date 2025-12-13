@@ -10,9 +10,10 @@ import { generateLessonAI } from '../routes/ai-lesson-generator';
 
 const execPromise = promisify(exec);
 
+// ✅ ИСПОЛЬЗУЕМ TRIPWIRE БД для транскрипций Tripwire уроков
 const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  process.env.TRIPWIRE_SUPABASE_URL || '',
+  process.env.TRIPWIRE_SERVICE_ROLE_KEY || ''
 );
 
 // ✅ GROQ WHISPER CLIENT (в 10× быстрее OpenAI!)

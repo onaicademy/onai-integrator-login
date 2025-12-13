@@ -310,33 +310,12 @@ export default function TripwireAdminDashboard() {
                 </p>
               </div>
 
-              {!isLoading && stats ? (
-                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
-                      Этот месяц
-                    </div>
-                    <div className="text-3xl font-bold text-red-400">
-                      ${stats.monthly_costs?.toFixed(2) || '0.00'}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
-                      Всего
-                    </div>
-                    <div className="text-3xl font-bold text-white">
-                      ${stats.total_costs?.toFixed(2) || '0.00'}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="pt-6 border-t border-white/5">
-                  <div className="animate-pulse flex gap-4">
-                    <div className="h-12 bg-white/5 rounded-lg flex-1" />
-                    <div className="h-12 bg-white/5 rounded-lg flex-1" />
-                  </div>
-                </div>
-              )}
+              {/* ✅ Превью затрат УБРАНО по запросу */}
+              <div className="pt-6 border-t border-white/5">
+                <p className="text-gray-500 text-sm text-center">
+                  Перейдите в раздел для просмотра детальной статистики
+                </p>
+              </div>
             </div>
           </Link>
 

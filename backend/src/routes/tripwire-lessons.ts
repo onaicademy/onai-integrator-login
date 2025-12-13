@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
 import axios from 'axios';
-import { adminSupabase } from '../config/supabase';
+import { adminSupabase } from '../config/supabase'; // ✅ Main БД (для некоторых операций)
+import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // ✅ Tripwire БД
 import crypto from 'crypto';
 import { amoCrmService } from '../services/amoCrmService';
 import { CompleteLessonSchema, UpdateProgressSchema, validateRequest } from '../types/validation';
@@ -22,7 +23,7 @@ router.get('/lessons', async (req, res) => {
       return res.status(400).json({ error: 'module_id is required' });
     }
 
-    const { data: lessons, error } = await adminSupabase
+    const { data: lessons, error } = await tripwireAdminSupabase
       .from('lessons')
       .select('*')
       .eq('module_id', module_id)
@@ -46,7 +47,7 @@ router.get('/lessons/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: lesson, error } = await adminSupabase
+    const { data: lesson, error } = await tripwireAdminSupabase
       .from('lessons')
       .select('*')
       .eq('id', id)
@@ -70,16 +71,24 @@ router.get('/videos/:lessonId', async (req, res) => {
   try {
     const { lessonId } = req.params;
 
-    const { data: video, error } = await adminSupabase
-      .from('video_content')
-      .select('*')
-      .eq('lesson_id', lessonId)
+    // В Tripwire БД нет таблицы video_content, bunny_video_id хранится в lessons
+    const { data: lesson, error } = await tripwireAdminSupabase
+      .from('lessons')
+      .select('bunny_video_id, video_duration')
+      .eq('id', lessonId)
       .single();
 
-    if (error) {
+    if (error || !lesson || !lesson.bunny_video_id) {
       console.error('❌ Error fetching video:', error);
       return res.status(404).json({ error: 'Video not found' });
     }
+
+    // Формируем ответ в том же формате, что ожидает фронтенд
+    const video = {
+      lesson_id: parseInt(lessonId),
+      bunny_video_id: lesson.bunny_video_id,
+      video_duration: lesson.video_duration || 0
+    };
 
     res.json({ video });
   } catch (error: any) {
@@ -93,7 +102,7 @@ router.get('/materials/:lessonId', async (req, res) => {
   try {
     const { lessonId } = req.params;
 
-    const { data: materials, error } = await adminSupabase
+    const { data: materials, error } = await tripwireAdminSupabase
       .from('lesson_materials')
       .select('*')
       .eq('lesson_id', lessonId);

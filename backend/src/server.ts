@@ -1,17 +1,19 @@
+// ✅ ВАЖНО: Загружаем env переменные ПЕРВЫМ делом!
+import './load-env.js';
+
+// ✅ Validate environment variables IMMEDIATELY after loading
+import { validateEnvironment } from './config/env.js';
+validateEnvironment();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-// ✅ FIXED: Загружаем env.env файл из директории backend
-// __dirname = backend/src, поэтому идем на уровень выше к backend/env.env
-// ВАЖНО: Все backend ключи должны быть в backend/env.env
-dotenv.config({ path: path.join(__dirname, '..', 'env.env') });
-
-// ✅ Validate environment variables IMMEDIATELY after loading
-import { validateEnvironment } from './config/env';
-validateEnvironment();
+// ✅ ESM compatibility: Эмуляция __dirname для ESM модулей
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ═══════════════════════════════════════════════════════════════
 // 🔍 ДИАГНОСТИКА .ENV VARIABLES
@@ -104,6 +106,7 @@ import transcriptionsRouter from './routes/admin/transcriptions'; // ✅ Admin T
 import aiLessonGeneratorRouter from './routes/ai-lesson-generator'; // ✅ AI Description & Tips Generator
 import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & Analytics
 import landingRouter from './routes/landing'; // ✅ Landing Page Leads (New DB + AmoCRM)
+import facebookConversionRouter from './routes/facebook-conversion'; // ✅ Facebook Conversion API
 import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
@@ -357,6 +360,7 @@ app.use('/api/telegram-connection', telegramConnectionRouter); // 📱 Telegram 
 app.use('/api/webhooks', webhooksRouter); // 🔗 BunnyCDN & External Webhooks (для video transcoding events)
 app.use('/api/admin', adminResetPasswordRouter); // 🔑 TEMPORARY: Admin Password Reset
 app.use('/api/landing', landingRouter); // 🎯 Landing Page Leads (New DB + AmoCRM)
+app.use('/api', facebookConversionRouter); // 📊 Facebook Conversion API
 
 // 404 обработка
 app.use((req, res) => {

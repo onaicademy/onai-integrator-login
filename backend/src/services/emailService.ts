@@ -5,7 +5,18 @@ import { Resend } from 'resend';
  * Использует Resend API (HTTPS, без SMTP портов)
  */
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization - создаём только когда ключ реально есть
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend && process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.startsWith('re_')) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  if (!resend) {
+    throw new Error('RESEND_API_KEY not configured or invalid');
+  }
+  return resend;
+}
 
 interface WelcomeEmailParams {
   toEmail: string;
@@ -191,7 +202,7 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
 </html>`;
 
     // Отправка email через Resend
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: 'onAI Academy <noreply@onai.academy>',
       to: params.toEmail,
       subject: '🚀 Добро пожаловать в Интегратор 3.0 — Ваш путь к AI начинается здесь!',
@@ -315,7 +326,7 @@ export async function sendEmailChangeNotification(params: EmailChangeNotificatio
 </html>
     `;
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: 'onAI Academy Security <noreply@onai.academy>',
       to: params.toEmail,
       subject: '🔐 Уведомление о смене email — onAI Academy',
@@ -424,7 +435,7 @@ export async function sendPasswordChangeNotification(params: PasswordChangeNotif
 </html>
     `;
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: 'onAI Academy Security <noreply@onai.academy>',
       to: params.toEmail,
       subject: '🔐 Пароль успешно изменен — onAI Academy',

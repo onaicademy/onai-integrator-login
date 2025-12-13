@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, Lock, Zap, Code, Briefcase, Rocket, Brain, Bot, Clapperboard, Sparkles, MessageSquare } from "lucide-react";
@@ -48,7 +48,7 @@ const tripwireModules = [
     title: "Создание GPT-бота",
     subtitle: "Instagram, WhatsApp интеграции",
     description: "Практический модуль по созданию умных ассистентов. Подключение к соцсетям и автоматизация общения.",
-    duration: "60 мин",
+    duration: "14 мин",
     lessons: 1,
     icon: MessageSquare,
     status: "locked",
@@ -61,7 +61,7 @@ const tripwireModules = [
     title: "Создание вирусных Reels",
     subtitle: "100 000 👁️ | Сценарий, видео, монтаж",
     description: "Генерация контента с помощью AI. Создание сценариев, цифровых аватаров и автоматический монтаж.",
-    duration: "50 мин",
+    duration: "1 мин",
     lessons: 1,
     icon: Clapperboard,
     status: "locked",
@@ -79,9 +79,10 @@ const tripwireModules = [
  */
 export default function TripwireProductPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [hoveredModule, setHoveredModule] = useState<number | null>(null);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false); // ✅ AI Curator State
-  
+
   // 🔥 ВАЖНО: Используем tripwireSupabase для Tripwire студентов, НЕ useAuth()!
   const [tripwireUser, setTripwireUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -93,6 +94,35 @@ export default function TripwireProductPage() {
   const [userUnlockedModuleIds, setUserUnlockedModuleIds] = useState<number[]>([]);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
   const [modulesWithDuration, setModulesWithDuration] = useState(tripwireModules);
+
+  // ✅ Обработка анимации разблокировки при возврате с урока
+  useEffect(() => {
+    // Проверяем URL параметры
+    const params = new URLSearchParams(location.search);
+    const unlockedModule = params.get('unlockedModule');
+    
+    if (unlockedModule) {
+      const moduleId = parseInt(unlockedModule);
+      console.log(`🎉 Показываем анимацию разблокировки модуля ${moduleId}`);
+      setCurrentUnlock({ module_id: moduleId });
+      setShowUnlockAnimation(true);
+      
+      // Очищаем URL параметр чтобы анимация не повторялась
+      window.history.replaceState({}, document.title, '/integrator');
+    }
+    
+    // Также проверяем location.state (для совместимости)
+    const state = location.state as { unlockedModuleId?: number; showUnlockAnimation?: boolean } | null;
+    
+    if (state?.showUnlockAnimation && state?.unlockedModuleId) {
+      console.log(`🎉 Показываем анимацию разблокировки модуля ${state.unlockedModuleId} (из state)`);
+      setCurrentUnlock({ module_id: state.unlockedModuleId });
+      setShowUnlockAnimation(true);
+      
+      // Очищаем state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // 🔥 Load Tripwire user from tripwireSupabase
   useEffect(() => {
@@ -560,7 +590,7 @@ export default function TripwireProductPage() {
                     </div>
 
                     {/* Text */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex flex-col">
                       <h3 
                         className="text-base sm:text-lg font-bold uppercase mb-1 line-clamp-1"
                         style={{ 
@@ -581,7 +611,7 @@ export default function TripwireProductPage() {
                         {module.subtitle}
                       </p>
                       <p 
-                        className="text-[10px] sm:text-xs mb-2 line-clamp-2"
+                        className="text-[10px] sm:text-xs mb-3"
                         style={{ 
                           color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
                           fontFamily: BRAND.fonts.body,
@@ -591,73 +621,76 @@ export default function TripwireProductPage() {
                         {module.description}
                       </p>
 
-                      {/* Stats */}
-                      <div className="flex items-center gap-3 text-[10px] sm:text-xs mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <Clock 
-                            className="w-3 h-3 sm:w-4 sm:h-4" 
-                            style={{ 
-                              color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                      {/* Stats & Button - прижаты к низу */}
+                      <div className="mt-auto space-y-2">
+                        {/* Stats */}
+                        <div className="flex items-center gap-3 text-[10px] sm:text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Clock 
+                              className="w-3 h-3 sm:w-4 sm:h-4" 
+                              style={{ 
+                                color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                                opacity: 0.7 
+                              }}
+                            />
+                            <span style={{ 
+                              color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
                               opacity: 0.7 
-                            }}
-                          />
-                          <span style={{ 
-                            color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
-                            opacity: 0.7 
-                          }}>
-                            {module.duration}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <BookOpen 
-                            className="w-3 h-3 sm:w-4 sm:h-4" 
-                            style={{ 
-                              color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                            }}>
+                              {module.duration}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BookOpen 
+                              className="w-3 h-3 sm:w-4 sm:h-4" 
+                              style={{ 
+                                color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                                opacity: 0.7 
+                              }}
+                            />
+                            <span style={{ 
+                              color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
                               opacity: 0.7 
-                            }}
-                          />
-                          <span style={{ 
-                            color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
-                            opacity: 0.7 
-                          }}>
-                            {module.lessons} урок
-                          </span>
+                            }}>
+                              {module.lessons} урок
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* CTA Button */}
-                      {!isLocked && (
-                        <motion.button
-                          initial={{ skewX: -10 }}
-                          animate={{ skewX: -10 }}
-                          whileHover={{ scale: 1.02, skewX: 0 }}
-                          whileTap={{ scale: 0.98 }}
-                          transition={{ duration: 0.3, ease: "easeOut" }}
-                          className="relative px-3 py-1.5 sm:px-4 sm:py-2 font-bold uppercase tracking-wider overflow-hidden"
-                          style={{
-                            background: BRAND.colors.neon_green,
-                            color: '#000000',
-                            borderRadius: '6px',
-                            fontFamily: BRAND.fonts.main,
-                            fontSize: '10px',
-                          }}
-                        >
-                          <motion.span 
-                            initial={{ skewX: 10 }}
-                            animate={{ skewX: 10 }}
-                            style={{ display: 'block' }}
+                        {/* CTA Button */}
+                        {!isLocked && (
+                          <motion.button
+                            initial={{ skewX: -10 }}
+                            animate={{ skewX: -10 }}
+                            whileHover={{ scale: 1.02, skewX: 0 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                            className="relative px-3 py-1.5 sm:px-4 sm:py-2 font-bold uppercase tracking-wider overflow-hidden"
+                            style={{
+                              background: BRAND.colors.neon_green,
+                              color: '#000000',
+                              borderRadius: '6px',
+                              fontFamily: BRAND.fonts.main,
+                              fontSize: '10px',
+                            }}
                           >
-                            → НАЧАТЬ МОДУЛЬ
-                          </motion.span>
-                        </motion.button>
-                      )}
-                      
-                      {isLocked && (
-                        <div className="flex items-center gap-1.5 text-[10px] sm:text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
-                          <Lock className="w-3 h-3" />
-                          <span>ЗАБЛОКИРОВАНО</span>
-                        </div>
-                      )}
+                            <motion.span 
+                              initial={{ skewX: 10 }}
+                              animate={{ skewX: 10 }}
+                              style={{ display: 'block' }}
+                            >
+                              → НАЧАТЬ МОДУЛЬ
+                            </motion.span>
+                          </motion.button>
+                        )}
+                        
+                        {isLocked && (
+                          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
+                            <Lock className="w-3 h-3" />
+                            <span>ЗАБЛОКИРОВАНО</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -760,7 +793,7 @@ export default function TripwireProductPage() {
                     </div>
 
                     {/* Text */}
-                    <div className="flex-1">
+                    <div className="flex-1 flex flex-col">
                       <h3 
                         className="text-lg lg:text-xl font-bold uppercase mb-1"
                         style={{ 
@@ -781,7 +814,7 @@ export default function TripwireProductPage() {
                         {module.subtitle}
                       </p>
                       <p 
-                        className="text-xs mb-3"
+                        className="text-xs mb-4"
                         style={{ 
                           color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
                           fontFamily: BRAND.fonts.body,
@@ -791,73 +824,76 @@ export default function TripwireProductPage() {
                         {module.description}
                       </p>
 
-                      {/* Stats */}
-                      <div className="flex items-center gap-4 text-xs mb-3">
-                        <div className="flex items-center gap-1.5">
-                          <Clock 
-                            className="w-4 h-4" 
-                            style={{ 
-                              color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                      {/* Stats & Button - прижаты к низу */}
+                      <div className="mt-auto space-y-2.5">
+                        {/* Stats */}
+                        <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Clock 
+                              className="w-4 h-4" 
+                              style={{ 
+                                color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                                opacity: 0.7 
+                              }}
+                            />
+                            <span style={{ 
+                              color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
                               opacity: 0.7 
-                            }}
-                          />
-                          <span style={{ 
-                            color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
-                            opacity: 0.7 
-                          }}>
-                            {module.duration}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <BookOpen 
-                            className="w-4 h-4" 
-                            style={{ 
-                              color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                            }}>
+                              {module.duration}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BookOpen 
+                              className="w-4 h-4" 
+                              style={{ 
+                                color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
+                                opacity: 0.7 
+                              }}
+                            />
+                            <span style={{ 
+                              color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
                               opacity: 0.7 
-                            }}
-                          />
-                          <span style={{ 
-                            color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
-                            opacity: 0.7 
-                          }}>
-                            {module.lessons} урок
-                          </span>
+                            }}>
+                              {module.lessons} урок
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* CTA Button */}
-                      {!isLocked && (
-                        <motion.button
-                          initial={{ skewX: -10 }}
-                          animate={{ skewX: -10 }}
-                          whileHover={{ scale: 1.02, skewX: 0 }}
-                          whileTap={{ scale: 0.98 }}
-                          transition={{ duration: 0.3, ease: "easeOut" }}
-                          className="relative px-4 py-2 font-bold uppercase tracking-wider overflow-hidden"
-                          style={{
-                            background: BRAND.colors.neon_green,
-                            color: '#000000',
-                            borderRadius: '6px',
-                            fontFamily: BRAND.fonts.main,
-                            fontSize: '10px',
-                          }}
-                        >
-                          <motion.span 
-                            initial={{ skewX: 10 }}
-                            animate={{ skewX: 10 }}
-                            style={{ display: 'block' }}
+                        {/* CTA Button */}
+                        {!isLocked && (
+                          <motion.button
+                            initial={{ skewX: -10 }}
+                            animate={{ skewX: -10 }}
+                            whileHover={{ scale: 1.02, skewX: 0 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                            className="relative px-4 py-2 font-bold uppercase tracking-wider overflow-hidden"
+                            style={{
+                              background: BRAND.colors.neon_green,
+                              color: '#000000',
+                              borderRadius: '6px',
+                              fontFamily: BRAND.fonts.main,
+                              fontSize: '10px',
+                            }}
                           >
-                            → НАЧАТЬ МОДУЛЬ
-                          </motion.span>
-                        </motion.button>
-                      )}
-                      
-                      {isLocked && (
-                        <div className="flex items-center gap-2 text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
-                          <Lock className="w-3 h-3" />
-                          <span>ЗАБЛОКИРОВАНО</span>
-                        </div>
-                      )}
+                            <motion.span 
+                              initial={{ skewX: 10 }}
+                              animate={{ skewX: 10 }}
+                              style={{ display: 'block' }}
+                            >
+                              → НАЧАТЬ МОДУЛЬ
+                            </motion.span>
+                          </motion.button>
+                        )}
+                        
+                        {isLocked && (
+                          <div className="flex items-center gap-2 text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
+                            <Lock className="w-3 h-3" />
+                            <span>ЗАБЛОКИРОВАНО</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

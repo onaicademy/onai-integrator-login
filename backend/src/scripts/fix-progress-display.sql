@@ -102,3 +102,5 @@ FROM public.rpc_get_tripwire_users(
 ORDER BY created_at DESC
 LIMIT 10;
 
+
+

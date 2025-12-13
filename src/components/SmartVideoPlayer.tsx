@@ -721,11 +721,15 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
           }
         }
 
-        /* ✅ HOVER - ЯРЧЕ ЗЕЛЁНЫЙ */
+        /* ✅ HOVER - РЕВЕРС ЦВЕТОВ (БЕЛЫЙ ФОН + ЗЕЛЕНЫЙ ЗНАЧОК) - СТАТИЧНАЯ */
         .plyr__control--overlaid:hover {
-          background: rgba(0, 255, 136, 1) !important;
-          transform: scale(1.05) !important;
-          transition: all 0.2s ease !important;
+          background: rgba(255, 255, 255, 0.95) !important;
+          transition: background 0.2s ease !important;
+        }
+
+        .plyr__control--overlaid:hover svg {
+          fill: #00FF88 !important;
+          transition: fill 0.2s ease !important;
         }
 
         /* ✅ МАЛЕНЬКАЯ КНОПКА PLAY В КОНТРОЛАХ (тоже зелёная) */

@@ -480,12 +480,11 @@ const TripwireLesson = () => {
           colors: ['#00FF88', '#00cc88', '#FFFFFF', '#00FFAA']
         });
       }, 250);
-      
-      // ✅ FIX: Cleanup interval on unmount
-      return () => clearInterval(interval);
 
       // ✅ Navigate to main page after confetti (with unlock animation if module completed)
       setTimeout(() => {
+        clearInterval(interval); // ✅ Очищаем interval перед редиректом
+        
         if (response.data?.moduleCompleted && response.data?.unlockedModuleId) {
           console.log(`🔓 Module ${response.data.unlockedModuleId} unlocked!`);
           
@@ -496,16 +495,13 @@ const TripwireLesson = () => {
             console.log('🗑️ Cache invalidated - will reload fresh unlocks');
           }
           
-          navigate('/integrator', {
-            state: {
-              unlockedModuleId: response.data.unlockedModuleId,
-              showUnlockAnimation: true,
-            },
-          });
+          // ✅ Используем window.location для надежного редиректа с state в URL
+          window.location.href = `/integrator?unlockedModule=${response.data.unlockedModuleId}`;
         } else {
-          navigate('/integrator');
+          console.log('🏠 Редирект на главную страницу...');
+          window.location.href = '/integrator';
         }
-      }, 2000);
+      }, 2500);
       
     } catch (error: any) {
       console.error('❌ Ошибка завершения:', error);
@@ -863,7 +859,7 @@ const TripwireLesson = () => {
                     <span className="text-xs sm:text-sm font-medium">Длительность</span>
                   </div>
                   <span className="text-[#00FF88] font-mono font-bold text-base sm:text-lg">
-                    {lesson.duration_minutes || 0} мин
+                    {lesson.video_duration || 0} мин
                   </span>
                 </div>
               </div>
@@ -959,9 +955,27 @@ const TripwireLesson = () => {
                   </motion.span>
                   Советы по уроку
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-['Manrope'] whitespace-pre-wrap">
-                  {lesson.ai_tips}
-                </p>
+                <div className="text-xs sm:text-sm text-gray-300 leading-relaxed font-['Manrope'] space-y-3">
+                  {lesson.ai_tips.split('\n').map((tip, index) => {
+                    // Парсим markdown: **Совет 1:** → жирный текст
+                    const parts = tip.split(/(\*\*.*?\*\*)/g);
+                    return (
+                      <p key={index} className="leading-relaxed">
+                        {parts.map((part, i) => {
+                          if (part.startsWith('**') && part.endsWith('**')) {
+                            // Удаляем ** и делаем жирным
+                            return (
+                              <span key={i} className="font-bold text-[#00FF88]">
+                                {part.slice(2, -2)}
+                              </span>
+                            );
+                          }
+                          return <span key={i}>{part}</span>;
+                        })}
+                      </p>
+                    );
+                  })}
+                </div>
               </motion.div>
             )}
 

@@ -1,13 +1,43 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { LeadForm } from '@/components/landing/LeadForm';
+import { CheckoutForm } from '@/components/landing/CheckoutForm';
+import { Logo } from '@/components/Logo';
 
 export default function TripwireLanding() {
   const [countdown, setCountdown] = useState('--:--:--');
   const [slotsCount, setSlotsCount] = useState(71);
   const [slotsStatus, setSlotsStatus] = useState('UPDATING...');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [videoAutoplay, setVideoAutoplay] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLDivElement>(null);
+
+  // Video Autoplay on Scroll (Intersection Observer)
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !videoAutoplay) {
+            setVideoAutoplay(true);
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Видео должно быть видно на 50%
+        rootMargin: '0px'
+      }
+    );
+
+    observer.observe(videoRef.current);
+
+    return () => {
+      if (videoRef.current) {
+        observer.unobserve(videoRef.current);
+      }
+    };
+  }, [videoAutoplay]);
 
   // Countdown Timer Logic
   useEffect(() => {
@@ -177,7 +207,9 @@ export default function TripwireLanding() {
     <div className="bg-[#030303] text-white overflow-x-hidden selection:bg-[#00FF94] selection:text-black">
       {/* Custom Styles */}
       <style>{`
+        * { box-sizing: border-box; }
         body { overflow-x: hidden; }
+        html, body { max-width: 100vw; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #00FF94; border-radius: 0; }
@@ -226,6 +258,12 @@ export default function TripwireLanding() {
         @media (min-width: 768px) {
           ::-webkit-scrollbar { width: 8px; }
         }
+
+        /* Ensure all iframes and media stay within bounds */
+        iframe, img, video {
+          max-width: 100%;
+          height: auto;
+        }
       `}</style>
 
       {/* Background Elements */}
@@ -235,16 +273,44 @@ export default function TripwireLanding() {
 
       {/* Navigation - RESPONSIVE */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
-        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-14 sm:h-16 md:h-20 lg:h-24 flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 bg-[#00FF94] rounded-full animate-pulse" />
-            <span className="font-display font-bold tracking-widest text-xs sm:text-sm md:text-base lg:text-xl xl:text-2xl">ONAI</span>
-          </div>
-          <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-400">V.3.0 INTEGRATOR</div>
+        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-12 sm:h-14 md:h-16 lg:h-18 flex items-center justify-between">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ 
+              duration: 0.8, 
+              ease: "easeOut",
+              delay: 0.2
+            }}
+            className="flex items-center"
+          >
+            <motion.div
+              initial={{ rotate: 0 }}
+              animate={{ rotate: [0, 180, 360] }}
+              transition={{ 
+                duration: 1.2, 
+                ease: "easeInOut",
+                delay: 0.3
+              }}
+            >
+              <Logo 
+                variant="full" 
+                className="h-6 sm:h-8 md:h-9 lg:h-10 xl:h-11 w-auto text-white transition-colors hover:text-[#00FF94]" 
+              />
+            </motion.div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="font-mono text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-400"
+          >
+            В.3.0 ИНТЕГРАТОР
+          </motion.div>
         </div>
       </nav>
 
-      <main className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto pt-20 sm:pt-24 md:pt-32 lg:pt-40 pb-32 md:pb-40 lg:pb-48 px-4 sm:px-6 lg:px-8 xl:px-12 relative overflow-hidden">
+      <main className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto pt-16 sm:pt-18 md:pt-20 lg:pt-24 pb-32 md:pb-40 lg:pb-48 px-4 sm:px-6 lg:px-8 xl:px-12 relative overflow-hidden">
         {/* HERO SECTION - RESPONSIVE */}
         <motion.section
           initial={{ opacity: 0, y: 40 }}
@@ -296,20 +362,32 @@ export default function TripwireLanding() {
           </div>
 
           {/* Video - RESPONSIVE */}
-          <div className="relative w-full aspect-video bg-[#0A0A0A] rounded-none md:rounded-lg lg:rounded-xl border border-white/10 mb-6 sm:mb-8 md:mb-12 lg:mb-16 overflow-hidden group shadow-[0_0_30px_rgba(0,255,148,0.1)] md:shadow-[0_0_50px_rgba(0,255,148,0.15)] lg:shadow-[0_0_70px_rgba(0,255,148,0.2)]">
-            <iframe
-              className="w-full h-full object-cover"
-              src="https://www.youtube.com/embed/LXb3EKWsInQ?controls=1&rel=0&modestbranding=1"
-              title="Promo Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
+          <div ref={videoRef} className="relative w-full max-w-full aspect-video bg-[#0A0A0A] rounded-none md:rounded-lg lg:rounded-xl border border-white/10 mb-6 sm:mb-8 md:mb-12 lg:mb-16 overflow-hidden group shadow-[0_0_30px_rgba(0,255,148,0.1)] md:shadow-[0_0_50px_rgba(0,255,148,0.15)] lg:shadow-[0_0_70px_rgba(0,255,148,0.2)]">
+            {videoAutoplay ? (
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/SMKu3K9BcK4?autoplay=1&mute=0&controls=1&rel=0&modestbranding=1"
+                title="Promo Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            ) : (
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/SMKu3K9BcK4?autoplay=0&mute=0&controls=1&rel=0&modestbranding=1"
+                title="Promo Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            )}
             <div className="absolute inset-0 pointer-events-none z-20 border border-white/5" />
             <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-2 sm:left-4 md:left-6 right-2 sm:right-4 md:right-6 flex justify-between text-[8px] sm:text-[10px] md:text-xs lg:text-sm font-mono text-[#00FF94] pointer-events-none z-20 opacity-80 mix-blend-screen">
-              <span className="animate-pulse">REC ● 00:00:00</span>
-              <span>SOURCE: ONAI.CAM_1</span>
+              <span className="animate-pulse">ЗАП ● 00:00:00</span>
+              <span>ИСТОЧНИК: ONAI.CAM_1</span>
             </div>
           </div>
 
@@ -324,38 +402,38 @@ export default function TripwireLanding() {
 
         {/* PROGRAM SECTION - RESPONSIVE */}
         <section className="mb-8 sm:mb-12 md:mb-16 lg:mb-24 xl:mb-32">
-          <div className="flex items-end justify-between mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
-            <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl">
-              3 ДНЯ<br />
-              <span className="text-gray-500 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">ОБУЧЕНИЯ</span>
+          <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
+            <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl mb-3 sm:mb-4 md:mb-5">
+              <span className="text-gray-500 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">3 ВЗРЫВНЫХ</span><br />
+              МОДУЛЯ 💥
             </h2>
-            <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-[#00FF94] text-right">
-              С ДОМАШНИМИ<br />ЗАДАНИЯМИ
+            <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-[#00FF94]">
+              С ДОМАШНИМИ ЗАДАНИЯМИ
             </div>
           </div>
 
-          <div className="space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10 xl:space-y-12 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8 xl:gap-10 md:space-y-0">
+          <div className="space-y-4 sm:space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8 xl:gap-10 md:items-stretch">
             {/* Day 1 - RESPONSIVE */}
-            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4">
-              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden h-full">
+            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
+              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden flex-1 flex flex-col">
                 <div className="absolute top-0 right-0 p-2 sm:p-4 md:p-6 lg:p-8 font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white/5 group-hover:text-[#00FF94]/10 transition-colors">01</div>
                 <div className="relative z-10">
                   <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-2 md:mb-3 lg:mb-4 text-white">Вводный модуль</h3>
                   <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 leading-relaxed">Определим какое направление в ИИ твое.</p>
                   
                   <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 h-6 sm:h-8 md:h-10 lg:h-12 w-full rounded-lg border border-dashed border-white/20 flex items-center justify-center bg-black/40">
-                    <div className="font-mono text-[8px] sm:text-[10px] md:text-xs lg:text-sm xl:text-base text-[#00FF94] animate-pulse">ANALYZING USER PROFILE...</div>
+                    <div className="font-mono text-[8px] sm:text-[10px] md:text-xs lg:text-sm xl:text-base text-[#00FF94] animate-pulse">АНАЛИЗ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ...</div>
                   </div>
                   
                   <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
-                      src="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif" 
+                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/Module%203.gif" 
                       alt="Intro Module Preview" 
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-lg z-20" />
                     <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 md:bottom-3 md:right-3 z-20">
-                      <span className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs font-mono text-[#00FF94] bg-black/80 px-1 sm:px-2 py-0.5 sm:py-1 rounded backdrop-blur-sm">PREVIEW 16:9</span>
+                      <span className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs font-mono text-[#00FF94] bg-black/80 px-1 sm:px-2 py-0.5 sm:py-1 rounded backdrop-blur-sm">ПРЕВЬЮ 16:9</span>
                     </div>
                   </div>
                 </div>
@@ -363,8 +441,8 @@ export default function TripwireLanding() {
             </div>
 
             {/* Day 2 - RESPONSIVE */}
-            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4">
-              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden">
+            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
+              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden flex-1 flex flex-col">
                 <div className="absolute top-0 right-0 p-2 sm:p-4 md:p-6 lg:p-8 font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white/5 group-hover:text-[#00FF94]/10 transition-colors">02</div>
                 <div className="relative z-10">
                   <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-1 md:mb-2 text-white">Практика: создание GPT-бота</h3>
@@ -390,13 +468,13 @@ export default function TripwireLanding() {
 
                   <div className="relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
-                      src="https://media.giphy.com/media/l41lFw057lAJcYt0Y/giphy.gif" 
+                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/2%20module.gif" 
                       alt="GPT Bot Preview" 
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-lg z-20" />
                     <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 md:bottom-3 md:right-3 z-20">
-                      <span className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs font-mono text-[#00FF94] bg-black/80 px-1 sm:px-2 py-0.5 sm:py-1 rounded backdrop-blur-sm">BOT PREVIEW 16:9</span>
+                      <span className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs font-mono text-[#00FF94] bg-black/80 px-1 sm:px-2 py-0.5 sm:py-1 rounded backdrop-blur-sm">ПРЕВЬЮ 16:9</span>
                     </div>
                   </div>
                 </div>
@@ -404,12 +482,12 @@ export default function TripwireLanding() {
             </div>
 
             {/* Day 3 - RESPONSIVE */}
-            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4">
-              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden">
+            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
+              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden flex-1 flex flex-col">
                 <div className="absolute top-0 right-0 p-2 sm:p-4 md:p-6 lg:p-8 font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white/5 group-hover:text-[#00FF94]/10 transition-colors">03</div>
                 <div className="relative z-10">
                   <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-2 md:mb-3 lg:mb-4 text-white">Практика: создание вирусных Reels</h3>
-                  <p className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-[#00FF94] to-white mb-2 md:mb-3 flex items-center gap-2 md:gap-3">
+                  <p className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-[#00FF94] to-white mb-2 md:mb-3 flex items-center gap-2 md:gap-3 whitespace-nowrap">
                     100 000
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-[#00FF94]">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -420,13 +498,13 @@ export default function TripwireLanding() {
                   
                   <div className="relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
-                      src="https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif" 
+                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/1%20module.gif" 
                       alt="Viral Reels Preview" 
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-lg z-20" />
                     <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 md:bottom-3 md:right-3 z-20">
-                      <span className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs font-mono text-[#00FF94] bg-black/80 px-1 sm:px-2 py-0.5 sm:py-1 rounded backdrop-blur-sm">REELS 16:9</span>
+                      <span className="text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs font-mono text-[#00FF94] bg-black/80 px-1 sm:px-2 py-0.5 sm:py-1 rounded backdrop-blur-sm">ПРЕВЬЮ 16:9</span>
                     </div>
                   </div>
                 </div>
@@ -437,7 +515,7 @@ export default function TripwireLanding() {
 
         {/* LIVE EVENT - RESPONSIVE */}
         <section className="mb-16 sm:mb-20 md:mb-24 lg:mb-32 xl:mb-40 relative">
-          <div className="absolute -left-10 md:-left-20 lg:-left-32 top-12 sm:top-16 md:top-20 lg:top-32 font-display font-bold text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] xl:text-[15rem] text-white/[0.02] -rotate-90 pointer-events-none whitespace-nowrap">LIVE STREAM</div>
+          <div className="absolute -left-10 md:-left-20 lg:-left-32 top-12 sm:top-16 md:top-20 lg:top-32 font-display font-bold text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] xl:text-[15rem] text-white/[0.02] -rotate-90 pointer-events-none whitespace-nowrap">ПРЯМОЙ ЭФИР</div>
 
           <div className="border-2 md:border-4 border-white/10 p-1 relative">
             <div className="absolute -top-1 -left-1 w-4 h-4 md:w-6 md:h-6 lg:w-8 lg:h-8 border-t-2 md:border-t-4 border-l-2 md:border-l-4 border-[#00FF94]" />
@@ -448,7 +526,7 @@ export default function TripwireLanding() {
 
               <div className="relative p-4 sm:p-6 md:p-8 lg:p-12 xl:p-16 pt-6 sm:pt-8 md:pt-12 lg:pt-16">
                 <div className="inline-flex items-center gap-2 md:gap-3 bg-red-600 text-white px-2 sm:px-3 md:px-4 lg:px-5 py-1 md:py-1.5 lg:py-2 font-bold text-[10px] sm:text-xs md:text-sm lg:text-base uppercase tracking-wider mb-4 sm:mb-6 md:mb-8 lg:mb-10 animate-pulse">
-                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 bg-white rounded-full" /> Live
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 bg-white rounded-full" /> В ЭФИРЕ
                 </div>
 
                 <h3 className="font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl uppercase leading-tight mb-2 md:mb-3 lg:mb-4">Финал: прямой эфир<br />с основателями</h3>
@@ -460,10 +538,16 @@ export default function TripwireLanding() {
 
                 <div className="flex items-center gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-10 lg:mb-12">
                   <div className="flex -space-x-3 sm:-space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full border-2 md:border-4 border-black bg-gray-700 grayscale hover:grayscale-0 transition-all" />
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full border-2 md:border-4 border-black bg-gray-600 grayscale hover:grayscale-0 transition-all" />
+                    <div 
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full border-2 md:border-4 border-black grayscale hover:grayscale-0 transition-all bg-cover bg-center" 
+                      style={{ backgroundImage: 'url(https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/photo/571208939_18539870887011244_6995202681130936645_n%201.png)' }}
+                    />
+                    <div 
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full border-2 md:border-4 border-black grayscale hover:grayscale-0 transition-all bg-cover bg-center" 
+                      style={{ backgroundImage: 'url(https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/photo/532424689_17922110877102671_5546030545350934052_n%201.png)' }}
+                    />
                   </div>
-                  <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base text-[#00FF94] animate-pulse">/// WAITING FOR THE START</div>
+                  <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base text-[#00FF94] animate-pulse">/// ОЖИДАНИЕ НАЧАЛА</div>
                 </div>
 
                 <button 
@@ -500,7 +584,7 @@ export default function TripwireLanding() {
 
         {/* TRUST INFO - RESPONSIVE */}
         <section className="mb-16 sm:mb-20 md:mb-24 lg:mb-32 xl:mb-40">
-          <h2 className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-500 mb-4 sm:mb-6 md:mb-8 uppercase tracking-[0.2em] border-b border-white/5 pb-2 md:pb-3 lg:pb-4">Database Access: onAI</h2>
+          <h2 className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-500 mb-4 sm:mb-6 md:mb-8 uppercase tracking-[0.2em] border-b border-white/5 pb-2 md:pb-3 lg:pb-4">Доступ к базе данных: onAI</h2>
           
           <div className="grid grid-cols-2 gap-px bg-white/10 border md:border-2 border-white/10">
             <div className="bg-black p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 group hover:bg-white/5 transition-colors">
@@ -528,16 +612,16 @@ export default function TripwireLanding() {
           
           <div className="overflow-x-auto pb-6 sm:pb-8 md:pb-12 -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 scrollbar-hide flex gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {[
-              { name: 'Жамбыл', role: 'Художник', income: '+3900$', text: '"За 2 месяца продал 6 GPT ботов со средним чеком 650$"' },
-              { name: 'Алишер', role: 'Безработный', income: '+4800$', text: '"Выиграл тендер на создание бота, продал еще двум частным компаниям"' },
-              { name: 'Раимжан', role: 'Студент', income: '+9600$', text: '"6 месяцев активно продавал ботов параллельно с учебой"' },
-              { name: 'Жанара', role: 'Таргетолог', income: '+700$', text: '"Нашла клиента среди текущих проектов"' },
-              { name: 'Еркежан', role: 'Мама в декрете', income: '+900$', text: '"Нашла клиента среди рассылок"' },
-              { name: 'Никита', role: 'Наемный сотрудник', income: '+800$', text: '"Нашел клиента среди рассылок"' },
-              { name: 'Артур', role: 'Таргетолог', income: '+350$', text: '"Нашел клиента в таргете, ежемесячно получает с него +250$ за обслуживание"' },
-              { name: 'Александр', role: 'Наемный сотрудник', income: '+800$', text: '"Нашел клиента среди рассылок"' },
-              { name: 'Нургуль', role: 'Госслужащая', income: '+650$', text: '"Нашла клиента в таргете"' },
-              { name: 'Одиссей', role: 'Фрилансер', income: '+1900$', text: '"Нашел клиента среди текущих проектов, купил со второй продажи новый MacBook"' },
+              { name: 'Жамбыл', role: 'Художник', income: '+3900$', text: '"За 2 месяца продал 6 GPT ботов со средним чеком 650$"', imageUrl: null },
+              { name: 'Алишер', role: 'Безработный', income: '+4800$', text: '"Выиграл тендер на создание бота, продал еще двум частным компаниям"', imageUrl: 'https://static.tildacdn.com/tild3935-3564-4835-a234-616363376638/_1.png' },
+              { name: 'Раимжан', role: 'Студент', income: '+9600$', text: '"6 месяцев активно продавал ботов параллельно с учебой"', imageUrl: 'https://static.tildacdn.com/tild3161-6266-4936-b237-643266626631/_5.png' },
+              { name: 'Жанара', role: 'Таргетолог', income: '+700$', text: '"Нашла клиента среди текущих проектов"', imageUrl: 'https://static.tildacdn.com/tild6331-3033-4434-b439-346335643038/_2.png' },
+              { name: 'Еркежан', role: 'Мама в декрете', income: '+900$', text: '"Нашла клиента среди рассылок"', imageUrl: null },
+              { name: 'Никита', role: 'Наемный сотрудник', income: '+800$', text: '"Нашел клиента среди рассылок"', imageUrl: 'https://static.tildacdn.com/tild6565-6431-4830-b830-326362383162/_10.png' },
+              { name: 'Артур', role: 'Таргетолог', income: '+350$', text: '"Нашел клиента в таргете, ежемесячно получает с него +250$ за обслуживание"', imageUrl: 'https://static.tildacdn.com/tild6637-3435-4936-a337-663766346536/_3.png' },
+              { name: 'Александр', role: 'Наемный сотрудник', income: '+800$', text: '"Нашел клиента среди рассылок"', imageUrl: 'https://static.tildacdn.com/tild3837-3638-4362-a639-343534336233/image.png' },
+              { name: 'Нургуль', role: 'Госслужащая', income: '+650$', text: '"Нашла клиента в таргете"', imageUrl: null },
+              { name: 'Одиссей', role: 'Фрилансер', income: '+1900$', text: '"Нашел клиента среди текущих проектов, купил со второй продажи новый MacBook"', imageUrl: 'https://static.tildacdn.com/tild3431-3032-4965-b034-343537373530/_6.png' },
             ].map((case_item, idx) => (
               <div key={idx} className="min-w-[85vw] sm:min-w-[70vw] md:min-w-[45vw] lg:min-w-[30vw] xl:min-w-[25vw] 2xl:min-w-[20vw] bg-[#0A0A0A] border md:border-2 border-white/10 p-4 sm:p-6 md:p-8 lg:p-10 relative">
                 <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 text-[#00FF94] font-mono text-[10px] sm:text-xs md:text-sm lg:text-base">{case_item.income}</div>
@@ -548,8 +632,19 @@ export default function TripwireLanding() {
                     <div className="text-[10px] sm:text-xs md:text-sm text-gray-500 uppercase">{case_item.role}</div>
                   </div>
                 </div>
-                <div className="w-full aspect-square bg-black/50 rounded md:rounded-lg border border-white/5 mb-3 sm:mb-4 md:mb-6 relative overflow-hidden flex items-center justify-center">
-                  <span className="text-gray-700 font-mono text-[10px] sm:text-xs md:text-sm">[VERIFIED DATA]</span>
+                <div className="w-full aspect-square bg-black/50 rounded md:rounded-lg border border-white/5 mb-3 sm:mb-4 md:mb-6 relative overflow-hidden">
+                  {case_item.imageUrl ? (
+                    <img 
+                      src={case_item.imageUrl}
+                      alt={`Отзыв ${case_item.name}`}
+                      className="w-full h-full object-cover object-center"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-gray-700 font-mono text-[10px] sm:text-xs md:text-sm">[ПРОВЕРЕННЫЕ ДАННЫЕ]</span>
+                    </div>
+                  )}
                 </div>
                 <p className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-400 leading-relaxed border-l-2 md:border-l-4 border-[#00FF94] pl-2 sm:pl-3 md:pl-4">
                   {case_item.text}
@@ -572,7 +667,7 @@ export default function TripwireLanding() {
       <div className="fixed bottom-0 left-0 w-full z-40 bg-black/90 backdrop-blur-lg border-t md:border-t-2 border-white/10 p-3 sm:p-4 md:p-6 lg:p-8 pb-4 sm:pb-6 md:pb-8">
         <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto flex gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-center">
           <div className="flex-shrink-0">
-            <div className="text-[8px] sm:text-[10px] md:text-xs lg:text-sm text-gray-400 uppercase font-mono whitespace-nowrap">Total Price</div>
+            <div className="text-[8px] sm:text-[10px] md:text-xs lg:text-sm text-gray-400 uppercase font-mono whitespace-nowrap">Стоимость</div>
             <div className="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white whitespace-nowrap">10$</div>
           </div>
           <button 
@@ -599,8 +694,8 @@ export default function TripwireLanding() {
         </div>
       </div>
 
-      {/* Lead Form Modal */}
-      <LeadForm 
+      {/* Checkout Form Modal */}
+      <CheckoutForm 
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 
         source="twland" 

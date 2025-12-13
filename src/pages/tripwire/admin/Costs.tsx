@@ -25,24 +25,18 @@ interface CostsData {
   total_students: number;
 }
 
-// ✅ Иконки по типу затрат
+// ✅ Иконки по типу затрат (БЕЗ AI-куратора - его нет на Tripwire)
 const costTypeIcons = {
-  'curator_chat': MessageSquare,
-  'curator_whisper': Mic,
   'lesson_transcription': Video,
   'lesson_generation': Zap
 };
 
 const costTypeLabels = {
-  'curator_chat': 'AI Куратор (чат)',
-  'curator_whisper': 'Whisper (голосовые)',
-  'lesson_transcription': 'Транскрибации уроков',
-  'lesson_generation': 'Генерация описаний'
+  'lesson_transcription': 'Транскрибации видео',
+  'lesson_generation': 'Генерация описаний/советов'
 };
 
 const costTypeColors = {
-  'curator_chat': '#00FF94',
-  'curator_whisper': '#3B82F6',
   'lesson_transcription': '#F59E0B',
   'lesson_generation': '#8B5CF6'
 };
@@ -108,10 +102,10 @@ export default function TripwireCosts() {
           <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             По типу AI-сервиса
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {isLoading ? (
               <>
-                {[...Array(4)].map((_, i) => (
+                {[...Array(2)].map((_, i) => (
                   <div key={i} className="animate-pulse bg-[rgba(20,20,20,0.6)] backdrop-blur-xl rounded-3xl p-8 border border-white/5 h-48" />
                 ))}
               </>
@@ -157,7 +151,7 @@ export default function TripwireCosts() {
                 );
               })
             ) : (
-              <div className="col-span-4 text-center py-12 text-[#9CA3AF]">
+              <div className="col-span-2 text-center py-12 text-[#9CA3AF]">
                 Затрат пока нет. Трекинг начнётся с первого использования AI.
               </div>
             )}

@@ -12,6 +12,7 @@ const router = Router();
 
 // 🔄 АВТОМАТИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ БОТОВ в зависимости от окружения
 const isProduction = process.env.NODE_ENV === 'production';
+const enableBotLocally = process.env.ENABLE_TELEGRAM_BOT_LOCALLY === 'true';
 
 // Localhost → @onainastavnik_bot (тестовый)
 // Production → @onaimentor_bot (продакшн)
@@ -21,26 +22,36 @@ const TELEGRAM_BOT_TOKEN = isProduction
 
 const BOT_USERNAME = isProduction ? '@onaimentor_bot' : '@onainastavnik_bot';
 
-console.log(`🤖 Выбран ${isProduction ? 'ПРОДАКШН' : 'ТЕСТОВЫЙ'} бот: ${BOT_USERNAME}`);
+console.log(`🤖 Telegram Bot Configuration:`);
 console.log(`   Environment: ${process.env.NODE_ENV}`);
-console.log(`   Token: ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
+console.log(`   Bot: ${isProduction ? 'ПРОДАКШН' : 'ТЕСТОВЫЙ'} (${BOT_USERNAME})`);
+console.log(`   Enable locally: ${enableBotLocally}`);
 
-let bot: TelegramBot;
+let bot: TelegramBot | null = null;
 
+// ✅ PRODUCTION: Always start bot with webhook
 if (isProduction && process.env.BACKEND_URL) {
-  // Production: webhook mode
   bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
   const webhookUrl = `${process.env.BACKEND_URL}/api/telegram/webhook/${TELEGRAM_BOT_TOKEN}`;
   bot.setWebHook(webhookUrl).then(() => {
-    console.log(`🤖 Telegram webhook set to: ${webhookUrl}`);
+    console.log(`✅ Telegram webhook set to: ${webhookUrl}`);
   }).catch(e => {
     console.error('❌ Failed to set Telegram webhook:', e);
   });
-} else {
-  // Development: polling mode (для localhost)
+}
+// ✅ DEVELOPMENT: Only start if explicitly enabled
+else if (!isProduction && enableBotLocally) {
   bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
-  console.log('🤖 Telegram bot started in POLLING mode (localhost)');
+  console.log(`✅ Telegram bot started in POLLING mode (localhost)`);
   console.log(`   Bot username: ${BOT_USERNAME}`);
+  console.log(`   Token: ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
+}
+// 🚫 DEVELOPMENT: Bot disabled by default
+else if (!isProduction) {
+  console.log(`🚫 Telegram bot DISABLED in development`);
+  console.log(`   Reason: ENABLE_TELEGRAM_BOT_LOCALLY is not set to 'true'`);
+  console.log(`   To enable bot locally, add: ENABLE_TELEGRAM_BOT_LOCALLY=true to .env`);
+  console.log(`   This prevents conflicts with production bot (409 Conflict errors)`);
 }
 
 /**
@@ -90,6 +101,10 @@ router.post('/generate-token', async (req, res) => {
  */
 router.post('/webhook/:token', async (req, res) => {
   try {
+    if (!bot) {
+      return res.status(503).json({ success: false, message: 'Telegram bot is disabled' });
+    }
+
     const { token } = req.params;
 
     // Verify webhook token matches bot token
@@ -110,7 +125,8 @@ router.post('/webhook/:token', async (req, res) => {
 /**
  * Handle /start command with deep link verification
  */
-bot.onText(/\/start (.+)/, async (msg, match) => {
+if (bot) {
+  bot.onText(/\/start (.+)/, async (msg, match) => {
   try {
     const verificationToken = match?.[1];
     const telegramUserId = msg.from?.id;
@@ -186,14 +202,14 @@ bot.onText(/\/start (.+)/, async (msg, match) => {
     );
   } catch (error) {
     console.error('❌ Error in /start handler:', error);
-    await bot.sendMessage(msg.chat.id, '❌ Произошла ошибка. Попробуйте позже.');
+    if (bot) await bot.sendMessage(msg.chat.id, '❌ Произошла ошибка. Попробуйте позже.');
   }
-});
+  });
 
-/**
- * Handle /disconnect command
- */
-bot.onText(/\/disconnect/, async (msg) => {
+  /**
+   * Handle /disconnect command
+   */
+  bot.onText(/\/disconnect/, async (msg) => {
   try {
     const telegramUserId = msg.from?.id;
 
@@ -239,25 +255,28 @@ bot.onText(/\/disconnect/, async (msg) => {
   } catch (error) {
     console.error('❌ Error in /disconnect handler:', error);
   }
-});
+  });
 
-/**
- * Handle /help command
- */
-bot.onText(/\/help/, async (msg) => {
-  await bot.sendMessage(
-    msg.chat.id,
-    `🤖 *onAI Mentor Bot - Справка*\n\n` +
-    `*Команды:*\n` +
-    `/start <token> - Подключить Telegram\n` +
-    `/disconnect - Отключить уведомления\n` +
-    `/help - Показать эту справку\n\n` +
-    `*О боте:*\n` +
-    `Я помогаю тебе не забывать о важных задачах, отправляя напоминания за 15-60 минут до дедлайна.\n\n` +
-    `📚 Платформа: ${process.env.FRONTEND_URL || 'https://app.onaiacademy.kz'}`,
-    { parse_mode: 'Markdown' }
-  );
-});
+  /**
+   * Handle /help command
+   */
+  bot.onText(/\/help/, async (msg) => {
+    if (bot) {
+      await bot.sendMessage(
+        msg.chat.id,
+        `🤖 *onAI Mentor Bot - Справка*\n\n` +
+        `*Команды:*\n` +
+        `/start <token> - Подключить Telegram\n` +
+        `/disconnect - Отключить уведомления\n` +
+        `/help - Показать эту справку\n\n` +
+        `*О боте:*\n` +
+        `Я помогаю тебе не забывать о важных задачах, отправляя напоминания за 15-60 минут до дедлайна.\n\n` +
+        `📚 Платформа: ${process.env.FRONTEND_URL || 'https://app.onaiacademy.kz'}`,
+        { parse_mode: 'Markdown' }
+      );
+    }
+  });
+}
 
 /**
  * GET /api/telegram/status/:userId
@@ -295,6 +314,14 @@ router.get('/status/:userId', async (req, res) => {
  */
 router.post('/send-reminder', async (req, res) => {
   try {
+    if (!bot) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Telegram bot is disabled',
+        disabled: true 
+      });
+    }
+
     const { chatId, message } = req.body;
 
     if (!chatId || !message) {

@@ -54,10 +54,10 @@ export function LeadForm({ isOpen, onClose, source = 'twland' }: LeadFormProps) 
         description: 'Переходим к оплате...',
       });
 
-      // Редирект на страницу оплаты через 1.5 секунды
-      setTimeout(() => {
-        navigate('/twland/pay');
-      }, 1500);
+      // Редирект убран - форма теперь встроена в popup на лендинге
+      // setTimeout(() => {
+      //   navigate('/integrator/expresscourse');
+      // }, 1500);
 
     } catch (error: any) {
       console.error('❌ Error submitting lead:', error);

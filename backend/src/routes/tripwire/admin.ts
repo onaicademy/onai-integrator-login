@@ -199,13 +199,14 @@ router.get('/costs', authenticateJWT, requireAdmin, async (req, res) => {
   try {
     // ✅ ШАГ 1: Получить затраты из ОТДЕЛЬНОЙ таблицы tripwire_ai_costs
     // Эта таблица содержит ТОЛЬКО затраты Tripwire:
-    // - curator_chat (GPT-4o в AI Кураторе Tripwire)
-    // - curator_whisper (Whisper для голосовых сообщений в кураторе)
     // - lesson_transcription (Groq Whisper для транскрибации видео уроков)
+    // - lesson_generation (GPT для генерации описаний/советов)
+    // ❌ curator_chat и curator_whisper ИСКЛЮЧЕНЫ (AI-куратора нет на Tripwire)
     
     const { data: costs, error } = await supabase
       .from('tripwire_ai_costs')
       .select('*')
+      .in('cost_type', ['lesson_transcription', 'lesson_generation']) // ✅ Фильтруем ТОЛЬКО нужные типы
       .order('created_at', { ascending: false })
       .limit(100);
 

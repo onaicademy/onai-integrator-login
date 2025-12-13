@@ -51,9 +51,9 @@ const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatform
 const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
 const TripwireLogin = lazy(() => import("./pages/tripwire/TripwireLogin"));
 const TripwireLanding = lazy(() => import("./pages/tripwire/TripwireLanding"));
-const TripwirePayment = lazy(() => import("./pages/tripwire/TripwirePayment"));
 const TripwireLesson = lazy(() => import("./pages/tripwire/TripwireLesson"));
 const TripwireProfile = lazy(() => import("./pages/tripwire/TripwireProfile"));
+const ProfTest = lazy(() => import("./pages/tripwire/ProfTest"));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
@@ -201,14 +201,18 @@ const AppRoutes = () => {
       <Route path="/integrator/login" element={<TripwireLogin />} />
       
       {/* Public: Landing page (no auth required) - для сбора заявок */}
-      <Route path="/twland" element={<TripwireLanding />} />
-      <Route path="/twland/pay" element={<TripwirePayment />} />
+      <Route path="/expresscourse" element={<TripwireLanding />} />
+      <Route path="/integrator/expresscourse" element={<TripwireLanding />} />
       
       {/* Public: Password Reset (no auth required) */}
       <Route path="/integrator/update-password" element={<TripwireUpdatePassword />} />
       
       {/* Public: Certificate page (no auth required for sharing) */}
       <Route path="/integrator/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
+      
+      {/* Public: Professional Test pages (no auth required) */}
+      <Route path="/integrator/proftest" element={<ProfTest />} />
+      <Route path="/integrator/proftest/:slug" element={<ProfTest />} />
       
       {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/integrator" element={

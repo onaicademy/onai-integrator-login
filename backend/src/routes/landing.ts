@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
+import { createOrUpdateLead } from '../lib/amocrm.js';
+import { scheduleProftestNotifications } from '../services/scheduledNotifications.js';
 
 const router = express.Router();
 
@@ -196,7 +198,7 @@ async function createAmoCRMLead(lead: LandingLead, contactId?: number): Promise<
       
       // Добавляем примечание с данными лида
       try {
-        const noteText = `📋 Данные лида:\n\n👤 Имя: ${lead.name}\n📧 Email: ${lead.email}\n📱 Телефон: ${lead.phone}\n\n🌐 Источник: Лендинг /twland`;
+        const noteText = `📋 Данные лида:\n\n👤 Имя: ${lead.name}\n📧 Email: ${lead.email}\n📱 Телефон: ${lead.phone}\n\n🌐 Источник: Лендинг /expresscourse`;
         
         await axios.post(
           `https://${AMOCRM_DOMAIN}/api/v4/leads/${leadId}/notes`,
@@ -236,73 +238,95 @@ async function createAmoCRMLead(lead: LandingLead, contactId?: number): Promise<
 
 /**
  * POST /api/landing/submit
- * Принимает заявку с лендинга, сохраняет в БД и создает сделку в AmoCRM
+ * Принимает заявку с основного лендинга с выбором способа оплаты
+ * ДЕДУПЛИКАЦИЯ: находит существующую сделку и обновляет её этап
  */
 router.post('/submit', async (req: Request, res: Response) => {
   try {
-    const { email, name, phone, source = 'twland', metadata = {} } = req.body;
+    const { email, name, phone, source = 'twland', paymentMethod, metadata = {} } = req.body;
 
     // Валидация
-    if (!email || !name || !phone) {
+    if (!name || !phone) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: email, name, phone'
+        error: 'Missing required fields: name, phone'
       });
     }
 
-    // Email валидация
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate paymentMethod
+    if (paymentMethod && !['kaspi', 'card', 'manager'].includes(paymentMethod)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid email format'
+        error: 'Invalid payment method'
       });
     }
 
-    console.log(`📝 New lead submission: ${name} (${email})`);
+    console.log(`📝 Landing lead submission: ${name}, payment: ${paymentMethod || 'not selected'}`);
 
-    // 1. Сначала создаем контакт в AmoCRM
-    const amocrmContactId = await createAmoCRMContact({ email, name, phone, source, metadata });
-
-    // 2. Создаем сделку в AmoCRM
-    const amocrmLeadId = await createAmoCRMLead({ email, name, phone, source, metadata }, amocrmContactId || undefined);
-
-    // 3. Сохраняем в Supabase
-    const { data: lead, error: dbError } = await landingSupabase
+    // 1. Save to Supabase (landing DB)
+    const { data: supabaseLead, error: supabaseError } = await landingSupabase
       .from('landing_leads')
       .insert({
-        email,
+        email: email || null,
         name,
         phone,
         source,
         metadata: {
           ...metadata,
+          paymentMethod,
           userAgent: req.headers['user-agent'],
           ip: req.ip,
           timestamp: new Date().toISOString()
         },
-        amocrm_lead_id: amocrmLeadId,
-        amocrm_synced: !!amocrmLeadId
       })
       .select()
       .single();
 
-    if (dbError) {
-      console.error('❌ Database error:', dbError);
+    if (supabaseError) {
+      console.error('❌ Supabase error:', supabaseError);
       return res.status(500).json({
         success: false,
         error: 'Failed to save lead to database'
       });
     }
 
-    console.log(`✅ Lead saved to database: ${lead.id}`);
+    console.log(`✅ Lead saved to Supabase: ${supabaseLead.id}`);
 
-    return res.status(200).json({
-      success: true,
-      leadId: lead.id,
-      amocrmLeadId: amocrmLeadId || null,
-      message: 'Заявка успешно отправлена!'
-    });
+    // 2. Create or update in AmoCRM with deduplication and stage update
+    try {
+      const amocrmResult = await createOrUpdateLead({
+        name,
+        email: email || undefined,
+        phone,
+        paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
+      });
+
+      console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+
+      return res.status(200).json({
+        success: true,
+        leadId: supabaseLead.id,
+        amocrm: {
+          leadId: amocrmResult.leadId,
+          isNew: amocrmResult.isNew,
+          action: amocrmResult.action,
+        },
+        message: 'Заявка успешно отправлена!'
+      });
+
+    } catch (amocrmError: any) {
+      console.error('⚠️ AmoCRM error (non-critical):', amocrmError.message);
+
+      // Return success even if AmoCRM fails (lead is saved in Supabase)
+      return res.status(200).json({
+        success: true,
+        leadId: supabaseLead.id,
+        amocrm: {
+          error: amocrmError.message,
+        },
+        message: 'Заявка успешно отправлена!'
+      });
+    }
 
   } catch (error: any) {
     console.error('❌ Error processing lead:', error);
@@ -478,6 +502,122 @@ router.get('/amocrm/callback', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('❌ Error processing AmoCRM callback:', error);
     return res.status(500).send('Error processing callback');
+  }
+});
+
+// ============================================
+// PROFTEST LEAD SUBMISSION WITH DEDUPLICATION
+// ============================================
+router.post('/proftest', async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone, source, answers, proftestAnswers, campaignSlug, utmParams, metadata } = req.body;
+
+    // Validate
+    if (!name || !email || !phone) {
+      return res.status(400).json({ error: 'Missing required fields: name, email, phone' });
+    }
+
+    console.log('📝 Processing proftest lead submission:', {
+      name,
+      email: email.substring(0, 3) + '***',
+      phone: phone.substring(0, 3) + '***',
+      source,
+      campaignSlug,
+      answersCount: proftestAnswers?.length || answers?.length || 0,
+    });
+
+    // 1. Проверяем - нет ли уже заявки от этого пользователя (защита от повторного прохождения)
+    const { data: existingLead } = await landingSupabase
+      .from('landing_leads')
+      .select('id, email, phone, created_at')
+      .or(`email.eq.${email},phone.eq.${phone}`)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existingLead) {
+      console.log(`⚠️ User already submitted proftest: ${email} / ${phone}`);
+      return res.status(400).json({ 
+        error: 'Вы уже проходили этот тест ранее. Ожидайте ответа от нашей команды.',
+        alreadySubmitted: true 
+      });
+    }
+
+    // 2. Save to Supabase (landing DB)
+    const { data: supabaseLead, error: supabaseError } = await landingSupabase
+      .from('landing_leads')
+      .insert({
+        name,
+        email,
+        phone,
+        source: source || `proftest_${campaignSlug || 'unknown'}`,
+        metadata: {
+          ...metadata,
+          answers, // Старый формат для совместимости
+          proftestAnswers, // Новый формат с полными текстами
+          campaignSlug,
+          utmParams,
+          timestamp: new Date().toISOString(),
+        },
+      })
+      .select()
+      .single();
+
+    if (supabaseError) {
+      console.error('❌ Supabase error:', supabaseError);
+      throw new Error('Failed to save lead to database');
+    }
+
+    console.log('✅ Lead saved to Supabase:', supabaseLead.id);
+
+    // 3. Create or update in AmoCRM with deduplication
+    try {
+      const amocrmResult = await createOrUpdateLead({
+        name,
+        email,
+        phone,
+        utmParams,
+        proftestAnswers: proftestAnswers || answers, // Используем новый формат если есть
+        campaignSlug,
+      });
+
+      console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+
+      // 4. Schedule email + SMS notifications (15 minutes delay)
+      scheduleProftestNotifications({
+        name,
+        email,
+        phone,
+        leadId: supabaseLead.id,
+      });
+
+      return res.json({
+        success: true,
+        leadId: supabaseLead.id,
+        amocrm: {
+          leadId: amocrmResult.leadId,
+          isNew: amocrmResult.isNew,
+          action: amocrmResult.action,
+        },
+      });
+    } catch (amocrmError: any) {
+      console.error('⚠️ AmoCRM error (non-critical):', amocrmError.message);
+      
+      // Return success even if AmoCRM fails (lead is saved in Supabase)
+      return res.json({
+        success: true,
+        leadId: supabaseLead.id,
+        amocrm: {
+          error: amocrmError.message,
+        },
+      });
+    }
+  } catch (error: any) {
+    console.error('❌ Error processing proftest lead:', error);
+    return res.status(500).json({
+      error: 'Failed to process lead',
+      message: error.message,
+    });
   }
 });
 

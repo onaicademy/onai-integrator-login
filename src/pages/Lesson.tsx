@@ -1182,9 +1182,27 @@ const Lesson = () => {
                   </motion.span>
                   Советы по уроку
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                  {lesson.ai_tips}
-                </p>
+                <div className="text-xs sm:text-sm text-gray-300 leading-relaxed space-y-3">
+                  {lesson.ai_tips.split('\n').map((tip, index) => {
+                    // Парсим markdown: **Совет 1:** → жирный текст
+                    const parts = tip.split(/(\*\*.*?\*\*)/g);
+                    return (
+                      <p key={index} className="leading-relaxed">
+                        {parts.map((part, i) => {
+                          if (part.startsWith('**') && part.endsWith('**')) {
+                            // Удаляем ** и делаем жирным
+                            return (
+                              <span key={i} className="font-bold text-[#00FF88]">
+                                {part.slice(2, -2)}
+                              </span>
+                            );
+                          }
+                          return <span key={i}>{part}</span>;
+                        })}
+                      </p>
+                    );
+                  })}
+                </div>
               </motion.div>
             )}
 

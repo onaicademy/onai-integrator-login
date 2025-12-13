@@ -12,6 +12,11 @@
 
 // ✅ Simple required vars list (no Zod to avoid crashes)
 const requiredVars = [
+  'AMOCRM_DOMAIN',
+  'AMOCRM_ACCESS_TOKEN',
+];
+
+const optionalVars = [
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
   'SUPABASE_JWT_SECRET',
@@ -19,9 +24,6 @@ const requiredVars = [
   'TRIPWIRE_SERVICE_ROLE_KEY',
   'TRIPWIRE_JWT_SECRET',
   'OPENAI_API_KEY',
-];
-
-const optionalVars = [
   'GROQ_API_KEY',
   'TELEGRAM_BOT_TOKEN_MENTOR',
   'AMOCRM_CLIENT_ID',
