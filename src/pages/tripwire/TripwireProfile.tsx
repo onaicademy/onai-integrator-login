@@ -14,7 +14,7 @@ import type { User } from '@supabase/supabase-js';
 import ProfileHeader from './components/ProfileHeader';
 import ProgressOverview from './components/ProgressOverview';
 import Achievements from './components/Achievements';
-import ModuleProgress from './components/ModuleProgress';
+// ❌ УБРАНО: ModuleProgress (по запросу пользователя - "это лишнее")
 import CertificateSection from './components/CertificateSection';
 import AccountSettings from './components/AccountSettings';
 import DigitalFireworks from './components/DigitalFireworks';
@@ -35,7 +35,7 @@ export default function TripwireProfile() {
   const [profile, setProfile] = useState<TripwireUserProfile | null>(null);
   const [achievements, setAchievements] = useState<TripwireAchievement[]>([]);
   const [certificate, setCertificate] = useState<TripwireCertificate | null>(null);
-  const [moduleProgress, setModuleProgress] = useState<any[]>([]);
+  // ❌ УБРАНО: moduleProgress state (не используется после удаления компонента)
   const [detailedProgress, setDetailedProgress] = useState<any[]>([]);
 
   // Achievement notification

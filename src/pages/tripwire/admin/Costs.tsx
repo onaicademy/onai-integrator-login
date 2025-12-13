@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAuthToken } from '@/utils/apiClient';
+import { apiRequest } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, DollarSign, Calendar, Zap, MessageSquare, Mic, Video } from 'lucide-react';
 
@@ -44,15 +44,7 @@ const costTypeColors = {
 export default function TripwireCosts() {
   const { data, isLoading } = useQuery<CostsData>({
     queryKey: ['tripwire', 'admin', 'costs'],
-    queryFn: async () => {
-      const response = await fetch('/api/tripwire/admin/costs', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch costs');
-      return response.json();
-    },
+    queryFn: async () => apiRequest<CostsData>('/api/tripwire/admin/costs'),
     refetchInterval: 30000
   });
 

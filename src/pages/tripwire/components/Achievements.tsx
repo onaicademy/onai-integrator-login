@@ -24,6 +24,8 @@ const ACHIEVEMENT_CONFIG: AchievementConfig[] = [
     color: '#00FF88',
     shadowColor: 'rgba(0, 255, 136, 0.15)',
     gradient: 'from-[#00FF88]/5 via-transparent to-transparent',
+    rarity: 'epic', // ✅ ДОБАВЛЕНО
+    category: 'Обучение', // ✅ ДОБАВЛЕНО
   },
   {
     id: 'second_module_complete',
@@ -34,6 +36,8 @@ const ACHIEVEMENT_CONFIG: AchievementConfig[] = [
     color: '#00FF88',
     shadowColor: 'rgba(0, 255, 136, 0.15)',
     gradient: 'from-[#00FF88]/5 via-transparent to-transparent',
+    rarity: 'epic', // ✅ ДОБАВЛЕНО
+    category: 'Практика', // ✅ ДОБАВЛЕНО
   },
   {
     id: 'third_module_complete',
@@ -44,6 +48,8 @@ const ACHIEVEMENT_CONFIG: AchievementConfig[] = [
     color: '#00FF88',
     shadowColor: 'rgba(0, 255, 136, 0.15)',
     gradient: 'from-[#00FF88]/5 via-transparent to-transparent',
+    rarity: 'legendary', // ✅ ДОБАВЛЕНО (последний модуль - легендарный!)
+    category: 'Мастерство', // ✅ ДОБАВЛЕНО
   }
 ];
 

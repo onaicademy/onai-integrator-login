@@ -29,14 +29,19 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    // ✅ FIX: Verify JWT signature using Supabase JWT secret
-    // This prevents token forgery attacks
-    const jwtSecret = process.env.SUPABASE_JWT_SECRET || process.env.TRIPWIRE_JWT_SECRET;
+    // ✅ FIX: Use correct JWT secret based on endpoint
+    // Tripwire endpoints use TRIPWIRE_JWT_SECRET, others use SUPABASE_JWT_SECRET
+    const isTripwireEndpoint = req.originalUrl.includes('/tripwire');
+    const jwtSecret = isTripwireEndpoint 
+      ? process.env.TRIPWIRE_JWT_SECRET 
+      : process.env.SUPABASE_JWT_SECRET;
     
     if (!jwtSecret) {
       console.error('❌ [authenticateJWT] JWT_SECRET not configured');
       return res.status(500).json({ error: 'Server configuration error' });
     }
+
+    console.log('🔍 [authenticateJWT] Using', isTripwireEndpoint ? 'TRIPWIRE' : 'MAIN', 'JWT secret');
 
     let decoded: any;
     try {

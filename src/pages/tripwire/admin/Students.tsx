@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAuthToken } from '@/utils/apiClient';
+import { apiRequest } from '@/utils/apiClient';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Calendar, Clock, Search, User } from 'lucide-react';
 import { useState } from 'react';
@@ -20,15 +20,7 @@ export default function TripwireStudents() {
 
   const { data, isLoading } = useQuery<{ students: Student[] }>({
     queryKey: ['tripwire', 'admin', 'students'],
-      queryFn: async () => {
-      const response = await fetch('/api/tripwire/admin/students', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch students');
-      return response.json();
-    }
+    queryFn: async () => apiRequest<{ students: Student[] }>('/api/tripwire/admin/students'),
   });
 
   const filteredStudents = data?.students.filter(student => 
