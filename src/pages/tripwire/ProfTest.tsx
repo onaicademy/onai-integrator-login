@@ -73,7 +73,7 @@ export default function ProfTest() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [systemStatus, setSystemStatus] = useState(0);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -386,13 +386,13 @@ export default function ProfTest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.phone) {
       setSubmitError('Пожалуйста, заполните все поля');
       return;
     }
 
-    // Проверяем в localStorage - может пользователь уже проходил
-    if (localStorage.getItem(`proftest_completed_${formData.email}`)) {
+    // Проверяем в localStorage - может пользователь уже проходил (по phone)
+    if (localStorage.getItem(`proftest_completed_${formData.phone}`)) {
       setSubmitError('Вы уже проходили этот тест ранее. Ожидайте ответа от нашей команды.');
       return;
     }
@@ -442,8 +442,8 @@ export default function ProfTest() {
           value: 1,
         });
         
-        // Сохраняем в localStorage что тест пройден
-        localStorage.setItem(`proftest_completed_${formData.email}`, 'true');
+        // Сохраняем в localStorage что тест пройден (по phone)
+        localStorage.setItem(`proftest_completed_${formData.phone}`, 'true');
         
         // Показываем модалку успеха с анимацией
         setShowSuccessModal(true);
@@ -777,14 +777,6 @@ export default function ProfTest() {
                   placeholder="Ваше Имя"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-black/50 border border-white/20 rounded-lg py-2.5 sm:py-3 px-3 sm:px-4 text-white focus:outline-none focus:border-[#00FF94] transition-colors font-mono text-xs sm:text-sm"
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Ваш Email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full bg-black/50 border border-white/20 rounded-lg py-2.5 sm:py-3 px-3 sm:px-4 text-white focus:outline-none focus:border-[#00FF94] transition-colors font-mono text-xs sm:text-sm"
                   required
                 />
