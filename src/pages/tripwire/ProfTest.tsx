@@ -391,11 +391,14 @@ export default function ProfTest() {
       return;
     }
 
+    // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТИРОВАНИЯ
     // Проверяем в localStorage - может пользователь уже проходил (по phone)
+    /*
     if (localStorage.getItem(`proftest_completed_${formData.phone}`)) {
       setSubmitError('Вы уже проходили этот тест ранее. Ожидайте ответа от нашей команды.');
       return;
     }
+    */
 
     setIsSubmitting(true);
     setSubmitError(null);
