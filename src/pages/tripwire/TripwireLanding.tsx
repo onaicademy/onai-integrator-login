@@ -360,7 +360,7 @@ export default function TripwireLanding() {
         <section className="mb-8 sm:mb-12 md:mb-16 lg:mb-24 xl:mb-32">
           <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
             <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl mb-4 sm:mb-5 md:mb-6">
-              <span className="text-gray-500 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">3 ВЗРЫВНЫХ</span> МОДУЛЯ
+              3 ВЗРЫВНЫХ <span className="text-gray-500 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">МОДУЛЯ</span>
             </h2>
             <div className="font-mono text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#00FF94]">
               С ДОМАШНИМИ ЗАДАНИЯМИ
