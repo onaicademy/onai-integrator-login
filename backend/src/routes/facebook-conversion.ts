@@ -11,7 +11,7 @@ interface PixelConfig {
   slug: string;
 }
 
-const PIXEL_CONFIGS: Record<string, PixelConfig> = {
+export const PIXEL_CONFIGS: Record<string, PixelConfig> = {
   muha: {
     id: 'muha',
     name: 'Muha Campaign',
@@ -41,7 +41,7 @@ interface LeadData {
   name: string;
 }
 
-async function sendConversionApiEvent(
+export async function sendConversionApiEvent(
   pixelConfig: PixelConfig,
   eventName: string,
   userData: LeadData,

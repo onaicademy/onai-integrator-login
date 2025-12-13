@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, MessageCircle, Smartphone } from 'lucide-react';
+import { trackLead } from '@/lib/facebook-pixel';
 
 interface CheckoutFormProps {
   isOpen: boolean;
   onClose: () => void;
   source?: string;
+  campaignSlug?: string;
 }
 
-export function CheckoutForm({ isOpen, onClose, source = 'twland' }: CheckoutFormProps) {
+export function CheckoutForm({ isOpen, onClose, source = 'twland', campaignSlug }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     phone: ''
@@ -215,6 +217,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'twland' }: CheckoutFor
           ...formData,
           source,
           paymentMethod,
+          campaignSlug, // Pass campaign slug for Conversion API tracking
           metadata: {
             userAgent: navigator.userAgent,
             language: navigator.language,
@@ -230,6 +233,14 @@ export function CheckoutForm({ isOpen, onClose, source = 'twland' }: CheckoutFor
       }
 
       console.log('✅ Lead submitted:', data);
+      
+      // ✅ Track Lead event (browser-side) AFTER successful submission
+      trackLead({
+        content_name: 'Checkout Form Submission',
+        content_category: 'landing',
+        value: 10,
+        currency: 'USD',
+      });
       
       // Show thank you message
       setShowThankYou(true);

@@ -1,9 +1,15 @@
 import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckoutForm } from '@/components/landing/CheckoutForm';
 import { Logo } from '@/components/Logo';
+import FacebookPixel from '@/components/FacebookPixel';
+import { getPixelConfig } from '@/config/pixels';
 
 export default function TripwireLanding() {
+  const { campaignSlug = 'kenesary' } = useParams<{ campaignSlug?: string }>(); // Default to kenesary for /integrator/expresscourse
+  const pixelConfig = getPixelConfig(campaignSlug);
+  
   const [countdown, setCountdown] = useState('--:--:--');
   const [slotsCount, setSlotsCount] = useState(71);
   const [slotsStatus, setSlotsStatus] = useState('UPDATING...');
@@ -333,7 +339,7 @@ export default function TripwireLanding() {
             </div>
           </div>
 
-          <h1 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl leading-[0.95] mb-4 sm:mb-6 md:mb-8 lg:mb-12 tracking-tight">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl leading-[1.1] mb-4 sm:mb-6 md:mb-8 lg:mb-12 tracking-tight">
             ИНТЕГРАТОРЫ<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.3)' }}>2000$/МЕС</span><br />
             <span className="text-[#00FF94] text-glow">НА CHATGPT</span>
@@ -532,7 +538,7 @@ export default function TripwireLanding() {
                 <h3 className="font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl uppercase leading-tight mb-2 md:mb-3 lg:mb-4">Финал: прямой эфир<br />с основателями</h3>
 
                 <div className="bg-white/5 border-l-2 md:border-l-4 border-[#00FF94] p-3 sm:p-4 md:p-6 lg:p-8 mb-6 sm:mb-8 md:mb-10 lg:mb-12 backdrop-blur-sm">
-                  <p className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl leading-tight mb-1 md:mb-2">Как создать платформу стоимостью <span className="text-[#00FF94]">10 000$</span></p>
+                  <p className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl leading-tight mb-1 md:mb-2">Как создать платформу стоимостью <span className="text-[#00FF94]" style={{ whiteSpace: 'nowrap' }}>10 000$</span></p>
                   <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-500 font-mono">БЕЗ НАВЫКОВ ПРОГРАММИРОВАНИЯ</p>
                 </div>
 
@@ -694,11 +700,15 @@ export default function TripwireLanding() {
         </div>
       </div>
 
+      {/* Facebook Pixel */}
+      {pixelConfig && <FacebookPixel pixelConfig={pixelConfig} />}
+
       {/* Checkout Form Modal */}
       <CheckoutForm 
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 
-        source="twland" 
+        source="twland"
+        campaignSlug={campaignSlug}
       />
     </div>
   );

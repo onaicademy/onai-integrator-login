@@ -365,46 +365,20 @@ export default function ProfTest() {
     setSubmitError(null);
 
     try {
-      // 1. Track Lead event on browser-side (Facebook Pixel)
-      trackLead({
-        content_name: 'Lead Form Submission',
-        content_category: 'proftest',
-        value: 1,
-      });
-
-      // 2. Send to backend for Conversion API tracking
+      // 1. Get API base URL
       const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
       
-      if (pixelConfig) {
-        const conversionResponse = await fetch(`${apiBaseUrl}/api/track-lead`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            campaignSlug: pixelConfig.slug,
-            email: formData.email,
-            phone: formData.phone,
-            name: formData.name,
-          })
-        });
-
-        if (!conversionResponse.ok) {
-          console.error('Failed to track lead via Conversion API');
-        } else {
-          console.log('✅ Lead tracked via Conversion API');
-        }
-      }
-
-      // 3. Get UTM params
+      // 2. Get UTM params
       const utmParams = getAllUTMParams();
 
-      // 4. Формируем полные ответы с вопросами
+      // 3. Формируем полные ответы с вопросами
       const proftestAnswers = answers.map((answerIndex, questionIndex) => ({
         questionNumber: questionIndex + 1,
         question: questions[questionIndex].q,
         answer: questions[questionIndex].options[answerIndex]
       }));
 
-      // 5. Submit to landing API (save to Supabase + AmoCRM with deduplication)
+      // 4. Submit to landing API (save to Supabase + AmoCRM + Conversion API on backend)
       const response = await fetch(`${apiBaseUrl}/api/landing/proftest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -425,6 +399,13 @@ export default function ProfTest() {
       });
 
       if (response.ok) {
+        // ✅ ТОЛЬКО ПОСЛЕ УСПЕШНОЙ ОТПРАВКИ: Track Lead event (browser-side)
+        trackLead({
+          content_name: 'Lead Form Submission',
+          content_category: 'proftest',
+          value: 1,
+        });
+        
         // Сохраняем в localStorage что тест пройден
         localStorage.setItem(`proftest_completed_${formData.email}`, 'true');
         
@@ -483,10 +464,6 @@ export default function ProfTest() {
             AI ОБРАБАТЫВАЕТ ВАШУ ЗАЯВКУ...
           </div>
 
-          <p className="text-gray-300 text-base sm:text-lg mb-4">
-            Ваши данные успешно обработаны нашим искусственным интеллектом.
-          </p>
-          
           <p className="text-white text-xl sm:text-2xl font-bold mb-8">
             📱 Ожидайте ответа по SMS
           </p>

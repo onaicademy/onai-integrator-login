@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import { createOrUpdateLead } from '../lib/amocrm.js';
 import { scheduleProftestNotifications } from '../services/scheduledNotifications.js';
+import { PIXEL_CONFIGS, sendConversionApiEvent } from './facebook-conversion.js';
 
 const router = express.Router();
 
@@ -243,7 +244,7 @@ async function createAmoCRMLead(lead: LandingLead, contactId?: number): Promise<
  */
 router.post('/submit', async (req: Request, res: Response) => {
   try {
-    const { email, name, phone, source = 'twland', paymentMethod, metadata = {} } = req.body;
+    const { email, name, phone, source = 'twland', paymentMethod, campaignSlug, metadata = {} } = req.body;
 
     // Валидация
     if (!name || !phone) {
@@ -302,6 +303,37 @@ router.post('/submit', async (req: Request, res: Response) => {
       });
 
       console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
+
+      // 3. Send Facebook Conversion API Event (server-side tracking) - если указан campaignSlug
+      if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
+        try {
+          const pixelConfig = PIXEL_CONFIGS[campaignSlug];
+          const userAgent = req.headers['user-agent'] || undefined;
+          const ipAddress = 
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+            (req.headers['x-real-ip'] as string) ||
+            req.socket.remoteAddress ||
+            undefined;
+          const referer = req.headers['referer'] || '';
+          const fbc = req.cookies?._fbc;
+          const fbp = req.cookies?._fbp;
+
+          await sendConversionApiEvent(
+            pixelConfig,
+            'Lead',
+            { email: email || '', phone, name },
+            referer,
+            userAgent,
+            ipAddress,
+            fbc,
+            fbp
+          );
+          console.log('✅ Facebook Conversion API: Lead event sent');
+        } catch (conversionError) {
+          console.error('❌ Failed to send Conversion API event:', conversionError);
+          // Don't fail the request if Conversion API fails
+        }
+      }
 
       return res.status(200).json({
         success: true,
@@ -586,7 +618,38 @@ router.post('/proftest', async (req: Request, res: Response) => {
 
       console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
 
-      // 4. Schedule email + SMS notifications (15 minutes delay)
+      // 4. Send Facebook Conversion API Event (server-side tracking)
+      if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
+        try {
+          const pixelConfig = PIXEL_CONFIGS[campaignSlug];
+          const userAgent = req.headers['user-agent'] || undefined;
+          const ipAddress = 
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+            (req.headers['x-real-ip'] as string) ||
+            req.socket.remoteAddress ||
+            undefined;
+          const referer = req.headers['referer'] || '';
+          const fbc = req.cookies?._fbc;
+          const fbp = req.cookies?._fbp;
+
+          await sendConversionApiEvent(
+            pixelConfig,
+            'Lead',
+            { email, phone, name },
+            referer,
+            userAgent,
+            ipAddress,
+            fbc,
+            fbp
+          );
+          console.log('✅ Facebook Conversion API: Lead event sent');
+        } catch (conversionError) {
+          console.error('❌ Failed to send Conversion API event:', conversionError);
+          // Don't fail the request if Conversion API fails
+        }
+      }
+
+      // 5. Schedule email + SMS notifications (10 minutes delay)
       scheduleProftestNotifications({
         name,
         email,
