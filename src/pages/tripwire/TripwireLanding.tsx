@@ -323,11 +323,11 @@ export default function TripwireLanding() {
         >
           <div className="absolute -top-10 -right-10 w-40 h-40 md:w-60 md:h-60 lg:w-80 lg:h-80 xl:w-[500px] xl:h-[500px] bg-[#00FF94]/20 rounded-full blur-[80px] md:blur-[120px] lg:blur-[150px]" />
 
-          <div className="border-2 border-white/10 p-1.5 inline-block mb-5 sm:mb-7 md:mb-9 rounded-full">
-            <div className="bg-white/5 px-4 sm:px-5 md:px-7 lg:px-9 py-2 sm:py-2.5 md:py-3.5 rounded-full border border-white/5 backdrop-blur-md">
-              <p className="font-mono text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-300 uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
+          <div className="border-2 border-white/10 p-1.5 inline-block mb-5 sm:mb-6 md:mb-7 rounded-full">
+            <div className="bg-white/5 px-4 sm:px-5 md:px-6 lg:px-7 py-2 sm:py-2.5 md:py-2.5 rounded-full border border-white/5 backdrop-blur-md">
+              <p className="font-mono text-xs sm:text-sm md:text-sm lg:text-base xl:text-base text-gray-300 uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
                 3-й поток самого кассового обучения
-                <svg className="w-6 h-4 sm:w-7 sm:h-5 md:w-9 md:h-6 lg:w-11 lg:h-7 text-[#00FF94] animate-pulse" viewBox="0 0 32 20" fill="none">
+                <svg className="w-6 h-4 sm:w-7 sm:h-5 md:w-7 md:h-5 lg:w-8 lg:h-5 text-[#00FF94] animate-pulse" viewBox="0 0 32 20" fill="none">
                   <rect x="3" y="3" width="26" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                   <circle cx="16" cy="10" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M16 5.5V14.5 M18 8H15.5C14.7 8 14 8.5 14 9.25C14 10 14.7 10.5 15.5 10.5H16.5C17.3 10.5 18 11 18 11.75C18 12.5 17.3 13 16.5 13H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -336,31 +336,31 @@ export default function TripwireLanding() {
             </div>
           </div>
 
-          <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] leading-[1.1] mb-5 sm:mb-7 md:mb-9 lg:mb-14 tracking-tight">
+          <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-7xl 2xl:text-8xl leading-[1.1] mb-5 sm:mb-7 md:mb-7 lg:mb-10 tracking-tight">
             ИНТЕГРАТОРЫ<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.3)' }}>2000$/МЕС</span><br />
             <span className="text-[#00FF94] text-glow">НА CHATGPT</span>
           </h1>
 
           {/* Цена и Таймер - RESPONSIVE */}
-          <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between p-5 sm:p-6 md:p-8 lg:p-10 xl:p-12 rounded-xl md:rounded-2xl lg:rounded-3xl border-2 border-white/10 bg-[#0A0A0A]/50">
+          <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12">
+            <div className="flex items-center justify-between p-5 sm:p-6 md:p-6 lg:p-7 xl:p-8 rounded-xl md:rounded-2xl border-2 border-white/10 bg-[#0A0A0A]/50">
               <div>
-                <div className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 font-mono uppercase mb-2 md:mb-3">Стоимость входа</div>
-                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-white">
-                  10$ <span className="text-gray-500 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-normal">(5к тенге)</span>
+                <div className="text-xs sm:text-sm md:text-sm lg:text-base xl:text-base text-gray-400 font-mono uppercase mb-2 md:mb-2">Стоимость входа</div>
+                <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl font-display font-bold text-white">
+                  10$ <span className="text-gray-500 text-lg sm:text-xl md:text-xl lg:text-2xl xl:text-2xl font-normal">(5к тенге)</span>
                 </div>
               </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-full border-2 border-[#00FF94]/30 flex items-center justify-center text-[#00FF94]">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-16 xl:h-16 rounded-full border-2 border-[#00FF94]/30 flex items-center justify-center text-[#00FF94]">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-8 xl:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
             </div>
 
-            <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 p-4 sm:p-5 md:p-6 lg:p-8 xl:p-10 rounded-xl md:rounded-2xl border-2 md:border-4 border-[#00FF94]/30 bg-[#0A0A0A]/80 flex justify-between items-center gap-3 sm:gap-4 md:gap-6">
-              <span className="font-mono text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 uppercase tracking-widest flex-shrink-0">ДО СТАРТА ПОТОКА:</span>
-              <span className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-[#00FF94] text-glow text-right">{countdown}</span>
+            <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 p-4 sm:p-5 md:p-5 lg:p-6 xl:p-6 rounded-xl md:rounded-2xl border-2 md:border-3 border-[#00FF94]/30 bg-[#0A0A0A]/80 flex justify-between items-center gap-3 sm:gap-4 md:gap-5">
+              <span className="font-mono text-xs sm:text-sm md:text-sm lg:text-base xl:text-base text-gray-400 uppercase tracking-widest flex-shrink-0">ДО СТАРТА ПОТОКА:</span>
+              <span className="font-display text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-4xl font-bold text-[#00FF94] text-glow text-right">{countdown}</span>
             </div>
           </div>
 
@@ -384,7 +384,7 @@ export default function TripwireLanding() {
 
           <button 
             onClick={() => setIsFormOpen(true)}
-            className="w-full bg-[#00FF94] text-black font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl py-6 sm:py-7 md:py-8 lg:py-10 xl:py-12 px-6 sm:px-8 md:px-10 lg:px-12 xl:px-14 skew-x-[-10deg] hover:skew-x-0 transition-transform duration-300 shadow-[0_0_30px_rgba(0,255,148,0.3)] hover:shadow-[0_0_50px_rgba(0,255,148,0.6)] md:shadow-[0_0_40px_rgba(0,255,148,0.4)] md:hover:shadow-[0_0_70px_rgba(0,255,148,0.7)] group relative overflow-hidden"
+            className="w-full bg-[#00FF94] text-black font-display font-bold text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-4xl py-6 sm:py-7 md:py-6 lg:py-7 xl:py-7 px-6 sm:px-8 md:px-8 lg:px-10 xl:px-10 skew-x-[-10deg] hover:skew-x-0 transition-transform duration-300 shadow-[0_0_30px_rgba(0,255,148,0.3)] hover:shadow-[0_0_50px_rgba(0,255,148,0.6)] md:shadow-[0_0_40px_rgba(0,255,148,0.4)] md:hover:shadow-[0_0_70px_rgba(0,255,148,0.7)] group relative overflow-hidden"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-white/30 -translate-x-full group-hover:skew-x-[20deg] group-hover:translate-x-full transition-transform duration-700" />
             <span className="inline-block skew-x-[10deg] group-hover:skew-x-0 transition-transform">ЗАНЯТЬ МЕСТО</span>
@@ -392,12 +392,12 @@ export default function TripwireLanding() {
         </motion.section>
 
         {/* PROGRAM SECTION - RESPONSIVE */}
-        <section className="mb-8 sm:mb-12 md:mb-16 lg:mb-24 xl:mb-32">
-          <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
-            <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl mb-4 sm:mb-5 md:mb-6">
-              3 ВЗРЫВНЫХ <span className="text-gray-500 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">МОДУЛЯ</span>
+        <section className="mb-8 sm:mb-12 md:mb-14 lg:mb-18 xl:mb-20">
+          <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12 border-b border-white/10 pb-3 sm:pb-4 md:pb-5 lg:pb-6">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl 2xl:text-6xl mb-4 sm:mb-4 md:mb-5">
+              3 ВЗРЫВНЫХ <span className="text-gray-500 text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl">МОДУЛЯ</span>
             </h2>
-            <div className="font-mono text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#00FF94]">
+            <div className="font-mono text-sm sm:text-base md:text-base lg:text-lg xl:text-lg text-[#00FF94]">
               С ДОМАШНИМИ ЗАДАНИЯМИ
             </div>
           </div>
@@ -661,15 +661,15 @@ export default function TripwireLanding() {
       </main>
 
       {/* FOOTER CTA (STICKY) - RESPONSIVE */}
-      <div className="fixed bottom-0 left-0 w-full z-40 bg-black/90 backdrop-blur-lg border-t-2 md:border-t-4 border-white/10 p-5 sm:p-6 md:p-8 lg:p-10 xl:p-12 pb-6 sm:pb-8 md:pb-10 lg:pb-12">
-        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto flex gap-4 sm:gap-5 md:gap-8 lg:gap-10 items-center">
+      <div className="fixed bottom-0 left-0 w-full z-40 bg-black/90 backdrop-blur-lg border-t-2 md:border-t-3 border-white/10 p-5 sm:p-6 md:p-6 lg:p-7 xl:p-8 pb-6 sm:pb-7 md:pb-7 lg:pb-8">
+        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto flex gap-4 sm:gap-5 md:gap-6 lg:gap-7 items-center">
           <div className="flex-shrink-0">
-            <div className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 uppercase font-mono whitespace-nowrap">Стоимость</div>
-            <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white whitespace-nowrap">10$</div>
+            <div className="text-xs sm:text-sm md:text-sm lg:text-base xl:text-base text-gray-400 uppercase font-mono whitespace-nowrap">Стоимость</div>
+            <div className="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-4xl font-bold text-white whitespace-nowrap">10$</div>
           </div>
           <button 
             onClick={() => setIsFormOpen(true)}
-            className="flex-1 bg-[#00FF94] text-black font-display font-bold uppercase py-5 sm:py-6 md:py-7 lg:py-8 xl:py-10 hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,255,148,0.4)] md:shadow-[0_0_30px_rgba(0,255,148,0.5)] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl tracking-widest"
+            className="flex-1 bg-[#00FF94] text-black font-display font-bold uppercase py-5 sm:py-6 md:py-5 lg:py-6 xl:py-6 hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,255,148,0.4)] md:shadow-[0_0_30px_rgba(0,255,148,0.5)] text-lg sm:text-xl md:text-xl lg:text-2xl xl:text-2xl 2xl:text-3xl tracking-widest"
           >
             ЗАНЯТЬ МЕСТО
           </button>
