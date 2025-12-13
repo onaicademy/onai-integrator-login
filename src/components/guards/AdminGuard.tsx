@@ -29,8 +29,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return <Navigate to="/login" replace />;
   }
 
-  // Если не админ - редирект на главную
-  if (userRole !== 'admin') {
+  // Если не админ/saint - редирект на главную
+  if (userRole !== 'admin' && userRole !== 'saint') {
     return <Navigate to="/integrator" replace />;
   }
 
