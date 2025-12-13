@@ -14,36 +14,8 @@ export default function TripwireLanding() {
   const [slotsCount, setSlotsCount] = useState(71);
   const [slotsStatus, setSlotsStatus] = useState('UPDATING...');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [videoAutoplay, setVideoAutoplay] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
-
-  // Video Autoplay on Scroll (Intersection Observer)
-  useEffect(() => {
-    if (!videoRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !videoAutoplay) {
-            setVideoAutoplay(true);
-          }
-        });
-      },
-      {
-        threshold: 0.5, // Видео должно быть видно на 50%
-        rootMargin: '0px'
-      }
-    );
-
-    observer.observe(videoRef.current);
-
-    return () => {
-      if (videoRef.current) {
-        observer.unobserve(videoRef.current);
-      }
-    };
-  }, [videoAutoplay]);
 
   // Countdown Timer Logic
   useEffect(() => {
@@ -359,27 +331,15 @@ export default function TripwireLanding() {
 
           {/* Video - RESPONSIVE */}
           <div ref={videoRef} className="relative w-full max-w-full aspect-video bg-[#0A0A0A] rounded-none md:rounded-lg lg:rounded-xl border border-white/10 mb-6 sm:mb-8 md:mb-12 lg:mb-16 overflow-hidden group shadow-[0_0_30px_rgba(0,255,148,0.1)] md:shadow-[0_0_50px_rgba(0,255,148,0.15)] lg:shadow-[0_0_70px_rgba(0,255,148,0.2)]">
-            {videoAutoplay ? (
-              <iframe
-                className="w-full h-full"
-                src="https://www.youtube.com/embed/SMKu3K9BcK4?autoplay=1&mute=0&controls=1&rel=0&modestbranding=1"
-                title="Promo Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            ) : (
-              <iframe
-                className="w-full h-full"
-                src="https://www.youtube.com/embed/SMKu3K9BcK4?autoplay=0&mute=0&controls=1&rel=0&modestbranding=1"
-                title="Promo Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            )}
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/SMKu3K9BcK4?autoplay=0&mute=0&controls=1&rel=0&modestbranding=1"
+              title="Promo Video"
+              frameBorder="0"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
             <div className="absolute inset-0 pointer-events-none z-20 border border-white/5" />
             <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-2 sm:left-4 md:left-6 right-2 sm:right-4 md:right-6 flex justify-between text-[8px] sm:text-[10px] md:text-xs lg:text-sm font-mono text-[#00FF94] pointer-events-none z-20 opacity-80 mix-blend-screen">
               <span className="animate-pulse">ЗАП ● 00:00:00</span>
