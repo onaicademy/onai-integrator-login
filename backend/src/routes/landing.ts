@@ -544,14 +544,14 @@ router.post('/proftest', async (req: Request, res: Response) => {
   try {
     const { name, email, phone, source, answers, proftestAnswers, campaignSlug, utmParams, metadata } = req.body;
 
-    // Validate
-    if (!name || !email || !phone) {
-      return res.status(400).json({ error: 'Missing required fields: name, email, phone' });
+    // Validate (email теперь опциональный)
+    if (!name || !phone) {
+      return res.status(400).json({ error: 'Missing required fields: name, phone' });
     }
 
     console.log('📝 Processing proftest lead submission:', {
       name,
-      email: email.substring(0, 3) + '***',
+      email: email ? email.substring(0, 3) + '***' : 'N/A',
       phone: phone.substring(0, 3) + '***',
       source,
       campaignSlug,
@@ -583,7 +583,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
       .from('landing_leads')
       .insert({
         name,
-        email,
+        email: email || null, // Email опциональный (может быть null)
         phone,
         source: source || `proftest_${campaignSlug || 'unknown'}`,
         metadata: {
@@ -609,7 +609,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
     try {
       const amocrmResult = await createOrUpdateLead({
         name,
-        email,
+        email: email || undefined, // Email опциональный
         phone,
         utmParams,
         proftestAnswers: proftestAnswers || answers, // Используем новый формат если есть
@@ -635,7 +635,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
           await sendConversionApiEvent(
             pixelConfig,
             'Lead',
-            { email, phone, name },
+            { email: email || '', phone, name }, // Email может быть пустым
             referer,
             userAgent,
             ipAddress,
