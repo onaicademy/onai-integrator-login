@@ -1,16 +1,16 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Lazy initialization of Supabase client
-let getTripwireSupabase(): SupabaseClient | null = null;
+let tripwireSupabase: SupabaseClient | null = null;
 
 function getTripwireSupabase() {
-  if (!getTripwireSupabase()) {
-    getTripwireSupabase() = createClient(
+  if (!tripwireSupabase) {
+    tripwireSupabase = createClient(
       process.env.TRIPWIRE_SUPABASE_URL || '',
       process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
     );
   }
-  return getTripwireSupabase();
+  return tripwireSupabase;
 }
 
 export class UnifiedTrackingService {
