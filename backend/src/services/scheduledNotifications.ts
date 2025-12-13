@@ -29,7 +29,7 @@ function getTripwireSupabase() {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Constants
-const NOTIFICATION_DELAY_MS = 10 * 1000; // 10 seconds (TESTING ONLY!)
+const NOTIFICATION_DELAY_MS = 10 * 60 * 1000; // 10 minutes
 const PRODUCT_URL = process.env.PRODUCT_URL || 'https://onai.academy';
 
 // In-memory storage for scheduled notifications
