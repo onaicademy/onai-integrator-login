@@ -288,11 +288,11 @@ export default function TripwireLanding() {
         >
           <div className="absolute -top-10 -right-10 w-40 h-40 md:w-60 md:h-60 lg:w-80 lg:h-80 xl:w-[500px] xl:h-[500px] bg-[#00FF94]/20 rounded-full blur-[80px] md:blur-[120px] lg:blur-[150px]" />
 
-          <div className="border border-white/10 p-1 inline-block mb-4 sm:mb-6 md:mb-8 rounded-full">
-            <div className="bg-white/5 px-3 sm:px-4 md:px-6 lg:px-8 py-1.5 sm:py-2 md:py-3 rounded-full border border-white/5 backdrop-blur-md">
-              <p className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-gray-300 uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
+          <div className="border-2 border-white/10 p-1.5 inline-block mb-5 sm:mb-7 md:mb-9 rounded-full">
+            <div className="bg-white/5 px-4 sm:px-5 md:px-7 lg:px-9 py-2 sm:py-2.5 md:py-3.5 rounded-full border border-white/5 backdrop-blur-md">
+              <p className="font-mono text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-300 uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
                 3-й поток самого кассового обучения
-                <svg className="w-5 h-3 sm:w-6 sm:h-4 md:w-8 md:h-5 lg:w-10 lg:h-6 text-[#00FF94] animate-pulse" viewBox="0 0 32 20" fill="none">
+                <svg className="w-6 h-4 sm:w-7 sm:h-5 md:w-9 md:h-6 lg:w-11 lg:h-7 text-[#00FF94] animate-pulse" viewBox="0 0 32 20" fill="none">
                   <rect x="3" y="3" width="26" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                   <circle cx="16" cy="10" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M16 5.5V14.5 M18 8H15.5C14.7 8 14 8.5 14 9.25C14 10 14.7 10.5 15.5 10.5H16.5C17.3 10.5 18 11 18 11.75C18 12.5 17.3 13 16.5 13H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -301,7 +301,7 @@ export default function TripwireLanding() {
             </div>
           </div>
 
-          <h1 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl leading-[1.1] mb-4 sm:mb-6 md:mb-8 lg:mb-12 tracking-tight">
+          <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] leading-[1.1] mb-5 sm:mb-7 md:mb-9 lg:mb-14 tracking-tight">
             ИНТЕГРАТОРЫ<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.3)' }}>2000$/МЕС</span><br />
             <span className="text-[#00FF94] text-glow">НА CHATGPT</span>
@@ -309,23 +309,23 @@ export default function TripwireLanding() {
 
           {/* Цена и Таймер - RESPONSIVE */}
           <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10 rounded-xl md:rounded-2xl lg:rounded-3xl border border-white/10 bg-[#0A0A0A]/50">
+            <div className="flex items-center justify-between p-5 sm:p-6 md:p-8 lg:p-10 xl:p-12 rounded-xl md:rounded-2xl lg:rounded-3xl border-2 border-white/10 bg-[#0A0A0A]/50">
               <div>
-                <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-400 font-mono uppercase mb-1 md:mb-2">Стоимость входа</div>
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-display font-bold text-white">
-                  10$ <span className="text-gray-500 text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-normal">(5к тенге)</span>
+                <div className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 font-mono uppercase mb-2 md:mb-3">Стоимость входа</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-white">
+                  10$ <span className="text-gray-500 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-normal">(5к тенге)</span>
                 </div>
               </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 rounded-full border border-[#00FF94]/30 flex items-center justify-center text-[#00FF94]">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-full border-2 border-[#00FF94]/30 flex items-center justify-center text-[#00FF94]">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
             </div>
 
-            <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 p-2 sm:p-3 md:p-4 lg:p-6 rounded-xl md:rounded-2xl border border-[#00FF94]/20 bg-[#0A0A0A]/80 flex justify-between items-center gap-2 sm:gap-4">
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-gray-400 uppercase tracking-widest flex-shrink-0">ДО СТАРТА ПОТОКА:</span>
-              <span className="font-display text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-[#00FF94] text-glow text-right">{countdown}</span>
+            <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 p-4 sm:p-5 md:p-6 lg:p-8 xl:p-10 rounded-xl md:rounded-2xl border-2 md:border-4 border-[#00FF94]/30 bg-[#0A0A0A]/80 flex justify-between items-center gap-3 sm:gap-4 md:gap-6">
+              <span className="font-mono text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 uppercase tracking-widest flex-shrink-0">ДО СТАРТА ПОТОКА:</span>
+              <span className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-[#00FF94] text-glow text-right">{countdown}</span>
             </div>
           </div>
 
@@ -349,7 +349,7 @@ export default function TripwireLanding() {
 
           <button 
             onClick={() => setIsFormOpen(true)}
-            className="w-full bg-[#00FF94] text-black font-display font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl py-4 sm:py-5 md:py-6 lg:py-8 xl:py-10 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 skew-x-[-10deg] hover:skew-x-0 transition-transform duration-300 shadow-[0_0_30px_rgba(0,255,148,0.3)] hover:shadow-[0_0_50px_rgba(0,255,148,0.6)] md:shadow-[0_0_40px_rgba(0,255,148,0.4)] md:hover:shadow-[0_0_70px_rgba(0,255,148,0.7)] group relative overflow-hidden"
+            className="w-full bg-[#00FF94] text-black font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl py-6 sm:py-7 md:py-8 lg:py-10 xl:py-12 px-6 sm:px-8 md:px-10 lg:px-12 xl:px-14 skew-x-[-10deg] hover:skew-x-0 transition-transform duration-300 shadow-[0_0_30px_rgba(0,255,148,0.3)] hover:shadow-[0_0_50px_rgba(0,255,148,0.6)] md:shadow-[0_0_40px_rgba(0,255,148,0.4)] md:hover:shadow-[0_0_70px_rgba(0,255,148,0.7)] group relative overflow-hidden"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-white/30 -translate-x-full group-hover:skew-x-[20deg] group-hover:translate-x-full transition-transform duration-700" />
             <span className="inline-block skew-x-[10deg] group-hover:skew-x-0 transition-transform">ЗАНЯТЬ МЕСТО</span>
@@ -359,23 +359,23 @@ export default function TripwireLanding() {
         {/* PROGRAM SECTION - RESPONSIVE */}
         <section className="mb-8 sm:mb-12 md:mb-16 lg:mb-24 xl:mb-32">
           <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
-            <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl mb-3 sm:mb-4 md:mb-5">
-              <span className="text-gray-500 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">3 ВЗРЫВНЫХ</span><br />
+            <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl mb-4 sm:mb-5 md:mb-6">
+              <span className="text-gray-500 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">3 ВЗРЫВНЫХ</span><br />
               МОДУЛЯ
             </h2>
-            <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-[#00FF94]">
+            <div className="font-mono text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#00FF94]">
               С ДОМАШНИМИ ЗАДАНИЯМИ
             </div>
           </div>
 
           <div className="space-y-4 sm:space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8 xl:gap-10 md:items-stretch">
             {/* Day 1 - RESPONSIVE */}
-            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
-              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden flex-1 flex flex-col">
+            <div className="glass-panel p-2 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
+              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 relative overflow-hidden flex-1 flex flex-col">
                 <div className="absolute top-0 right-0 p-2 sm:p-4 md:p-6 lg:p-8 font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white/5 group-hover:text-[#00FF94]/10 transition-colors">01</div>
                 <div className="relative z-10">
-                  <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-2 md:mb-3 lg:mb-4 text-white">Вводный модуль</h3>
-                  <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 leading-relaxed">Определим какое направление в ИИ твое.</p>
+                  <h3 className="font-bold text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl mb-3 md:mb-4 lg:mb-5 text-white">Вводный модуль</h3>
+                  <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-400 leading-relaxed">Определим какое направление в ИИ твое.</p>
                   
                   <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 h-6 sm:h-8 md:h-10 lg:h-12 w-full rounded-lg border border-dashed border-white/20 flex items-center justify-center bg-black/40">
                     <div className="font-mono text-[8px] sm:text-[10px] md:text-xs lg:text-sm xl:text-base text-[#00FF94] animate-pulse">АНАЛИЗ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ...</div>
@@ -397,13 +397,13 @@ export default function TripwireLanding() {
             </div>
 
             {/* Day 2 - RESPONSIVE */}
-            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
-              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden flex-1 flex flex-col">
+            <div className="glass-panel p-2 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
+              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 relative overflow-hidden flex-1 flex flex-col">
                 <div className="absolute top-0 right-0 p-2 sm:p-4 md:p-6 lg:p-8 font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white/5 group-hover:text-[#00FF94]/10 transition-colors">02</div>
                 <div className="relative z-10">
-                  <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-1 md:mb-2 text-white">Практика: создание GPT-бота</h3>
-                  <div className="inline-block border border-[#00FF94] text-[#00FF94] px-2 md:px-3 py-0.5 md:py-1 text-[8px] sm:text-[10px] md:text-xs lg:text-sm font-mono mb-2 sm:mb-3 md:mb-4">стоимостью от 500$</div>
-                  <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 mb-3 sm:mb-4 md:mb-6">Instagram, WhatsApp интеграции.</p>
+                  <h3 className="font-bold text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl mb-2 md:mb-3 text-white">Практика: создание GPT-бота</h3>
+                  <div className="inline-block border border-[#00FF94] text-[#00FF94] px-3 md:px-4 py-1 md:py-1.5 text-xs sm:text-sm md:text-base lg:text-lg font-mono mb-3 sm:mb-4 md:mb-5">стоимостью от 500$</div>
+                  <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-400 mb-4 sm:mb-5 md:mb-7">Instagram, WhatsApp интеграции.</p>
                   
                   <div className="flex gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-6">
                     <div className="flex-1 bg-[#1a1a1a] rounded-lg p-2 md:p-3 lg:p-4 border border-white/5 flex items-center gap-2 md:gap-3">
@@ -438,19 +438,19 @@ export default function TripwireLanding() {
             </div>
 
             {/* Day 3 - RESPONSIVE */}
-            <div className="glass-panel p-1 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
-              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative overflow-hidden flex-1 flex flex-col">
+            <div className="glass-panel p-2 rounded-2xl md:rounded-3xl group transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 lg:hover:-translate-y-4 h-full flex flex-col">
+              <div className="bg-[#0A0A0A]/50 rounded-xl md:rounded-2xl p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 relative overflow-hidden flex-1 flex flex-col">
                 <div className="absolute top-0 right-0 p-2 sm:p-4 md:p-6 lg:p-8 font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white/5 group-hover:text-[#00FF94]/10 transition-colors">03</div>
                 <div className="relative z-10">
-                  <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-2 md:mb-3 lg:mb-4 text-white">Практика: создание вирусных Reels</h3>
-                  <p className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-[#00FF94] to-white mb-2 md:mb-3 flex items-center gap-2 md:gap-3 whitespace-nowrap">
+                  <h3 className="font-bold text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl mb-3 md:mb-4 lg:mb-5 text-white">Практика: создание вирусных Reels</h3>
+                  <p className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-[#00FF94] to-white mb-3 md:mb-4 flex items-center gap-2 md:gap-3 whitespace-nowrap">
                     100 000
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-[#00FF94]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-[#00FF94]">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </p>
-                  <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-400 uppercase tracking-widest mb-3 sm:mb-4 md:mb-6">создание сценария, видео, монтаж</p>
+                  <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-400 uppercase tracking-widest mb-4 sm:mb-5 md:mb-7">создание сценария, видео, монтаж</p>
                   
                   <div className="relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
