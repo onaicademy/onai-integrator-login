@@ -81,7 +81,7 @@ if pm2 describe onai-backend &>/dev/null; then
 fi
 
 # Start with ecosystem config (correct cwd)
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 echo -e "${GREEN}✅ PM2 configured and started${NC}"
 echo ""
