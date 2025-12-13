@@ -57,45 +57,71 @@ export default function TripwireLanding() {
     return () => clearInterval(interval);
   }, []);
 
-  // Slots Simulation Logic
+  // Slots Simulation Logic (⚡ FIXED MEMORY LEAK)
   useEffect(() => {
     let currentSlots = 71;
     const maxSlots = 99;
     const totalDuration = 5 * 60 * 1000;
     const steps = maxSlots - currentSlots;
     const baseInterval = totalDuration / steps;
+    
+    // 🔧 FIX: Track all timeouts for proper cleanup
+    const timeouts: NodeJS.Timeout[] = [];
+    let isMounted = true;
 
     const updateSlots = () => {
+      if (!isMounted || currentSlots >= maxSlots) return;
+
+      currentSlots++;
+      setSlotsCount(currentSlots);
+      
+      setSlotsStatus("NEW PURCHASE DETECTED...");
+      const statusTimeout = setTimeout(() => {
+        if (isMounted) setSlotsStatus("UPDATING...");
+      }, 2000);
+      timeouts.push(statusTimeout);
+
+      const randomVariation = (Math.random() - 0.5) * 10000;
+      const nextInterval = Math.max(2000, baseInterval + randomVariation);
+
       if (currentSlots < maxSlots) {
-        currentSlots++;
-        setSlotsCount(currentSlots);
-        
-        setSlotsStatus("NEW PURCHASE DETECTED...");
-        setTimeout(() => {
-          setSlotsStatus("UPDATING...");
-        }, 2000);
-
-        const randomVariation = (Math.random() - 0.5) * 10000;
-        const nextInterval = Math.max(2000, baseInterval + randomVariation);
-
-        if (currentSlots < maxSlots) {
-          setTimeout(updateSlots, nextInterval);
-        } else {
-          setSlotsStatus("REGISTRATION CLOSING SOON");
-        }
+        const updateTimeout = setTimeout(updateSlots, nextInterval);
+        timeouts.push(updateTimeout);
+      } else {
+        if (isMounted) setSlotsStatus("REGISTRATION CLOSING SOON");
       }
     };
 
-    const timeout = setTimeout(updateSlots, 5000);
-    return () => clearTimeout(timeout);
+    const initialTimeout = setTimeout(updateSlots, 5000);
+    timeouts.push(initialTimeout);
+
+    // 🔧 FIX: Clear ALL timeouts on unmount
+    return () => {
+      isMounted = false;
+      timeouts.forEach(t => clearTimeout(t));
+    };
   }, []);
 
-  // Canvas Animation
+  // Canvas Animation (⚡ OPTIMIZED)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    // 🚀 OPTIMIZATION: Disable on mobile devices
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    // 🚀 OPTIMIZATION: Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let width = canvas.width = window.innerWidth;
@@ -135,7 +161,8 @@ export default function TripwireLanding() {
 
     function initParticles() {
       particles = [];
-      const particleCount = Math.min(Math.floor(width * height / 15000), 100);
+      // 🚀 OPTIMIZATION: Reduce particle count (was 100, now 50 max)
+      const particleCount = Math.min(Math.floor(width * height / 30000), 50);
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
@@ -148,7 +175,8 @@ export default function TripwireLanding() {
         particles[i].update();
         particles[i].draw();
 
-        for (let j = i; j < particles.length; j++) {
+        // 🚀 OPTIMIZATION: Skip some connections for performance
+        for (let j = i + 1; j < Math.min(i + 5, particles.length); j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -166,10 +194,15 @@ export default function TripwireLanding() {
       animationId = requestAnimationFrame(animate);
     }
 
+    // 🚀 OPTIMIZATION: Debounce resize handler
+    let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      initParticles();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      }, 250);
     };
 
     window.addEventListener('resize', handleResize);
@@ -179,6 +212,7 @@ export default function TripwireLanding() {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
+      clearTimeout(resizeTimeout);
     };
   }, []);
 
@@ -385,6 +419,7 @@ export default function TripwireLanding() {
                     <img 
                       src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/Module%203.gif" 
                       alt="Intro Module Preview" 
+                      loading="lazy"
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-lg z-20" />
@@ -430,6 +465,7 @@ export default function TripwireLanding() {
                     <img 
                       src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/2%20module.gif" 
                       alt="GPT Bot Preview" 
+                      loading="lazy"
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-lg z-20" />
@@ -460,6 +496,7 @@ export default function TripwireLanding() {
                     <img 
                       src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/1%20module.gif" 
                       alt="Viral Reels Preview" 
+                      loading="lazy"
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-lg z-20" />

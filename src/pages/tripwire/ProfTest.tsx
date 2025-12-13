@@ -99,12 +99,26 @@ export default function ProfTest() {
     return () => clearInterval(interval);
   }, []);
 
-  // Background Canvas Animation
+  // Background Canvas Animation (⚡ OPTIMIZED)
   useEffect(() => {
     const canvas = bgCanvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    // 🚀 OPTIMIZATION: Disable on mobile devices
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    // 🚀 OPTIMIZATION: Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let width = canvas.width = window.innerWidth;
@@ -140,7 +154,8 @@ export default function ProfTest() {
 
     function initParticles() {
       particles = [];
-      const count = Math.min(Math.floor(width * height / 20000), 40);
+      // 🚀 OPTIMIZATION: Reduce particle count (was 40, now 25 max)
+      const count = Math.min(Math.floor(width * height / 40000), 25);
       for (let i = 0; i < count; i++) {
         particles.push(new Particle());
       }
@@ -153,7 +168,8 @@ export default function ProfTest() {
         particles[i].update();
         particles[i].draw();
         
-        for (let j = i; j < particles.length; j++) {
+        // 🚀 OPTIMIZATION: Skip some connections for performance
+        for (let j = i + 1; j < Math.min(i + 4, particles.length); j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -172,10 +188,15 @@ export default function ProfTest() {
       animationId = requestAnimationFrame(animate);
     }
 
+    // 🚀 OPTIMIZATION: Debounce resize handler
+    let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      initParticles();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      }, 250);
     };
 
     window.addEventListener('resize', handleResize);
@@ -185,17 +206,25 @@ export default function ProfTest() {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
+      clearTimeout(resizeTimeout);
     };
   }, []);
 
-  // Visual Canvas Animation (Neural Geometry)
+  // Visual Canvas Animation (Neural Geometry) (⚡ OPTIMIZED)
   useEffect(() => {
     if (showResults) return;
 
     const canvas = visualCanvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    // 🚀 OPTIMIZATION: Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     const container = canvas.parentElement;
@@ -229,7 +258,8 @@ export default function ProfTest() {
 
     function initNodes() {
       nodes = [];
-      for (let i = 0; i < 40; i++) {
+      // 🚀 OPTIMIZATION: Reduce node count (was 40, now 25)
+      for (let i = 0; i < 25; i++) {
         nodes.push(new Node());
       }
     }
@@ -291,10 +321,15 @@ export default function ProfTest() {
       animationId = requestAnimationFrame(animate);
     }
 
+    // 🚀 OPTIMIZATION: Debounce resize handler
+    let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
-      width = canvas.width = container.offsetWidth;
-      height = canvas.height = container.offsetHeight;
-      initNodes();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        width = canvas.width = container.offsetWidth;
+        height = canvas.height = container.offsetHeight;
+        initNodes();
+      }, 250);
     };
 
     window.addEventListener('resize', handleResize);
@@ -304,6 +339,7 @@ export default function ProfTest() {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
+      clearTimeout(resizeTimeout);
     };
   }, [showResults]);
 
