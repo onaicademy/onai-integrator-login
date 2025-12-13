@@ -2,6 +2,25 @@ import { AMOCRM_CONFIG, getStageByPaymentMethod } from '../config/amocrm-config.
 
 const AMOCRM_DOMAIN = process.env.AMOCRM_DOMAIN || 'onaiagencykz';
 const AMOCRM_TOKEN = process.env.AMOCRM_ACCESS_TOKEN;
+const AMOCRM_TIMEOUT = 30000; // 30 секунд
+
+// Helper: fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AMOCRM_TIMEOUT);
+  
+  try {
+    const response = await fetchWithTimeout(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
 
 interface ContactData {
   name: string;
@@ -48,7 +67,7 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
     // Build search query
     const searchQuery = email || phone || '';
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?query=${encodeURIComponent(searchQuery)}`,
       {
         headers: {
@@ -104,7 +123,7 @@ async function createContact(data: ContactData): Promise<number | null> {
   }
 
   try {
-    const response = await fetch(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/contacts`, {
+    const response = await fetchWithTimeout(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/contacts`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -135,7 +154,7 @@ async function addLeadNote(leadId: number, note: string): Promise<void> {
   if (!AMOCRM_TOKEN) return;
 
   try {
-    await fetch(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads/${leadId}/notes`, {
+    await fetchWithTimeout(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads/${leadId}/notes`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -211,7 +230,7 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
       updatePayload.custom_fields_values = customFieldsForUpdate;
     }
 
-    await fetch(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads/${existingLead.id}`, {
+    await fetchWithTimeout(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads/${existingLead.id}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -310,7 +329,7 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
     };
   }
 
-  const response = await fetch(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads`, {
+  const response = await fetchWithTimeout(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${AMOCRM_TOKEN}`,
