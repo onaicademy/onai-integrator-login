@@ -10,9 +10,9 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}) {
   const timeoutId = setTimeout(() => controller.abort(), AMOCRM_TIMEOUT);
   
   try {
-    const response = await fetchWithTimeout(url, {
+    const response = await fetch(url, {
       ...options,
-      signal: controller.signal,
+      signal: options.signal || controller.signal,
     });
     clearTimeout(timeoutId);
     return response;
