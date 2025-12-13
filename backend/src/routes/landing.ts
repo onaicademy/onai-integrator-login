@@ -571,14 +571,14 @@ router.post('/proftest', async (req: Request, res: Response) => {
   try {
     const { name, email, phone, source, answers, proftestAnswers, campaignSlug, utmParams, metadata } = req.body;
 
-    // Validate (email теперь опциональный)
-    if (!name || !phone) {
-      return res.status(400).json({ error: 'Missing required fields: name, phone' });
+    // Validate (все поля обязательны)
+    if (!name || !email || !phone) {
+      return res.status(400).json({ error: 'Missing required fields: name, email, phone' });
     }
 
     console.log('📝 Processing proftest lead submission:', {
       name,
-      email: email ? email.substring(0, 3) + '***' : 'N/A',
+      email: email.substring(0, 3) + '***',
       phone: phone.substring(0, 3) + '***',
       source,
       campaignSlug,
@@ -610,7 +610,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
       .from('landing_leads')
       .insert({
         name,
-        email: email || null, // Email опциональный (может быть null)
+        email, // Email обязательный
         phone,
         source: source || `proftest_${campaignSlug || 'unknown'}`,
         metadata: {
@@ -646,7 +646,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
         const amocrmResult = await retryWithBackoff(
           () => createOrUpdateLead({
             name,
-            email: email || undefined,
+            email, // Email обязательный
             phone,
             utmParams,
             proftestAnswers: proftestAnswers || answers,
@@ -666,7 +666,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
         if (campaignSlug && PIXEL_CONFIGS[campaignSlug]) {
           const pixelConfig = PIXEL_CONFIGS[campaignSlug];
           const userAgent = req.headers['user-agent'] || undefined;
-          const ipAddress = 
+          const ipAddress =
             (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
             (req.headers['x-real-ip'] as string) ||
             req.socket.remoteAddress ||
@@ -679,7 +679,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
             () => sendConversionApiEvent(
               pixelConfig,
               'Lead',
-              { email: email || '', phone, name },
+              { email, phone, name }, // Email обязательный
               referer,
               userAgent,
               ipAddress,
