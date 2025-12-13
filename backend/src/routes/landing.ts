@@ -527,6 +527,8 @@ router.post('/proftest', async (req: Request, res: Response) => {
     });
 
     // 1. Проверяем - нет ли уже заявки от этого пользователя (защита от повторного прохождения)
+    // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТИРОВАНИЯ
+    /*
     const { data: existingLead } = await landingSupabase
       .from('landing_leads')
       .select('id, email, phone, created_at')
@@ -542,6 +544,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
         alreadySubmitted: true 
       });
     }
+    */
 
     // 2. Save to Supabase (landing DB)
     const { data: supabaseLead, error: supabaseError } = await landingSupabase
