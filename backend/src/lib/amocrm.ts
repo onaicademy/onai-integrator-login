@@ -104,7 +104,7 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
 
     if (!leadsResponse.ok) return null;
 
-    const leadsData: any = await leadsData.json();
+    const leadsData: any = await leadsResponse.json();
     const leads = leadsData._embedded?.leads || [];
 
     if (leads.length === 0) {
