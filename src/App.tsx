@@ -46,6 +46,8 @@ const Students = lazy(() => import("./pages/admin/Students"));
 const Costs = lazy(() => import("./pages/admin/Costs"));
 const Transcriptions = lazy(() => import("./pages/admin/TripwireTranscriptions"));
 const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatformTranscriptions"));
+const LeadTracking = lazy(() => import("./pages/admin/LeadTracking"));
+const UnifiedDashboard = lazy(() => import("./pages/admin/UnifiedDashboard"));
 
 // 🚀 ОПТИМИЗАЦИЯ: Lazy loading Tripwire страниц
 const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
@@ -148,6 +150,8 @@ const AppRoutes = () => {
       <Route path="/admin/students" element={<AdminGuard><Students /></AdminGuard>} />
       <Route path="/admin/transcriptions" element={<AdminGuard><MainPlatformTranscriptions /></AdminGuard>} />
       <Route path="/admin/costs" element={<AdminGuard><Costs /></AdminGuard>} />
+      <Route path="/target" element={<AdminGuard><UnifiedDashboard /></AdminGuard>} />
+      <Route path="/admin/leads" element={<AdminGuard><LeadTracking /></AdminGuard>} />
       
       {/* ❌ OLD ADMIN ROUTES (Keeping for backwards compatibility) */}
       <Route path="/admin/old" element={
