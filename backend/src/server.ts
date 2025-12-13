@@ -212,8 +212,15 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Разрешаем custom FRONTEND_URL из env
-    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+    // ✅ PRODUCTION: Whitelist разрешенных доменов
+    const allowedOrigins = [
+      'https://onai.academy',
+      'https://www.onai.academy',
+      'https://onai-integrator-login.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
