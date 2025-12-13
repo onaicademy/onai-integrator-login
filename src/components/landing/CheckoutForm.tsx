@@ -205,7 +205,8 @@ export function CheckoutForm({ isOpen, onClose, source = 'twland' }: CheckoutFor
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/landing/submit', {
+      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      const response = await fetch(`${apiBaseUrl}/api/landing/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

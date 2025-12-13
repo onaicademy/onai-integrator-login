@@ -373,8 +373,10 @@ export default function ProfTest() {
       });
 
       // 2. Send to backend for Conversion API tracking
+      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      
       if (pixelConfig) {
-        const conversionResponse = await fetch('http://localhost:3000/api/track-lead', {
+        const conversionResponse = await fetch(`${apiBaseUrl}/api/track-lead`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -403,7 +405,7 @@ export default function ProfTest() {
       }));
 
       // 5. Submit to landing API (save to Supabase + AmoCRM with deduplication)
-      const response = await fetch('http://localhost:3000/api/landing/proftest', {
+      const response = await fetch(`${apiBaseUrl}/api/landing/proftest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
