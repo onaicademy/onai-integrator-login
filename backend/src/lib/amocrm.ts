@@ -177,16 +177,47 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
   if (existingLead) {
     console.log(`🔄 Updating existing lead ${existingLead.id} → ${getStageName(targetStage)}`);
 
-    // Update lead stage
+    // Build UTM custom fields for update
+    const customFieldsForUpdate: any[] = [];
+    if (data.utmParams && Object.keys(data.utmParams).length > 0) {
+      const utmFieldMap: Record<string, keyof typeof AMOCRM_CONFIG.CUSTOM_FIELDS> = {
+        utm_source: 'UTM_SOURCE',
+        utm_medium: 'UTM_MEDIUM',
+        utm_campaign: 'UTM_CAMPAIGN',
+        utm_content: 'UTM_CONTENT',
+        utm_term: 'UTM_TERM',
+        fbclid: 'FBCLID',
+      };
+
+      Object.entries(data.utmParams).forEach(([key, value]) => {
+        const fieldKey = utmFieldMap[key as keyof UTMParams];
+        const fieldId = fieldKey ? AMOCRM_CONFIG.CUSTOM_FIELDS[fieldKey] : 0;
+
+        if (fieldId && value) {
+          customFieldsForUpdate.push({
+            field_id: fieldId,
+            values: [{ value }],
+          });
+        }
+      });
+    }
+
+    // Update lead stage and UTM fields
+    const updatePayload: any = {
+      status_id: targetStage,
+    };
+
+    if (customFieldsForUpdate.length > 0) {
+      updatePayload.custom_fields_values = customFieldsForUpdate;
+    }
+
     await fetch(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads/${existingLead.id}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${AMOCRM_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        status_id: targetStage,
-      }),
+      body: JSON.stringify(updatePayload),
     });
 
     // Add proftest answers as note
