@@ -23,7 +23,7 @@ export class UnifiedTrackingService {
    */
   async getAllLeads() {
     const { data, error } = await getLandingSupabase()
-      .from('unified_lead_tracking')
+      .from('landing_leads')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -34,16 +34,23 @@ export class UnifiedTrackingService {
       email_sent: data?.filter(l => l.email_sent).length || 0,
       email_opened: data?.filter(l => l.email_opened).length || 0,
       email_clicked: data?.filter(l => l.email_clicked).length || 0,
-      email_failed: data?.filter(l => l.email_failed).length || 0,
+      email_failed: data?.filter(l => l.email_error).length || 0,
       sms_sent: data?.filter(l => l.sms_sent).length || 0,
       sms_delivered: data?.filter(l => l.sms_delivered).length || 0,
       sms_clicked: data?.filter(l => l.sms_clicked).length || 0,
-      sms_failed: data?.filter(l => l.sms_failed).length || 0,
+      sms_failed: data?.filter(l => l.sms_error).length || 0,
       landing_visited: data?.filter(l => l.landing_visited).length || 0,
-      proftest_leads: data?.filter(l => l.source === 'proftest').length || 0,
+      proftest_leads: data?.filter(l => l.source && l.source.includes('proftest')).length || 0,
     };
 
-    return { stats, leads: data || [] };
+    // Map landing_leads fields to unified format for frontend compatibility
+    const mappedLeads = (data || []).map(lead => ({
+      ...lead,
+      full_name: lead.name, // Map name → full_name
+      source_lead_id: lead.id,
+    }));
+
+    return { stats, leads: mappedLeads };
   }
 
   /**
@@ -51,13 +58,17 @@ export class UnifiedTrackingService {
    */
   async getLeadByEmail(email: string) {
     const { data, error } = await getLandingSupabase()
-      .from('unified_lead_tracking')
+      .from('landing_leads')
       .select('*')
       .eq('email', email)
       .single();
 
     if (error) return null;
-    return data;
+    return {
+      ...data,
+      full_name: data.name,
+      source_lead_id: data.id,
+    };
   }
 
   /**
@@ -65,13 +76,17 @@ export class UnifiedTrackingService {
    */
   async getLeadBySourceId(sourceLeadId: string) {
     const { data, error } = await getLandingSupabase()
-      .from('unified_lead_tracking')
+      .from('landing_leads')
       .select('*')
-      .eq('source_lead_id', sourceLeadId)
+      .eq('id', sourceLeadId)
       .single();
 
     if (error) return null;
-    return data;
+    return {
+      ...data,
+      full_name: data.name,
+      source_lead_id: data.id,
+    };
   }
 
   /**
@@ -82,7 +97,7 @@ export class UnifiedTrackingService {
     if (!lead) return null;
 
     const { error } = await getLandingSupabase()
-      .from('unified_lead_tracking')
+      .from('landing_leads')
       .update({
         landing_visited: true,
         landing_visit_at: new Date().toISOString(),
@@ -116,7 +131,7 @@ export class UnifiedTrackingService {
     }
 
     const { error } = await getLandingSupabase()
-      .from('unified_lead_tracking')
+      .from('landing_leads')
       .update(updateData)
       .eq('id', leadId);
 
@@ -145,7 +160,7 @@ export class UnifiedTrackingService {
     }
 
     const { error } = await getLandingSupabase()
-      .from('unified_lead_tracking')
+      .from('landing_leads')
       .update(updateData)
       .eq('id', leadId);
 
