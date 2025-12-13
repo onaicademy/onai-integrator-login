@@ -401,7 +401,7 @@ export default function TripwireLanding() {
           <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
             <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl mb-3 sm:mb-4 md:mb-5">
               <span className="text-gray-500 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">3 ВЗРЫВНЫХ</span><br />
-              МОДУЛЯ 💥
+              МОДУЛЯ
             </h2>
             <div className="font-mono text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-[#00FF94]">
               С ДОМАШНИМИ ЗАДАНИЯМИ
