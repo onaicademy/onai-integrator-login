@@ -5,7 +5,7 @@ import { sendProftestResultSMS } from './mobizon.js';
 // Initialize Supabase clients
 const landingSupabase = createClient(
   process.env.LANDING_SUPABASE_URL || '',
-  process.env.LANDING_SUPABASE_SERVICE_ROLE_KEY || ''
+  process.env.LANDING_SUPABASE_SERVICE_KEY || ''
 );
 
 const tripwireSupabase = createClient(
