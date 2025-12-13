@@ -280,30 +280,20 @@ export default function TripwireLanding() {
       {/* Navigation - RESPONSIVE */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
         <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-12 sm:h-14 md:h-16 lg:h-18 flex items-center justify-between">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ 
-              duration: 0.8, 
+            transition={{
+              duration: 0.8,
               ease: "easeOut",
               delay: 0.2
             }}
             className="flex items-center"
           >
-            <motion.div
-              initial={{ rotate: 0 }}
-              animate={{ rotate: [0, 180, 360] }}
-              transition={{ 
-                duration: 1.2, 
-                ease: "easeInOut",
-                delay: 0.3
-              }}
-            >
-              <Logo 
-                variant="full" 
-                className="h-6 sm:h-8 md:h-9 lg:h-10 xl:h-11 w-auto text-white transition-colors hover:text-[#00FF94]" 
-              />
-            </motion.div>
+            <Logo
+              variant="full"
+              className="h-6 sm:h-8 md:h-9 lg:h-10 xl:h-11 w-auto text-white transition-colors hover:text-[#00FF94]"
+            />
           </motion.div>
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
