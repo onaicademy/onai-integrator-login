@@ -59,16 +59,17 @@ function getStageName(stageId: number): string {
 
 /**
  * Search for existing lead by email OR phone
+ * Uses contacts API for more reliable deduplication
  */
 async function findExistingLead(email?: string, phone?: string): Promise<ExistingLead | null> {
   if (!AMOCRM_TOKEN || (!email && !phone)) return null;
 
   try {
-    // Build search query
+    // Step 1: Search for contact by email OR phone
     const searchQuery = email || phone || '';
-
-    const response = await fetchWithTimeout(
-      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?query=${encodeURIComponent(searchQuery)}`,
+    
+    const contactsResponse = await fetchWithTimeout(
+      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/contacts?query=${encodeURIComponent(searchQuery)}`,
       {
         headers: {
           Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -77,16 +78,43 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       }
     );
 
-    if (!response.ok) return null;
+    if (!contactsResponse.ok) return null;
 
-    const data: any = await response.json();
-    const leads = data._embedded?.leads || [];
+    const contactsData: any = await contactsResponse.json();
+    const contacts = contactsData._embedded?.contacts || [];
 
-    if (leads.length === 0) return null;
+    if (contacts.length === 0) {
+      console.log(`🔍 No existing contact found for: ${searchQuery}`);
+      return null;
+    }
 
-    // Return first match (most recent)
+    // Step 2: Get first contact's leads
+    const contactId = contacts[0].id;
+    console.log(`👤 Found contact: ID ${contactId}`);
+
+    const leadsResponse = await fetchWithTimeout(
+      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[contacts][]=${contactId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${AMOCRM_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!leadsResponse.ok) return null;
+
+    const leadsData: any = await leadsResponse.json();
+    const leads = leadsData._embedded?.leads || [];
+
+    if (leads.length === 0) {
+      console.log(`🔍 No leads found for contact ${contactId}`);
+      return null;
+    }
+
+    // Return the most recent lead (first in array)
     const lead = leads[0];
-    console.log(`✅ Found existing lead: ID ${lead.id}, Stage: ${getStageName(lead.status_id)}`);
+    console.log(`✅ Found existing lead: ID ${lead.id}, Stage: ${getStageName(lead.status_id)}, Contact: ${contactId}`);
 
     return {
       id: lead.id,
