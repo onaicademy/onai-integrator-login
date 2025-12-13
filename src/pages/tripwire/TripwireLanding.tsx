@@ -567,15 +567,15 @@ export default function TripwireLanding() {
           
           <div className="overflow-x-auto pb-6 sm:pb-8 md:pb-12 -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 scrollbar-hide flex gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {[
-              { name: 'Жамбыл', role: 'Художник', income: '+3900$', text: '"За 2 месяца продал 6 GPT ботов со средним чеком 650$"', imageUrl: null },
+              { name: 'Жамбыл', role: 'Художник', income: '+3900$', text: '"За 2 месяца продал 6 GPT ботов со средним чеком 650$"', imageUrl: 'https://static.tildacdn.com/tild6236-6139-4030-a135-613562666461/noroot.png' },
               { name: 'Алишер', role: 'Безработный', income: '+4800$', text: '"Выиграл тендер на создание бота, продал еще двум частным компаниям"', imageUrl: 'https://static.tildacdn.com/tild3935-3564-4835-a234-616363376638/_1.png' },
               { name: 'Раимжан', role: 'Студент', income: '+9600$', text: '"6 месяцев активно продавал ботов параллельно с учебой"', imageUrl: 'https://static.tildacdn.com/tild3161-6266-4936-b237-643266626631/_5.png' },
               { name: 'Жанара', role: 'Таргетолог', income: '+700$', text: '"Нашла клиента среди текущих проектов"', imageUrl: 'https://static.tildacdn.com/tild6331-3033-4434-b439-346335643038/_2.png' },
-              { name: 'Еркежан', role: 'Мама в декрете', income: '+900$', text: '"Нашла клиента среди рассылок"', imageUrl: null },
+              { name: 'Еркежан', role: 'Мама в декрете', income: '+900$', text: '"Нашла клиента среди рассылок"', imageUrl: 'https://static.tildacdn.com/tild3738-3439-4232-b635-326466653434/image_2025-05-28_17-.png' },
               { name: 'Никита', role: 'Наемный сотрудник', income: '+800$', text: '"Нашел клиента среди рассылок"', imageUrl: 'https://static.tildacdn.com/tild6565-6431-4830-b830-326362383162/_10.png' },
               { name: 'Артур', role: 'Таргетолог', income: '+350$', text: '"Нашел клиента в таргете, ежемесячно получает с него +250$ за обслуживание"', imageUrl: 'https://static.tildacdn.com/tild6637-3435-4936-a337-663766346536/_3.png' },
               { name: 'Александр', role: 'Наемный сотрудник', income: '+800$', text: '"Нашел клиента среди рассылок"', imageUrl: 'https://static.tildacdn.com/tild3837-3638-4362-a639-343534336233/image.png' },
-              { name: 'Нургуль', role: 'Госслужащая', income: '+650$', text: '"Нашла клиента в таргете"', imageUrl: null },
+              { name: 'Нургуль', role: 'Госслужащая', income: '+650$', text: '"Нашла клиента в таргете"', imageUrl: 'https://static.tildacdn.com/tild3966-3062-4233-b366-643136356266/noroot.png' },
               { name: 'Одиссей', role: 'Фрилансер', income: '+1900$', text: '"Нашел клиента среди текущих проектов, купил со второй продажи новый MacBook"', imageUrl: 'https://static.tildacdn.com/tild3431-3032-4965-b034-343537373530/_6.png' },
             ].map((case_item, idx) => (
               <div key={idx} className="min-w-[85vw] sm:min-w-[70vw] md:min-w-[45vw] lg:min-w-[30vw] xl:min-w-[25vw] 2xl:min-w-[20vw] bg-[#0A0A0A] border md:border-2 border-white/10 p-4 sm:p-6 md:p-8 lg:p-10 relative">
