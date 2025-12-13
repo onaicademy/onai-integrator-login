@@ -300,11 +300,6 @@ export default function TripwireProductPage() {
 
   // ✅ DYNAMICALLY unlock modules based on userUnlockedModuleIds
   const modulesWithDynamicStatus = modulesWithDuration.map(module => {
-    // 🔥 Module 16 (вводный) ВСЕГДА открыт для ВСЕХ (даже если нет в userUnlockedModuleIds)
-    if (module.id === 16) {
-      return { ...module, status: 'active' };
-    }
-    
     // 🔥 Admin видит все модули
     if (isAdmin) {
       console.log(`🔥 Admin mode: unlocking module ${module.id}`);
@@ -312,7 +307,7 @@ export default function TripwireProductPage() {
     }
     
     // 🔒 ВРЕМЕННАЯ БЛОКИРОВКА ДО СТАРТА КУРСА
-    // Модули 17, 18 заблокированы для всех студентов до официального запуска
+    // ВСЕ модули (16, 17, 18) заблокированы для студентов до официального запуска
     console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (старт отложен)`);
     return {
       ...module,
@@ -320,6 +315,10 @@ export default function TripwireProductPage() {
     };
     
     // 🔥 Остальные модули открываются через userUnlockedModuleIds (ЗАКОММЕНТИРОВАНО)
+    // 🔥 Module 16 (вводный) ВСЕГДА открыт для ВСЕХ (ЗАКОММЕНТИРОВАНО)
+    // if (module.id === 16) {
+    //   return { ...module, status: 'active' };
+    // }
     // const isUnlocked = userUnlockedModuleIds.includes(module.id);
     // console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
     // return {
