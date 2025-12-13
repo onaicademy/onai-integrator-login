@@ -727,6 +727,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
           email,
           phone,
           leadId: supabaseLead.id,
+          sourceCampaign: `proftest_${campaignSlug || 'unknown'}`,
         });
         console.log('✅ Notifications scheduled');
 

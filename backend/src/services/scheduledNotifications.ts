@@ -254,7 +254,7 @@ async function createUnifiedLead(
     console.log(`✅ [Lead ${leadId}] Added to unified_lead_tracking`);
   } catch (error: any) {
     console.error(
-      `❌ [Lead ${leadId}] Failed to create in unified_lead_tracking:`,
+      `❌ [Lead ${notification.leadId}] Failed to create in unified_lead_tracking:`,
       error.message
     );
   }

@@ -638,16 +638,16 @@ router.get('/stats', async (req: Request, res: Response) => {
 
     const stats = {
       total: leads?.length || 0,
-      email_sent: leads?.filter(l => l.email_sent).length || 0,
-      sms_sent: leads?.filter(l => l.sms_sent).length || 0,
-      landing_visited: leads?.filter(l => l.landing_visited).length || 0,
-      email_clicked: leads?.filter(l => l.email_link_clicked).length || 0,
-      sms_clicked: leads?.filter(l => l.sms_link_clicked).length || 0,
-      conversion_email: leads?.filter(l => l.email_sent).length > 0
-        ? ((leads?.filter(l => l.email_link_clicked).length || 0) / (leads?.filter(l => l.email_sent).length || 1) * 100).toFixed(2)
+      email_sent: leads?.filter((l: any) => l.email_sent).length || 0,
+      sms_sent: leads?.filter((l: any) => l.sms_sent).length || 0,
+      landing_visited: leads?.filter((l: any) => l.landing_visited).length || 0,
+      email_clicked: leads?.filter((l: any) => l.email_link_clicked).length || 0,
+      sms_clicked: leads?.filter((l: any) => l.sms_link_clicked).length || 0,
+      conversion_email: leads?.filter((l: any) => l.email_sent).length > 0
+        ? ((leads?.filter((l: any) => l.email_link_clicked).length || 0) / (leads?.filter((l: any) => l.email_sent).length || 1) * 100).toFixed(2)
         : '0.00',
-      conversion_sms: leads?.filter(l => l.sms_sent).length > 0
-        ? ((leads?.filter(l => l.sms_link_clicked).length || 0) / (leads?.filter(l => l.sms_sent).length || 1) * 100).toFixed(2)
+      conversion_sms: leads?.filter((l: any) => l.sms_sent).length > 0
+        ? ((leads?.filter((l: any) => l.sms_link_clicked).length || 0) / (leads?.filter((l: any) => l.sms_sent).length || 1) * 100).toFixed(2)
         : '0.00'
     };
 

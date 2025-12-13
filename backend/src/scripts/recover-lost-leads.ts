@@ -91,6 +91,7 @@ async function recoverLostLeads() {
           email: lead.email,
           phone: lead.phone,
           leadId: lead.id,
+          sourceCampaign: lead.source || 'recovery',
         });
         console.log(`   ✅ Notifications scheduled (10 min delay)`);
 

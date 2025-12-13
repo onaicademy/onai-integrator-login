@@ -132,15 +132,27 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       return null;
     }
 
-    // Return the most recently updated lead
-    const lead = leads[0];
-    console.log(`✅ Found existing lead: ID ${lead.id}, Stage: ${getStageName(lead.status_id)}, Contact: ${contactId}, Pipeline: ${lead.pipeline_id}`);
+    // ✅ FIX: Фильтруем только АКТИВНЫЕ (не закрытые) сделки
+    const CLOSED_STAGES = [
+      AMOCRM_CONFIG.STAGES.УСПЕШНО_РЕАЛИЗОВАНО, // 142
+      AMOCRM_CONFIG.STAGES.ЗАКРЫТО_И_НЕ_РЕАЛИЗОВАНО, // 143
+    ];
+
+    const activeLead = leads.find((lead: any) => !CLOSED_STAGES.includes(lead.status_id));
+
+    if (!activeLead) {
+      console.log(`🔍 No ACTIVE leads found for contact ${contactId} in pipeline ${AMOCRM_CONFIG.PIPELINE_ID} (all leads are closed)`);
+      return null; // Создастся новая сделка
+    }
+
+    // Return the most recently updated ACTIVE lead
+    console.log(`✅ Found ACTIVE lead: ID ${activeLead.id}, Stage: ${getStageName(activeLead.status_id)}, Contact: ${contactId}, Pipeline: ${activeLead.pipeline_id}`);
 
     return {
-      id: lead.id,
-      name: lead.name,
-      status_id: lead.status_id,
-      pipeline_id: lead.pipeline_id,
+      id: activeLead.id,
+      name: activeLead.name,
+      status_id: activeLead.status_id,
+      pipeline_id: activeLead.pipeline_id,
       contactId, // Включаем найденный contactId
     };
   } catch (error) {
