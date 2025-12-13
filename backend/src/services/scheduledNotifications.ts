@@ -1,17 +1,30 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { sendProftestResultSMS } from './mobizon.js';
 
-// Initialize Supabase clients
-const landingSupabase = createClient(
-  process.env.LANDING_SUPABASE_URL || '',
-  process.env.LANDING_SUPABASE_SERVICE_KEY || ''
-);
+// Lazy initialization of Supabase clients (to ensure env vars are loaded)
+let landingSupabase: SupabaseClient | null = null;
+let tripwireSupabase: SupabaseClient | null = null;
 
-const tripwireSupabase = createClient(
-  process.env.TRIPWIRE_SUPABASE_URL || '',
-  process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
-);
+function getLandingSupabase() {
+  if (!landingSupabase) {
+    landingSupabase = createClient(
+      process.env.LANDING_SUPABASE_URL || '',
+      process.env.LANDING_SUPABASE_SERVICE_KEY || ''
+    );
+  }
+  return landingSupabase;
+}
+
+function getTripwireSupabase() {
+  if (!tripwireSupabase) {
+    tripwireSupabase = createClient(
+      process.env.TRIPWIRE_SUPABASE_URL || '',
+      process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
+    );
+  }
+  return tripwireSupabase;
+}
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -67,7 +80,7 @@ async function sendProftestEmailWithTracking(
 
     // ✅ UPDATE landing_leads (with error handling)
     try {
-      await landingSupabase
+      await getLandingSupabase()
         .from('landing_leads')
         .update({
           email_sent: true,
@@ -80,7 +93,7 @@ async function sendProftestEmailWithTracking(
 
     // ✅ UPDATE unified_lead_tracking (with error handling)
     try {
-      await tripwireSupabase
+      await getTripwireSupabase()
         .from('unified_lead_tracking')
         .update({
           email_sent: true,
@@ -101,7 +114,7 @@ async function sendProftestEmailWithTracking(
 
     // ✅ UPDATE landing_leads with error (with error handling)
     try {
-      await landingSupabase
+      await getLandingSupabase()
         .from('landing_leads')
         .update({
           email_error: error.message,
@@ -113,7 +126,7 @@ async function sendProftestEmailWithTracking(
 
     // ✅ UPDATE unified_lead_tracking with error (with error handling)
     try {
-      await tripwireSupabase
+      await getTripwireSupabase()
         .from('unified_lead_tracking')
         .update({
           email_failed: true,
@@ -152,7 +165,7 @@ async function sendProftestSMSWithTracking(
 
     // ✅ UPDATE landing_leads (with error handling)
     try {
-      await landingSupabase
+      await getLandingSupabase()
         .from('landing_leads')
         .update({
           sms_sent: true,
@@ -165,7 +178,7 @@ async function sendProftestSMSWithTracking(
 
     // ✅ UPDATE unified_lead_tracking (with error handling)
     try {
-      await tripwireSupabase
+      await getTripwireSupabase()
         .from('unified_lead_tracking')
         .update({
           sms_sent: true,
@@ -184,7 +197,7 @@ async function sendProftestSMSWithTracking(
 
     // ✅ UPDATE landing_leads with error (with error handling)
     try {
-      await landingSupabase
+      await getLandingSupabase()
         .from('landing_leads')
         .update({
           sms_error: error.message,
@@ -196,7 +209,7 @@ async function sendProftestSMSWithTracking(
 
     // ✅ UPDATE unified_lead_tracking with error (with error handling)
     try {
-      await tripwireSupabase
+      await getTripwireSupabase()
         .from('unified_lead_tracking')
         .update({
           sms_failed: true,
@@ -227,7 +240,7 @@ async function createUnifiedLead(
 
     console.log(`\n📝 [Lead ${leadId}] Creating in unified_lead_tracking...`);
 
-    await tripwireSupabase
+    await getTripwireSupabase()
       .from('unified_lead_tracking')
       .insert({
         full_name: name,
