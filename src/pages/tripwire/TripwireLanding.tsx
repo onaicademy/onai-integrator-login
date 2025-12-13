@@ -360,8 +360,7 @@ export default function TripwireLanding() {
         <section className="mb-8 sm:mb-12 md:mb-16 lg:mb-24 xl:mb-32">
           <div className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 border-b border-white/10 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
             <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl mb-4 sm:mb-5 md:mb-6">
-              <span className="text-gray-500 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">3 ВЗРЫВНЫХ</span><br />
-              МОДУЛЯ
+              <span className="text-gray-500 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">3 ВЗРЫВНЫХ</span> МОДУЛЯ
             </h2>
             <div className="font-mono text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#00FF94]">
               С ДОМАШНИМИ ЗАДАНИЯМИ
@@ -485,10 +484,10 @@ export default function TripwireLanding() {
                   <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 bg-white rounded-full" /> В ЭФИРЕ
                 </div>
 
-                <h3 className="font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl uppercase leading-tight mb-2 md:mb-3 lg:mb-4">Финал: прямой эфир<br />с основателями</h3>
+                <h3 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl uppercase leading-tight mb-3 md:mb-4 lg:mb-5">Финал: прямой эфир<br />с основателями</h3>
 
                 <div className="bg-white/5 border-l-2 md:border-l-4 border-[#00FF94] p-3 sm:p-4 md:p-6 lg:p-8 mb-6 sm:mb-8 md:mb-10 lg:mb-12 backdrop-blur-sm">
-                  <p className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl leading-tight mb-1 md:mb-2">Как создать платформу стоимостью <span className="text-[#00FF94]" style={{ whiteSpace: 'nowrap' }}>10 000$</span></p>
+                  <p className="font-bold text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-tight mb-2 md:mb-3">Как создать платформу стоимостью <span className="text-[#00FF94]" style={{ whiteSpace: 'nowrap' }}>10 000$</span></p>
                   <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-500 font-mono">БЕЗ НАВЫКОВ ПРОГРАММИРОВАНИЯ</p>
                 </div>
 
@@ -520,8 +519,8 @@ export default function TripwireLanding() {
         {/* LIMITED SLOTS - RESPONSIVE */}
         <section className="mb-16 sm:mb-20 md:mb-24 lg:mb-32 xl:mb-40">
           <div className="flex justify-between items-baseline mb-2 md:mb-3 lg:mb-4">
-            <h2 className="font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl uppercase">Всего 100 мест</h2>
-            <span className="font-mono text-[#00FF94] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold">{slotsCount.toString().padStart(3, '0')}/100</span>
+            <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl uppercase">Всего 100 мест</h2>
+            <span className="font-mono text-[#00FF94] text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold">{slotsCount.toString().padStart(3, '0')}/100</span>
           </div>
           
           <div className="h-6 sm:h-8 md:h-10 lg:h-12 xl:h-16 w-full bg-[#111] border md:border-2 border-white/10 p-0.5 sm:p-1 md:p-1.5 skew-x-[-10deg]">
@@ -564,7 +563,7 @@ export default function TripwireLanding() {
 
         {/* CASES SCROLL - RESPONSIVE */}
         <section className="mb-20 sm:mb-24 md:mb-32 lg:mb-40 xl:mb-48">
-          <h2 className="font-display font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl uppercase mb-6 sm:mb-8 md:mb-12 lg:mb-16">Часть наших<br />кейсов</h2>
+          <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl uppercase mb-7 sm:mb-9 md:mb-14 lg:mb-18">Часть наших<br />кейсов</h2>
           
           <div className="overflow-x-auto pb-6 sm:pb-8 md:pb-12 -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 scrollbar-hide flex gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {[
@@ -620,15 +619,15 @@ export default function TripwireLanding() {
       </main>
 
       {/* FOOTER CTA (STICKY) - RESPONSIVE */}
-      <div className="fixed bottom-0 left-0 w-full z-40 bg-black/90 backdrop-blur-lg border-t md:border-t-2 border-white/10 p-3 sm:p-4 md:p-6 lg:p-8 pb-4 sm:pb-6 md:pb-8">
-        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto flex gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-center">
+      <div className="fixed bottom-0 left-0 w-full z-40 bg-black/90 backdrop-blur-lg border-t-2 md:border-t-4 border-white/10 p-5 sm:p-6 md:p-8 lg:p-10 xl:p-12 pb-6 sm:pb-8 md:pb-10 lg:pb-12">
+        <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-[1920px] mx-auto flex gap-4 sm:gap-5 md:gap-8 lg:gap-10 items-center">
           <div className="flex-shrink-0">
-            <div className="text-[8px] sm:text-[10px] md:text-xs lg:text-sm text-gray-400 uppercase font-mono whitespace-nowrap">Стоимость</div>
-            <div className="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white whitespace-nowrap">10$</div>
+            <div className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 uppercase font-mono whitespace-nowrap">Стоимость</div>
+            <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white whitespace-nowrap">10$</div>
           </div>
           <button 
             onClick={() => setIsFormOpen(true)}
-            className="flex-1 bg-[#00FF94] text-black font-display font-bold uppercase py-2.5 sm:py-3.5 md:py-4 lg:py-5 xl:py-6 hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,255,148,0.4)] md:shadow-[0_0_30px_rgba(0,255,148,0.5)] text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl tracking-widest"
+            className="flex-1 bg-[#00FF94] text-black font-display font-bold uppercase py-5 sm:py-6 md:py-7 lg:py-8 xl:py-10 hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,255,148,0.4)] md:shadow-[0_0_30px_rgba(0,255,148,0.5)] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl tracking-widest"
           >
             ЗАНЯТЬ МЕСТО
           </button>
