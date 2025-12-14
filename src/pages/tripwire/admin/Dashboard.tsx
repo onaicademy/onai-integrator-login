@@ -319,6 +319,43 @@ export default function TripwireAdminDashboard() {
             </div>
           </Link>
 
+          {/* Card 5: Landing заявки */}
+          <Link to="/integrator/admin/leads" className="group relative block">
+            <div className="absolute -inset-0.5 bg-purple-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500" />
+            
+            <div 
+              className="relative rounded-3xl p-8 border border-white/5 group-hover:border-purple-500/30 transition-all duration-300"
+              style={{ background: 'rgba(10, 10, 10, 0.6)', backdropFilter: 'blur(32px)' }}
+            >
+              <div className="mb-6">
+                <div 
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                    borderColor: 'rgba(168, 85, 247, 0.2)'
+                  }}
+                >
+                  <FileText size={28} className="text-purple-400" />
+                </div>
+                <h3 
+                  className="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                >
+                  Landing заявки
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  ProfTest и ExpressCourse лиды
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-white/5">
+                <p className="text-gray-500 text-sm text-center">
+                  Отслеживание заявок и уведомлений
+                </p>
+              </div>
+            </div>
+          </Link>
+
         </div>
 
         {/* Back Link */}

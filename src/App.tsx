@@ -64,6 +64,7 @@ import TripwireAdminDashboard from "./pages/tripwire/admin/Dashboard";
 import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
 import TripwireStudents from "./pages/tripwire/admin/Students";
 import TripwireCosts from "./pages/tripwire/admin/Costs";
+import LeadsAdmin from "./pages/tripwire/admin/LeadsAdmin";
 
 const queryClient = new QueryClient();
 
@@ -150,7 +151,7 @@ const AppRoutes = () => {
       <Route path="/admin/students" element={<AdminGuard><Students /></AdminGuard>} />
       <Route path="/admin/transcriptions" element={<AdminGuard><MainPlatformTranscriptions /></AdminGuard>} />
       <Route path="/admin/costs" element={<AdminGuard><Costs /></AdminGuard>} />
-      <Route path="/target" element={<AdminGuard><UnifiedDashboard /></AdminGuard>} />
+      {/* ❌ УБРАНО: /target moved to /integrator/admin/leads */}
       <Route path="/admin/leads" element={<AdminGuard><LeadTracking /></AdminGuard>} />
       
       {/* ❌ OLD ADMIN ROUTES (Keeping for backwards compatibility) */}
@@ -275,6 +276,15 @@ const AppRoutes = () => {
         <TripwireAdminGuard>
           <TripwireLayout>
             <Transcriptions />
+          </TripwireLayout>
+        </TripwireAdminGuard>
+      } />
+      
+      {/* ✅ NEW: Landing заявки */}
+      <Route path="/integrator/admin/leads" element={
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <LeadsAdmin />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
