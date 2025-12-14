@@ -391,11 +391,8 @@ export default function ProfTest() {
       return;
     }
 
-    // Проверяем в localStorage - может пользователь уже проходил (по email)
-    if (localStorage.getItem(`proftest_completed_${formData.email}`)) {
-      setSubmitError('Вы уже проходили этот тест ранее. Ожидайте ответа от нашей команды.');
-      return;
-    }
+    // ❌ УБРАНО: Проверка повторного прохождения теста
+    // Теперь пользователи могут проходить тест сколько угодно раз
 
     setIsSubmitting(true);
     setSubmitError(null);
@@ -442,20 +439,17 @@ export default function ProfTest() {
           value: 1,
         });
         
-        // Сохраняем в localStorage что тест пройден (по email)
-        localStorage.setItem(`proftest_completed_${formData.email}`, 'true');
+        // ❌ УБРАНО: Сохранение в localStorage (разрешаем повторные прохождения)
+        // localStorage.setItem(`proftest_completed_${formData.email}`, 'true');
         
         // Показываем модалку успеха с анимацией
         setShowSuccessModal(true);
       } else {
         const errorData = await response.json();
         
-        // Если пользователь уже проходил тест
-        if (errorData.error?.includes('уже проходил') || errorData.error?.includes('already submitted')) {
-          setSubmitError('Вы уже проходили этот тест ранее. Ожидайте ответа от нашей команды.');
-        } else {
-          setSubmitError(errorData.error || 'Произошла ошибка при отправке данных');
-        }
+        // ❌ УБРАНО: Проверка на повторное прохождение (разрешаем повторные тесты)
+        // Просто показываем ошибку если есть
+        setSubmitError(errorData.error || 'Произошла ошибка при отправке данных');
       }
     } catch (error) {
       console.error('Error submitting test:', error);
