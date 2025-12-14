@@ -4,12 +4,10 @@
  */
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 
-// ✅ ESM compatibility
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ✅ CommonJS compatibility
+const __dirname = __filename ? path.dirname(__filename) : process.cwd();
 
 // ✅ Try multiple paths for env.env
 const possiblePaths = [

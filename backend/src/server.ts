@@ -9,11 +9,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 
-// ✅ ESM compatibility: Эмуляция __dirname для ESM модулей
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ✅ CommonJS compatibility: __dirname is available in CommonJS
+const __dirname = __filename ? path.dirname(__filename) : process.cwd();
 
 // ═══════════════════════════════════════════════════════════════
 // 🔍 ДИАГНОСТИКА .ENV VARIABLES
