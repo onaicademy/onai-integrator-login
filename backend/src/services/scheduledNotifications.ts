@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { sendProftestResultSMS } from './mobizon.js';
+import { generateProftestResultEmail } from '../templates/proftest-result-email.js';
 
 // Lazy initialization of Supabase clients (to ensure env vars are loaded)
 let landingSupabase: SupabaseClient | null = null;
@@ -182,12 +183,9 @@ async function sendProftestEmailWithTracking(
       throw new Error('Invalid email format');
     }
 
-    // Generate HTML content
-    const htmlContent = `
-      <h1>Привет, ${name}!</h1>
-      <p>Поздравляем с завершением теста!</p>
-      <p><a href="${PRODUCT_URL}/integrator/expresscourse?email=${encodeURIComponent(email)}&utm_source=email&utm_campaign=proftest">Получи доступ →</a></p>
-    `;
+    // Generate HTML content using professional template with tracking URL
+    const trackingUrl = `https://api.onai.academy/api/landing/track/${leadId}?source=email`;
+    const htmlContent = generateProftestResultEmail(name, trackingUrl);
 
     // Send via Resend
     const result = await resend.emails.send({
@@ -280,8 +278,8 @@ async function sendProftestSMSWithTracking(
       throw new Error('Invalid phone format');
     }
 
-    // Send SMS
-    const success = await sendProftestResultSMS(phone);
+    // Send SMS with tracking URL
+    const success = await sendProftestResultSMS(phone, leadId);
     if (!success) {
       throw new Error('SMS sending returned false');
     }

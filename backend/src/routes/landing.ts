@@ -746,4 +746,52 @@ router.post('/proftest', async (req: Request, res: Response) => {
   }
 });
 
+// ============================================
+// UTM CLICK TRACKING ENDPOINT
+// ============================================
+router.get('/track/:leadId', async (req: Request, res: Response) => {
+  try {
+    const { leadId } = req.params;
+    const { source } = req.query; // 'email' or 'sms'
+
+    console.log(`📊 Click tracked: Lead ${leadId}, Source: ${source}`);
+
+    if (!leadId || !source) {
+      return res.status(400).json({ error: 'Missing leadId or source' });
+    }
+
+    // Update click tracking in database
+    const updateData: any = {
+      click_count: landingSupabase.raw('click_count + 1'),
+    };
+
+    if (source === 'email') {
+      updateData.email_clicked = true;
+      updateData.email_clicked_at = new Date().toISOString();
+    } else if (source === 'sms') {
+      updateData.sms_clicked = true;
+      updateData.sms_clicked_at = new Date().toISOString();
+    }
+
+    const { error } = await landingSupabase
+      .from('landing_leads')
+      .update(updateData)
+      .eq('id', leadId);
+
+    if (error) {
+      console.error('❌ Error updating click tracking:', error);
+      // Don't fail the redirect, just log
+    }
+
+    // Redirect to ExpressCourse landing
+    const redirectUrl = `https://onai.academy/integrator/expresscourse?utm_source=${source}&utm_campaign=proftest&lead_id=${leadId}`;
+    return res.redirect(302, redirectUrl);
+
+  } catch (error: any) {
+    console.error('❌ Error tracking click:', error);
+    // Redirect anyway, don't show error to user
+    return res.redirect(302, 'https://onai.academy/integrator/expresscourse');
+  }
+});
+
 export default router;

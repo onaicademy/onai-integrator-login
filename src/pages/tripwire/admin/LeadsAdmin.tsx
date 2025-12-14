@@ -29,6 +29,11 @@ interface Lead {
   created_at: string;
   email_sent: boolean;
   sms_sent: boolean;
+  email_clicked?: boolean;
+  email_clicked_at?: string;
+  sms_clicked?: boolean;
+  sms_clicked_at?: string;
+  click_count?: number;
   metadata?: any;
 }
 
@@ -36,6 +41,10 @@ interface Stats {
   total: number;
   emailsSent: number;
   smsSent: number;
+  emailClicks: number;
+  smsClicks: number;
+  emailClickRate: number;
+  smsClickRate: number;
   bySource: Record<string, number>;
 }
 
@@ -73,24 +82,35 @@ export default function LeadsAdmin() {
       
       const { data, error } = await landingSupabase
         .from('landing_leads')
-        .select('source, email_sent, sms_sent');
+        .select('source, email_sent, sms_sent, email_clicked, sms_clicked');
       
       if (error) throw error;
       
       const bySource: Record<string, number> = {};
       let emailsSent = 0;
       let smsSent = 0;
+      let emailClicks = 0;
+      let smsClicks = 0;
       
       data?.forEach(lead => {
         bySource[lead.source] = (bySource[lead.source] || 0) + 1;
         if (lead.email_sent) emailsSent++;
         if (lead.sms_sent) smsSent++;
+        if (lead.email_clicked) emailClicks++;
+        if (lead.sms_clicked) smsClicks++;
       });
+      
+      const emailClickRate = emailsSent > 0 ? (emailClicks / emailsSent) * 100 : 0;
+      const smsClickRate = smsSent > 0 ? (smsClicks / smsSent) * 100 : 0;
       
       return {
         total: data?.length || 0,
         emailsSent,
         smsSent,
+        emailClicks,
+        smsClicks,
+        emailClickRate,
+        smsClickRate,
         bySource,
       };
     },
@@ -138,44 +158,62 @@ export default function LeadsAdmin() {
       {/* ✅ CONTENT */}
       <div className="relative z-10 px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-2">
               <Users className="text-[#00FF94]" size={24} />
-              <h3 className="text-[#9CA3AF] text-sm uppercase tracking-wide">Всего лидов</h3>
+              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Лидов</h3>
             </div>
-            <p className="text-4xl font-bold text-white">{stats?.total || 0}</p>
+            <p className="text-3xl font-bold text-white">{stats?.total || 0}</p>
           </div>
 
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-2">
               <Mail className="text-blue-400" size={24} />
-              <h3 className="text-[#9CA3AF] text-sm uppercase tracking-wide">Email отправлено</h3>
+              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Email</h3>
             </div>
-            <p className="text-4xl font-bold text-white">{stats?.emailsSent || 0}</p>
-            <p className="text-sm text-[#9CA3AF] mt-2">
-              {stats?.total ? Math.round((stats.emailsSent / stats.total) * 100) : 0}% от всех
+            <p className="text-3xl font-bold text-white">{stats?.emailsSent || 0}</p>
+            <p className="text-xs text-[#9CA3AF] mt-1">Отправлено</p>
+          </div>
+
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Mail className="text-green-400" size={24} />
+              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Email CTR</h3>
+            </div>
+            <p className="text-3xl font-bold text-white">{stats?.emailClicks || 0}</p>
+            <p className="text-xs text-green-400 mt-1">
+              {stats?.emailClickRate ? Math.round(stats.emailClickRate) : 0}% кликнули
             </p>
           </div>
 
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-2">
               <Send className="text-purple-400" size={24} />
-              <h3 className="text-[#9CA3AF] text-sm uppercase tracking-wide">SMS отправлено</h3>
+              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">SMS</h3>
             </div>
-            <p className="text-4xl font-bold text-white">{stats?.smsSent || 0}</p>
-            <p className="text-sm text-[#9CA3AF] mt-2">
-              {stats?.total ? Math.round((stats.smsSent / stats.total) * 100) : 0}% от всех
+            <p className="text-3xl font-bold text-white">{stats?.smsSent || 0}</p>
+            <p className="text-xs text-[#9CA3AF] mt-1">Отправлено</p>
+          </div>
+
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Send className="text-green-400" size={24} />
+              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">SMS CTR</h3>
+            </div>
+            <p className="text-3xl font-bold text-white">{stats?.smsClicks || 0}</p>
+            <p className="text-xs text-green-400 mt-1">
+              {stats?.smsClickRate ? Math.round(stats.smsClickRate) : 0}% кликнули
             </p>
           </div>
 
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-2">
               <TrendingUp className="text-[#00FF94]" size={24} />
-              <h3 className="text-[#9CA3AF] text-sm uppercase tracking-wide">Источников</h3>
+              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Источники</h3>
             </div>
-            <p className="text-4xl font-bold text-white">{Object.keys(stats?.bySource || {}).length}</p>
-            <p className="text-sm text-[#9CA3AF] mt-2">Уникальных источников</p>
+            <p className="text-3xl font-bold text-white">{Object.keys(stats?.bySource || {}).length}</p>
+            <p className="text-xs text-[#9CA3AF] mt-1">Уникальных</p>
           </div>
         </div>
 
@@ -263,15 +301,39 @@ export default function LeadsAdmin() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          <Mail size={14} className={lead.email_sent ? 'text-green-400' : 'text-gray-600'} />
-                          <span className={`text-xs ${lead.email_sent ? 'text-green-400' : 'text-gray-600'}`}>
-                            Email: {lead.email_sent ? 'Отправлен' : 'Не отправлен'}
+                          <Mail size={14} className={
+                            lead.email_clicked ? 'text-[#00FF94]' : 
+                            lead.email_sent ? 'text-green-400' : 
+                            'text-gray-600'
+                          } />
+                          <span className={`text-xs ${
+                            lead.email_clicked ? 'text-[#00FF94]' : 
+                            lead.email_sent ? 'text-green-400' : 
+                            'text-gray-600'
+                          }`}>
+                            Email: {
+                              lead.email_clicked ? '✓ Кликнул' : 
+                              lead.email_sent ? 'Отправлен' : 
+                              'Не отправлен'
+                            }
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Send size={14} className={lead.sms_sent ? 'text-green-400' : 'text-gray-600'} />
-                          <span className={`text-xs ${lead.sms_sent ? 'text-green-400' : 'text-gray-600'}`}>
-                            SMS: {lead.sms_sent ? 'Отправлен' : 'Не отправлен'}
+                          <Send size={14} className={
+                            lead.sms_clicked ? 'text-[#00FF94]' : 
+                            lead.sms_sent ? 'text-purple-400' : 
+                            'text-gray-600'
+                          } />
+                          <span className={`text-xs ${
+                            lead.sms_clicked ? 'text-[#00FF94]' : 
+                            lead.sms_sent ? 'text-purple-400' : 
+                            'text-gray-600'
+                          }`}>
+                            SMS: {
+                              lead.sms_clicked ? '✓ Кликнул' : 
+                              lead.sms_sent ? 'Отправлен' : 
+                              'Не отправлен'
+                            }
                           </span>
                         </div>
                       </div>

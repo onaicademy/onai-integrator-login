@@ -49,7 +49,12 @@ export async function sendSMS(params: SendSMSParams): Promise<boolean> {
   }
 }
 
-export async function sendProftestResultSMS(phone: string): Promise<boolean> {
-  const text = 'Тест пройден. Ваша ссылка https://onai.academy/integrator/expresscourse';
+export async function sendProftestResultSMS(phone: string, leadId?: string): Promise<boolean> {
+  // Use tracking URL with leadId for click tracking (short URL to save SMS cost)
+  const url = leadId 
+    ? `https://api.onai.academy/api/landing/track/${leadId}?source=sms`
+    : 'https://onai.academy/integrator/expresscourse';
+  
+  const text = `Тест пройден. Ваша ссылка ${url}`;
   return sendSMS({ recipient: phone, text });
 }
