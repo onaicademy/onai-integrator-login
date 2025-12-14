@@ -50,6 +50,7 @@ const Transcriptions = lazy(() => import("./pages/admin/TripwireTranscriptions")
 const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatformTranscriptions"));
 const LeadTracking = lazy(() => import("./pages/admin/LeadTracking"));
 const UnifiedDashboard = lazy(() => import("./pages/admin/UnifiedDashboard"));
+const ShortLinksStats = lazy(() => import("./pages/admin/ShortLinksStats"));
 
 // 🚀 ОПТИМИЗАЦИЯ: Lazy loading Tripwire страниц
 const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
@@ -158,6 +159,7 @@ const AppRoutes = () => {
       <Route path="/admin/costs" element={<AdminGuard><Costs /></AdminGuard>} />
       {/* ❌ УБРАНО: /target moved to /integrator/admin/leads */}
       <Route path="/admin/leads" element={<AdminGuard><LeadTracking /></AdminGuard>} />
+      <Route path="/admin/short-links" element={<AdminGuard><ShortLinksStats /></AdminGuard>} />
       
       {/* ❌ OLD ADMIN ROUTES (Keeping for backwards compatibility) */}
       <Route path="/admin/old" element={
@@ -290,6 +292,15 @@ const AppRoutes = () => {
         <TripwireAdminGuard>
           <TripwireLayout>
             <LeadsAdmin />
+          </TripwireLayout>
+        </TripwireAdminGuard>
+      } />
+      
+      {/* 🔗 NEW: Статистика коротких ссылок для SMS */}
+      <Route path="/integrator/admin/short-links" element={
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <ShortLinksStats />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />

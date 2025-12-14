@@ -115,6 +115,7 @@ import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Repor
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
 import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
+import shortLinksRouter from './routes/short-links'; // 🔗 URL Shortener for SMS Links
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -383,6 +384,8 @@ app.use('/api/landing', landingRouter); // 🎯 Landing Page Leads (New DB + Amo
 app.use('/api/lead-tracking', leadTrackingRouter); // 📊 Lead Tracking Dashboard (Email/SMS)
 app.use('/api/unified-tracking', unifiedTrackingRouter); // 🎯 Unified Tracking (Email + SMS + UTM)
 app.use('/api', facebookConversionRouter); // 📊 Facebook Conversion API
+app.use('/api/short-links', shortLinksRouter); // 🔗 URL Shortener for SMS Links (создание и статистика)
+app.use('/l', shortLinksRouter); // 🔗 Short link redirect handler (прямой редирект без /api)
 
 // 404 обработка
 app.use((req, res) => {
