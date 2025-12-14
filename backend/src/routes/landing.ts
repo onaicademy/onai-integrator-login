@@ -805,4 +805,124 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
   }
 });
 
+// ============================================
+// RESEND NOTIFICATIONS (Smart Retry)
+// ============================================
+router.post('/resend/:leadId', async (req: Request, res: Response) => {
+  try {
+    const { leadId } = req.params;
+    
+    console.log(`🔄 Resend request for lead: ${leadId}`);
+
+    // 1. Fetch lead data
+    const { data: lead, error: fetchError } = await landingSupabase
+      .from('landing_leads')
+      .select('*')
+      .eq('id', leadId)
+      .single();
+
+    if (fetchError || !lead) {
+      console.error('❌ Lead not found:', fetchError);
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    // 2. Check what needs to be sent
+    const needsEmail = !lead.email_sent && lead.email;
+    const needsSMS = !lead.sms_sent && lead.phone;
+
+    if (!needsEmail && !needsSMS) {
+      return res.status(200).json({ 
+        message: 'All notifications already sent', 
+        lead: {
+          id: lead.id,
+          email_sent: lead.email_sent,
+          sms_sent: lead.sms_sent
+        }
+      });
+    }
+
+    console.log(`📧 Resending: Email=${needsEmail}, SMS=${needsSMS}`);
+
+    // 3. Send IMMEDIATELY (delay = 0)
+    await scheduleProftestNotifications({
+      leadId: lead.id,
+      name: lead.name,
+      email: needsEmail ? lead.email : undefined,
+      phone: needsSMS ? lead.phone : undefined,
+      emailDelayMinutes: 0,  // 🚀 INSTANT!
+      smsDelayMinutes: 0,    // 🚀 INSTANT!
+      sourceCampaign: lead.source,
+    });
+
+    console.log(`✅ Resend scheduled for lead ${leadId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Notifications resent',
+      resent: {
+        email: needsEmail,
+        sms: needsSMS,
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ Error resending notifications:', error);
+    return res.status(500).json({
+      error: 'Failed to resend notifications',
+      message: error.message,
+    });
+  }
+});
+
+// ============================================
+// DELETE LEAD
+// ============================================
+router.delete('/:leadId', async (req: Request, res: Response) => {
+  try {
+    const { leadId } = req.params;
+    
+    console.log(`🗑️ Delete request for lead: ${leadId}`);
+
+    // 1. Delete from scheduled_notifications first (foreign key constraint)
+    const { error: notifError } = await landingSupabase
+      .from('scheduled_notifications')
+      .delete()
+      .eq('lead_id', leadId);
+
+    if (notifError) {
+      console.error('⚠️ Error deleting scheduled notifications:', notifError);
+      // Continue anyway, maybe there were no notifications
+    }
+
+    // 2. Delete the lead
+    const { error: leadError } = await landingSupabase
+      .from('landing_leads')
+      .delete()
+      .eq('id', leadId);
+
+    if (leadError) {
+      console.error('❌ Error deleting lead:', leadError);
+      return res.status(500).json({ 
+        error: 'Failed to delete lead',
+        message: leadError.message 
+      });
+    }
+
+    console.log(`✅ Lead ${leadId} deleted successfully`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead deleted successfully',
+      leadId,
+    });
+
+  } catch (error: any) {
+    console.error('❌ Error deleting lead:', error);
+    return res.status(500).json({
+      error: 'Failed to delete lead',
+      message: error.message,
+    });
+  }
+});
+
 export default router;

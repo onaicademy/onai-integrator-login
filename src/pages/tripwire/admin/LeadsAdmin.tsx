@@ -1,8 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send, RefreshCw, Trash2, AlertCircle, Clock } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
 
 // ✅ LAZY INITIALIZATION: Create client only when component mounts and env vars exist
 function useLandingSupabase() {
@@ -35,6 +36,8 @@ interface Lead {
   sms_clicked_at?: string;
   click_count?: number;
   metadata?: any;
+  notification_status?: 'pending' | 'sent' | 'failed' | null;
+  notification_error?: string | null;
 }
 
 interface Stats {
@@ -51,8 +54,9 @@ interface Stats {
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const landingSupabase = useLandingSupabase();
+  const queryClient = useQueryClient();
 
-  // Fetch leads
+  // Fetch leads with notification status
   const { data: leads, isLoading: leadsLoading } = useQuery<Lead[]>({
     queryKey: ['landing', 'leads'],
     queryFn: async () => {
@@ -60,16 +64,59 @@ export default function LeadsAdmin() {
         throw new Error('Landing Supabase client not initialized');
       }
       
-      const { data, error } = await landingSupabase
+      // Get leads
+      const { data: leadsData, error: leadsError } = await landingSupabase
         .from('landing_leads')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
       
-      if (error) throw error;
-      return data || [];
+      if (leadsError) throw leadsError;
+      
+      // Get notification statuses for all leads
+      const { data: notificationsData } = await landingSupabase
+        .from('scheduled_notifications')
+        .select('lead_id, status, error_message')
+        .in('lead_id', leadsData?.map(l => l.id) || []);
+      
+      // Merge notification status into leads
+      const leadsWithStatus = leadsData?.map(lead => {
+        const notification = notificationsData?.find(n => n.lead_id === lead.id);
+        return {
+          ...lead,
+          notification_status: notification?.status || null,
+          notification_error: notification?.error_message || null,
+        };
+      });
+      
+      return leadsWithStatus || [];
     },
     enabled: !!landingSupabase,
+    refetchInterval: 10000, // Refresh every 10s to show status updates
+  });
+
+  // Resend mutation
+  const resendMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const response = await axios.post(`/api/landing/resend/${leadId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['landing', 'leads'] });
+      queryClient.invalidateQueries({ queryKey: ['landing', 'stats'] });
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const response = await axios.delete(`/api/landing/${leadId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['landing', 'leads'] });
+      queryClient.invalidateQueries({ queryKey: ['landing', 'stats'] });
+    },
   });
 
   // Fetch stats
@@ -256,12 +303,15 @@ export default function LeadsAdmin() {
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">
                   Дата создания
                 </th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">
+                  Действия
+                </th>
               </tr>
             </thead>
             <tbody>
               {leadsLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-[#9CA3AF]">
+                  <td colSpan={5} className="px-6 py-8 text-center text-[#9CA3AF]">
                     Загрузка списка заявок...
                   </td>
                 </tr>
@@ -299,43 +349,72 @@ export default function LeadsAdmin() {
 
                     {/* Notification Status */}
                     <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-2">
+                        {/* Queue Status Badge */}
+                        {lead.notification_status === 'pending' && (
+                          <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                            <Clock size={12} className="text-yellow-400" />
+                            <span className="text-xs text-yellow-400">В очереди</span>
+                          </div>
+                        )}
+                        
+                        {/* Email Status */}
                         <div className="flex items-center gap-2">
                           <Mail size={14} className={
                             lead.email_clicked ? 'text-[#00FF94]' : 
                             lead.email_sent ? 'text-green-400' : 
+                            lead.notification_status === 'failed' ? 'text-red-400' :
                             'text-gray-600'
                           } />
                           <span className={`text-xs ${
                             lead.email_clicked ? 'text-[#00FF94]' : 
                             lead.email_sent ? 'text-green-400' : 
+                            lead.notification_status === 'failed' ? 'text-red-400' :
                             'text-gray-600'
                           }`}>
                             Email: {
                               lead.email_clicked ? '✓ Кликнул' : 
-                              lead.email_sent ? 'Отправлен' : 
-                              'Не отправлен'
+                              lead.email_sent ? '✓ Отправлен' : 
+                              lead.notification_status === 'failed' ? '✗ Ошибка' :
+                              lead.notification_status === 'pending' ? '⏳ Ожидает' :
+                              '○ Не отправлен'
                             }
                           </span>
                         </div>
+
+                        {/* SMS Status */}
                         <div className="flex items-center gap-2">
                           <Send size={14} className={
                             lead.sms_clicked ? 'text-[#00FF94]' : 
                             lead.sms_sent ? 'text-purple-400' : 
+                            lead.notification_status === 'failed' ? 'text-red-400' :
                             'text-gray-600'
                           } />
                           <span className={`text-xs ${
                             lead.sms_clicked ? 'text-[#00FF94]' : 
                             lead.sms_sent ? 'text-purple-400' : 
+                            lead.notification_status === 'failed' ? 'text-red-400' :
                             'text-gray-600'
                           }`}>
                             SMS: {
                               lead.sms_clicked ? '✓ Кликнул' : 
-                              lead.sms_sent ? 'Отправлен' : 
-                              'Не отправлен'
+                              lead.sms_sent ? '✓ Отправлен' : 
+                              lead.notification_status === 'failed' ? '✗ Ошибка' :
+                              lead.notification_status === 'pending' ? '⏳ Ожидает' :
+                              '○ Не отправлен'
                             }
                           </span>
                         </div>
+
+                        {/* Error Message */}
+                        {lead.notification_error && (
+                          <div className="flex items-start gap-2 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/20 mt-1">
+                            <AlertCircle size={12} className="text-red-400 mt-0.5 flex-shrink-0" />
+                            <span className="text-xs text-red-400 break-words">
+                              {lead.notification_error}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </td>
 
@@ -346,11 +425,48 @@ export default function LeadsAdmin() {
                         {formatDate(lead.created_at)}
                       </p>
                     </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {/* Resend Button */}
+                        {(!lead.email_sent || !lead.sms_sent) && (
+                          <button
+                            onClick={() => {
+                              if (confirm(`Переотправить уведомления для ${lead.name}?`)) {
+                                resendMutation.mutate(lead.id);
+                              }
+                            }}
+                            disabled={resendMutation.isPending}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#00FF94]/10 border border-[#00FF94]/20 text-[#00FF94] hover:bg-[#00FF94]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                            title="Переотправить только не отправленные уведомления"
+                          >
+                            <RefreshCw size={12} className={resendMutation.isPending ? 'animate-spin' : ''} />
+                            {resendMutation.isPending ? 'Отправка...' : 'Переотправить'}
+                          </button>
+                        )}
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => {
+                            if (confirm(`Удалить лид ${lead.name}? Это действие нельзя отменить!`)) {
+                              deleteMutation.mutate(lead.id);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                          title="Удалить лид полностью из базы данных"
+                        >
+                          <Trash2 size={12} />
+                          {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-[#9CA3AF]">
+                  <td colSpan={5} className="px-6 py-8 text-center text-[#9CA3AF]">
                     {searchQuery ? 'Ничего не найдено по вашему запросу' : 'Нет заявок'}
                   </td>
                 </tr>
