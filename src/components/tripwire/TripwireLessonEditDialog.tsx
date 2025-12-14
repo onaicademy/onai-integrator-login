@@ -45,6 +45,11 @@ export function TripwireLessonEditDialog({
   const [isUploading, setIsUploading] = useState(false);
   const videoInputRef = useRef<HTMLInputElement>(null);
   
+  // 🎉 Processing Status
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const processingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Материалы
   const [materials, setMaterials] = useState<any[]>([]);
   const [uploadingMaterial, setUploadingMaterial] = useState(false);
@@ -89,6 +94,14 @@ export function TripwireLessonEditDialog({
       setInitialState({ title: '', description: '', tip: '' });
       setHasUnsavedChanges(false);
     }
+    
+    // Cleanup: Очистка interval при unmount
+    return () => {
+      if (processingIntervalRef.current) {
+        clearInterval(processingIntervalRef.current);
+        processingIntervalRef.current = null;
+      }
+    };
   }, [lesson, open]);
 
   const loadLessonData = async (lessonId: number) => {
@@ -138,6 +151,87 @@ export function TripwireLessonEditDialog({
       
       video.src = URL.createObjectURL(file);
     });
+  };
+
+  /**
+   * 🎉 Мониторинг обработки видео в Bunny CDN
+   * Проверяет статус каждые 3 секунды
+   * Когда готово - перезагружает страницу
+   */
+  const monitorVideoProcessing = async (videoId: string, lessonId: number) => {
+    const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const MAX_ATTEMPTS = 120; // 6 минут (120 * 3сек)
+    let attempt = 0;
+    
+    const checkStatus = async () => {
+      try {
+        attempt++;
+        
+        const response = await fetch(`${uploadApiUrl}/api/videos/bunny-status/${videoId}`);
+        const data = await response.json();
+        
+        // Bunny CDN статусы:
+        // 0 = Created, 1 = Uploaded, 2 = Processing, 3 = Encoding, 4 = Finished, 5 = Failed
+        const status = data.status;
+        const encodeProgress = data.encodeProgress || 0;
+        
+        console.log(`🔍 Processing status: ${status}, progress: ${encodeProgress}%`);
+        
+        // Обновляем UI
+        setProcessingProgress(encodeProgress);
+        setUploadStatus(`⏳ Обработка видео: ${encodeProgress}%`);
+        
+        if (status === 4) {
+          // ✅ Готово!
+          console.log('✅ Видео обработано! Перезагружаем страницу...');
+          setUploadStatus('✅ Готово! Перезагружаем...');
+          setIsProcessing(false);
+          
+          if (processingIntervalRef.current) {
+            clearInterval(processingIntervalRef.current);
+          }
+          
+          // Перезагружаем страницу через 1 секунду
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+          
+          return;
+        }
+        
+        if (status === 5) {
+          // ❌ Ошибка
+          console.error('❌ Ошибка обработки видео');
+          setUploadStatus('❌ Ошибка обработки');
+          setIsProcessing(false);
+          
+          if (processingIntervalRef.current) {
+            clearInterval(processingIntervalRef.current);
+          }
+          
+          alert('Ошибка обработки видео в Bunny CDN');
+          return;
+        }
+        
+        if (attempt >= MAX_ATTEMPTS) {
+          console.warn('⚠️ Таймаут ожидания обработки');
+          setUploadStatus('⚠️ Обработка занимает больше времени...');
+          setIsProcessing(false);
+          
+          if (processingIntervalRef.current) {
+            clearInterval(processingIntervalRef.current);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Ошибка проверки статуса:', error);
+      }
+    };
+    
+    // Первая проверка сразу
+    await checkStatus();
+    
+    // Потом каждые 3 секунды
+    processingIntervalRef.current = setInterval(checkStatus, 3000);
   };
 
   const handleSubmit = async () => {
@@ -266,6 +360,14 @@ export function TripwireLessonEditDialog({
           });
           
           console.log('✅ Видео успешно загружено через Direct Upload!');
+          
+          // 🎉 Шаг 4: Начинаем мониторинг обработки
+          setIsUploading(false);
+          setIsProcessing(true);
+          setProcessingProgress(0);
+          setUploadStatus('⏳ Обработка видео: 0%');
+          
+          await monitorVideoProcessing(uploadData.videoId, lesson.id);
         } else {
           setUploadProgress(60);
         }
@@ -395,7 +497,14 @@ export function TripwireLessonEditDialog({
         });
         
         console.log('✅ Видео успешно загружено через Direct Upload!');
-        setUploadProgress(50);
+                  
+        // 🎉 Шаг 4: Начинаем мониторинг обработки
+        setIsUploading(false);
+        setIsProcessing(true);
+        setProcessingProgress(0);
+        setUploadStatus('⏳ Обработка видео: 0%');
+                  
+        await monitorVideoProcessing(uploadData.videoId, newLessonId);
       } else {
         setUploadProgress(50);
       }
@@ -616,14 +725,14 @@ export function TripwireLessonEditDialog({
         className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0A0A0A] border-[#00FF88]/30"
         onInteractOutside={(e) => {
           // ✅ CRITICAL: Prevent accidental closure during upload or with unsaved changes
-          if (isUploading || hasUnsavedChanges || videoFile) {
+          if (isUploading || isProcessing || hasUnsavedChanges || videoFile) {
             e.preventDefault();
-            console.log('🚫 Outside click blocked - upload in progress or unsaved changes');
+            console.log('🚫 Outside click blocked - upload/processing in progress or unsaved changes');
           }
         }}
         onEscapeKeyDown={(e) => {
           // ✅ Also prevent ESC key from closing without confirmation
-          if (isUploading || hasUnsavedChanges || videoFile) {
+          if (isUploading || isProcessing || hasUnsavedChanges || videoFile) {
             e.preventDefault();
             handleDialogClose(true);
           }
@@ -721,6 +830,42 @@ export function TripwireLessonEditDialog({
               </div>
             )}
 
+            {/* 🎉 Processing Status */}
+            {isProcessing && (
+              <div className="mt-4 space-y-2 p-4 bg-[#1a1a24] border border-yellow-500/30 rounded-lg">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-white">{uploadStatus}</span>
+                  <span className="text-yellow-500 font-bold">{processingProgress}%</span>
+                </div>
+                
+                <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-yellow-500 h-full transition-all duration-300 ease-out animate-pulse"
+                    style={{ width: `${processingProgress}%` }}
+                  />
+                </div>
+                
+                <div className="text-xs text-gray-400 space-y-1 pt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-500 animate-spin">⌛</span> 
+                    <span className="text-white">Обработка видео в Bunny CDN...</span>
+                  </div>
+                  {processingProgress >= 50 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-500">🔥</span> 
+                      <span className="text-yellow-400">Почти готово!</span>
+                    </div>
+                  )}
+                  {processingProgress >= 95 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#00FF88]">✅</span> 
+                      <span className="text-[#00FF88] animate-pulse">Завершаем... Страница скоро перезагрузится!</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ✅ Unsaved Changes Warning Banner */}
             {(hasUnsavedChanges || videoFile) && !isUploading && (
               <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -745,18 +890,20 @@ export function TripwireLessonEditDialog({
               <Button 
                 variant="outline" 
                 onClick={() => handleDialogClose(true)} 
-                disabled={isUploading}
+                disabled={isUploading || isProcessing}
                 className="border-[#00FF88]/30 text-white hover:bg-[#00FF88]/10"
               >
                 {hasUnsavedChanges || videoFile ? '🚫 Отменить' : 'Закрыть'}
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                disabled={!title || !title.trim() || isUploading}
+                disabled={!title || !title.trim() || isUploading || isProcessing}
                 className="bg-[#00FF88] text-black hover:bg-[#00cc88] font-semibold flex-1"
               >
                 {isUploading ? (
                   <>⏳ Загрузка {uploadProgress}%...</>
+                ) : isProcessing ? (
+                  <>⏳ Обработка {processingProgress}%...</>
                 ) : lesson ? (
                   <>💾 Сохранить изменения</>
                 ) : (
