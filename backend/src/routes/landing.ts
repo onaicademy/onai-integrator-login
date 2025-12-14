@@ -271,7 +271,10 @@ router.post('/submit', async (req: Request, res: Response) => {
 
     console.log(`📝 Landing lead submission: ${name}, payment: ${paymentMethod || 'not selected'}`);
 
-    // 1. Find or create unified lead using database function
+    // 1. 🔥 BACKWARDS COMPATIBLE: Try unified lead system first, fallback to direct insert
+    let leadId: string;
+    
+    // Try using the new journey-based system (if migration applied)
     const { data: unifiedLeadResult, error: leadFunctionError } = await landingSupabase
       .rpc('find_or_create_unified_lead', {
         p_email: email || null,
@@ -287,18 +290,43 @@ router.post('/submit', async (req: Request, res: Response) => {
         }
       });
 
-    if (leadFunctionError || !unifiedLeadResult) {
-      console.error('❌ Error finding/creating unified lead:', leadFunctionError);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to save lead to database'
-      });
+    if (leadFunctionError) {
+      console.warn('⚠️ Unified lead function not available (migration not applied?), using fallback:', leadFunctionError.message);
+      
+      // FALLBACK: Direct insert (old method - works without migration)
+      const { data: leadData, error: insertError } = await landingSupabase
+        .from('landing_leads')
+        .insert({
+          name,
+          email,
+          phone,
+          source,
+          metadata: {
+            ...metadata,
+            paymentMethod,
+            userAgent: req.headers['user-agent'],
+            ip: req.ip,
+          },
+        })
+        .select('id')
+        .single();
+      
+      if (insertError || !leadData) {
+        console.error('❌ Error inserting lead:', insertError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to save lead to database'
+        });
+      }
+      
+      leadId = leadData.id;
+      console.log(`✅ Lead created (fallback method): ${leadId}`);
+    } else {
+      leadId = unifiedLeadResult;
+      console.log(`✅ Unified lead ID: ${leadId}`);
     }
 
-    const leadId = unifiedLeadResult;
-    console.log(`✅ Unified lead ID: ${leadId}`);
-
-    // 2. Add journey stage for expresscourse submission
+    // 2. Add journey stage (optional - only if table exists)
     const stage = paymentMethod ? `payment_${paymentMethod}` : 'expresscourse_submitted';
     const { error: journeyError } = await landingSupabase
       .from('lead_journey')
@@ -641,7 +669,10 @@ router.post('/proftest', async (req: Request, res: Response) => {
       answersCount: proftestAnswers?.length || answers?.length || 0,
     });
 
-    // 1. Find or create unified lead using database function
+    // 1. 🔥 BACKWARDS COMPATIBLE: Try unified lead system first, fallback to direct insert
+    let leadId: string;
+    
+    // Try using the new journey-based system (if migration applied)
     const { data: unifiedLeadResult, error: leadFunctionError } = await landingSupabase
       .rpc('find_or_create_unified_lead', {
         p_email: email,
@@ -658,15 +689,41 @@ router.post('/proftest', async (req: Request, res: Response) => {
         }
       });
 
-    if (leadFunctionError || !unifiedLeadResult) {
-      console.error('❌ Error finding/creating unified lead:', leadFunctionError);
-      throw new Error('Failed to save lead to database');
+    if (leadFunctionError) {
+      console.warn('⚠️ Unified lead function not available (migration not applied?), using fallback:', leadFunctionError.message);
+      
+      // FALLBACK: Direct insert (old method - works without migration)
+      const { data: leadData, error: insertError } = await landingSupabase
+        .from('landing_leads')
+        .insert({
+          name,
+          email,
+          phone,
+          source: source || `proftest_${campaignSlug || 'unknown'}`,
+          metadata: {
+            ...metadata,
+            answers,
+            proftestAnswers,
+            campaignSlug,
+            utmParams,
+          },
+        })
+        .select('id')
+        .single();
+      
+      if (insertError || !leadData) {
+        console.error('❌ Error inserting lead:', insertError);
+        throw new Error('Failed to save lead to database');
+      }
+      
+      leadId = leadData.id;
+      console.log('✅ Lead created (fallback method):', leadId);
+    } else {
+      leadId = unifiedLeadResult;
+      console.log('✅ Unified lead ID:', leadId);
     }
 
-    const leadId = unifiedLeadResult;
-    console.log('✅ Unified lead ID:', leadId);
-
-    // 2. Add journey stage for proftest submission
+    // 2. Add journey stage (optional - only if table exists)
     const { error: journeyError } = await landingSupabase
       .from('lead_journey')
       .insert({
