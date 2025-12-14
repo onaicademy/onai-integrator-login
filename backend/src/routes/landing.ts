@@ -806,13 +806,13 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
 });
 
 // ============================================
-// RESEND NOTIFICATIONS (Smart Retry)
+// RESEND NOTIFICATIONS (INSTANT - NO SCHEDULER)
 // ============================================
 router.post('/resend/:leadId', async (req: Request, res: Response) => {
   try {
     const { leadId } = req.params;
     
-    console.log(`🔄 Resend request for lead: ${leadId}`);
+    console.log(`🔄 INSTANT Resend request for lead: ${leadId}`);
 
     // 1. Fetch lead data
     const { data: lead, error: fetchError } = await landingSupabase
@@ -841,32 +841,70 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`📧 Resending: Email=${needsEmail}, SMS=${needsSMS}`);
+    console.log(`📧 INSTANT Sending: Email=${needsEmail}, SMS=${needsSMS}`);
 
-    // 3. Send IMMEDIATELY (delay = 0)
-    await scheduleProftestNotifications({
-      leadId: lead.id,
-      name: lead.name,
-      email: needsEmail ? lead.email : undefined,
-      phone: needsSMS ? lead.phone : undefined,
-      emailDelayMinutes: 0,  // 🚀 INSTANT!
-      smsDelayMinutes: 0,    // 🚀 INSTANT!
-      sourceCampaign: lead.source,
-    });
+    // 3. SEND IMMEDIATELY (bypass scheduler)
+    const sendProftestResultEmail = (await import('../services/resend.js')).sendProftestResultEmail;
+    const sendProftestResultSMS = (await import('../services/mobizon.js')).sendProftestResultSMS;
 
-    console.log(`✅ Resend scheduled for lead ${leadId}`);
+    let emailSuccess = false;
+    let smsSuccess = false;
+
+    // Send Email if needed
+    if (needsEmail) {
+      try {
+        emailSuccess = await sendProftestResultEmail(lead.email, lead.name, leadId);
+        if (emailSuccess) {
+          await landingSupabase
+            .from('landing_leads')
+            .update({ email_sent: true })
+            .eq('id', leadId);
+          console.log(`✅ Email sent to ${lead.email}`);
+        }
+      } catch (err: any) {
+        console.error(`❌ Email failed: ${err.message}`);
+      }
+    }
+
+    // Send SMS if needed
+    if (needsSMS) {
+      try {
+        smsSuccess = await sendProftestResultSMS(lead.phone, leadId);
+        if (smsSuccess) {
+          await landingSupabase
+            .from('landing_leads')
+            .update({ sms_sent: true })
+            .eq('id', leadId);
+          console.log(`✅ SMS sent to ${lead.phone}`);
+        }
+      } catch (err: any) {
+        console.error(`❌ SMS failed: ${err.message}`);
+      }
+    }
+
+    // Update scheduled_notifications if exists
+    await landingSupabase
+      .from('scheduled_notifications')
+      .update({ 
+        status: (emailSuccess && smsSuccess) || (!needsEmail && smsSuccess) || (emailSuccess && !needsSMS) ? 'sent' : 'failed',
+        sent_at: new Date().toISOString() 
+      })
+      .eq('lead_id', leadId)
+      .eq('status', 'pending');
+
+    console.log(`✅ INSTANT Resend completed for lead ${leadId}`);
 
     return res.status(200).json({
       success: true,
-      message: 'Notifications resent',
-      resent: {
-        email: needsEmail,
-        sms: needsSMS,
+      message: 'Notifications sent instantly',
+      sent: {
+        email: emailSuccess || !needsEmail,
+        sms: smsSuccess || !needsSMS,
       }
     });
 
   } catch (error: any) {
-    console.error('❌ Error resending notifications:', error);
+    console.error('❌ Error in instant resend:', error);
     return res.status(500).json({
       error: 'Failed to resend notifications',
       message: error.message,
