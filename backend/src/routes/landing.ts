@@ -844,9 +844,6 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
     console.log(`📧 INSTANT Sending: Email=${needsEmail}, SMS=${needsSMS}`);
 
     // 3. SEND IMMEDIATELY (bypass scheduler)
-    const { sendProftestResultEmail } = await import('../services/resend');
-    const { sendProftestResultSMS } = await import('../services/mobizon');
-
     let emailSuccess = false;
     let smsSuccess = false;
 
