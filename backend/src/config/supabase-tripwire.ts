@@ -14,10 +14,11 @@ import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
 const tripwireUrl = process.env.TRIPWIRE_SUPABASE_URL!;
-const tripwireServiceRoleKey = process.env.TRIPWIRE_SERVICE_ROLE_KEY!;
+// 🔥 FIX: Support both naming conventions (old and new)
+const tripwireServiceRoleKey = process.env.TRIPWIRE_SERVICE_ROLE_KEY || process.env.TRIPWIRE_SUPABASE_SERVICE_KEY!;
 
 if (!tripwireUrl || !tripwireServiceRoleKey) {
-  throw new Error('Missing TRIPWIRE_SUPABASE_URL or TRIPWIRE_SERVICE_ROLE_KEY environment variables');
+  throw new Error('Missing TRIPWIRE_SUPABASE_URL or TRIPWIRE_SERVICE_ROLE_KEY/TRIPWIRE_SUPABASE_SERVICE_KEY environment variables');
 }
 
 /**
