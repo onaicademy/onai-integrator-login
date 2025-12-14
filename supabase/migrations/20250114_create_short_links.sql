@@ -115,3 +115,4 @@ COMMENT ON COLUMN short_links.unique_ips IS 'Массив уникальных I
 -- ========================================
 -- ✅ MIGRATION COMPLETE
 -- ========================================
+

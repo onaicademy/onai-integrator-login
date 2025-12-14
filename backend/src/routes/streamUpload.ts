@@ -160,8 +160,191 @@ async function waitForVideoReadyAndTranscribe(videoId: string): Promise<void> {
 }
 
 /**
+ * 🚀 POST /api/stream/get-upload-url
+ * Creates video in Bunny CDN and returns direct upload URL
+ * 
+ * НОВЫЙ МЕТОД: Direct Upload (без загрузки через сервер)
+ * 
+ * Flow:
+ * 1. Frontend запрашивает upload URL
+ * 2. Backend создает видео в Bunny, возвращает URL
+ * 3. Frontend загружает напрямую в Bunny CDN
+ * 4. Frontend уведомляет backend о завершении
+ */
+router.post('/get-upload-url', async (req: Request, res: Response) => {
+  try {
+    if (!BUNNY_STREAM_API_KEY || !BUNNY_STREAM_LIBRARY_ID) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'BunnyCDN Stream not configured' 
+      });
+    }
+
+    const { lessonId, title, fileName } = req.body;
+    
+    if (!lessonId) {
+      return res.status(400).json({ success: false, error: 'lessonId is required' });
+    }
+
+    const videoTitle = title || fileName || `Lesson ${lessonId} Video`;
+    console.log(`🎬 Creating video in BunnyCDN for direct upload: ${videoTitle} (Lesson ID: ${lessonId})`);
+
+    // Создаём видео в BunnyCDN Stream
+    const createVideoResponse = await fetch(
+      `https://video.bunnycdn.com/library/${BUNNY_STREAM_LIBRARY_ID}/videos`,
+      {
+        method: 'POST',
+        headers: {
+          'AccessKey': BUNNY_STREAM_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: videoTitle,
+        }),
+      }
+    );
+
+    if (!createVideoResponse.ok) {
+      const errorText = await createVideoResponse.text();
+      console.error('❌ BunnyCDN Create Video Error:', errorText);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to create video in BunnyCDN',
+        details: errorText
+      });
+    }
+
+    const videoData: any = await createVideoResponse.json();
+    const videoId = videoData.guid;
+
+    console.log(`✅ Video created in BunnyCDN. ID: ${videoId}`);
+
+    // Формируем URL для прямой загрузки
+    const uploadUrl = `https://video.bunnycdn.com/library/${BUNNY_STREAM_LIBRARY_ID}/videos/${videoId}`;
+
+    // Возвращаем URL и credentials
+    return res.json({
+      success: true,
+      videoId: videoId,
+      uploadUrl: uploadUrl,
+      apiKey: BUNNY_STREAM_API_KEY,
+      lessonId: lessonId,
+      title: videoTitle,
+      message: 'Ready for direct upload. Use PUT request to uploadUrl with video file.'
+    });
+
+  } catch (error: any) {
+    console.error('❌ Error creating upload URL:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * ✅ POST /api/stream/complete-upload
+ * Confirms upload completion and updates database
+ */
+router.post('/complete-upload', async (req: Request, res: Response) => {
+  try {
+    const { videoId, lessonId, duration_seconds, fileName, fileSize } = req.body;
+    
+    if (!videoId || !lessonId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'videoId and lessonId are required' 
+      });
+    }
+
+    console.log(`✅ Completing upload for video ${videoId}, lesson ${lessonId}`);
+
+    // Обновляем lessons.bunny_video_id
+    const { error: lessonUpdateError } = await adminSupabase
+      .from('lessons')
+      .update({
+        bunny_video_id: videoId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', parseInt(lessonId));
+
+    if (lessonUpdateError) {
+      console.error('❌ Error updating lesson:', lessonUpdateError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update lesson',
+        details: lessonUpdateError.message 
+      });
+    }
+
+    // Обновляем/создаем video_content
+    const durationSeconds = parseInt(duration_seconds || '0');
+    
+    const { error: videoError } = await adminSupabase
+      .from('video_content')
+      .upsert({
+        lesson_id: parseInt(lessonId),
+        r2_object_key: videoId,
+        r2_bucket_name: BUNNY_STREAM_LIBRARY_ID,
+        bunny_video_id: videoId,
+        filename: fileName || 'uploaded_video.mp4',
+        public_url: `https://${BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/playlist.m3u8`,
+        file_size_bytes: fileSize || 0,
+        duration_seconds: durationSeconds,
+        upload_status: 'completed',
+        transcoding_status: 'processing',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'lesson_id'
+      });
+
+    if (videoError) {
+      console.error('❌ Error saving video metadata:', videoError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to save video metadata',
+        details: videoError.message 
+      });
+    }
+
+    // Update lesson duration
+    if (durationSeconds > 0) {
+      const durationMinutes = Math.round(durationSeconds / 60);
+      await adminSupabase
+        .from('lessons')
+        .update({ duration_minutes: durationMinutes })
+        .eq('id', lessonId);
+    }
+
+    // Запускаем автотранскрибацию в фоне
+    console.log(`🎙️ [Auto-Transcribe] Scheduling transcription for video ${videoId}...`);
+    waitForVideoReadyAndTranscribe(videoId)
+      .then(() => console.log(`✅ [Auto-Transcribe] Completed for ${videoId}`))
+      .catch((error: Error) => console.error(`❌ [Auto-Transcribe] Failed:`, error.message));
+
+    return res.json({
+      success: true,
+      videoId: videoId,
+      hlsUrl: `https://${BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/playlist.m3u8`,
+      thumbnailUrl: `https://${BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`,
+      message: 'Upload completed successfully. Video is processing.'
+    });
+
+  } catch (error: any) {
+    console.error('❌ Error completing upload:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+/**
  * 🎬 POST /api/stream/upload
  * Uploads video to BunnyCDN Stream and saves metadata to database
+ * 
+ * СТАРЫЙ МЕТОД: Загрузка через сервер (для совместимости)
  */
 router.post('/upload', upload.single('video'), async (req: Request, res: Response) => {
   try {

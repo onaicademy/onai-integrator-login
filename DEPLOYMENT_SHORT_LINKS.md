@@ -288,3 +288,4 @@ export async function sendProftestResultSMS(phone: string, leadId?: string): Pro
 4. Откатите изменения по инструкции выше
 
 **Удачи!** 💪
+

@@ -188,13 +188,31 @@ export function TripwireLessonEditDialog({
           setUploadStatus('📹 Загружаем новое видео в Bunny Stream...');
           const durationSeconds = await getVideoDuration(videoFile);
           
-          const formData = new FormData();
-          formData.append('lessonId', lesson.id.toString());
-          formData.append('title', title);
-          formData.append('duration_seconds', durationSeconds.toString());
-          formData.append('video', videoFile);
+          // 🚀 DIRECT UPLOAD TO BUNNY CDN (bypass server)
+          const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
           
-          // ✅ Используем XMLHttpRequest для прогресс-бара
+          // Шаг 1: Получить Upload URL от backend
+          setUploadStatus('🔑 Получаем ссылку для загрузки...');
+          const uploadUrlResponse = await fetch(`${uploadApiUrl}/api/stream/get-upload-url`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lessonId: lesson.id.toString(),
+              title: title,
+              fileName: videoFile.name,
+            }),
+          });
+          
+          const uploadData = await uploadUrlResponse.json();
+          if (!uploadData.success) {
+            throw new Error(uploadData.error || 'Failed to get upload URL');
+          }
+          
+          console.log('✅ Upload URL получен:', uploadData.uploadUrl);
+          
+          // Шаг 2: Загрузить видео НАПРЯМУЮ в Bunny CDN
+          setUploadStatus('📹 Загружаем видео напрямую в Bunny CDN...');
+          
           await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             
@@ -204,35 +222,50 @@ export function TripwireLessonEditDialog({
                 const totalMB = (e.total / (1024 * 1024)).toFixed(1);
                 const percentComplete = Math.round((e.loaded / e.total) * 100);
                 setUploadProgress(percentComplete);
-                setUploadStatus(`📹 Загружено: ${loadedMB} MB / ${totalMB} MB (${percentComplete}%)`);
-                console.log(`📊 Upload progress: ${loadedMB} MB / ${totalMB} MB (${percentComplete}%)`);
+                setUploadStatus(`🚀 Прямая загрузка: ${loadedMB} MB / ${totalMB} MB (${percentComplete}%)`);
+                console.log(`📊 Direct upload progress: ${loadedMB} MB / ${totalMB} MB (${percentComplete}%)`);
               }
             });
 
-            xhr.addEventListener('load', () => {
+            xhr.addEventListener('load', async () => {
               if (xhr.status >= 200 && xhr.status < 300) {
-                console.log('✅ Видео загружено в Bunny Stream! Начинается обработка...');
-                setUploadProgress(90);
-                setUploadStatus('✅ Загружено! Обработка началась...');
-                resolve(JSON.parse(xhr.responseText));
+                console.log('✅ Видео загружено напрямую в Bunny Stream!');
+                setUploadProgress(95);
+                setUploadStatus('✅ Загружено! Завершаем...');
+                resolve(xhr.responseText);
               } else {
-                reject(new Error(`Upload failed with status ${xhr.status}`));
+                reject(new Error(`Direct upload failed with status ${xhr.status}`));
               }
             });
 
             xhr.addEventListener('error', () => {
-              reject(new Error('Network error during video upload'));
+              reject(new Error('Network error during direct upload'));
             });
             
-            const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            xhr.open('POST', `${uploadApiUrl}/api/stream/upload`);
-            
-            // ✅ Устанавливаем CORS заголовки явно
-            xhr.withCredentials = false; // Multipart не требует credentials
+            // ✅ PUT запрос напрямую в Bunny CDN
+            xhr.open('PUT', uploadData.uploadUrl);
+            xhr.setRequestHeader('AccessKey', uploadData.apiKey);
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
             
             uploadXHRRef.current = xhr;
-            xhr.send(formData);
+            xhr.send(videoFile);
           });
+          
+          // Шаг 3: Уведомить backend о завершении
+          setUploadStatus('💾 Сохраняем данные о видео...');
+          await fetch(`${uploadApiUrl}/api/stream/complete-upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              videoId: uploadData.videoId,
+              lessonId: lesson.id.toString(),
+              duration_seconds: durationSeconds.toString(),
+              fileName: videoFile.name,
+              fileSize: videoFile.size,
+            }),
+          });
+          
+          console.log('✅ Видео успешно загружено через Direct Upload!');
         } else {
           setUploadProgress(60);
         }
@@ -284,14 +317,84 @@ export function TripwireLessonEditDialog({
         setUploadStatus('📹 Загружаем видео в Bunny Stream...');
         const durationSeconds = await getVideoDuration(videoFile);
         
-        const formData = new FormData();
-        formData.append('lessonId', newLessonId.toString());
-        formData.append('title', title);
-        formData.append('duration_seconds', durationSeconds.toString());
-        formData.append('video', videoFile);
+        // 🚀 DIRECT UPLOAD TO BUNNY CDN (bypass server)
+        const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        
+        // Шаг 1: Получить Upload URL от backend
+        setUploadStatus('🔑 Получаем ссылку для загрузки...');
+        const uploadUrlResponse = await fetch(`${uploadApiUrl}/api/stream/get-upload-url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonId: newLessonId.toString(),
+            title: title,
+            fileName: videoFile.name,
+          }),
+        });
+        
+        const uploadData = await uploadUrlResponse.json();
+        if (!uploadData.success) {
+          throw new Error(uploadData.error || 'Failed to get upload URL');
+        }
+        
+        console.log('✅ Upload URL получен:', uploadData.uploadUrl);
+        
+        // Шаг 2: Загрузить видео НАПРЯМУЮ в Bunny CDN
+        setUploadStatus('📹 Загружаем видео напрямую в Bunny CDN...');
+        
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+              const totalMB = (e.total / (1024 * 1024)).toFixed(1);
+              const percentComplete = Math.round((e.loaded / e.total) * 100);
+              setUploadProgress(percentComplete);
+              setUploadStatus(`🚀 Прямая загрузка: ${loadedMB} MB / ${totalMB} MB (${percentComplete}%)`);
+              console.log(`📊 Direct upload progress: ${loadedMB} MB / ${totalMB} MB (${percentComplete}%)`);
+            }
+          });
 
-        const uploadResult = await api.post('/api/stream/upload', formData);
-        console.log('✅ Видео загружено в Bunny Stream:', uploadResult);
+          xhr.addEventListener('load', async () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              console.log('✅ Видео загружено напрямую в Bunny Stream!');
+              setUploadProgress(45);
+              setUploadStatus('✅ Загружено! Завершаем...');
+              resolve(xhr.responseText);
+            } else {
+              reject(new Error(`Direct upload failed with status ${xhr.status}`));
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            reject(new Error('Network error during direct upload'));
+          });
+          
+          // ✅ PUT запрос напрямую в Bunny CDN
+          xhr.open('PUT', uploadData.uploadUrl);
+          xhr.setRequestHeader('AccessKey', uploadData.apiKey);
+          xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+          
+          uploadXHRRef.current = xhr;
+          xhr.send(videoFile);
+        });
+        
+        // Шаг 3: Уведомить backend о завершении
+        setUploadStatus('💾 Сохраняем данные о видео...');
+        await fetch(`${uploadApiUrl}/api/stream/complete-upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoId: uploadData.videoId,
+            lessonId: newLessonId.toString(),
+            duration_seconds: durationSeconds.toString(),
+            fileName: videoFile.name,
+            fileSize: videoFile.size,
+          }),
+        });
+        
+        console.log('✅ Видео успешно загружено через Direct Upload!');
         setUploadProgress(50);
       } else {
         setUploadProgress(50);
