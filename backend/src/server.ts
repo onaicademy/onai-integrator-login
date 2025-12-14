@@ -117,6 +117,7 @@ import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TE
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
+import { startNotificationScheduler } from './services/notificationScheduler.js';
 import { recoverPendingNotifications } from './services/scheduledNotifications.js';
 import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
 
@@ -429,6 +430,9 @@ const server = app.listen(PORT, async () => {
   
   // 🔥 RECOVER PENDING SMS/EMAIL NOTIFICATIONS FROM DB
   await recoverPendingNotifications();
+  
+  // Start notification scheduler (проверяет просроченные notifications каждую минуту)
+  startNotificationScheduler();
   
   // Start reminder scheduler
   startReminderScheduler();
