@@ -116,6 +116,7 @@ import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TE
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
+import { recoverPendingNotifications } from './services/scheduledNotifications.js';
 import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
 
 const app = express();
@@ -418,11 +419,14 @@ process.on('SIGINT', () => {
 });
 
 // Запуск сервера
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`🚀 Backend API запущен на http://localhost:${PORT}`);
   console.log(`Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log('🛡️ Обработчики критических ошибок активированы');
+  
+  // 🔥 RECOVER PENDING SMS/EMAIL NOTIFICATIONS FROM DB
+  await recoverPendingNotifications();
   
   // Start reminder scheduler
   startReminderScheduler();

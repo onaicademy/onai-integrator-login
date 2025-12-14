@@ -43,6 +43,129 @@ interface ScheduledNotification {
   sourceCampaign: string;
 }
 
+// ========================================
+// 🔥 PERSISTENT STORAGE IN DB
+// ========================================
+
+/**
+ * Save scheduled notification to DB (PERSISTENT)
+ */
+async function saveScheduledNotificationToDB(
+  leadId: string,
+  notification: ScheduledNotification,
+  scheduledFor: Date
+): Promise<void> {
+  try {
+    const { data, error } = await getLandingSupabase()
+      .from('scheduled_notifications')
+      .insert({
+        lead_id: leadId,
+        notification_type: 'both', // SMS + Email
+        recipient_name: notification.name,
+        recipient_email: notification.email,
+        recipient_phone: notification.phone,
+        source_campaign: notification.sourceCampaign,
+        scheduled_for: scheduledFor.toISOString(),
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    console.log(`💾 [Lead ${leadId}] Saved to DB (scheduled_notifications)`);
+  } catch (err: any) {
+    console.error(`❌ Failed to save to DB:`, err.message);
+  }
+}
+
+/**
+ * Update notification status in DB
+ */
+async function updateNotificationStatus(
+  leadId: string,
+  status: 'sent' | 'failed' | 'cancelled',
+  errorMessage?: string
+): Promise<void> {
+  try {
+    await getLandingSupabase()
+      .from('scheduled_notifications')
+      .update({
+        status,
+        sent_at: status === 'sent' ? new Date().toISOString() : null,
+        error_message: errorMessage || null,
+      })
+      .eq('lead_id', leadId)
+      .eq('status', 'pending'); // Only update pending ones
+
+    console.log(`✅ [Lead ${leadId}] DB status → ${status}`);
+  } catch (err: any) {
+    console.warn(`⚠️ Failed to update DB status:`, err.message);
+  }
+}
+
+/**
+ * Load pending notifications from DB and reschedule them
+ */
+export async function recoverPendingNotifications(): Promise<void> {
+  try {
+    console.log('\n🔄 [RECOVERY] Loading pending notifications from DB...');
+
+    const { data, error } = await getLandingSupabase()
+      .from('scheduled_notifications')
+      .select('*')
+      .eq('status', 'pending')
+      .order('scheduled_for', { ascending: true });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      console.log('✅ [RECOVERY] No pending notifications');
+      return;
+    }
+
+    console.log(`📋 [RECOVERY] Found ${data.length} pending notifications`);
+
+    for (const notif of data) {
+      const scheduledFor = new Date(notif.scheduled_for);
+      const now = new Date();
+      const delayMs = scheduledFor.getTime() - now.getTime();
+
+      // If scheduled time already passed, send immediately
+      if (delayMs <= 0) {
+        console.log(`⚡ [Lead ${notif.lead_id}] OVERDUE - sending immediately`);
+        await executeNotification({
+          leadId: notif.lead_id,
+          name: notif.recipient_name,
+          email: notif.recipient_email,
+          phone: notif.recipient_phone,
+          sourceCampaign: notif.source_campaign,
+        });
+      } else {
+        // Reschedule for future
+        console.log(
+          `⏰ [Lead ${notif.lead_id}] Rescheduling in ${Math.round(delayMs / 1000)}s`
+        );
+        const timeout = setTimeout(() => {
+          executeNotification({
+            leadId: notif.lead_id,
+            name: notif.recipient_name,
+            email: notif.recipient_email,
+            phone: notif.recipient_phone,
+            sourceCampaign: notif.source_campaign,
+          });
+          scheduledNotifications.delete(notif.lead_id);
+        }, delayMs);
+
+        scheduledNotifications.set(notif.lead_id, timeout);
+      }
+    }
+
+    console.log(`✅ [RECOVERY] Restored ${data.length} notifications`);
+  } catch (err: any) {
+    console.error(`❌ [RECOVERY] Failed:`, err.message);
+  }
+}
+
 /**
  * Send proftest Email and update tracking
  */
@@ -225,6 +348,58 @@ async function sendProftestSMSWithTracking(
 }
 
 /**
+ * Execute notification: send SMS + Email + update DB status
+ */
+async function executeNotification(
+  notification: ScheduledNotification
+): Promise<void> {
+  const { leadId, name, email, phone, sourceCampaign } = notification;
+
+  console.log(`\n🚀 [Lead ${leadId}] Executing scheduled notification...`);
+
+  let emailSuccess = false;
+  let smsSuccess = false;
+  let errorMessages: string[] = [];
+
+  // 1. Create unified lead first
+  try {
+    await createUnifiedLead(notification);
+  } catch (err: any) {
+    console.error(`❌ Failed to create unified lead:`, err.message);
+    errorMessages.push(`unified: ${err.message}`);
+  }
+
+  // 2. Send Email
+  try {
+    emailSuccess = await sendProftestEmailWithTracking(name, email, leadId);
+  } catch (err: any) {
+    console.error(`❌ Email error:`, err.message);
+    errorMessages.push(`email: ${err.message}`);
+  }
+
+  // 3. Send SMS
+  try {
+    smsSuccess = await sendProftestSMSWithTracking(phone, email, leadId);
+  } catch (err: any) {
+    console.error(`❌ SMS error:`, err.message);
+    errorMessages.push(`sms: ${err.message}`);
+  }
+
+  // 4. Update DB status
+  if (emailSuccess && smsSuccess) {
+    await updateNotificationStatus(leadId, 'sent');
+    console.log(`✅ [Lead ${leadId}] Notification completed successfully`);
+  } else {
+    await updateNotificationStatus(
+      leadId,
+      'failed',
+      errorMessages.join('; ')
+    );
+    console.log(`⚠️ [Lead ${leadId}] Notification partially failed`);
+  }
+}
+
+/**
  * Create lead in unified_lead_tracking
  */
 async function createUnifiedLead(
@@ -261,7 +436,7 @@ async function createUnifiedLead(
 }
 
 /**
- * Main scheduling function
+ * Main scheduling function (WITH PERSISTENT DB STORAGE)
  */
 export function scheduleProftestNotifications(
   data: ScheduledNotification
@@ -274,45 +449,43 @@ export function scheduleProftestNotifications(
   console.log(` ⏳ Delay: 10 minutes`);
   console.log(` 🔗 Lead ID: ${leadId}`);
 
+  // 💾 SAVE TO DB (PERSISTENT!)
+  const scheduledFor = new Date(Date.now() + NOTIFICATION_DELAY_MS);
+  saveScheduledNotificationToDB(leadId, data, scheduledFor);
+
   // ✅ Create in unified_lead_tracking immediately
   createUnifiedLead(data);
 
   // Schedule notifications after delay
   const timeoutId = setTimeout(async () => {
-    console.log(`\n🚀 EXECUTING SCHEDULED NOTIFICATIONS for ${name}`);
     try {
-      // Send Email
-      const emailSent = await sendProftestEmailWithTracking(
-        name,
-        email,
-        leadId
-      );
-
-      // Send SMS
-      const smsSent = await sendProftestSMSWithTracking(phone, email, leadId);
-
-      // Remove from scheduled
+      // 🚀 Execute via unified function (updates DB status automatically)
+      await executeNotification(data);
+      
+      // Remove from in-memory map
       scheduledNotifications.delete(leadId);
-
-      console.log(`\n🎉 NOTIFICATIONS COMPLETE for ${name}`);
-      console.log(` ✅ Email: ${emailSent ? 'SENT' : 'FAILED'}`);
-      console.log(` ✅ SMS: ${smsSent ? 'SENT' : 'FAILED'}\n`);
     } catch (error) {
       console.error(`\n❌ CRITICAL ERROR for ${name}:`, error);
+      await updateNotificationStatus(leadId, 'failed', (error as Error).message);
     }
   }, NOTIFICATION_DELAY_MS);
 
   scheduledNotifications.set(leadId, timeoutId);
+  console.log(`✅ Scheduled + saved to DB`);
 }
 
 /**
- * Cancel scheduled notification
+ * Cancel scheduled notification (also updates DB)
  */
-export function cancelScheduledNotification(leadId: string): void {
+export async function cancelScheduledNotification(leadId: string): Promise<void> {
   const timeoutId = scheduledNotifications.get(leadId);
   if (timeoutId) {
     clearTimeout(timeoutId);
     scheduledNotifications.delete(leadId);
+    
+    // Update DB status
+    await updateNotificationStatus(leadId, 'cancelled');
+    
     console.log(`⏹️ Cancelled scheduled notification for lead ${leadId}`);
   }
 }
