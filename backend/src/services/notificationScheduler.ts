@@ -54,6 +54,21 @@ async function sendProftestEmailWithTracking(
       throw new Error('Invalid email format');
     }
 
+    // 🛡️ IDEMPOTENCY CHECK: Don't send if already sent
+    const { data: leadCheck, error: checkError } = await getLandingSupabase()
+      .from('landing_leads')
+      .select('email_sent')
+      .eq('id', leadId)
+      .single();
+
+    if (checkError) {
+      console.warn(`⚠️ Could not check Email status: ${checkError.message}`);
+      // Continue anyway if DB check fails
+    } else if (leadCheck?.email_sent) {
+      console.log(`⏭️ [Scheduler] Email already sent to ${email} - skipping`);
+      return true; // Return success since Email was already sent
+    }
+
     const trackingUrl = `https://api.onai.academy/api/landing/track/${leadId}?source=email`;
     const htmlContent = generateProftestResultEmail(name, trackingUrl);
 
@@ -115,6 +130,21 @@ async function sendProftestSMSWithTracking(
 
     if (!phone || phone.length < 10) {
       throw new Error('Invalid phone format');
+    }
+
+    // 🛡️ IDEMPOTENCY CHECK: Don't send if already sent
+    const { data: leadCheck, error: checkError } = await getLandingSupabase()
+      .from('landing_leads')
+      .select('sms_sent')
+      .eq('id', leadId)
+      .single();
+
+    if (checkError) {
+      console.warn(`⚠️ Could not check SMS status: ${checkError.message}`);
+      // Continue anyway if DB check fails
+    } else if (leadCheck?.sms_sent) {
+      console.log(`⏭️ [Scheduler] SMS already sent to ${phone} - skipping`);
+      return true; // Return success since SMS was already sent
     }
 
     const success = await sendProftestResultSMS(phone, leadId);

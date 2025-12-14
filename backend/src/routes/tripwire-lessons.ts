@@ -661,8 +661,8 @@ router.post('/lessons', async (req, res) => {
     }
 
     // Get max order_index for this module
-    const { data: existingLessons } = await adminSupabase
-      .from('lessons')
+    const { data: existingLessons } = await tripwireAdminSupabase
+      .from('tripwire_lessons')
       .select('order_index')
       .eq('module_id', module_id)
       .order('order_index', { ascending: false })
@@ -673,8 +673,8 @@ router.post('/lessons', async (req, res) => {
       : 0;
 
     // Create lesson
-    const { data: lesson, error } = await adminSupabase
-      .from('lessons')
+    const { data: lesson, error } = await tripwireAdminSupabase
+      .from('tripwire_lessons')
       .insert({
         title,
         description: description || '',
@@ -717,8 +717,8 @@ router.put('/lessons/:id', async (req, res) => {
       tip_length: tip?.length || 0
     });
 
-    const { data: lesson, error } = await adminSupabase
-      .from('lessons')
+    const { data: lesson, error } = await tripwireAdminSupabase
+      .from('tripwire_lessons')
       .update({
         title,
         description: description || '',

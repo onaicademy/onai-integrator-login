@@ -170,6 +170,7 @@ export async function recoverPendingNotifications(): Promise<void> {
 /**
  * Send proftest Email and update tracking
  * ✅ EXPORTED for manual resend from admin panel
+ * ✅ WITH IDEMPOTENCY CHECK to prevent duplicate sends
  */
 export async function sendProftestEmailWithTracking(
   name: string,
@@ -182,6 +183,21 @@ export async function sendProftestEmailWithTracking(
     // Validate email
     if (!email || !email.includes('@')) {
       throw new Error('Invalid email format');
+    }
+
+    // 🛡️ IDEMPOTENCY CHECK: Don't send if already sent
+    const { data: leadCheck, error: checkError } = await getLandingSupabase()
+      .from('landing_leads')
+      .select('email_sent')
+      .eq('id', leadId)
+      .single();
+
+    if (checkError) {
+      console.warn(`⚠️ Could not check Email status: ${checkError.message}`);
+      // Continue anyway if DB check fails
+    } else if (leadCheck?.email_sent) {
+      console.log(`⏭️ [Lead ${leadId}] Email already sent - skipping duplicate`);
+      return true; // Return success since Email was already sent
     }
 
     // Generate HTML content using professional template with tracking URL
@@ -265,6 +281,7 @@ export async function sendProftestEmailWithTracking(
 
 /**
  * Send proftest SMS and update tracking
+ * ✅ WITH IDEMPOTENCY CHECK to prevent duplicate sends
  */
 async function sendProftestSMSWithTracking(
   phone: string,
@@ -277,6 +294,21 @@ async function sendProftestSMSWithTracking(
     // Validate phone
     if (!phone || phone.length < 10) {
       throw new Error('Invalid phone format');
+    }
+
+    // 🛡️ IDEMPOTENCY CHECK: Don't send if already sent
+    const { data: leadCheck, error: checkError } = await getLandingSupabase()
+      .from('landing_leads')
+      .select('sms_sent')
+      .eq('id', leadId)
+      .single();
+
+    if (checkError) {
+      console.warn(`⚠️ Could not check SMS status: ${checkError.message}`);
+      // Continue anyway if DB check fails
+    } else if (leadCheck?.sms_sent) {
+      console.log(`⏭️ [Lead ${leadId}] SMS already sent - skipping duplicate`);
+      return true; // Return success since SMS was already sent
     }
 
     // Send SMS with tracking URL
