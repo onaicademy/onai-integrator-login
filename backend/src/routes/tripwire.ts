@@ -100,15 +100,18 @@ router.get('/module-unlocks/:userId', async (req, res) => {
     
     console.log('🔓 Getting module unlocks for Tripwire user:', userId);
     
-    // ✅ FIX: Читаем из Tripwire DB (не Main!)
-    const { tripwirePool } = require('../config/tripwire-db');
-    const result = await tripwirePool.query(`
-      SELECT * FROM module_unlocks
-      WHERE user_id = $1::uuid
-      ORDER BY unlocked_at DESC
-    `, [userId]);
+    // ✅ FIX: Используем Supabase REST API вместо прямого PostgreSQL
+    const { tripwireAdminSupabase } = require('../config/supabase-tripwire');
+    const { data: unlocks, error } = await tripwireAdminSupabase
+      .from('module_unlocks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('unlocked_at', { ascending: false });
     
-    const unlocks = result.rows;
+    if (error) {
+      console.error('❌ Error fetching module unlocks:', error);
+      return res.status(500).json({ error: error.message || 'Failed to fetch module unlocks' });
+    }
     
     console.log(`✅ Found ${unlocks?.length || 0} module unlocks for user ${userId}`);
     

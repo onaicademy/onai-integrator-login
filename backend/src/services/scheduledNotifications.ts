@@ -169,8 +169,9 @@ export async function recoverPendingNotifications(): Promise<void> {
 
 /**
  * Send proftest Email and update tracking
+ * ✅ EXPORTED for manual resend from admin panel
  */
-async function sendProftestEmailWithTracking(
+export async function sendProftestEmailWithTracking(
   name: string,
   email: string,
   leadId: string

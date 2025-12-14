@@ -13,23 +13,22 @@ interface CheckoutFormProps {
 export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campaignSlug }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',  // ✅ ДОБАВЛЕНО: Email обязательный
     phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState('--:--:--');
   const [isSuccess, setIsSuccess] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [redirectCountdown, setRedirectCountdown] = useState(3);
+  const [redirectCountdown, setRedirectCountdown] = useState(8); // Changed from 3 to 8 seconds
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', email: '', phone: '' });  // ✅ ДОБАВЛЕНО: Email reset
+      setFormData({ name: '', phone: '' });
       setIsSubmitting(false);
       setShowThankYou(false);
-      setRedirectCountdown(3);
+      setRedirectCountdown(8); // Reset to 8 seconds
     }
   }, [isOpen]);
 
@@ -200,7 +199,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
     e.preventDefault();
     
     // Validate form
-    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+    if (!formData.name.trim() || !formData.phone.trim()) {
       alert('Пожалуйста, заполните все поля');
       return;
     }
@@ -256,7 +255,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
       const redirectUrl = redirectUrls[paymentMethod as keyof typeof redirectUrls];
       
       // Start countdown and redirect
-      let countdownValue = 3;
+      let countdownValue = 8; // Changed from 3 to 8 seconds
       const countdownInterval = setInterval(() => {
         countdownValue -= 1;
         setRedirectCountdown(countdownValue);
@@ -330,8 +329,11 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
                   <div className="font-display text-3xl font-bold text-[#00FF94] mb-4 text-center">
                     СПАСИБО ЗА ЗАЯВКУ!
                   </div>
-                  <p className="text-white text-lg text-center mb-6">
-                    В течение <span className="font-display text-[#00FF94] text-2xl font-bold">{redirectCountdown}</span> секунд вы будете перенаправлены на страницу оплаты
+                  <p className="text-white text-base text-center mb-6 max-w-md leading-relaxed">
+                    Сейчас вы перенаправитесь на страницу оплаты. После оплаты с вами автоматически свяжется наш менеджер, подтвердит вашу оплату и выдаст доступ к экспресс обучению.
+                  </p>
+                  <p className="text-gray-400 text-sm text-center mb-4">
+                    Перенаправление через <span className="font-display text-[#00FF94] text-2xl font-bold">{redirectCountdown}</span> секунд
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-[#00FF94] rounded-full animate-pulse" />
@@ -377,24 +379,6 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
                       onChange={handleChange}
                       required
                       placeholder="Ваше полное имя"
-                      disabled={isSubmitting}
-                      className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
-                    />
-                  </div>
-
-                  {/* ✅ Email Input */}
-                  <div>
-                    <label htmlFor="email" className="block text-xs font-mono text-gray-400 uppercase mb-2">
-                      EMAIL *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="your@email.com"
                       disabled={isSubmitting}
                       className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
                     />

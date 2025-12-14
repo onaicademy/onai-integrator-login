@@ -370,6 +370,16 @@ router.post('/submit', async (req: Request, res: Response) => {
     // 2. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
     (async () => {
       try {
+        // 🔥 CRITICAL: Check AmoCRM credentials before attempting sync
+        if (!process.env.AMOCRM_ACCESS_TOKEN) {
+          console.error('❌❌❌ AmoCRM: ACCESS_TOKEN NOT SET! Cannot sync to AmoCRM!');
+          console.error('⚠️ Lead saved to database but NOT synced to AmoCRM');
+          console.error('📝 Lead ID:', leadId);
+          return; // Exit early, don't attempt sync
+        }
+        
+        console.log('🚀 Starting AmoCRM background sync for ExpressCourse lead:', leadId);
+        
         // 2a. Create or update in AmoCRM with deduplication and stage update (with retry)
         // 🔥 ENHANCED: Pass UTM params and campaign slug to AmoCRM
         const amocrmResult = await retryWithBackoff(
@@ -442,7 +452,10 @@ router.post('/submit', async (req: Request, res: Response) => {
         }
 
       } catch (bgError: any) {
-        console.error('❌ Background task error:', bgError.message);
+        console.error('❌❌❌ Background task error:', bgError.message);
+        console.error('🔎 Full error:', bgError);
+        console.error('📝 Lead ID:', leadId);
+        console.error('👤 Lead data:', { name, email, phone });
         // Don't crash the server, just log the error
       }
     })();
@@ -761,6 +774,16 @@ router.post('/proftest', async (req: Request, res: Response) => {
     // 3. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
     (async () => {
       try {
+        // 🔥 CRITICAL: Check AmoCRM credentials before attempting sync
+        if (!process.env.AMOCRM_ACCESS_TOKEN) {
+          console.error('❌❌❌ AmoCRM: ACCESS_TOKEN NOT SET! Cannot sync to AmoCRM!');
+          console.error('⚠️ Lead saved to database but NOT synced to AmoCRM');
+          console.error('📝 Lead ID:', leadId);
+          return; // Exit early, don't attempt sync
+        }
+        
+        console.log('🚀 Starting AmoCRM background sync for lead:', leadId);
+        
         // 3a. Create or update in AmoCRM with deduplication (with retry)
         const amocrmResult = await retryWithBackoff(
           () => createOrUpdateLead({
@@ -842,7 +865,10 @@ router.post('/proftest', async (req: Request, res: Response) => {
         console.log('✅ Notifications scheduled');
 
       } catch (bgError: any) {
-        console.error('❌ Background task error:', bgError.message);
+        console.error('❌❌❌ Background task error:', bgError.message);
+        console.error('🔎 Full error:', bgError);
+        console.error('📝 Lead ID:', leadId);
+        console.error('👤 Lead data:', { name, email, phone });
         // Don't crash the server, just log the error
       }
     })();
