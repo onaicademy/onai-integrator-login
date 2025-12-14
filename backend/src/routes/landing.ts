@@ -329,7 +329,7 @@ router.post('/submit', async (req: Request, res: Response) => {
     // 2. Add journey stage (optional - only if table exists)
     const stage = paymentMethod ? `payment_${paymentMethod}` : 'expresscourse_submitted';
     const { error: journeyError } = await landingSupabase
-      .from('lead_journey')
+      .from('journey_stages')
       .insert({
         lead_id: leadId,
         stage,
@@ -738,7 +738,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
 
     // 2. Add journey stage (optional - only if table exists)
     const { error: journeyError } = await landingSupabase
-      .from('lead_journey')
+      .from('journey_stages')
       .insert({
         lead_id: leadId,
         stage: 'proftest_submitted',
@@ -932,7 +932,7 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
 
     // 🎉 NEW: Track journey stage (expresscourse clicked from email/SMS)
     const { error: journeyError } = await landingSupabase
-      .from('lead_journey')
+      .from('journey_stages')
       .insert({
         lead_id: leadId,
         stage: 'expresscourse_clicked',

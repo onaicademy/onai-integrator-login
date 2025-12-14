@@ -14,7 +14,7 @@ import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
 const tripwireUrl = process.env.TRIPWIRE_SUPABASE_URL!;
-// 🔥 FIX: Support both naming conventions (old and new)
+// 🔥 FIX: Prefer newer key naming (TRIPWIRE_SERVICE_ROLE_KEY is the latest valid key)
 const tripwireServiceRoleKey = process.env.TRIPWIRE_SERVICE_ROLE_KEY || process.env.TRIPWIRE_SUPABASE_SERVICE_KEY!;
 
 if (!tripwireUrl || !tripwireServiceRoleKey) {
