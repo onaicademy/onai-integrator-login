@@ -25,8 +25,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: window.localStorage
-    // НЕ УКАЗЫВАЕМ storageKey - пусть Supabase использует дефолтный!
+    storage: window.localStorage,
+    storageKey: 'sb-main-auth-token' // ✅ Уникальный ключ для Main Platform
   }
 })
 
