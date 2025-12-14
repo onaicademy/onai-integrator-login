@@ -40,7 +40,7 @@ jobs:
             npm run build || echo "⚠️ Build предупреждения (не критично)"
             
             echo "🔄 Перезапуск PM2..."
-            pm2 reload onai-backend --update-env
+            pm2 restart onai-backend --update-env
             
             echo "✅ Проверка статуса..."
             pm2 status onai-backend
