@@ -47,6 +47,7 @@ router.get('/lessons/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
+    // ✅ FIX: Используем tripwireAdminSupabase (Tripwire БД, не Main Platform!)
     const { data: lesson, error } = await tripwireAdminSupabase
       .from('lessons')
       .select('*')
