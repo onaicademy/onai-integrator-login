@@ -1214,16 +1214,39 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     
     console.log(`📤 Manual AmoCRM sync request for lead: ${leadId}`);
 
-    // 1. Get lead data WITH journey stages
-    const { data: lead, error: fetchError } = await landingSupabase
+    // 1. 🔥 BACKWARDS COMPATIBLE: Try to get lead with journey stages, fallback to direct fetch
+    let lead: any;
+    let journeyStages: any[] = [];
+    
+    // Try fetching from view first (if migration applied)
+    const { data: leadWithJourney, error: viewError } = await landingSupabase
       .from('leads_with_journey')
       .select('*')
       .eq('id', leadId)
       .single();
 
-    if (fetchError || !lead) {
-      console.error('❌ Lead not found:', fetchError);
-      return res.status(404).json({ error: 'Lead not found' });
+    if (viewError) {
+      console.warn('⚠️ leads_with_journey view not available, using fallback');
+      
+      // FALLBACK: Get lead from landing_leads table
+      const { data: basicLead, error: fetchError } = await landingSupabase
+        .from('landing_leads')
+        .select('*')
+        .eq('id', leadId)
+        .single();
+      
+      if (fetchError || !basicLead) {
+        console.error('❌ Lead not found:', fetchError);
+        return res.status(404).json({ error: 'Lead not found' });
+      }
+      
+      lead = basicLead;
+      journeyStages = []; // No journey stages if view doesn't exist
+    } else {
+      lead = leadWithJourney;
+      journeyStages = Array.isArray(leadWithJourney.journey_stages) 
+        ? leadWithJourney.journey_stages 
+        : [];
     }
 
     // 2. Check if already in AmoCRM
@@ -1237,7 +1260,7 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     }
 
     // 3. 🔥 ENHANCED: Aggregate ALL journey data from all stages
-    console.log(`🔍 Analyzing journey for lead ${leadId}:`, lead.journey_stages);
+    console.log(`🔍 Analyzing journey for lead ${leadId}:`, journeyStages.length, 'stages');
     
     // Merge UTM params from all stages (newer stages override older)
     let aggregatedUTM: any = lead.metadata?.utmParams || {};
@@ -1252,8 +1275,8 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     let campaignSlug = lead.metadata?.campaignSlug || lead.source;
     
     // Parse journey stages to collect all data
-    if (lead.journey_stages && Array.isArray(lead.journey_stages)) {
-      lead.journey_stages.forEach((stage: any) => {
+    if (journeyStages.length > 0) {
+      journeyStages.forEach((stage: any) => {
         console.log(`  📍 Stage: ${stage.stage}, Source: ${stage.source}`);
         
         // Merge UTM params from this stage
@@ -1288,7 +1311,7 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
       proftestAnswersCount: Array.isArray(proftestAnswers) ? proftestAnswers.length : Object.keys(proftestAnswers || {}).length,
       paymentMethod,
       campaignSlug,
-      journeyStagesCount: lead.journey_stages?.length || 0,
+      journeyStagesCount: journeyStages.length,
     });
     
     const amocrmResult = await retryWithBackoff(
