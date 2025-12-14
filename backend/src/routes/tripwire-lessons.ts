@@ -24,7 +24,7 @@ router.get('/lessons', async (req, res) => {
     }
 
     const { data: lessons, error } = await tripwireAdminSupabase
-      .from('tripwire_lessons')
+      .from('lessons')
       .select('*')
       .eq('module_id', module_id)
       .eq('is_archived', false)
@@ -49,7 +49,7 @@ router.get('/lessons/:id', async (req, res) => {
 
     // ✅ FIX: Используем tripwireAdminSupabase (Tripwire БД, не Main Platform!)
     const { data: lesson, error } = await tripwireAdminSupabase
-      .from('tripwire_lessons')
+      .from('lessons')
       .select('*')
       .eq('id', id)
       .eq('is_archived', false)
@@ -72,9 +72,9 @@ router.get('/videos/:lessonId', async (req, res) => {
   try {
     const { lessonId } = req.params;
 
-    // В Tripwire БД нет таблицы video_content, bunny_video_id хранится в tripwire_lessons
+    // В Tripwire БД нет таблицы video_content, bunny_video_id хранится в lessons
     const { data: lesson, error } = await tripwireAdminSupabase
-      .from('tripwire_lessons')
+      .from('lessons')
       .select('bunny_video_id, video_duration')
       .eq('id', lessonId)
       .single();
@@ -662,7 +662,7 @@ router.post('/lessons', async (req, res) => {
 
     // Get max order_index for this module
     const { data: existingLessons } = await tripwireAdminSupabase
-      .from('tripwire_lessons')
+      .from('lessons')
       .select('order_index')
       .eq('module_id', module_id)
       .order('order_index', { ascending: false })
@@ -674,7 +674,7 @@ router.post('/lessons', async (req, res) => {
 
     // Create lesson
     const { data: lesson, error } = await tripwireAdminSupabase
-      .from('tripwire_lessons')
+      .from('lessons')
       .insert({
         title,
         description: description || '',
@@ -718,7 +718,7 @@ router.put('/lessons/:id', async (req, res) => {
     });
 
     const { data: lesson, error } = await tripwireAdminSupabase
-      .from('tripwire_lessons')
+      .from('lessons')
       .update({
         title,
         description: description || '',
