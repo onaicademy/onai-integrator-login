@@ -24,7 +24,7 @@ router.get('/lessons', async (req, res) => {
     }
 
     const { data: lessons, error } = await tripwireAdminSupabase
-      .from('lessons')
+      .from('tripwire_lessons')
       .select('*')
       .eq('module_id', module_id)
       .eq('is_archived', false)
@@ -49,7 +49,7 @@ router.get('/lessons/:id', async (req, res) => {
 
     // ✅ FIX: Используем tripwireAdminSupabase (Tripwire БД, не Main Platform!)
     const { data: lesson, error } = await tripwireAdminSupabase
-      .from('lessons')
+      .from('tripwire_lessons')
       .select('*')
       .eq('id', id)
       .eq('is_archived', false)
@@ -72,9 +72,9 @@ router.get('/videos/:lessonId', async (req, res) => {
   try {
     const { lessonId } = req.params;
 
-    // В Tripwire БД нет таблицы video_content, bunny_video_id хранится в lessons
+    // В Tripwire БД нет таблицы video_content, bunny_video_id хранится в tripwire_lessons
     const { data: lesson, error } = await tripwireAdminSupabase
-      .from('lessons')
+      .from('tripwire_lessons')
       .select('bunny_video_id, video_duration')
       .eq('id', lessonId)
       .single();
