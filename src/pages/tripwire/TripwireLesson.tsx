@@ -38,6 +38,7 @@ import { Bot } from "lucide-react";
 import confetti from "canvas-confetti";
 import AchievementModal from "./components/AchievementModal";
 import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
+import { VideoProcessingOverlay } from "@/components/tripwire/VideoProcessingOverlay";
 
 const TripwireLesson = () => {
   const { lessonId } = useParams(); // ✅ ТОЛЬКО lessonId из URL
@@ -102,6 +103,8 @@ const TripwireLesson = () => {
   // Lesson data
   const [lesson, setLesson] = useState<any>(null);
   const [video, setVideo] = useState<any>(null);
+  const [isVideoProcessing, setIsVideoProcessing] = useState(false);
+  const [processingVideoId, setProcessingVideoId] = useState<string | null>(null);
   
   // 🎯 Честный Video Tracking (учитывает только реальный просмотр, НЕ перемотку!)
   const {
@@ -259,11 +262,41 @@ const TripwireLesson = () => {
         
         // Если есть bunny_video_id, используем только его для HLS URL
         if (fetchedVideo?.bunny_video_id) {
-          setVideo({
-            ...fetchedVideo,
-            video_url: `https://video.onai.academy/${fetchedVideo.bunny_video_id}/playlist.m3u8`,
-            thumbnail_url: `https://video.onai.academy/${fetchedVideo.bunny_video_id}/thumbnail.jpg`
-          });
+          const videoId = fetchedVideo.bunny_video_id;
+          
+          // 🔍 Проверяем статус обработки видео
+          try {
+            const statusRes = await api.get(`/api/videos/bunny-status/${videoId}`);
+            const { status: videoStatus } = statusRes;
+            
+            // Status codes: 0=Created, 1=Uploading, 2=Uploaded, 3=Processing, 4=Encoded, 5=Error
+            if (videoStatus === 4) {
+              // ✅ Видео готово
+              setVideo({
+                ...fetchedVideo,
+                video_url: `https://video.onai.academy/${videoId}/playlist.m3u8`,
+                thumbnail_url: `https://video.onai.academy/${videoId}/thumbnail.jpg`
+              });
+              setIsVideoProcessing(false);
+            } else if (videoStatus === 3 || videoStatus === 2 || videoStatus === 1) {
+              // ⏳ Видео обрабатывается
+              console.log('⏳ Video is still processing:', videoStatus);
+              setProcessingVideoId(videoId);
+              setIsVideoProcessing(true);
+              setVideo(null);
+            } else {
+              console.warn('⚠️ Unknown video status:', videoStatus);
+              setVideo(null);
+            }
+          } catch (statusError) {
+            // Если не удалось проверить статус, показываем видео
+            console.warn('⚠️ Could not check video status, showing video anyway');
+            setVideo({
+              ...fetchedVideo,
+              video_url: `https://video.onai.academy/${videoId}/playlist.m3u8`,
+              thumbnail_url: `https://video.onai.academy/${videoId}/thumbnail.jpg`
+            });
+          }
         } else {
           // Если видео без bunny_video_id - значит оно старое (Bunny Storage)
           // Нужно перезагрузить видео через новый Bunny Stream
@@ -742,7 +775,20 @@ const TripwireLesson = () => {
           >
             {/* 🎥 SMART VIDEO PLAYER - DIRECT HLS STREAMING (Plyr + HLS.js) */}
             {video?.bunny_video_id ? (
-              <div className="space-y-4">
+              <div className="space-y-4 relative">
+                {/* 🎬 Processing Overlay */}
+                {isVideoProcessing && processingVideoId && (
+                  <VideoProcessingOverlay 
+                    videoId={processingVideoId} 
+                    onComplete={() => {
+                      console.log('✅ Video processing complete!');
+                      setIsVideoProcessing(false);
+                      setProcessingVideoId(null);
+                      loadLessonData(); // Reload data
+                    }}
+                  />
+                )}
+                
                 <SmartVideoPlayer 
                   videoId={video.bunny_video_id}
                   videoUrl={`https://video.onai.academy/${video.bunny_video_id}/playlist.m3u8`}
@@ -761,12 +807,27 @@ const TripwireLesson = () => {
               </div>
             ) : (
               <div className="relative rounded-2xl overflow-hidden border border-[#00FF88]/20">
-                <div className="aspect-video bg-[#0a0a0f] flex items-center justify-center">
-                  <div className="text-center">
-                    <Play className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-400">Видео еще не загружено</p>
+                {/* 🎬 Processing Overlay */}
+                {isVideoProcessing && processingVideoId ? (
+                  <div className="aspect-video bg-[#0a0a0f] relative">
+                    <VideoProcessingOverlay 
+                      videoId={processingVideoId} 
+                      onComplete={() => {
+                        console.log('✅ Video processing complete!');
+                        setIsVideoProcessing(false);
+                        setProcessingVideoId(null);
+                        loadLessonData(); // Reload data
+                      }}
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="aspect-video bg-[#0a0a0f] flex items-center justify-center">
+                    <div className="text-center">
+                      <Play className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                      <p className="text-gray-400">Видео еще не загружено</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

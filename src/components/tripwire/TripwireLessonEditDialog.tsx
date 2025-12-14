@@ -361,13 +361,8 @@ export function TripwireLessonEditDialog({
           
           console.log('✅ Видео успешно загружено через Direct Upload!');
           
-          // 🎉 Шаг 4: Начинаем мониторинг обработки
+          // 🎉 Видео загружено! Закрываем диалог, обработка будет на странице урока
           setIsUploading(false);
-          setIsProcessing(true);
-          setProcessingProgress(0);
-          setUploadStatus('⏳ Обработка видео: 0%');
-          
-          await monitorVideoProcessing(uploadData.videoId, lesson.id);
         } else {
           setUploadProgress(60);
         }
@@ -498,13 +493,8 @@ export function TripwireLessonEditDialog({
         
         console.log('✅ Видео успешно загружено через Direct Upload!');
                   
-        // 🎉 Шаг 4: Начинаем мониторинг обработки
+        // 🎉 Видео загружено! Закрываем диалог, обработка будет на странице урока
         setIsUploading(false);
-        setIsProcessing(true);
-        setProcessingProgress(0);
-        setUploadStatus('⏳ Обработка видео: 0%');
-                  
-        await monitorVideoProcessing(uploadData.videoId, newLessonId);
       } else {
         setUploadProgress(50);
       }
