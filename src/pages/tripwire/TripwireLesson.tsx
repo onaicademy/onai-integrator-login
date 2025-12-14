@@ -181,10 +181,11 @@ const TripwireLesson = () => {
   }, [moduleId]);
 
   useEffect(() => {
-    if (lessonId) {
+    // ✅ FIX #7: Загружаем данные только когда tripwireUserId готов
+    if (lessonId && tripwireUserId) {
       loadLessonData();
     }
-  }, [lessonId]);
+  }, [lessonId, tripwireUserId]); // ✅ Добавлена зависимость от tripwireUserId
 
   useEffect(() => {
     if (lessonId && allLessons.length > 0) {

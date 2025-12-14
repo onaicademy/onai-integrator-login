@@ -35,7 +35,8 @@ export default function TripwireProfile() {
   const [profile, setProfile] = useState<TripwireUserProfile | null>(null);
   const [achievements, setAchievements] = useState<TripwireAchievement[]>([]);
   const [certificate, setCertificate] = useState<TripwireCertificate | null>(null);
-  // ❌ УБРАНО: moduleProgress и detailedProgress state (не используются)
+  // ✅ FIX #4: Восстановлен moduleProgress state для отображения прогресса
+  const [moduleProgress, setModuleProgress] = useState<any[]>([]);
 
   // Achievement notification
   const [showFireworks, setShowFireworks] = useState(false);
@@ -211,8 +212,8 @@ export default function TripwireProfile() {
         setCertificate(certificateData as any);
       }
 
-      // 4. ❌ УБРАНО: loadModuleProgress (state не используется)
-      // await loadModuleProgress();
+      // 4. ✅ FIX #4: Восстановлен вызов loadModuleProgress
+      await loadModuleProgress();
 
       // 5. ✅ ПЕРЕСЧИТЫВАЕМ modules_completed из реального прогресса!
       // Считаем сколько модулей завершено по tripwire_progress
@@ -314,10 +315,9 @@ export default function TripwireProfile() {
           });
         });
 
-        // ❌ УДАЛЕНО: moduleProgress и detailedProgress state не используются
-        // const progressArray = Array.from(moduleMap.values());
-        // setModuleProgress(progressArray);
-        // setDetailedProgress(progressArray);
+        // ✅ FIX #4: Восстановлен moduleProgress state
+        const progressArray = Array.from(moduleMap.values());
+        setModuleProgress(progressArray);
       }
     } catch (error) {
       console.error('Error loading module progress:', error);
@@ -465,7 +465,7 @@ export default function TripwireProfile() {
         {/* Прогресс по модулям (Overview) */}
         <ProgressOverview
           modulesCompleted={profile.modules_completed}
-          moduleProgress={[]}
+          moduleProgress={moduleProgress}
         />
 
         {/* Achievements */}
