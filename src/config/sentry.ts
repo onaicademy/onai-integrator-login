@@ -1,12 +1,5 @@
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
-import { useEffect } from "react";
-import { 
-  useLocation, 
-  useNavigationType, 
-  createRoutesFromChildren, 
-  matchRoutes 
-} from "react-router-dom";
 
 /**
  * 🛡️ SENTRY CONFIGURATION - Frontend Monitoring
@@ -40,14 +33,6 @@ export const initSentry = () => {
     integrations: [
       // ✅ Browser Tracing - отслеживает navigation и page loads
       new BrowserTracing({
-        // Отслеживаем React Router
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-          useEffect,
-          useLocation,
-          useNavigationType,
-          createRoutesFromChildren,
-          matchRoutes
-        ),
         // Отслеживаем API запросы
         tracingOrigins: [
           'localhost',
@@ -57,10 +42,11 @@ export const initSentry = () => {
       }),
       
       // ✅ Replay - записывает сессии с ошибками (для debugging)
-      new Sentry.Replay({
-        maskAllText: false, // Показываем текст (кроме паролей)
-        blockAllMedia: true, // Блокируем видео/аудио
-      }),
+      // NOTE: Commented out - requires @sentry/replay package
+      // new Sentry.Replay({
+      //   maskAllText: false,
+      //   blockAllMedia: true,
+      // }),
     ],
 
     // 📊 Performance Monitoring
