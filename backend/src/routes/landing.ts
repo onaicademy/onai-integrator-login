@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import { createOrUpdateLead } from '../lib/amocrm.js';
-import { scheduleProftestNotifications, sendProftestResultEmail } from '../services/scheduledNotifications.js';
+import { scheduleProftestNotifications, sendProftestEmailWithTracking } from '../services/scheduledNotifications.js';
 import { PIXEL_CONFIGS, sendConversionApiEvent } from './facebook-conversion.js';
 import { sendProftestResultSMS } from '../services/mobizon.js';
 
@@ -200,7 +200,13 @@ async function createAmoCRMLead(lead: LandingLead, contactId?: number): Promise<
       
       // Добавляем примечание с данными лида
       try {
-        const noteText = `📋 Данные лида:\n\n👤 Имя: ${lead.name}\n📧 Email: ${lead.email}\n📱 Телефон: ${lead.phone}\n\n🌐 Источник: Лендинг /expresscourse`;
+        const noteText = `📋 Данные лида:
+
+👤 Имя: ${lead.name}
+📧 Email: ${lead.email}
+📱 Телефон: ${lead.phone}
+
+🌐 Источник: Лендинг /expresscourse`;
         
         await axios.post(
           `https://${AMOCRM_DOMAIN}/api/v4/leads/${leadId}/notes`,
@@ -265,40 +271,71 @@ router.post('/submit', async (req: Request, res: Response) => {
 
     console.log(`📝 Landing lead submission: ${name}, payment: ${paymentMethod || 'not selected'}`);
 
-    // 1. Save to Supabase (landing DB)
-    const { data: supabaseLead, error: supabaseError } = await landingSupabase
-      .from('landing_leads')
-      .insert({
-        email: email || null,
-        name,
-        phone,
-        source,
-        metadata: {
+    // 1. Find or create unified lead using database function
+    const { data: unifiedLeadResult, error: leadFunctionError } = await landingSupabase
+      .rpc('find_or_create_unified_lead', {
+        p_email: email || null,
+        p_name: name,
+        p_phone: phone,
+        p_source: source,
+        p_metadata: {
           ...metadata,
           paymentMethod,
           userAgent: req.headers['user-agent'],
           ip: req.ip,
           timestamp: new Date().toISOString()
-        },
-      })
-      .select()
-      .single();
+        }
+      });
 
-    if (supabaseError) {
-      console.error('❌ Supabase error:', supabaseError);
+    if (leadFunctionError || !unifiedLeadResult) {
+      console.error('❌ Error finding/creating unified lead:', leadFunctionError);
       return res.status(500).json({
         success: false,
         error: 'Failed to save lead to database'
       });
     }
 
-    console.log(`✅ Lead saved to Supabase: ${supabaseLead.id}`);
+    const leadId = unifiedLeadResult;
+    console.log(`✅ Unified lead ID: ${leadId}`);
+
+    // 2. Add journey stage for expresscourse submission
+    const stage = paymentMethod ? `payment_${paymentMethod}` : 'expresscourse_submitted';
+    const { error: journeyError } = await landingSupabase
+      .from('lead_journey')
+      .insert({
+        lead_id: leadId,
+        stage,
+        source,
+        metadata: {
+          paymentMethod,
+          utmParams: metadata?.utmParams || {},
+        }
+      });
+
+    if (journeyError) {
+      console.warn('⚠️ Failed to track journey stage:', journeyError);
+      // Don't fail the request, just log
+    } else {
+      console.log(`✅ Journey stage tracked: ${stage}`);
+    }
+
+    // Get the full lead record for response
+    const { data: supabaseLead, error: fetchError } = await landingSupabase
+      .from('landing_leads')
+      .select('*')
+      .eq('id', leadId)
+      .single();
+
+    if (fetchError) {
+      console.error('❌ Error fetching lead:', fetchError);
+      // Continue anyway, we have the ID
+    }
 
     // ⚡ OPTIMIZATION: Return response immediately to user
     // All following operations run in background (non-blocking)
     res.status(200).json({
       success: true,
-      leadId: supabaseLead.id,
+      leadId,
       message: 'Заявка успешно отправлена!'
     });
 
@@ -306,11 +343,14 @@ router.post('/submit', async (req: Request, res: Response) => {
     (async () => {
       try {
         // 2a. Create or update in AmoCRM with deduplication and stage update (with retry)
+        // 🔥 ENHANCED: Pass UTM params and campaign slug to AmoCRM
         const amocrmResult = await retryWithBackoff(
           () => createOrUpdateLead({
             name,
             email: email || undefined,
             phone,
+            utmParams: metadata?.utmParams || {},
+            campaignSlug,
             paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
           }),
           3, // 3 retries
@@ -323,8 +363,11 @@ router.post('/submit', async (req: Request, res: Response) => {
           // ✅ UPDATE БД с AmoCRM ID
           const { error: updateError } = await landingSupabase
             .from('landing_leads')
-            .update({ amocrm_lead_id: amocrmResult.leadId.toString() })
-            .eq('id', supabaseLead.id);
+            .update({ 
+              amocrm_lead_id: amocrmResult.leadId.toString(),
+              amocrm_synced: true 
+            })
+            .eq('id', leadId);
           
           if (updateError) {
             console.error('⚠️ Failed to update amocrm_lead_id in DB:', updateError);
@@ -598,58 +641,64 @@ router.post('/proftest', async (req: Request, res: Response) => {
       answersCount: proftestAnswers?.length || answers?.length || 0,
     });
 
-    // 1. Проверяем - нет ли уже заявки от этого пользователя (защита от повторного прохождения)
-    // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТИРОВАНИЯ
-    /*
-    const { data: existingLead } = await landingSupabase
-      .from('landing_leads')
-      .select('id, email, phone, created_at')
-      .or(`email.eq.${email},phone.eq.${phone}`)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (existingLead) {
-      console.log(`⚠️ User already submitted proftest: ${email} / ${phone}`);
-      return res.status(400).json({ 
-        error: 'Вы уже проходили этот тест ранее. Ожидайте ответа от нашей команды.',
-        alreadySubmitted: true 
-      });
-    }
-    */
-
-    // 2. Save to Supabase (landing DB) - CRITICAL, MUST SUCCEED
-    const { data: supabaseLead, error: supabaseError } = await landingSupabase
-      .from('landing_leads')
-      .insert({
-        name,
-        email, // Email обязательный
-        phone,
-        source: source || `proftest_${campaignSlug || 'unknown'}`,
-        metadata: {
+    // 1. Find or create unified lead using database function
+    const { data: unifiedLeadResult, error: leadFunctionError } = await landingSupabase
+      .rpc('find_or_create_unified_lead', {
+        p_email: email,
+        p_name: name,
+        p_phone: phone,
+        p_source: source || `proftest_${campaignSlug || 'unknown'}`,
+        p_metadata: {
           ...metadata,
           answers, // Старый формат для совместимости
           proftestAnswers, // Новый формат с полными текстами
           campaignSlug,
           utmParams,
           timestamp: new Date().toISOString(),
-        },
-      })
-      .select()
-      .single();
+        }
+      });
 
-    if (supabaseError) {
-      console.error('❌ Supabase error:', supabaseError);
+    if (leadFunctionError || !unifiedLeadResult) {
+      console.error('❌ Error finding/creating unified lead:', leadFunctionError);
       throw new Error('Failed to save lead to database');
     }
 
-    console.log('✅ Lead saved to Supabase:', supabaseLead.id);
+    const leadId = unifiedLeadResult;
+    console.log('✅ Unified lead ID:', leadId);
+
+    // 2. Add journey stage for proftest submission
+    const { error: journeyError } = await landingSupabase
+      .from('lead_journey')
+      .insert({
+        lead_id: leadId,
+        stage: 'proftest_submitted',
+        source: source || `proftest_${campaignSlug || 'unknown'}`,
+        metadata: {
+          answers,
+          proftestAnswers,
+          utmParams,
+        }
+      });
+
+    if (journeyError) {
+      console.warn('⚠️ Failed to track journey stage:', journeyError);
+      // Don't fail the request, just log
+    } else {
+      console.log('✅ Journey stage tracked: proftest_submitted');
+    }
+
+    // Get the full lead record for response
+    const { data: supabaseLead } = await landingSupabase
+      .from('landing_leads')
+      .select('*')
+      .eq('id', leadId)
+      .single();
 
     // ⚡ OPTIMIZATION: Return response immediately to user
     // All following operations run in background (non-blocking)
     res.json({
       success: true,
-      leadId: supabaseLead.id,
+      leadId,
     });
 
     // 3. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
@@ -675,8 +724,11 @@ router.post('/proftest', async (req: Request, res: Response) => {
           // ✅ UPDATE БД с AmoCRM ID
           const { error: updateError } = await landingSupabase
             .from('landing_leads')
-            .update({ amocrm_lead_id: amocrmResult.leadId.toString() })
-            .eq('id', supabaseLead.id);
+            .update({ 
+              amocrm_lead_id: amocrmResult.leadId.toString(),
+              amocrm_synced: true 
+            })
+            .eq('id', leadId);
           
           if (updateError) {
             console.error('⚠️ Failed to update amocrm_lead_id in DB:', updateError);
@@ -727,7 +779,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
           name,
           email,
           phone,
-          leadId: supabaseLead.id,
+          leadId,
           sourceCampaign: `proftest_${campaignSlug || 'unknown'}`,
         });
         console.log('✅ Notifications scheduled');
@@ -795,6 +847,25 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
       console.log(`✅ Click tracking updated: ${JSON.stringify(updateData)}`);
     }
 
+    // 🎉 NEW: Track journey stage (expresscourse clicked from email/SMS)
+    const { error: journeyError } = await landingSupabase
+      .from('lead_journey')
+      .insert({
+        lead_id: leadId,
+        stage: 'expresscourse_clicked',
+        source: source === 'email' ? 'email_link' : 'sms_link',
+        metadata: {
+          utm_source: source,
+          utm_campaign: 'proftest',
+        }
+      });
+
+    if (journeyError) {
+      console.warn('⚠️ Failed to track journey stage:', journeyError);
+    } else {
+      console.log('✅ Journey stage tracked: expresscourse_clicked');
+    }
+
     // Redirect to ExpressCourse landing
     const redirectUrl = `https://onai.academy/integrator/expresscourse?utm_source=${source}&utm_campaign=proftest&lead_id=${leadId}`;
     return res.redirect(302, redirectUrl);
@@ -851,7 +922,7 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
     // Send Email if needed
     if (needsEmail) {
       try {
-        emailSuccess = await sendProftestResultEmail(lead.email, lead.name, leadId);
+        emailSuccess = await sendProftestEmailWithTracking(lead.name, lead.email, leadId);
         if (emailSuccess) {
           await landingSupabase
             .from('landing_leads')
@@ -956,6 +1027,264 @@ router.delete('/delete/:leadId', async (req: Request, res: Response) => {
     console.error('❌ Error deleting lead:', error);
     return res.status(500).json({
       error: 'Failed to delete lead',
+      message: error.message,
+    });
+  }
+});
+
+// ============================================
+// 🔍 ADMIN DIAGNOSTICS - AmoCRM & Leads Check
+// ============================================
+router.get('/admin/diagnostics', async (req: Request, res: Response) => {
+  try {
+    console.log('🔍 Starting AmoCRM diagnostics...');
+
+    // 1. Get leads from landing_leads (last 24 hours)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: dbLeads, error: dbError } = await landingSupabase
+      .from('landing_leads')
+      .select('*')
+      .gte('created_at', oneDayAgo)
+      .order('created_at', { ascending: false });
+
+    if (dbError) {
+      throw new Error(`Database error: ${dbError.message}`);
+    }
+
+    // 2. Get leads from AmoCRM (last 24 hours)
+    let amocrmLeads = [];
+    try {
+      if (AMOCRM_DOMAIN && AMOCRM_ACCESS_TOKEN) {
+        const oneDayAgoTimestamp = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
+        const response = await axios.get(
+          `https://${AMOCRM_DOMAIN}/api/v4/leads`,
+          {
+            params: {
+              'filter[pipeline_id]': AMOCRM_PIPELINE_ID,
+              'filter[created_at][from]': oneDayAgoTimestamp,
+              with: 'contacts',
+              limit: 250
+            },
+            headers: {
+              'Authorization': `Bearer ${AMOCRM_ACCESS_TOKEN}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        amocrmLeads = response.data._embedded?.leads || [];
+      }
+    } catch (amocrmError: any) {
+      console.error('❌ AmoCRM API error:', amocrmError.response?.data || amocrmError.message);
+    }
+
+    // 3. Find missing leads (in DB but not in AmoCRM)
+    const dbLeadIds = new Set(dbLeads?.map(l => l.amocrm_lead_id?.toString()).filter(Boolean));
+    const amocrmLeadIds = new Set(amocrmLeads.map((l: any) => l.id.toString()));
+    
+    const missingInAmoCRM = dbLeads?.filter(l => 
+      l.amocrm_lead_id && !amocrmLeadIds.has(l.amocrm_lead_id.toString())
+    ) || [];
+
+    const leadsWithoutAmoCRMId = dbLeads?.filter(l => !l.amocrm_lead_id) || [];
+
+    // 4. Prepare response
+    return res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      period: 'Last 24 hours',
+      database: {
+        total: dbLeads?.length || 0,
+        withAmoCRMId: dbLeads?.filter(l => l.amocrm_lead_id).length || 0,
+        withoutAmoCRMId: leadsWithoutAmoCRMId.length,
+        leads: dbLeads?.map(l => ({
+          id: l.id,
+          name: l.name,
+          phone: l.phone,
+          email: l.email,
+          source: l.source,
+          amocrm_lead_id: l.amocrm_lead_id,
+          created_at: l.created_at
+        }))
+      },
+      amocrm: {
+        total: amocrmLeads.length,
+        configured: !!(AMOCRM_DOMAIN && AMOCRM_ACCESS_TOKEN),
+        pipelineId: AMOCRM_PIPELINE_ID,
+        leads: amocrmLeads.map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          status_id: l.status_id,
+          created_at: new Date(l.created_at * 1000).toISOString()
+        }))
+      },
+      issues: {
+        missingInAmoCRM: missingInAmoCRM.length,
+        leadsWithoutAmoCRMId: leadsWithoutAmoCRMId.length,
+        details: {
+          missingLeads: missingInAmoCRM.map(l => ({
+            id: l.id,
+            name: l.name,
+            phone: l.phone,
+            amocrm_lead_id: l.amocrm_lead_id,
+            created_at: l.created_at
+          })),
+          leadsNeedingSync: leadsWithoutAmoCRMId.map(l => ({
+            id: l.id,
+            name: l.name,
+            phone: l.phone,
+            created_at: l.created_at
+          }))
+        }
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ Diagnostics error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Diagnostics failed',
+      message: error.message
+    });
+  }
+});
+
+// ============================================
+// 📤 MANUAL AMOCRM SYNC - Выгрузить в AmoCRM
+// ============================================
+router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
+  try {
+    const { leadId } = req.params;
+    
+    console.log(`📤 Manual AmoCRM sync request for lead: ${leadId}`);
+
+    // 1. Get lead data WITH journey stages
+    const { data: lead, error: fetchError } = await landingSupabase
+      .from('leads_with_journey')
+      .select('*')
+      .eq('id', leadId)
+      .single();
+
+    if (fetchError || !lead) {
+      console.error('❌ Lead not found:', fetchError);
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    // 2. Check if already in AmoCRM
+    if (lead.amocrm_lead_id) {
+      return res.status(200).json({ 
+        success: true,
+        message: `Лид уже в AmoCRM`,
+        amocrm_lead_id: lead.amocrm_lead_id,
+        alreadyExists: true
+      });
+    }
+
+    // 3. 🔥 ENHANCED: Aggregate ALL journey data from all stages
+    console.log(`🔍 Analyzing journey for lead ${leadId}:`, lead.journey_stages);
+    
+    // Merge UTM params from all stages (newer stages override older)
+    let aggregatedUTM: any = lead.metadata?.utmParams || {};
+    
+    // Extract ProfTest answers from journey stages
+    let proftestAnswers: any = lead.metadata?.proftestAnswers || lead.metadata?.answers || [];
+    
+    // Find payment method from journey stages (latest payment_* stage)
+    let paymentMethod: 'kaspi' | 'card' | 'manager' | undefined = undefined;
+    
+    // Campaign slug (prioritize latest)
+    let campaignSlug = lead.metadata?.campaignSlug || lead.source;
+    
+    // Parse journey stages to collect all data
+    if (lead.journey_stages && Array.isArray(lead.journey_stages)) {
+      lead.journey_stages.forEach((stage: any) => {
+        console.log(`  📍 Stage: ${stage.stage}, Source: ${stage.source}`);
+        
+        // Merge UTM params from this stage
+        if (stage.metadata?.utmParams) {
+          aggregatedUTM = { ...aggregatedUTM, ...stage.metadata.utmParams };
+        }
+        
+        // Extract ProfTest answers if found
+        if (stage.metadata?.proftestAnswers && !proftestAnswers.length) {
+          proftestAnswers = stage.metadata.proftestAnswers;
+        }
+        if (stage.metadata?.answers && !proftestAnswers.length) {
+          proftestAnswers = stage.metadata.answers;
+        }
+        
+        // Extract payment method from stage name or metadata
+        if (stage.stage?.startsWith('payment_')) {
+          const method = stage.stage.replace('payment_', '') as 'kaspi' | 'card' | 'manager';
+          if (['kaspi', 'card', 'manager'].includes(method)) {
+            paymentMethod = method;
+          }
+        }
+        if (stage.metadata?.paymentMethod) {
+          paymentMethod = stage.metadata.paymentMethod;
+        }
+      });
+    }
+    
+    console.log('📊 Aggregated manual sync data:', {
+      utmParamsCount: Object.keys(aggregatedUTM).length,
+      utmParams: aggregatedUTM,
+      proftestAnswersCount: Array.isArray(proftestAnswers) ? proftestAnswers.length : Object.keys(proftestAnswers || {}).length,
+      paymentMethod,
+      campaignSlug,
+      journeyStagesCount: lead.journey_stages?.length || 0,
+    });
+    
+    const amocrmResult = await retryWithBackoff(
+      () => createOrUpdateLead({
+        name: lead.name,
+        email: lead.email || undefined,
+        phone: lead.phone,
+        utmParams: aggregatedUTM,
+        proftestAnswers,
+        paymentMethod,
+        campaignSlug,
+      }),
+      3, // 3 retries
+      2000 // 2s initial delay
+    );
+
+    if (!amocrmResult) {
+      throw new Error('AmoCRM sync failed after retries');
+    }
+
+    console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId})`);
+    
+    // 4. Update DB with AmoCRM ID
+    const { error: updateError } = await landingSupabase
+      .from('landing_leads')
+      .update({ 
+        amocrm_lead_id: amocrmResult.leadId.toString(),
+        amocrm_synced: true 
+      })
+      .eq('id', leadId);
+    
+    if (updateError) {
+      console.error('⚠️ Failed to update amocrm_lead_id in DB:', updateError);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Сделка создана в AmoCRM`,
+      amocrm_lead_id: amocrmResult.leadId,
+      action: amocrmResult.action,
+      isNew: amocrmResult.isNew,
+      lead: {
+        id: lead.id,
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ Error syncing to AmoCRM:', error);
+    return res.status(500).json({
+      error: 'Failed to sync to AmoCRM',
       message: error.message,
     });
   }

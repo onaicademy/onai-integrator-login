@@ -79,6 +79,13 @@ async function findExistingContact(email?: string, phone?: string): Promise<numb
 
     if (!contactsResponse.ok) return null;
 
+    // Check if response has content before parsing
+    const contentLength = contactsResponse.headers.get('content-length');
+    if (contentLength === '0' || !contactsResponse.body) {
+      console.log(`🔍 Empty response from AmoCRM for: ${searchQuery}`);
+      return null;
+    }
+
     const contactsData: any = await contactsResponse.json();
     const contacts = contactsData._embedded?.contacts || [];
 

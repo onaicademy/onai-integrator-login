@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send, RefreshCw, Trash2, AlertCircle, Clock } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 
@@ -21,6 +21,14 @@ function useLandingSupabase() {
   }, []);
 }
 
+interface JourneyStage {
+  id: string;
+  stage: string;
+  source: string;
+  metadata: any;
+  created_at: string;
+}
+
 interface Lead {
   id: string;
   name: string;
@@ -38,6 +46,9 @@ interface Lead {
   metadata?: any;
   notification_status?: 'pending' | 'sent' | 'failed' | null;
   notification_error?: string | null;
+  amocrm_lead_id?: string | null; // 📤 AmoCRM ID
+  amocrm_synced?: boolean;
+  journey_stages?: JourneyStage[]; // 🎉 NEW: Journey timeline
 }
 
 interface Stats {
@@ -56,7 +67,7 @@ export default function LeadsAdmin() {
   const landingSupabase = useLandingSupabase();
   const queryClient = useQueryClient();
 
-  // Fetch leads with notification status
+  // Fetch leads with notification status AND journey stages
   const { data: leads, isLoading: leadsLoading } = useQuery<Lead[]>({
     queryKey: ['landing', 'leads'],
     queryFn: async () => {
@@ -64,14 +75,41 @@ export default function LeadsAdmin() {
         throw new Error('Landing Supabase client not initialized');
       }
       
-      // Get leads
+      // 🎉 NEW: Get leads from view that includes journey_stages
       const { data: leadsData, error: leadsError } = await landingSupabase
-        .from('landing_leads')
+        .from('leads_with_journey')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
       
-      if (leadsError) throw leadsError;
+      if (leadsError) {
+        console.error('❌ Error fetching leads with journey:', leadsError);
+        // Fallback to old query if view doesn't exist yet
+        const { data: fallbackData, error: fallbackError } = await landingSupabase
+          .from('landing_leads')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100);
+        
+        if (fallbackError) throw fallbackError;
+        
+        const leadsWithStatus = await Promise.all((fallbackData || []).map(async lead => {
+          const { data: notificationData } = await landingSupabase
+            .from('scheduled_notifications')
+            .select('status, error_message')
+            .eq('lead_id', lead.id)
+            .single();
+          
+          return {
+            ...lead,
+            notification_status: notificationData?.status || null,
+            notification_error: notificationData?.error_message || null,
+            journey_stages: [],
+          };
+        }));
+        
+        return leadsWithStatus;
+      }
       
       // Get notification statuses for all leads
       const { data: notificationsData } = await landingSupabase
@@ -82,10 +120,23 @@ export default function LeadsAdmin() {
       // Merge notification status into leads
       const leadsWithStatus = leadsData?.map(lead => {
         const notification = notificationsData?.find(n => n.lead_id === lead.id);
+        
+        // Parse journey_stages if it's a JSON string
+        let parsedJourneyStages = lead.journey_stages || [];
+        if (typeof lead.journey_stages === 'string') {
+          try {
+            parsedJourneyStages = JSON.parse(lead.journey_stages);
+          } catch (e) {
+            console.error('Failed to parse journey_stages:', e);
+            parsedJourneyStages = [];
+          }
+        }
+        
         return {
           ...lead,
           notification_status: notification?.status || null,
           notification_error: notification?.error_message || null,
+          journey_stages: parsedJourneyStages,
         };
       });
       
@@ -116,6 +167,25 @@ export default function LeadsAdmin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['landing', 'leads'] });
       queryClient.invalidateQueries({ queryKey: ['landing', 'stats'] });
+    },
+  });
+
+  // 📤 AmoCRM Sync mutation
+  const syncAmoCRMMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const response = await axios.post(`/api/landing/sync-to-amocrm/${leadId}`);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['landing', 'leads'] });
+      if (data.alreadyExists) {
+        alert(`✅ Лид уже в AmoCRM (ID: ${data.amocrm_lead_id})`);
+      } else {
+        alert(`✅ Сделка создана в AmoCRM (ID: ${data.amocrm_lead_id})`);
+      }
+    },
+    onError: (error: any) => {
+      alert(`❌ Ошибка: ${error.response?.data?.message || error.message}`);
     },
   });
 
@@ -179,6 +249,69 @@ export default function LeadsAdmin() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // 🔥 NEW: Calculate notification countdown
+  const calculateNotificationCountdown = (createdAt: string): { timeLeft: number; isScheduled: boolean } => {
+    const NOTIFICATION_DELAY_MS = 10 * 60 * 1000; // 10 minutes
+    const created = new Date(createdAt).getTime();
+    const scheduledSendTime = created + NOTIFICATION_DELAY_MS;
+    const now = Date.now();
+    const timeLeft = scheduledSendTime - now;
+    
+    return {
+      timeLeft: Math.max(0, timeLeft),
+      isScheduled: timeLeft > 0
+    };
+  };
+
+  // 🔥 NEW: Format countdown as MM:SS
+  const formatCountdown = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // 🔥 NEW: Real-time countdown timer component
+  const NotificationCountdown = ({ createdAt, sent, error }: { createdAt: string; sent: boolean; error: boolean }) => {
+    const [countdown, setCountdown] = useState(() => calculateNotificationCountdown(createdAt));
+
+    useEffect(() => {
+      // Update countdown every second
+      const interval = setInterval(() => {
+        setCountdown(calculateNotificationCountdown(createdAt));
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }, [createdAt]);
+
+    if (sent) return null; // Already sent
+    if (error) return null; // Failed
+    if (!countdown.isScheduled) return null; // Past scheduled time
+
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/20">
+        <Clock size={10} className="text-yellow-400 animate-pulse" />
+        <span className="text-xs text-yellow-400 font-mono font-semibold">
+          {formatCountdown(countdown.timeLeft)}
+        </span>
+      </div>
+    );
+  };
+
+  // 🎉 NEW: Format stage labels
+  const getStageLabel = (stage: string): { label: string; color: string; icon: string } => {
+    const stageMap: Record<string, { label: string; color: string; icon: string }> = {
+      proftest_submitted: { label: '📝 Прошел ProfTest', color: 'blue', icon: '✓' },
+      expresscourse_clicked: { label: '👁️ Кликнул ExpressCourse', color: 'purple', icon: '👁️' },
+      expresscourse_submitted: { label: '📩 Заявка ExpressCourse', color: 'green', icon: '✓' },
+      payment_kaspi: { label: '💳 Нажал Kaspi', color: 'orange', icon: '💳' },
+      payment_card: { label: '💳 Нажал Карта', color: 'cyan', icon: '💳' },
+      payment_manager: { label: '💬 Нажал Чат с менеджером', color: 'pink', icon: '💬' },
+    };
+    
+    return stageMap[stage] || { label: stage, color: 'gray', icon: '●' };
   };
 
   return (
@@ -288,14 +421,15 @@ export default function LeadsAdmin() {
 
         {/* Table */}
         <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-max">
             <thead>
               <tr className="border-b border-white/5">
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">
                   Контакт
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">
-                  Источник
+                  🎉 Journey этапы
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">
                   Статус уведомлений
@@ -340,11 +474,37 @@ export default function LeadsAdmin() {
                       </div>
                     </td>
 
-                    {/* Source */}
+                    {/* Journey Timeline */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                        {lead.source}
-                      </span>
+                      {lead.journey_stages && lead.journey_stages.length > 0 ? (
+                        <div className="flex flex-col gap-2">
+                          {lead.journey_stages.map((stage, index) => {
+                            const stageInfo = getStageLabel(stage.stage);
+                            const colorClasses: Record<string, string> = {
+                              blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+                              purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
+                              green: 'bg-green-500/10 border-green-500/20 text-green-400',
+                              orange: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
+                              cyan: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400',
+                              pink: 'bg-pink-500/10 border-pink-500/20 text-pink-400',
+                              gray: 'bg-gray-500/10 border-gray-500/20 text-gray-400',
+                            };
+                            
+                            return (
+                              <div
+                                key={stage.id}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium ${colorClasses[stageInfo.color]}`}
+                                title={`${stageInfo.label} - ${new Date(stage.created_at).toLocaleString('ru-RU')}`}
+                              >
+                                <span className="text-sm">{index + 1}</span>
+                                <span>{stageInfo.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-500">Нет этапов</span>
+                      )}
                     </td>
 
                     {/* Notification Status */}
@@ -358,52 +518,72 @@ export default function LeadsAdmin() {
                           </div>
                         )}
                         
-                        {/* Email Status */}
-                        <div className="flex items-center gap-2">
-                          <Mail size={14} className={
-                            lead.email_clicked ? 'text-[#00FF94]' : 
-                            lead.email_sent ? 'text-green-400' : 
-                            lead.notification_status === 'failed' ? 'text-red-400' :
-                            'text-gray-600'
-                          } />
-                          <span className={`text-xs ${
-                            lead.email_clicked ? 'text-[#00FF94]' : 
-                            lead.email_sent ? 'text-green-400' : 
-                            lead.notification_status === 'failed' ? 'text-red-400' :
-                            'text-gray-600'
-                          }`}>
-                            Email: {
-                              lead.email_clicked ? '✓ Кликнул' : 
-                              lead.email_sent ? '✓ Отправлен' : 
-                              lead.notification_status === 'failed' ? '✗ Ошибка' :
-                              lead.notification_status === 'pending' ? '⏳ Ожидает' :
-                              '○ Не отправлен'
-                            }
-                          </span>
+                        {/* 🔥 NEW: Email Status with Countdown */}
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <Mail size={14} className={
+                              lead.email_clicked ? 'text-[#00FF94]' : 
+                              lead.email_sent ? 'text-green-400' : 
+                              lead.notification_status === 'failed' ? 'text-red-400' :
+                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                              'text-gray-600'
+                            } />
+                            <span className={`text-xs font-medium ${
+                              lead.email_clicked ? 'text-[#00FF94]' : 
+                              lead.email_sent ? 'text-green-400' : 
+                              lead.notification_status === 'failed' ? 'text-red-400' :
+                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                              'text-gray-600'
+                            }`}>
+                              Email: {
+                                lead.email_clicked ? '✓ Кликнул' : 
+                                lead.email_sent ? '✓ Отправлен' : 
+                                lead.notification_status === 'failed' ? '✗ Не удалось отправить' :
+                                calculateNotificationCountdown(lead.created_at).isScheduled ? '📤 В процессе отправки' :
+                                '○ Не отправлен'
+                              }
+                            </span>
+                          </div>
+                          {/* Countdown Timer for Email */}
+                          <NotificationCountdown 
+                            createdAt={lead.created_at} 
+                            sent={lead.email_sent} 
+                            error={lead.notification_status === 'failed'} 
+                          />
                         </div>
 
-                        {/* SMS Status */}
-                        <div className="flex items-center gap-2">
-                          <Send size={14} className={
-                            lead.sms_clicked ? 'text-[#00FF94]' : 
-                            lead.sms_sent ? 'text-purple-400' : 
-                            lead.notification_status === 'failed' ? 'text-red-400' :
-                            'text-gray-600'
-                          } />
-                          <span className={`text-xs ${
-                            lead.sms_clicked ? 'text-[#00FF94]' : 
-                            lead.sms_sent ? 'text-purple-400' : 
-                            lead.notification_status === 'failed' ? 'text-red-400' :
-                            'text-gray-600'
-                          }`}>
-                            SMS: {
-                              lead.sms_clicked ? '✓ Кликнул' : 
-                              lead.sms_sent ? '✓ Отправлен' : 
-                              lead.notification_status === 'failed' ? '✗ Ошибка' :
-                              lead.notification_status === 'pending' ? '⏳ Ожидает' :
-                              '○ Не отправлен'
-                            }
-                          </span>
+                        {/* 🔥 NEW: SMS Status with Countdown */}
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <Send size={14} className={
+                              lead.sms_clicked ? 'text-[#00FF94]' : 
+                              lead.sms_sent ? 'text-purple-400' : 
+                              lead.notification_status === 'failed' ? 'text-red-400' :
+                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                              'text-gray-600'
+                            } />
+                            <span className={`text-xs font-medium ${
+                              lead.sms_clicked ? 'text-[#00FF94]' : 
+                              lead.sms_sent ? 'text-purple-400' : 
+                              lead.notification_status === 'failed' ? 'text-red-400' :
+                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                              'text-gray-600'
+                            }`}>
+                              SMS: {
+                                lead.sms_clicked ? '✓ Кликнул' : 
+                                lead.sms_sent ? '✓ Отправлен' : 
+                                lead.notification_status === 'failed' ? '✗ Не удалось отправить' :
+                                calculateNotificationCountdown(lead.created_at).isScheduled ? '📤 В процессе отправки' :
+                                '○ Не отправлен'
+                              }
+                            </span>
+                          </div>
+                          {/* Countdown Timer for SMS */}
+                          <NotificationCountdown 
+                            createdAt={lead.created_at} 
+                            sent={lead.sms_sent} 
+                            error={lead.notification_status === 'failed'} 
+                          />
                         </div>
 
                         {/* Error Message */}
@@ -428,7 +608,26 @@ export default function LeadsAdmin() {
 
                     {/* Actions */}
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-max overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+                        {/* 📤 AmoCRM Sync Button */}
+                        <button
+                          onClick={() => {
+                            if (confirm(`Выгрузить ${lead.name} в AmoCRM?`)) {
+                              syncAmoCRMMutation.mutate(lead.id);
+                            }
+                          }}
+                          disabled={syncAmoCRMMutation.isPending || !!lead.amocrm_lead_id}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                          title={lead.amocrm_lead_id ? `Уже в AmoCRM (ID: ${lead.amocrm_lead_id})` : 'Выгрузить в AmoCRM'}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                          {syncAmoCRMMutation.isPending ? 'Выгрузка...' : lead.amocrm_lead_id ? 'В AmoCRM' : 'Выгрузить'}
+                        </button>
+
                         {/* Resend Button */}
                         {(!lead.email_sent || !lead.sms_sent) && (
                           <button
@@ -473,6 +672,7 @@ export default function LeadsAdmin() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>
