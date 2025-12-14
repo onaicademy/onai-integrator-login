@@ -1,7 +1,8 @@
 module.exports = {
   apps: [{
     name: 'onai-backend',
-    script: './dist/server.js',
+    script: 'npx',
+    args: 'tsx src/server.ts',
     instances: 1,
     exec_mode: 'fork',
     
