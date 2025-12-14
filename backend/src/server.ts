@@ -194,9 +194,11 @@ app.use(cors({
     if (process.env.NODE_ENV === 'production') {
       const allowedProd = [
         'https://onai.academy',
+        'https://www.onai.academy',
         'https://tripwire.onai.academy',
       ];
       if (allowedProd.includes(origin)) {
+        console.log(`✅ CORS allowed in production: ${origin}`);
         return callback(null, true);
       }
       console.warn(`⚠️ CORS blocked in production: ${origin}`);
@@ -268,12 +270,13 @@ app.use('/api/admin/', apiLimiter);    // 100 req/15min для admin
 
 // Увеличиваем timeout для массовой загрузки видео
 app.use((req, res, next) => {
-  // МАКСИМАЛЬНЫЙ timeout 60 минут для /api/stream/upload
+  // МАКСИМАЛЬНЫЙ timeout 2 ЧАСА для /api/stream/upload (для видео до 6GB)
   if (req.path.includes('/stream/upload')) {
-    req.setTimeout(3600000); // 60 минут
-    res.setTimeout(3600000);
+    req.setTimeout(7200000); // 120 минут = 2 часа
+    res.setTimeout(7200000);
+    console.log('⏱️ Timeout set to 2 hours for video upload');
   }
-  next();
+  next;
 });
 
 // Логирование запросов + Sentry performance tracking
@@ -307,7 +310,7 @@ app.options('/api/stream/upload', cors());
 // ✅ КРИТИЧНО: Conditional type filter - игнорирует multipart/form-data
 // ============================================
 app.use(express.json({
-  limit: '100mb', // МАКСИМАЛЬНЫЙ лимит для массовой загрузки
+  limit: '8gb', // ✅ УВЕЛИЧЕНО: для видео до 6GB
   type: (req) => {
     const contentType = req.headers['content-type'] || '';
     // Пропускаем multipart - оставляем для Multer
@@ -316,7 +319,7 @@ app.use(express.json({
 }));
 
 app.use(express.urlencoded({ 
-  limit: '100mb',
+  limit: '8gb', // ✅ УВЕЛИЧЕНО: для видео до 6GB
   extended: true 
 }));
 
