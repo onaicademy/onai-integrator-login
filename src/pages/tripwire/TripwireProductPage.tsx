@@ -9,6 +9,7 @@ import { api } from "@/utils/apiClient";
 import LiveStreamModule from "./components/LiveStreamModule";
 import { TripwireAIChatDialog } from "@/components/tripwire/TripwireAIChatDialog";
 import { tripwireSupabase } from "@/lib/supabase-tripwire";
+import { showLocked } from "@/lib/notifications"; // ✅ Import notification helper
 
 // 🎯 Brand Code v3.0 - Cyber-Architecture
 const BRAND = {
@@ -306,25 +307,32 @@ export default function TripwireProductPage() {
       return { ...module, status: 'active' };
     }
     
-    // 🔒 ВРЕМЕННАЯ БЛОКИРОВКА ДО СТАРТА КУРСА
-    // ВСЕ модули (16, 17, 18) заблокированы для студентов до официального запуска
-    console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (старт отложен)`);
-    return {
-      ...module,
-      status: 'locked'
-    };
+    // 🔒 ВРЕМЕННАЯ БЛОКИРОВКА МОДУЛЕЙ 2 И 3 (ОБНОВЛЕНИЕ СКОРО)
+    // Модуль 16 (Вводный) остается открытым
+    // Модули 17 (ГПТ) и 18 (Reels) заблокированы
+    if (module.id === 16) {
+      console.log(`✅ Module 16 (Вводный): ВСЕГДА ОТКРЫТ`);
+      return { ...module, status: 'active' };
+    }
+    
+    if (module.id === 17 || module.id === 18) {
+      console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (обновление скоро)`);
+      return {
+        ...module,
+        status: 'locked',
+        lockMessage: 'ОБНОВЛЕНИЕ СКОРО' // ✅ Custom lock message
+      };
+    }
     
     // 🔥 Остальные модули открываются через userUnlockedModuleIds (ЗАКОММЕНТИРОВАНО)
-    // 🔥 Module 16 (вводный) ВСЕГДА открыт для ВСЕХ (ЗАКОММЕНТИРОВАНО)
-    // if (module.id === 16) {
-    //   return { ...module, status: 'active' };
-    // }
     // const isUnlocked = userUnlockedModuleIds.includes(module.id);
     // console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
     // return {
     //   ...module,
     //   status: isUnlocked ? 'active' : 'locked'
     // };
+    
+    return { ...module, status: 'locked' };
   });
 
   const activeModules = modulesWithDynamicStatus.filter(m => m.status === 'active');
@@ -694,7 +702,7 @@ export default function TripwireProductPage() {
                         {isLocked && (
                           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
                             <Lock className="w-3 h-3" />
-                            <span>ЗАБЛОКИРОВАНО</span>
+                            <span>{(module as any).lockMessage || 'ЗАБЛОКИРОВАНО'}</span>
                           </div>
                         )}
                       </div>

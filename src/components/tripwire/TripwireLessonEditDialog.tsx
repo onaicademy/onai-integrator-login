@@ -51,16 +51,28 @@ export function TripwireLessonEditDialog({
   const materialInputRef = useRef<HTMLInputElement>(null);
   
   const [savedLessonId, setSavedLessonId] = useState<number | null>(null);
+  
+  // ✅ Track unsaved changes
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [initialState, setInitialState] = useState({ title: '', description: '', tip: '' });
+  const uploadXHRRef = useRef<XMLHttpRequest | null>(null);
 
   useEffect(() => {
     console.log('🔥 TripwireLessonEditDialog открыт:', { open, lesson, moduleId });
     
     if (lesson && lesson.id) {
-      setTitle(lesson.title);
-      // ✅ Приоритет: ai_description/ai_tips (сгенерированные AI) → description/tip (старые)
-      setDescription((lesson as any).ai_description || lesson.description || '');
-      setTip((lesson as any).ai_tips || lesson.tip || '');
+      const titleVal = lesson.title;
+      const descVal = (lesson as any).ai_description || lesson.description || '';
+      const tipVal = (lesson as any).ai_tips || lesson.tip || '';
+      
+      setTitle(titleVal);
+      setDescription(descVal);
+      setTip(tipVal);
       setSavedLessonId(lesson.id);
+      
+      // ✅ Store initial state for change detection
+      setInitialState({ title: titleVal, description: descVal, tip: tipVal });
+      setHasUnsavedChanges(false);
       
       if (typeof lesson.id === 'number' && lesson.id > 0) {
         loadLessonData(lesson.id);
@@ -74,6 +86,8 @@ export function TripwireLessonEditDialog({
       setVideoUrl('');
       setSavedLessonId(null);
       setMaterials([]);
+      setInitialState({ title: '', description: '', tip: '' });
+      setHasUnsavedChanges(false);
     }
   }, [lesson, open]);
 
@@ -216,6 +230,7 @@ export function TripwireLessonEditDialog({
             // ✅ Устанавливаем CORS заголовки явно
             xhr.withCredentials = false; // Multipart не требует credentials
             
+            uploadXHRRef.current = xhr;
             xhr.send(formData);
           });
         } else {
@@ -231,6 +246,10 @@ export function TripwireLessonEditDialog({
         if (onSave) {
           onSave();
         }
+        
+        // ✅ Reset unsaved changes state
+        setHasUnsavedChanges(false);
+        uploadXHRRef.current = null;
         
         // ✅ ЗАКРЫВАЕМ диалог сразу после сохранения
         setIsUploading(false);
@@ -309,6 +328,10 @@ export function TripwireLessonEditDialog({
       //   onSave();
       // }
 
+      // ✅ Reset unsaved changes state
+      setHasUnsavedChanges(false);
+      uploadXHRRef.current = null;
+
       // ✅ ЗАКРЫВАЕМ диалог сразу после создания
       setIsUploading(false);
       onClose();
@@ -333,11 +356,74 @@ export function TripwireLessonEditDialog({
     
     console.log('📹 Видео выбрано (в памяти):', file.name);
     setVideoFile(file);
+    setHasUnsavedChanges(true); // ✅ Mark as unsaved when video is selected
     
     // Показываем информацию о выбранном файле
     const sizeMB = (file.size / 1024 / 1024).toFixed(2);
     console.log(`📦 Размер: ${sizeMB} MB`);
     console.log(`ℹ️ Видео будет загружено при нажатии "Сохранить изменения"`);
+  };
+  
+  // ✅ Track text field changes
+  useEffect(() => {
+    if (initialState.title !== '' || initialState.description !== '' || initialState.tip !== '') {
+      const changed = title !== initialState.title || 
+                     description !== initialState.description || 
+                     tip !== initialState.tip;
+      if (changed && !hasUnsavedChanges && !videoFile) {
+        setHasUnsavedChanges(true);
+      }
+    }
+  }, [title, description, tip, initialState, hasUnsavedChanges, videoFile]);
+  
+  // ✅ Handle dialog close with confirmation
+  const handleDialogClose = (shouldClose: boolean) => {
+    // If upload is in progress, warn user
+    if (isUploading) {
+      const confirmCancel = window.confirm(
+        '⚠️ ЗАГРУЗКА В ПРОЦЕССЕ!\n\n' +
+        'Закрытие окна прервет загрузку видео и весь прогресс будет потерян.\n\n' +
+        'Вы действительно хотите отменить загрузку?'
+      );
+      
+      if (!confirmCancel) {
+        return; // Don't close
+      }
+      
+      // Abort the upload
+      if (uploadXHRRef.current) {
+        uploadXHRRef.current.abort();
+        uploadXHRRef.current = null;
+        console.log('🛑 Upload aborted by user');
+      }
+      
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadStatus('');
+    }
+    
+    // If has unsaved changes (video selected or text changed), warn user
+    if (hasUnsavedChanges || videoFile) {
+      const confirmDiscard = window.confirm(
+        '⚠️ НЕСОХРАНЕННЫЕ ИЗМЕНЕНИЯ!\n\n' +
+        (videoFile ? '• Видео выбрано но не загружено\n' : '') +
+        (hasUnsavedChanges ? '• Текст изменен но не сохранен\n' : '') +
+        '\nВсе изменения будут потеряны.\n\n' +
+        'Закрыть без сохранения?'
+      );
+      
+      if (!confirmDiscard) {
+        return; // Don't close
+      }
+    }
+    
+    // Safe to close
+    if (shouldClose) {
+      setHasUnsavedChanges(false);
+      setVideoFile(null);
+      uploadXHRRef.current = null;
+      onClose();
+    }
   };
 
   const handleMaterialSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -418,9 +504,27 @@ export function TripwireLessonEditDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!newOpen) {
+        handleDialogClose(true);
+      }
+    }}>
       <DialogContent 
         className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0A0A0A] border-[#00FF88]/30"
+        onInteractOutside={(e) => {
+          // ✅ CRITICAL: Prevent accidental closure during upload or with unsaved changes
+          if (isUploading || hasUnsavedChanges || videoFile) {
+            e.preventDefault();
+            console.log('🚫 Outside click blocked - upload in progress or unsaved changes');
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // ✅ Also prevent ESC key from closing without confirmation
+          if (isUploading || hasUnsavedChanges || videoFile) {
+            e.preventDefault();
+            handleDialogClose(true);
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle className="text-white font-bold" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
@@ -514,14 +618,34 @@ export function TripwireLessonEditDialog({
               </div>
             )}
 
+            {/* ✅ Unsaved Changes Warning Banner */}
+            {(hasUnsavedChanges || videoFile) && !isUploading && (
+              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <span className="text-yellow-500 text-xl">⚠️</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-yellow-500">Несохраненные изменения</p>
+                    <p className="text-xs text-yellow-400/80 mt-1">
+                      {videoFile && '• Видео выбрано но не загружено'}
+                      {videoFile && hasUnsavedChanges && <br />}
+                      {hasUnsavedChanges && '• Текст изменен но не сохранен'}
+                    </p>
+                    <p className="text-xs text-yellow-400/60 mt-2">
+                      Нажмите "Сохранить изменения" чтобы применить, или "Отменить" чтобы сбросить.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2 pt-4">
               <Button 
                 variant="outline" 
-                onClick={onClose} 
+                onClick={() => handleDialogClose(true)} 
                 disabled={isUploading}
                 className="border-[#00FF88]/30 text-white hover:bg-[#00FF88]/10"
               >
-                Отмена
+                {hasUnsavedChanges || videoFile ? '🚫 Отменить' : 'Закрыть'}
               </Button>
               <Button 
                 onClick={handleSubmit} 
@@ -541,6 +665,45 @@ export function TripwireLessonEditDialog({
 
           {/* TAB 2: Видео */}
           <TabsContent value="video" className="space-y-4 py-4">
+            {/* ✅ Upload Progress Indicator - Visible during upload */}
+            {isUploading && (
+              <div className="mb-4 space-y-3 p-4 bg-[#1a1a24] border-2 border-[#00FF88]/50 rounded-lg animate-pulse">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-white">{uploadStatus}</span>
+                  <span className="text-lg font-bold text-[#00FF88]">{uploadProgress}%</span>
+                </div>
+                
+                <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden shadow-inner">
+                  <div
+                    className="bg-gradient-to-r from-[#00FF88] to-[#00cc88] h-full transition-all duration-300 ease-out shadow-lg"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                
+                <p className="text-xs text-gray-400 text-center">
+                  ⚠️ Не закрывайте окно во время загрузки - прогресс будет потерян
+                </p>
+              </div>
+            )}
+            
+            {/* ✅ Video Selected but Not Uploaded - Warning */}
+            {videoFile && !isUploading && (
+              <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-400 text-lg">📹</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-blue-400">Видео готово к загрузке</p>
+                    <p className="text-xs text-blue-300/80 mt-1">
+                      Файл: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                    <p className="text-xs text-blue-300/60 mt-2">
+                      ⚠️ Нажмите "Сохранить изменения" для начала загрузки
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label className="text-white">Загрузить видео (MP4, MOV, AVI)</Label>
               <div 
