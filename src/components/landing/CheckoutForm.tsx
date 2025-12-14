@@ -13,6 +13,7 @@ interface CheckoutFormProps {
 export function CheckoutForm({ isOpen, onClose, source = 'twland', campaignSlug }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',  // ✅ ДОБАВЛЕНО: Email обязательный
     phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +26,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'twland', campaignSlug 
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', phone: '' });
+      setFormData({ name: '', email: '', phone: '' });  // ✅ ДОБАВЛЕНО: Email reset
       setIsSubmitting(false);
       setShowThankYou(false);
       setRedirectCountdown(3);
@@ -199,7 +200,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'twland', campaignSlug 
     e.preventDefault();
     
     // Validate form
-    if (!formData.name.trim() || !formData.phone.trim()) {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
       alert('Пожалуйста, заполните все поля');
       return;
     }
@@ -376,6 +377,24 @@ export function CheckoutForm({ isOpen, onClose, source = 'twland', campaignSlug 
                       onChange={handleChange}
                       required
                       placeholder="Ваше полное имя"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* ✅ Email Input */}
+                  <div>
+                    <label htmlFor="email" className="block text-xs font-mono text-gray-400 uppercase mb-2">
+                      EMAIL *
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      placeholder="your@email.com"
                       disabled={isSubmitting}
                       className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
                     />
