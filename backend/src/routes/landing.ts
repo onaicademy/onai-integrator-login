@@ -877,7 +877,7 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
 // ============================================
 // DELETE LEAD
 // ============================================
-router.delete('/:leadId', async (req: Request, res: Response) => {
+router.delete('/delete/:leadId', async (req: Request, res: Response) => {
   try {
     const { leadId } = req.params;
     

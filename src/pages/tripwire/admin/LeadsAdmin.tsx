@@ -110,7 +110,7 @@ export default function LeadsAdmin() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (leadId: string) => {
-      const response = await axios.delete(`/api/landing/${leadId}`);
+      const response = await axios.delete(`/api/landing/delete/${leadId}`);
       return response.data;
     },
     onSuccess: () => {
