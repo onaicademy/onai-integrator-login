@@ -276,7 +276,7 @@ app.use((req, res, next) => {
     res.setTimeout(7200000);
     console.log('⏱️ Timeout set to 2 hours for video upload');
   }
-  next;
+  next();
 });
 
 // Логирование запросов + Sentry performance tracking
