@@ -12,6 +12,8 @@ import { AdminGuard } from "./components/guards/AdminGuard"; // ✅ Admin Guard 
 import { SalesGuard } from "./components/SalesGuard"; // ✅ Guard для admin & sales (Tripwire)
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { initSentry } from "@/config/sentry"; // 🛡️ Sentry Monitoring
+import * as Sentry from "@sentry/react";
 // Tripwire Guards
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Tripwire)
@@ -65,6 +67,9 @@ import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
 import TripwireStudents from "./pages/tripwire/admin/Students";
 import TripwireCosts from "./pages/tripwire/admin/Costs";
 import LeadsAdmin from "./pages/tripwire/admin/LeadsAdmin";
+
+// 🛡️ Initialize Sentry FIRST - до создания компонентов
+initSentry();
 
 const queryClient = new QueryClient();
 
@@ -347,20 +352,59 @@ const AppContent = () => {
   );
 };
 
+// 🛡️ Wrap App with Sentry ErrorBoundary для отлова всех ошибок
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AuthProvider>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
+  <Sentry.ErrorBoundary 
+    fallback={({ error, resetError }) => (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
+        <div className="max-w-md w-full bg-gray-800/50 backdrop-blur border border-red-500/20 rounded-lg p-6 space-y-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Произошла ошибка</h2>
+              <p className="text-sm text-gray-400">Мы уже получили уведомление</p>
+            </div>
+          </div>
+          
+          <div className="bg-red-500/10 border border-red-500/20 rounded p-3">
+            <p className="text-sm text-red-300 font-mono">{error?.message}</p>
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              onClick={resetError}
+              className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+            >
+              Попробовать снова
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+            >
+              На главную
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    showDialog={false}
+  >
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AuthProvider>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  </Sentry.ErrorBoundary>
 );
 
 export default App;

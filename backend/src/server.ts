@@ -5,6 +5,9 @@ import './load-env.js';
 import { validateEnvironment } from './config/env.js';
 validateEnvironment();
 
+// 🛡️ SENTRY: Initialize BEFORE creating Express app
+import { initSentry, sentryErrorHandler, trackAPIPerformance } from './config/sentry.js';
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -121,6 +124,9 @@ import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 🛡️ SENTRY: Initialize monitoring
+initSentry(app);
 
 // ✅ Rate Limiting (защита от DDoS и brute-force)
 import { 
@@ -269,11 +275,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Логирование запросов
+// Логирование запросов + Sentry performance tracking
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
+
+// 🛡️ SENTRY: Track API performance
+app.use(trackAPIPerformance);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -379,6 +388,9 @@ app.use('/api', facebookConversionRouter); // 📊 Facebook Conversion API
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
+
+// 🛡️ SENTRY: Error handler (перед custom error handler)
+app.use(sentryErrorHandler());
 
 // Error handler (ДОЛЖЕН быть последний!)
 app.use(errorHandler);

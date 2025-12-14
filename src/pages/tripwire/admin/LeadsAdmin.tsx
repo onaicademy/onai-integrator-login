@@ -1,25 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send, RefreshCw, Trash2, AlertCircle, Clock } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-// ✅ LAZY INITIALIZATION: Create client only when component mounts and env vars exist
-function useLandingSupabase() {
-  return useMemo(() => {
-    const url = import.meta.env.VITE_LANDING_SUPABASE_URL;
-    const key = import.meta.env.VITE_LANDING_SUPABASE_ANON_KEY;
-    
-    // Only create client if env vars exist
-    if (!url || !key) {
-      console.warn('⚠️ Landing Supabase env vars not found');
-      return null;
-    }
-    
-    return createClient(url, key);
-  }, []);
-}
+import { landingSupabase } from '@/lib/supabase-landing'; // ✅ Use singleton instance
 
 interface JourneyStage {
   id: string;
@@ -64,7 +48,6 @@ interface Stats {
 
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
-  const landingSupabase = useLandingSupabase();
   const queryClient = useQueryClient();
 
   // Fetch leads with notification status AND journey stages
@@ -94,11 +77,12 @@ export default function LeadsAdmin() {
         if (fallbackError) throw fallbackError;
         
         const leadsWithStatus = await Promise.all((fallbackData || []).map(async lead => {
+          // ✅ FIX: Use maybeSingle() instead of single() to avoid 406 error
           const { data: notificationData } = await landingSupabase
             .from('scheduled_notifications')
             .select('status, error_message')
             .eq('lead_id', lead.id)
-            .single();
+            .maybeSingle();
           
           return {
             ...lead,
@@ -149,7 +133,9 @@ export default function LeadsAdmin() {
   // Resend mutation
   const resendMutation = useMutation({
     mutationFn: async (leadId: string) => {
-      const response = await axios.post(`/api/landing/resend/${leadId}`);
+      // ✅ FIX: Use API_URL from env to ensure correct backend URL
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await axios.post(`${apiUrl}/api/landing/resend/${leadId}`);
       return response.data;
     },
     onSuccess: () => {
@@ -161,7 +147,9 @@ export default function LeadsAdmin() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (leadId: string) => {
-      const response = await axios.delete(`/api/landing/delete/${leadId}`);
+      // ✅ FIX: Use API_URL from env to ensure correct backend URL
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await axios.delete(`${apiUrl}/api/landing/delete/${leadId}`);
       return response.data;
     },
     onSuccess: () => {
@@ -173,7 +161,9 @@ export default function LeadsAdmin() {
   // 📤 AmoCRM Sync mutation
   const syncAmoCRMMutation = useMutation({
     mutationFn: async (leadId: string) => {
-      const response = await axios.post(`/api/landing/sync-to-amocrm/${leadId}`);
+      // ✅ FIX: Use API_URL from env to ensure correct backend URL
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await axios.post(`${apiUrl}/api/landing/sync-to-amocrm/${leadId}`);
       return response.data;
     },
     onSuccess: (data) => {
