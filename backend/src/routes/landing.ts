@@ -760,9 +760,18 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing leadId or source' });
     }
 
+    // First, get current click_count
+    const { data: leadData } = await landingSupabase
+      .from('landing_leads')
+      .select('click_count')
+      .eq('id', leadId)
+      .single();
+
+    const currentClickCount = leadData?.click_count || 0;
+
     // Update click tracking in database
     const updateData: any = {
-      click_count: landingSupabase.raw('click_count + 1'),
+      click_count: currentClickCount + 1,
     };
 
     if (source === 'email') {
@@ -781,6 +790,8 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
     if (error) {
       console.error('❌ Error updating click tracking:', error);
       // Don't fail the redirect, just log
+    } else {
+      console.log(`✅ Click tracking updated: ${JSON.stringify(updateData)}`);
     }
 
     // Redirect to ExpressCourse landing
