@@ -10,7 +10,7 @@ interface LeadFormProps {
   source?: string;
 }
 
-export function LeadForm({ isOpen, onClose, source = 'twland' }: LeadFormProps) {
+export function LeadForm({ isOpen, onClose, source = 'expresscourse' }: LeadFormProps) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',

@@ -695,10 +695,10 @@ export default function TripwireLanding() {
       {pixelConfig && <FacebookPixel pixelConfig={pixelConfig} />}
 
       {/* Checkout Form Modal */}
-      <CheckoutForm 
-        isOpen={isFormOpen} 
-        onClose={() => setIsFormOpen(false)} 
-        source="twland"
+      <CheckoutForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        source="expresscourse"
         campaignSlug={campaignSlug}
       />
     </div>

@@ -10,7 +10,7 @@ interface CheckoutFormProps {
   campaignSlug?: string;
 }
 
-export function CheckoutForm({ isOpen, onClose, source = 'twland', campaignSlug }: CheckoutFormProps) {
+export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campaignSlug }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',  // ✅ ДОБАВЛЕНО: Email обязательный

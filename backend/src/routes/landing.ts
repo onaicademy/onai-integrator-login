@@ -244,7 +244,7 @@ async function createAmoCRMLead(lead: LandingLead, contactId?: number): Promise<
  */
 router.post('/submit', async (req: Request, res: Response) => {
   try {
-    const { email, name, phone, source = 'twland', paymentMethod, campaignSlug, metadata = {} } = req.body;
+    const { email, name, phone, source = 'expresscourse', paymentMethod, campaignSlug, metadata = {} } = req.body;
 
     // Валидация
     if (!name || !phone) {
