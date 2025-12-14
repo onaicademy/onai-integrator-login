@@ -7,12 +7,32 @@ import path from 'path';
 
 const router = express.Router();
 
+// ✅ JSON body parser для Direct Upload endpoints
+router.use(express.json({ limit: '10mb' }));
+
 // ✅ EXPLICIT CORS для /upload endpoint (preflight OPTIONS)
 router.options('/upload', (req, res) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  res.sendStatus(200);
+});
+
+// ✅ CORS для Direct Upload endpoints
+router.options('/get-upload-url', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Max-Age', '86400');
+  res.sendStatus(200);
+});
+
+router.options('/complete-upload', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Max-Age', '86400');
   res.sendStatus(200);
 });
 
