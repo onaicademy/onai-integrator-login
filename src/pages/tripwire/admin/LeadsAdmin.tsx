@@ -1,13 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const LANDING_SUPABASE_URL = import.meta.env.VITE_LANDING_SUPABASE_URL || '';
-const LANDING_SUPABASE_ANON_KEY = import.meta.env.VITE_LANDING_SUPABASE_ANON_KEY || '';
-
-const landingSupabase = createClient(LANDING_SUPABASE_URL, LANDING_SUPABASE_ANON_KEY);
+// ✅ LAZY INITIALIZATION: Create client only when component mounts and env vars exist
+function useLandingSupabase() {
+  return useMemo(() => {
+    const url = import.meta.env.VITE_LANDING_SUPABASE_URL;
+    const key = import.meta.env.VITE_LANDING_SUPABASE_ANON_KEY;
+    
+    // Only create client if env vars exist
+    if (!url || !key) {
+      console.warn('⚠️ Landing Supabase env vars not found');
+      return null;
+    }
+    
+    return createClient(url, key);
+  }, []);
+}
 
 interface Lead {
   id: string;
@@ -30,11 +41,16 @@ interface Stats {
 
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
+  const landingSupabase = useLandingSupabase();
 
   // Fetch leads
   const { data: leads, isLoading: leadsLoading } = useQuery<Lead[]>({
     queryKey: ['landing', 'leads'],
     queryFn: async () => {
+      if (!landingSupabase) {
+        throw new Error('Landing Supabase client not initialized');
+      }
+      
       const { data, error } = await landingSupabase
         .from('landing_leads')
         .select('*')
@@ -44,12 +60,17 @@ export default function LeadsAdmin() {
       if (error) throw error;
       return data || [];
     },
+    enabled: !!landingSupabase,
   });
 
   // Fetch stats
   const { data: stats } = useQuery<Stats>({
     queryKey: ['landing', 'stats'],
     queryFn: async () => {
+      if (!landingSupabase) {
+        throw new Error('Landing Supabase client not initialized');
+      }
+      
       const { data, error } = await landingSupabase
         .from('landing_leads')
         .select('source, email_sent, sms_sent');
@@ -73,6 +94,7 @@ export default function LeadsAdmin() {
         bySource,
       };
     },
+    enabled: !!landingSupabase,
   });
 
   const filteredLeads = leads?.filter(lead => 
