@@ -98,6 +98,7 @@ import tripwireAnalyticsRouter from './routes/tripwire/analytics'; // ✅ Tripwi
 import tripwireMaterialsRouter from './routes/tripwire/materials'; // ✅ Tripwire Materials (Phase 2)
 import tripwireCertificatesRouter from './routes/tripwire/certificates'; // ✅ Tripwire Certificates (Phase 2)
 import tripwireAiRouter from './routes/tripwire/ai'; // ✅ Tripwire AI Curator (Phase 2)
+import debugRouter from './routes/debug'; // 🔍 DEBUG: Environment variables check
 import videoUploadRouter from './routes/videoUpload';
 import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW)
 import progressRouter from './routes/progress'; // ✅ Video Progress Tracking for AI Mentor
@@ -335,6 +336,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
+app.use('/api/debug', debugRouter); // 🔍 DEBUG: Check env variables
 app.use('/api/tripwire', tripwireRouter);
 app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints
 app.use('/api/admin/tripwire', tripwireManagerRouter); // ✅ Sales Manager Dashboard (admin & sales roles only)
