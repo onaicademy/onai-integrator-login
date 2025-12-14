@@ -2,9 +2,8 @@ import express, { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import { createOrUpdateLead } from '../lib/amocrm.js';
-import { scheduleProftestNotifications } from '../services/scheduledNotifications.js';
+import { scheduleProftestNotifications, sendProftestResultEmail } from '../services/scheduledNotifications.js';
 import { PIXEL_CONFIGS, sendConversionApiEvent } from './facebook-conversion.js';
-import { sendProftestResultEmail } from '../services/resend.js';
 import { sendProftestResultSMS } from '../services/mobizon.js';
 
 const router = express.Router();
