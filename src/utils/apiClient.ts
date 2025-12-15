@@ -41,33 +41,11 @@ setInterval(clearExpiredCache, 5 * 60 * 1000);
  * Supports both Main Platform and Tripwire tokens
  */
 export function getAuthToken(endpoint?: string): string | null {
-  // 🔥 ПРИОРИТЕТ 1: Main Platform токен (для админов)
-  let token = localStorage.getItem('supabase_token');
-  
-  if (!token) {
-    const sessionData = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
-    if (sessionData) {
-      try {
-        const parsed = JSON.parse(sessionData);
-        token = parsed?.access_token || null;
-      } catch (e) {
-        console.error('Failed to parse Main Platform token:', e);
-      }
-    }
-  }
-  
-  // Если Main Platform токен найден - используем его
-  if (token) {
-    console.log('✅ Using Main Platform token for API request');
-    return token;
-  }
-  
-  // 🔥 ПРИОРИТЕТ 2: Tripwire токен (для студентов Tripwire)
+  // Если это Tripwire API endpoint - пробуем Tripwire токен ПЕРВЫМ
   if (endpoint && endpoint.includes('/tripwire')) {
-    // 1. Проверяем Tripwire JWT токен
+    // 1. Проверяем Tripwire JWT токен (сохранённый после логина)
     const tripwireToken = localStorage.getItem('tripwire_supabase_token');
     if (tripwireToken) {
-      console.log('✅ Using Tripwire token for API request');
       return tripwireToken;
     }
     
@@ -77,17 +55,30 @@ export function getAuthToken(endpoint?: string): string | null {
       try {
         const parsed = JSON.parse(tripwireSessionData);
         if (parsed?.access_token) {
-          console.log('✅ Using Tripwire session token for API request');
           return parsed.access_token;
         }
       } catch (e) {
-        console.error('Failed to parse Tripwire token:', e);
+        console.error('Failed to parse Tripwire Supabase token:', e);
       }
     }
   }
   
-  console.warn('❌ No auth token found');
-  return null;
+  // Fallback: пробуем основной Platform токен
+  let token = localStorage.getItem('supabase_token');
+  
+  if (!token) {
+    const sessionData = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
+    if (sessionData) {
+      try {
+        const parsed = JSON.parse(sessionData);
+        token = parsed?.access_token || null;
+      } catch (e) {
+        console.error('Failed to parse Supabase token:', e);
+      }
+    }
+  }
+  
+  return token;
 }
 
 /**
