@@ -7,7 +7,7 @@ module.exports = {
     exec_mode: 'fork',
     
     // 🚀 Память через NODE_OPTIONS (tsx требует)
-    max_memory_restart: '1G', // Рестарт если память > 1GB
+    max_memory_restart: '4G', // Рестарт если память > 4GB
     
     // 📊 Логирование
     error_file: '/root/.pm2/logs/onai-backend-error.log',
@@ -30,7 +30,7 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
-      NODE_OPTIONS: '--max-old-space-size=1024', // 1GB для Node через ENV
+      NODE_OPTIONS: '--max-old-space-size=4096', // 4GB для Node через ENV (сервер имеет 31GB RAM)
     },
     
     // 📈 Мониторинг
