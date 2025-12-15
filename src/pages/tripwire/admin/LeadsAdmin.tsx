@@ -130,6 +130,25 @@ export default function LeadsAdmin() {
     refetchInterval: 10000, // Refresh every 10s to show status updates
   });
 
+  // ✅ НОВЫЙ: Получаем РЕАЛЬНОЕ количество лидов из БД (COUNT)
+  const { data: totalCount } = useQuery<number>({
+    queryKey: ['landing', 'leads', 'count'],
+    queryFn: async () => {
+      if (!landingSupabase) {
+        throw new Error('Landing Supabase client not initialized');
+      }
+      
+      const { count, error } = await landingSupabase
+        .from('landing_leads')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!landingSupabase,
+    refetchInterval: 10000, // Refresh every 10s
+  });
+
   // Resend mutation
   const resendMutation = useMutation({
     mutationFn: async (leadId: string) => {
@@ -392,7 +411,7 @@ export default function LeadsAdmin() {
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Landing заявки</h1>
             <p className="text-[#9CA3AF]">
-              {leadsLoading ? 'Загрузка...' : `Всего зарегистрировано: ${leads?.length || 0}`}
+              {leadsLoading ? 'Загрузка...' : `Всего зарегистрировано: ${totalCount || 0}`}
             </p>
           </div>
 
