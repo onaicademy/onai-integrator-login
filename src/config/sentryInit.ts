@@ -34,8 +34,17 @@ export const initSentry = () => {
       
       // ✅ Replay - записывает сессии с ошибками
       Sentry.replayIntegration({
-        maskAllText: false,
+        maskAllText: true, // 🔒 БЕЗОПАСНОСТЬ: маскируем весь текст
         blockAllMedia: true,
+      }),
+      
+      // ✅ Replay Canvas - для canvas элементов
+      Sentry.replayCanvasIntegration(),
+      
+      // ✅ Feedback - сбор отзывов от пользователей
+      Sentry.feedbackIntegration({
+        colorScheme: 'dark',
+        showBranding: false,
       }),
       
       // ✅ Console Logging - отправляет console.log/warn/error в Sentry
@@ -49,12 +58,20 @@ export const initSentry = () => {
     // We recommend adjusting this value in production
     tracesSampleRate: import.meta.env.PROD ? 0.2 : 1.0,
     
+    // 🎯 Error Sampling
+    sampleRate: import.meta.env.PROD ? 0.1 : 1.0, // 10% ошибок в prod, 100% в dev
+    
     // 🎥 Session Replay
     replaysSessionSampleRate: 0.1, // 10% всех сессий
     replaysOnErrorSampleRate: 1.0, // 100% сессий с ошибками
     
     // 📝 Enable logs to be sent to Sentry
     enableLogs: true,
+    
+    // 🔒 Security & Privacy
+    sendDefaultPii: false, // НЕ отправляем PII (персональные данные)
+    attachStacktrace: true, // Везде показывать stacktrace
+    maxBreadcrumbs: 100, // Отслеживать последние 100 действий
 
     // 🌐 Distributed Tracing - Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
     tracePropagationTargets: [
@@ -94,6 +111,19 @@ export const initSentry = () => {
 
       return event;
     },
+    
+    // 🎯 Before Send Transaction - фильтруем health-check и метрики
+    beforeSendTransaction(event) {
+      // Игнорируем health check запросы
+      if (event.transaction?.includes('/health') || 
+          event.transaction?.includes('/metrics') ||
+          event.transaction?.includes('/status') ||
+          event.transaction?.includes('favicon.ico')) {
+        return null;
+      }
+      
+      return event;
+    },
 
     // 🚫 Ignore patterns
     ignoreErrors: [
@@ -110,6 +140,16 @@ export const initSentry = () => {
       // ResizeObserver (safe to ignore)
       'ResizeObserver loop limit exceeded',
       'ResizeObserver loop completed',
+    ],
+    
+    // 🚫 Ignore Transactions - не трекать служебные запросы
+    ignoreTransactions: [
+      '/health',
+      '/metrics',
+      '/status',
+      '/favicon.ico',
+      /^\/api\/health/,
+      /^\/api\/metrics/,
     ],
   });
 
