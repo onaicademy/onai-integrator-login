@@ -12,8 +12,7 @@ import { AdminGuard } from "./components/guards/AdminGuard"; // ✅ Admin Guard 
 import { SalesGuard } from "./components/SalesGuard"; // ✅ Guard для admin & sales (Tripwire)
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { initSentry } from "@/config/sentry"; // 🛡️ Sentry Monitoring
-import * as Sentry from "@sentry/react";
+import { initSentry, Sentry } from "@/config/sentryInit"; // 🛡️ Sentry Monitoring
 // Tripwire Guards
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Tripwire)
@@ -120,7 +119,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       <Route path="/neurohub" element={
-        <ProtectedRoute requireAdmin={true}>
+        <ProtectedRoute>
           <MainLayout><NeuroHub /></MainLayout>
         </ProtectedRoute>
       } />

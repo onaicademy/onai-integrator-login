@@ -348,7 +348,7 @@ export default function TripwireLanding() {
               <div>
                 <div className="text-xs sm:text-sm md:text-sm lg:text-base xl:text-base text-gray-400 font-mono uppercase mb-2 md:mb-2">Стоимость входа</div>
                 <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl font-display font-bold text-white">
-                  10$ <span className="text-gray-500 text-lg sm:text-xl md:text-xl lg:text-2xl xl:text-2xl font-normal">(5к тенге)</span>
+                  10$ <span className="text-gray-500 text-lg sm:text-xl md:text-xl lg:text-2xl xl:text-2xl font-normal">(5000 тенге)</span>
                 </div>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-16 xl:h-16 rounded-full border-2 border-[#00FF94]/30 flex items-center justify-center text-[#00FF94]">

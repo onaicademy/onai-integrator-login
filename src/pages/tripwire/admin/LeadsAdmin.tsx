@@ -499,93 +499,132 @@ export default function LeadsAdmin() {
 
                     {/* Notification Status */}
                     <td className="px-6 py-4">
-                      <div className="flex flex-col gap-2">
-                        {/* Queue Status Badge */}
-                        {lead.notification_status === 'pending' && (
-                          <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                            <Clock size={12} className="text-yellow-400" />
-                            <span className="text-xs text-yellow-400">В очереди</span>
+                      {/* ✅ СРОЧНЫЙ ФИКС: Проверяем источник - если expresscourse, показываем LID статус */}
+                      {lead.source === 'expresscourse' || lead.source?.startsWith('payment_') ? (
+                        <div className="flex flex-col gap-2">
+                          {/* LID Badge */}
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <span className="text-xs font-bold text-blue-400">🎯 LID</span>
                           </div>
-                        )}
-                        
-                        {/* 🔥 NEW: Email Status with Countdown */}
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <Mail size={14} className={
-                              lead.email_clicked ? 'text-[#00FF94]' : 
-                              lead.email_sent ? 'text-green-400' : 
-                              lead.notification_status === 'failed' ? 'text-red-400' :
-                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
-                              'text-gray-600'
-                            } />
-                            <span className={`text-xs font-medium ${
-                              lead.email_clicked ? 'text-[#00FF94]' : 
-                              lead.email_sent ? 'text-green-400' : 
-                              lead.notification_status === 'failed' ? 'text-red-400' :
-                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
-                              'text-gray-600'
-                            }`}>
-                              Email: {
-                                lead.email_clicked ? '✓ Кликнул' : 
-                                lead.email_sent ? '✓ Отправлен' : 
-                                lead.notification_status === 'failed' ? '✗ Не удалось отправить' :
-                                calculateNotificationCountdown(lead.created_at).isScheduled ? '📤 В процессе отправки' :
-                                '○ Не отправлен'
-                              }
+                          
+                          {/* Source Label */}
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                            <span className="text-xs font-medium text-orange-400">
+                              📌 Экспресс-курс
                             </span>
                           </div>
-                          {/* Countdown Timer for Email */}
-                          <NotificationCountdown 
-                            createdAt={lead.created_at} 
-                            sent={lead.email_sent} 
-                            error={lead.notification_status === 'failed'} 
-                          />
+                          
+                          {/* Email/SMS Status - NOT SENT */}
+                          <div className="flex flex-col gap-1 px-3 py-1.5 rounded-lg bg-gray-500/10 border border-gray-500/20">
+                            <div className="flex items-center gap-2">
+                              <Mail size={12} className="text-gray-500" />
+                              <span className="text-xs text-gray-500">Email: не отправляется</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Send size={12} className="text-gray-500" />
+                              <span className="text-xs text-gray-500">SMS: не отправляется</span>
+                            </div>
+                          </div>
+                          
+                          <span className="text-xs text-gray-400 italic">
+                            ℹ️ Только Telegram менеджеру
+                          </span>
                         </div>
-
-                        {/* 🔥 NEW: SMS Status with Countdown */}
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <Send size={14} className={
-                              lead.sms_clicked ? 'text-[#00FF94]' : 
-                              lead.sms_sent ? 'text-purple-400' : 
-                              lead.notification_status === 'failed' ? 'text-red-400' :
-                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
-                              'text-gray-600'
-                            } />
-                            <span className={`text-xs font-medium ${
-                              lead.sms_clicked ? 'text-[#00FF94]' : 
-                              lead.sms_sent ? 'text-purple-400' : 
-                              lead.notification_status === 'failed' ? 'text-red-400' :
-                              calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
-                              'text-gray-600'
-                            }`}>
-                              SMS: {
-                                lead.sms_clicked ? '✓ Кликнул' : 
-                                lead.sms_sent ? '✓ Отправлен' : 
-                                lead.notification_status === 'failed' ? '✗ Не удалось отправить' :
-                                calculateNotificationCountdown(lead.created_at).isScheduled ? '📤 В процессе отправки' :
-                                '○ Не отправлен'
-                              }
-                            </span>
+                      ) : (
+                        /* 🎯 PROFTEST: Показываем обычные статусы email/SMS */
+                        <div className="flex flex-col gap-2">
+                          {/* Queue Status Badge */}
+                          {lead.notification_status === 'pending' && (
+                            <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                              <Clock size={12} className="text-yellow-400" />
+                              <span className="text-xs text-yellow-400">В очереди</span>
+                            </div>
+                          )}
+                          
+                          {/* Proftest Badge */}
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                            <span className="text-xs font-bold text-purple-400">✅ PROFTEST</span>
                           </div>
-                          {/* Countdown Timer for SMS */}
-                          <NotificationCountdown 
-                            createdAt={lead.created_at} 
-                            sent={lead.sms_sent} 
-                            error={lead.notification_status === 'failed'} 
-                          />
+                          
+                          {/* Email Status with Countdown */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <Mail size={14} className={
+                                lead.email_clicked ? 'text-[#00FF94]' : 
+                                lead.email_sent ? 'text-green-400' : 
+                                lead.notification_status === 'failed' ? 'text-red-400' :
+                                calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                                'text-gray-600'
+                              } />
+                              <span className={`text-xs font-medium ${
+                                lead.email_clicked ? 'text-[#00FF94]' : 
+                                lead.email_sent ? 'text-green-400' : 
+                                lead.notification_status === 'failed' ? 'text-red-400' :
+                                calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                                'text-gray-600'
+                              }`}>
+                                Email: {
+                                  lead.email_clicked ? '✓ Кликнул' : 
+                                  lead.email_sent ? '✓ Отправлен' : 
+                                  lead.notification_status === 'failed' ? '✗ Не удалось отправить' :
+                                  calculateNotificationCountdown(lead.created_at).isScheduled ? '📤 В процессе отправки' :
+                                  '○ Не отправлен'
+                                }
+                              </span>
+                            </div>
+                            {/* Countdown Timer for Email */}
+                            <NotificationCountdown 
+                              createdAt={lead.created_at} 
+                              sent={lead.email_sent} 
+                              error={lead.notification_status === 'failed'} 
+                            />
+                          </div>
+
+                          {/* SMS Status with Countdown */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <Send size={14} className={
+                                lead.sms_clicked ? 'text-[#00FF94]' : 
+                                lead.sms_sent ? 'text-purple-400' : 
+                                lead.notification_status === 'failed' ? 'text-red-400' :
+                                calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                                'text-gray-600'
+                              } />
+                              <span className={`text-xs font-medium ${
+                                lead.sms_clicked ? 'text-[#00FF94]' : 
+                                lead.sms_sent ? 'text-purple-400' : 
+                                lead.notification_status === 'failed' ? 'text-red-400' :
+                                calculateNotificationCountdown(lead.created_at).isScheduled ? 'text-yellow-400' :
+                                'text-gray-600'
+                              }`}>
+                                SMS: {
+                                  lead.sms_clicked ? '✓ Кликнул' : 
+                                  lead.sms_sent ? '✓ Отправлен' : 
+                                  lead.notification_status === 'failed' ? '✗ Не удалось отправить' :
+                                  calculateNotificationCountdown(lead.created_at).isScheduled ? '📤 В процессе отправки' :
+                                  '○ Не отправлен'
+                                }
+                              </span>
+                            </div>
+                            {/* Countdown Timer for SMS */}
+                            <NotificationCountdown 
+                              createdAt={lead.created_at} 
+                              sent={lead.sms_sent} 
+                              error={lead.notification_status === 'failed'} 
+                            />
+                          </div>
+
+                          {/* Error Message */}
+                          {lead.notification_error && (
+                            <div className="flex items-start gap-2 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/20 mt-1">
+                              <AlertCircle size={12} className="text-red-400 mt-0.5 flex-shrink-0" />
+                              <span className="text-xs text-red-400 break-words">
+                                {lead.notification_error}
+                              </span>
+                            </div>
+                          )}
                         </div>
-
-                        {/* Error Message */}
-                        {lead.notification_error && (
-                          <div className="flex items-start gap-2 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/20 mt-1">
-                            <AlertCircle size={12} className="text-red-400 mt-0.5 flex-shrink-0" />
-                            <span className="text-xs text-red-400 break-words">
-                              {lead.notification_error}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </td>
 
                     {/* Date */}
