@@ -34,12 +34,26 @@ export function AdminGuard({ children }: AdminGuardProps) {
         return;
       }
 
-      // Получаем роль из user_metadata
-      const role = session.user.user_metadata?.role || null;
-      setUserRole(role);
-
       console.log('✅ AdminGuard: Пользователь:', session.user.email);
-      console.log('  Роль:', role);
+
+      // 🔥 КРИТИЧНО: Загружаем роль из таблицы users (НЕ из user_metadata!)
+      const { data: userData, error: userError } = await tripwireSupabase
+        .from('users')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      if (userError || !userData) {
+        console.error('❌ AdminGuard: Не удалось загрузить роль:', userError);
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const role = userData.role;
+      setUserRole(role);
+      
+      console.log('  Роль из БД:', role);
 
       // Разрешаем доступ ТОЛЬКО admin
       if (role === 'admin') {
