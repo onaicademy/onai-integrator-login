@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { sendProftestResultSMS } from './mobizon.js';
 import { generateProftestResultEmail } from '../templates/proftest-result-email.js';
+import { createShortLink } from './urlShortener.js';
 
 // Lazy initialization of Supabase clients (to ensure env vars are loaded)
 let landingSupabase: SupabaseClient | null = null;
@@ -210,8 +211,31 @@ export async function sendProftestEmailWithTracking(
       return true; // Return success since Email was already sent
     }
 
-    // Generate HTML content using professional template with tracking URL
-    const trackingUrl = `https://api.onai.academy/api/landing/track/${leadId}?source=email`;
+    // 🔗 Создаем КОРОТКУЮ ссылку для экономии и лучшего трекинга
+    let trackingUrl = `https://api.onai.academy/api/landing/track/${leadId}?source=email`;
+    
+    // Полная ссылка с UTM параметрами
+    const originalUrl = `https://onai.academy/integrator/expresscourse?utm_source=email&utm_campaign=proftest&lead_id=${leadId}`;
+    
+    console.log(`🔗 Creating short link for Email (lead ${leadId})...`);
+    
+    // Создаем короткую ссылку
+    const shortCode = await createShortLink({
+      originalUrl,
+      leadId,
+      campaign: 'proftest',
+      source: 'email',
+      expiresInDays: 90 // Ссылка действует 90 дней
+    });
+
+    if (shortCode) {
+      trackingUrl = `https://onai.academy/l/${shortCode}`;
+      console.log(`✅ Short link created for Email: ${trackingUrl}`);
+      console.log(`📊 Saved ${originalUrl.length - trackingUrl.length} characters (${Math.round((1 - trackingUrl.length / originalUrl.length) * 100)}% reduction)`);
+    } else {
+      console.warn('⚠️ Failed to create short link for Email, using fallback URL');
+    }
+    
     const htmlContent = generateProftestResultEmail(name, trackingUrl);
 
     // Send via Resend
