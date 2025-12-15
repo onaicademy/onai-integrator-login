@@ -105,13 +105,17 @@ export async function sendLeadNotification(
   }
 ): Promise<boolean> {
   try {
-    if (!config.leadsBotToken) {
-      console.warn('⚠️ TELEGRAM_LEADS_BOT_TOKEN not configured, skipping lead notification');
+    // Используем LEADS бот если настроен, иначе ADMIN бот
+    const botToken = config.leadsBotToken || config.adminBotToken;
+    const chatId = config.leadsChatId || config.adminChatId;
+
+    if (!botToken) {
+      console.warn('⚠️ No Telegram bot token configured for lead notifications');
       return false;
     }
 
-    if (!config.leadsChatId) {
-      console.warn('⚠️ TELEGRAM_LEADS_CHAT_ID not configured, skipping lead notification');
+    if (!chatId) {
+      console.warn('⚠️ No Telegram chat ID configured for lead notifications');
       return false;
     }
 
@@ -134,13 +138,15 @@ export async function sendLeadNotification(
       `📍 *Источник:* ${leadData.source || 'expresscourse'}\n\n` +
       `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
 
+    console.log(`📱 Sending lead notification to chat ${chatId} using ${config.leadsBotToken ? 'LEADS' : 'ADMIN'} bot`);
+
     const response = await fetch(
-      `https://api.telegram.org/bot${config.leadsBotToken}/sendMessage`,
+      `https://api.telegram.org/bot${botToken}/sendMessage`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: config.leadsChatId,
+          chat_id: chatId,
           text: message,
           parse_mode: 'Markdown',
         }),
@@ -154,7 +160,7 @@ export async function sendLeadNotification(
     }
 
     const data = await response.json();
-    console.log(`✅ Lead notification sent to chat ${config.leadsChatId}`);
+    console.log(`✅ Lead notification sent to chat ${chatId} using ${config.leadsBotToken ? 'LEADS' : 'ADMIN'} bot`);
     return true;
   } catch (error: any) {
     console.error('❌ Failed to send lead notification:', error.message);
