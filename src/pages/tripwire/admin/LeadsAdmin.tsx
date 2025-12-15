@@ -500,7 +500,7 @@ export default function LeadsAdmin() {
                     {/* Notification Status */}
                     <td className="px-6 py-4">
                       {/* ✅ СРОЧНЫЙ ФИКС: Проверяем источник - если expresscourse, показываем LID статус */}
-                      {lead.source === 'expresscourse' || lead.source?.startsWith('payment_') ? (
+                      {(lead.source?.toLowerCase().includes('express') || lead.source?.startsWith('payment_')) ? (
                         <div className="flex flex-col gap-2">
                           {/* LID Badge */}
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
