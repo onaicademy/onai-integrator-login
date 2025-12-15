@@ -668,9 +668,26 @@ router.post('/proftest', async (req: Request, res: Response) => {
   try {
     const { name, email, phone, source, answers, proftestAnswers, campaignSlug, utmParams, metadata } = req.body;
 
-    // Validate (все поля обязательны)
-    if (!name || !email || !phone) {
-      return res.status(400).json({ error: 'Missing required fields: name, email, phone' });
+    // ✅ УСИЛЕННАЯ ВАЛИДАЦИЯ: Все поля обязательны
+    if (!name?.trim() || !email?.trim() || !phone?.trim()) {
+      return res.status(400).json({ error: 'Все поля обязательны для заполнения' });
+    }
+
+    // ✅ Проверка имени (минимум 2 символа)
+    if (name.trim().length < 2) {
+      return res.status(400).json({ error: 'Имя должно содержать минимум 2 символа' });
+    }
+
+    // ✅ Проверка email формата
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: 'Введите корректный Email адрес' });
+    }
+
+    // ✅ Проверка телефона (минимум 11 цифр)
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 11) {
+      return res.status(400).json({ error: 'Введите корректный номер телефона' });
     }
 
     console.log('📝 Processing proftest lead submission:', {

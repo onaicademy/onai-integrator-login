@@ -386,8 +386,29 @@ export default function ProfTest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.phone) {
-      setSubmitError('Пожалуйста, заполните все поля');
+    // ✅ УСИЛЕННАЯ ВАЛИДАЦИЯ: Все поля обязательны
+    if (!formData.name?.trim() || !formData.email?.trim() || !formData.phone?.trim()) {
+      setSubmitError('❌ Все поля обязательны для заполнения');
+      return;
+    }
+
+    // ✅ Проверка имени (минимум 2 символа)
+    if (formData.name.trim().length < 2) {
+      setSubmitError('❌ Имя должно содержать минимум 2 символа');
+      return;
+    }
+
+    // ✅ Проверка email формата
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setSubmitError('❌ Введите корректный Email адрес');
+      return;
+    }
+
+    // ✅ Проверка телефона (минимум 11 цифр для +7)
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 11) {
+      setSubmitError('❌ Введите корректный номер телефона');
       return;
     }
 
