@@ -6,9 +6,8 @@ module.exports = {
     instances: 1,
     exec_mode: 'fork',
     
-    // 🚀 МАКСИМАЛЬНЫЕ ЛИМИТЫ для массовой загрузки видео
-    node_args: '--max-old-space-size=6144', // 6GB heap для Node.js (из 7.8GB RAM)
-    max_memory_restart: '6G', // Рестарт если память > 6GB
+    // 🚀 Память через NODE_OPTIONS (tsx требует)
+    max_memory_restart: '1G', // Рестарт если память > 1GB
     
     // 📊 Логирование
     error_file: '/root/.pm2/logs/onai-backend-error.log',
@@ -31,6 +30,7 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
+      NODE_OPTIONS: '--max-old-space-size=1024', // 1GB для Node через ENV
     },
     
     // 📈 Мониторинг
