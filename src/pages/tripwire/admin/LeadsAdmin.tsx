@@ -53,6 +53,7 @@ export default function LeadsAdmin() {
   // Fetch leads with notification status AND journey stages
   const { data: leads, isLoading: leadsLoading } = useQuery<Lead[]>({
     queryKey: ['landing', 'leads'],
+    refetchInterval: 30000, // ✅ Автообновление каждые 30 секунд
     queryFn: async () => {
       if (!landingSupabase) {
         throw new Error('Landing Supabase client not initialized');
