@@ -84,12 +84,6 @@ export const initSentry = (app: Express) => {
  * 🎯 Error handler - должен быть последним middleware
  */
 export const sentryErrorHandler = () => {
-  // If Sentry is not initialized, return a no-op middleware
-  const sentryDsn = process.env.SENTRY_DSN;
-  if (!sentryDsn) {
-    return (err: any, req: any, res: any, next: any) => next(err);
-  }
-  
   return Sentry.Handlers.errorHandler({
     shouldHandleError(error) {
       // Отправляем все 500+ ошибки в Sentry

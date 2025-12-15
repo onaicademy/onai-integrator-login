@@ -138,3 +138,6 @@ PostgreSQL использует **Sequential Scan** (а не Index Scan) пот�
 
 
 
+
+
+

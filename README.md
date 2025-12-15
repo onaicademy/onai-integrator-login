@@ -163,18 +163,41 @@ onai-integrator-login/
 
 ## 🛠️ Технологии
 
-- **Frontend:** React 18 + TypeScript + Vite
+### Frontend
+- **Framework:** React 18 + TypeScript
+- **Build:** Vite 5
 - **UI:** Tailwind CSS + shadcn/ui + Radix UI
-- **Backend:** Supabase (PostgreSQL + Auth + Edge Functions)
 - **Router:** React Router v6
 - **State:** React Query (TanStack Query)
 - **Forms:** React Hook Form + Zod
 - **Animations:** Framer Motion
 - **Charts:** Recharts
 
+### Backend
+- **Runtime:** Node.js 18+ + Express + TypeScript
+- **Database:** Supabase (PostgreSQL + Auth + Edge Functions)
+- **Process Manager:** PM2 (с автоперезапуском)
+- **Error Tracking:** Sentry
+- **Integrations:** AmoCRM, Resend, Mobizon, OpenAI
+
+### Infrastructure
+- **Hosting:** DigitalOcean Droplet
+- **Web Server:** Nginx (reverse proxy)
+- **SSL:** Let's Encrypt
+- **Deployment:** rsync + SSH
+
 ---
 
 ## 📚 Документация
+
+### 🏗️ Архитектура и правила (НАЧНИ ОТСЮДА!)
+- **[PROJECT_ARCHITECTURE.md](./PROJECT_ARCHITECTURE.md)** 🎯 **ГЛАВНЫЙ ДОКУМЕНТ** - Полная архитектура проекта, правила разработки, best practices
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** 🤝 - Быстрый старт для разработчиков и AI-ассистентов
+
+### 🚀 Оптимизации (декабрь 2025)
+- **[backend/OPTIMIZATION_DEPLOYMENT_GUIDE.md](./backend/OPTIMIZATION_DEPLOYMENT_GUIDE.md)** 📈 - Полный гайд по оптимизациям
+- **[QUICK_OPTIMIZATION_CHECKLIST.md](./QUICK_OPTIMIZATION_CHECKLIST.md)** ⚡ - Быстрый чеклист применения
+- **[backend/AUTO_RESTART_DEPLOYMENT_GUIDE.md](./backend/AUTO_RESTART_DEPLOYMENT_GUIDE.md)** 🔄 - Автоперезапуск backend
 
 ### Основная документация:
 - **[PROBLEM_SOLUTION_SUMMARY.md](./PROBLEM_SOLUTION_SUMMARY.md)** - Резюме проблем и решений
@@ -187,12 +210,14 @@ onai-integrator-login/
 - **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Настройка Supabase
 - **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Настройка Google OAuth
 - **[MCP_TROUBLESHOOTING.md](./MCP_TROUBLESHOOTING.md)** 🔧 - Устранение проблем MCP сервера
+- **[URL_SHORTENER_DOCUMENTATION.md](./URL_SHORTENER_DOCUMENTATION.md)** 🔗 - Короткие ссылки для SMS
+- **[SENTRY_SETUP.md](./SENTRY_SETUP.md)** 📊 - Настройка мониторинга ошибок
 
 ### AI-функциональность:
 - **[DIAGNOSTICS_QUICK_START.md](./DIAGNOSTICS_QUICK_START.md)** 🤖 - AI-Диагност: Быстрый старт
 - **[DIAGNOSTICS_SETUP_GUIDE.md](./DIAGNOSTICS_SETUP_GUIDE.md)** - AI-Диагност: Полная документация
 - **[ADMIN_PANEL_SUPABASE_INTEGRATION.md](./ADMIN_PANEL_SUPABASE_INTEGRATION.md)** 🎯 - Интеграция Supabase в админ-панель
-- **[ACTIVITY_PANEL_README.md](./ACTIVITY_PANEL_README.md)** 📊 **НОВОЕ v2.0!** - Полная документация панели активности
+- **[ACTIVITY_PANEL_README.md](./ACTIVITY_PANEL_README.md)** 📊 - Полная документация панели активности
 
 ---
 
@@ -273,11 +298,24 @@ npm run lint
 
 ## 🤝 Contributing
 
+**Перед началом работы прочитай:**
+- 📖 **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Правила разработки
+- 🏗️ **[PROJECT_ARCHITECTURE.md](./PROJECT_ARCHITECTURE.md)** - Архитектура проекта
+
+**Workflow:**
 1. Fork проекта
 2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit изменения (`git commit -m 'Add some AmazingFeature'`)
 4. Push в branch (`git push origin feature/AmazingFeature`)
 5. Откройте Pull Request
+
+**Важные правила:**
+- ✅ Используй `logger` вместо `console.log`
+- ✅ Всегда проверяй `error` в Supabase запросах
+- ✅ Оборачивай async код в try/catch
+- ✅ Тестируй локально перед деплоем
+- ❌ НЕ коммить `.env` файлы
+- ❌ НЕ трогать публичные лендинги (платный трафик!)
 
 ---
 
@@ -304,4 +342,24 @@ Proprietary - onAI Academy © 2025
 
 ---
 
-*Последнее обновление: 4 ноября 2025*
+---
+
+## 📈 Недавние улучшения (декабрь 2025)
+
+### Производительность
+- ✅ **12 индексов БД** - запросы быстрее в 2-5 раз
+- ✅ **Логирование с уровнями** - чистые логи в production
+- ✅ **Retry with backoff** - автовосстановление при сбоях API
+- ✅ **Health check endpoint** - `/api/health/deep` для мониторинга
+
+### Стабильность
+- ✅ **Токены AmoCRM в БД** - не теряются при рестартах
+- ✅ **Автоперезапуск PM2** - восстановление за 2-4 секунды
+- ✅ **Система алертов** - уведомления при критичных сбоях
+- ✅ **Sentry мониторинг** - отслеживание ошибок
+
+**Подробнее:** [backend/OPTIMIZATION_DEPLOYMENT_GUIDE.md](./backend/OPTIMIZATION_DEPLOYMENT_GUIDE.md)
+
+---
+
+*Последнее обновление: 15 декабря 2025*

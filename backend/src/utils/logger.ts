@@ -1,122 +1,184 @@
 /**
- * Production-Safe Logger
+ * 📝 LOGGER UTILITY - Flexible Logging System
  * 
- * ✅ Development: Shows all logs (debug, info, warn, error)
- * ✅ Production: Shows only errors and warnings
- * ❌ Never logs sensitive data (passwords, tokens, etc.)
+ * Замена console.log с поддержкой уровней логирования.
+ * Позволяет контролировать объём логов через переменную окружения.
+ * 
+ * Использование:
+ * ```typescript
+ * import { logger } from '@/utils/logger';
+ * 
+ * logger.debug('Детальная информация для отладки');
+ * logger.info('Общая информация о работе');
+ * logger.warn('Предупреждения');
+ * logger.error('Ошибки');
+ * ```
+ * 
+ * Настройка через .env:
+ * LOG_LEVEL=debug  // Показывать всё
+ * LOG_LEVEL=info   // Показывать info, warn, error (по умолчанию)
+ * LOG_LEVEL=warn   // Показывать только warn и error
+ * LOG_LEVEL=error  // Показывать только error
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-interface LogData {
-  [key: string]: any;
-}
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
 
 class Logger {
-  private isDevelopment: boolean;
+  private currentLevel: LogLevel;
 
   constructor() {
-    this.isDevelopment = process.env.NODE_ENV !== 'production';
-  }
+    // Получаем уровень из env или используем 'info' по умолчанию
+    const envLevel = (process.env.LOG_LEVEL || 'info').toLowerCase() as LogLevel;
+    this.currentLevel = LOG_LEVELS[envLevel] !== undefined ? envLevel : 'info';
 
-  /**
-   * Debug - только для development
-   * Используй для детальной отладки
-   */
-  debug(message: string, data?: LogData): void {
-    if (this.isDevelopment) {
-      console.log(`🐛 [DEBUG] ${message}`, data ? this.sanitize(data) : '');
+    // В production по умолчанию только warn и error
+    if (process.env.NODE_ENV === 'production' && !process.env.LOG_LEVEL) {
+      this.currentLevel = 'warn';
     }
   }
 
   /**
-   * Info - только для development
-   * Используй для общей информации
+   * Проверить, нужно ли логировать сообщение этого уровня
    */
-  info(message: string, data?: LogData): void {
-    if (this.isDevelopment) {
-      console.log(`ℹ️ [INFO] ${message}`, data ? this.sanitize(data) : '');
+  private shouldLog(level: LogLevel): boolean {
+    return LOG_LEVELS[level] >= LOG_LEVELS[this.currentLevel];
+  }
+
+  /**
+   * Форматировать timestamp
+   */
+  private getTimestamp(): string {
+    return new Date().toISOString();
+  }
+
+  /**
+   * Форматировать префикс лога
+   */
+  private getPrefix(level: string): string {
+    const timestamp = this.getTimestamp();
+    return `[${timestamp}] [${level.toUpperCase()}]`;
+  }
+
+  /**
+   * 🐛 DEBUG: Детальная информация для отладки
+   * Показывается только в development или при LOG_LEVEL=debug
+   */
+  debug(...args: any[]): void {
+    if (this.shouldLog('debug')) {
+      console.log(this.getPrefix('debug'), ...args);
     }
   }
 
   /**
-   * Warning - работает везде
-   * Используй для потенциальных проблем
+   * ℹ️ INFO: Общая информация о работе приложения
+   * Показывается в dev и production (если LOG_LEVEL=info)
    */
-  warn(message: string, data?: LogData): void {
-    console.warn(`⚠️ [WARN] ${message}`, data ? this.sanitize(data) : '');
-  }
-
-  /**
-   * Error - работает везде
-   * Используй для критических ошибок
-   */
-  error(message: string, error?: Error | LogData): void {
-    if (error instanceof Error) {
-      console.error(`❌ [ERROR] ${message}`, {
-        message: error.message,
-        stack: this.isDevelopment ? error.stack : undefined,
-      });
-    } else {
-      console.error(`❌ [ERROR] ${message}`, error ? this.sanitize(error) : '');
+  info(...args: any[]): void {
+    if (this.shouldLog('info')) {
+      console.log(this.getPrefix('info'), ...args);
     }
   }
 
   /**
-   * Sanitize - удаляет чувствительные данные
+   * ⚠️ WARN: Предупреждения (не критичные проблемы)
+   * Показывается всегда, кроме LOG_LEVEL=error
    */
-  private sanitize(data: LogData): LogData {
-    const sensitiveKeys = [
-      'password',
-      'token',
-      'secret',
-      'apiKey',
-      'api_key',
-      'serviceRoleKey',
-      'service_role_key',
-      'jwt',
-      'authorization',
-      'cookie',
-      'session',
-    ];
+  warn(...args: any[]): void {
+    if (this.shouldLog('warn')) {
+      console.warn(this.getPrefix('warn'), ...args);
+    }
+  }
 
-    const sanitized: LogData = {};
+  /**
+   * 🔴 ERROR: Ошибки (критичные проблемы)
+   * Показывается ВСЕГДА
+   */
+  error(...args: any[]): void {
+    if (this.shouldLog('error')) {
+      console.error(this.getPrefix('error'), ...args);
+    }
+  }
 
-    for (const [key, value] of Object.entries(data)) {
-      // Проверяем есть ли sensitive key
-      const isSensitive = sensitiveKeys.some((sensitiveKey) =>
-        key.toLowerCase().includes(sensitiveKey.toLowerCase())
+  /**
+   * 🎯 API Request Log: Специальный формат для HTTP запросов
+   */
+  request(method: string, path: string, statusCode?: number, duration?: number): void {
+    if (this.shouldLog('info')) {
+      const durationStr = duration ? `${duration}ms` : '';
+      const statusStr = statusCode ? `${statusCode}` : '';
+      console.log(
+        this.getPrefix('info'),
+        `${method} ${path}`,
+        statusStr,
+        durationStr
       );
-
-      if (isSensitive) {
-        sanitized[key] = '[REDACTED]';
-      } else if (typeof value === 'object' && value !== null) {
-        // Рекурсивно sanitize вложенные объекты
-        sanitized[key] = this.sanitize(value as LogData);
-      } else {
-        sanitized[key] = value;
-      }
     }
-
-    return sanitized;
   }
 
   /**
-   * Success - только для development
-   * Используй для успешных операций
+   * 📊 Performance Log: Замер времени выполнения
    */
-  success(message: string, data?: LogData): void {
-    if (this.isDevelopment) {
-      console.log(`✅ [SUCCESS] ${message}`, data ? this.sanitize(data) : '');
+  performance(label: string, startTime: number): void {
+    if (this.shouldLog('debug')) {
+      const duration = Date.now() - startTime;
+      console.log(this.getPrefix('debug'), `⏱️ ${label}: ${duration}ms`);
     }
+  }
+
+  /**
+   * 🔍 Database Query Log
+   */
+  query(table: string, operation: string, duration?: number): void {
+    if (this.shouldLog('debug')) {
+      const durationStr = duration ? `(${duration}ms)` : '';
+      console.log(
+        this.getPrefix('debug'),
+        `🗄️ DB: ${operation} ${table}`,
+        durationStr
+      );
+    }
+  }
+
+  /**
+   * 🌐 External API Log
+   */
+  externalApi(service: string, method: string, success: boolean, duration?: number): void {
+    if (this.shouldLog('info')) {
+      const statusEmoji = success ? '✅' : '❌';
+      const durationStr = duration ? `${duration}ms` : '';
+      console.log(
+        this.getPrefix('info'),
+        `${statusEmoji} ${service}: ${method}`,
+        durationStr
+      );
+    }
+  }
+
+  /**
+   * Изменить уровень логирования во время выполнения
+   */
+  setLevel(level: LogLevel): void {
+    this.currentLevel = level;
+    console.log(this.getPrefix('info'), `Log level changed to: ${level}`);
+  }
+
+  /**
+   * Получить текущий уровень
+   */
+  getLevel(): LogLevel {
+    return this.currentLevel;
   }
 }
 
-// Singleton instance
-const logger = new Logger();
+// Экспортируем singleton instance
+export const logger = new Logger();
 
+// Экспорт для использования в других файлах
 export default logger;
-
-// Named exports для удобства
-export const { debug, info, warn, error, success } = logger;
-

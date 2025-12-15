@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { showInfo, showSuccess } from '@/lib/notifications';
+import { showInfo, showSuccess, showError } from '@/lib/notifications';
 
 export default function TripwirePayment() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -133,39 +133,84 @@ export default function TripwirePayment() {
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement;
-    const paymentMethod = submitter?.getAttribute('data-method');
+    const paymentMethod = submitter?.getAttribute('data-method') as 'kaspi' | 'card' | 'manager';
 
     const name = (document.getElementById('name') as HTMLInputElement).value;
     const phone = (document.getElementById('phone') as HTMLInputElement).value;
+    const email = (document.getElementById('email') as HTMLInputElement)?.value;
 
-    if (paymentMethod === 'kaspi') {
-      console.log("Simulating redirect to KASPI Payment Gateway...");
-      // TODO: Redirect to Kaspi payment
-      showInfo('Перенаправление на KASPI', {
-        description: 'Ожидайте редиректа на платежную систему...'
+    // Валидация
+    if (!name || !phone) {
+      showError('Заполните все поля', {
+        description: 'Имя и телефон обязательны'
       });
       return;
     }
 
-    if (paymentMethod === 'card') {
-      console.log("Simulating redirect to Card Payment System...");
-      // TODO: Redirect to card payment
-      showInfo('Перенаправление на оплату картой', {
-        description: 'Открываем платежную систему...'
+    // 🔥 Отправляем заявку на backend (с Telegram уведомлением!)
+    try {
+      console.log(`📝 Отправка заявки: ${name}, ${phone}, метод: ${paymentMethod}`);
+      
+      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      const response = await fetch(`${apiBaseUrl}/api/landing/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          email: email || undefined,
+          paymentMethod,
+          source: 'expresscourse',
+          metadata: {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            timestamp: new Date().toISOString(),
+            referrer: document.referrer,
+          }
+        }),
       });
-      return;
-    }
 
-    if (paymentMethod === 'manager') {
-      console.log(`Заявка менеджеру. Имя: ${name}, Телефон: ${phone}`);
-      // TODO: Send to backend
-      showSuccess('Заказ принят!', {
-        description: 'Ожидайте звонка от менеджера в ближайшее время'
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка отправки');
+      }
+
+      console.log('✅ Заявка отправлена:', data);
+
+      // Обработка в зависимости от метода оплаты
+      if (paymentMethod === 'kaspi') {
+        showInfo('Перенаправление на KASPI', {
+          description: 'Ожидайте редиректа на платежную систему...'
+        });
+        // TODO: Redirect to Kaspi payment gateway
+        return;
+      }
+
+      if (paymentMethod === 'card') {
+        showInfo('Перенаправление на оплату картой', {
+          description: 'Открываем платежную систему...'
+        });
+        // TODO: Redirect to card payment system
+        return;
+      }
+
+      if (paymentMethod === 'manager') {
+        showSuccess('Заявка принята!', {
+          description: 'Менеджер свяжется с вами в ближайшее время'
+        });
+        return;
+      }
+    } catch (error: any) {
+      console.error('❌ Ошибка отправки заявки:', error);
+      showError('Ошибка отправки', {
+        description: error.message || 'Попробуйте еще раз'
       });
-      return;
     }
   };
 

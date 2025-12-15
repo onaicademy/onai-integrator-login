@@ -54,159 +54,177 @@ const rarityStyles = {
 export function AchievementCard({ achievement, onClick }: AchievementCardProps) {
   const LucideIcon = achievement.icon ? iconMap[achievement.icon] : Trophy;
   const isUnlocked = achievement.unlocked;
-  const style = rarityStyles[achievement.rarity];
 
   return (
     <motion.div
-      whileHover={isUnlocked ? { scale: 1.05, y: -8 } : undefined}
-      whileTap={isUnlocked ? { scale: 0.98 } : undefined}
-      className="relative group cursor-pointer h-full"
+      whileHover={isUnlocked ? { y: -8, scale: 1.02 } : { scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      className="relative group cursor-pointer"
       onClick={onClick}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
-      {/* BACKGROUND GLOW */}
-      {isUnlocked && (
-        <motion.div
-          className={cn(
-            'absolute -inset-3 bg-gradient-to-r rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500',
-            style.glow
-          )}
-          animate={{ 
-            opacity: [0.2, 0.5, 0.2],
-            scale: [1, 1.05, 1]
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      )}
-
-      {/* CARD */}
+      {/* PREMIUM CYBER CARD */}
       <div
         className={cn(
-          'relative w-full h-full min-h-[280px] rounded-2xl border-2 p-6 flex flex-col items-center justify-between transition-all duration-500',
-          'backdrop-blur-sm',
+          'relative w-[340px] h-[200px] rounded-xl overflow-hidden',
+          'border transition-all duration-500',
           isUnlocked
-            ? cn(
-                'bg-gradient-to-br',
-                style.gradient,
-                'text-white',
-                style.border,
-                'shadow-2xl'
-              )
-            : 'bg-gray-900/80 border-gray-800 text-gray-500'
+            ? 'bg-gradient-to-br from-[#0A0A0A] via-[#0F0F0F] to-[#0A0A0A] border-[#00FF88]/40'
+            : 'bg-[#0A0A0A]/60 border-[#2A2A2A]/40'
         )}
       >
-        {/* LOCKED OVERLAY */}
+        {/* Animated glow effect */}
+        {isUnlocked && (
+          <motion.div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.15), transparent 70%)'
+            }}
+          />
+        )}
+
+        {/* Top cyber accent line */}
+        {isUnlocked && (
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00FF88] to-transparent" />
+        )}
+
+        {/* Locked overlay */}
         {!isUnlocked && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] rounded-2xl flex items-center justify-center z-10">
-            <div className="flex flex-col items-center gap-2">
-              <Lock className="w-12 h-12 text-white/30" />
-              <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">
-                Заблокировано
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex items-center justify-center z-20">
+            <div className="flex flex-col items-center gap-3">
+              <Lock className="w-10 h-10 text-white/20" strokeWidth={1.5} />
+              <span className="text-[10px] font-['JetBrains_Mono'] text-white/30 uppercase tracking-[0.2em]">
+                LOCKED
               </span>
             </div>
           </div>
         )}
 
-        {/* TOP SECTION - ICON */}
-        <div className="flex-1 flex items-center justify-center relative">
-          {/* Glow behind icon */}
-          {isUnlocked && (
-            <motion.div
-              className="absolute inset-0 blur-2xl opacity-50"
-              style={{ backgroundColor: achievement.color || '#fff' }}
-              animate={{ 
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          )}
-
-          {/* ICON */}
-          <motion.div
-            animate={isUnlocked ? { 
-              rotate: [0, 5, -5, 0],
-              scale: [1, 1.05, 1]
-            } : undefined}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="relative z-10"
-          >
-            {achievement.iconify ? (
-              <Icon
-                icon={achievement.iconify}
-                className={cn(
-                  'text-[80px]',
-                  isUnlocked ? 'text-white drop-shadow-2xl' : 'text-gray-700'
-                )}
-                style={{
-                  filter: isUnlocked ? 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' : 'none'
+        {/* Content Layout: Icon Left + Text Right */}
+        <div className="relative h-full flex items-center gap-6 p-6">
+          {/* LEFT: Icon Section */}
+          <div className="flex-shrink-0 relative">
+            {/* Glow behind icon */}
+            {isUnlocked && (
+              <motion.div
+                className="absolute inset-0 blur-2xl"
+                style={{ backgroundColor: achievement.color || '#00FF88' }}
+                animate={{ 
+                  opacity: [0.2, 0.4, 0.2],
+                  scale: [0.9, 1.1, 0.9]
                 }}
-              />
-            ) : (
-              <LucideIcon
-                size={80}
-                className={cn(
-                  isUnlocked ? 'text-white drop-shadow-2xl' : 'text-gray-700'
-                )}
-                style={{
-                  filter: isUnlocked ? 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' : 'none'
-                }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               />
             )}
-          </motion.div>
-        </div>
 
-        {/* BOTTOM SECTION - TEXT */}
-        <div className="w-full text-center space-y-2">
-          {/* TITLE */}
-          <h3 className={cn(
-            "text-lg font-bold leading-tight uppercase tracking-wide",
-            "font-['JetBrains_Mono']",
-            isUnlocked ? 'text-white' : 'text-gray-600'
-          )}>
-            {achievement.title}
-          </h3>
-
-          {/* DESCRIPTION */}
-          <p className={cn(
-            "text-sm leading-relaxed",
-            "font-['Manrope']",
-            isUnlocked ? 'text-white/90' : 'text-gray-700'
-          )}>
-            {achievement.description}
-          </p>
-
-          {/* PROGRESS BAR (если есть) */}
-          {achievement.progress && !isUnlocked && (
-            <div className="mt-3 w-full space-y-1">
-              <div className="bg-black/30 rounded-full h-2 overflow-hidden">
-                <motion.div
-                  className="bg-white/80 h-full rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${(achievement.progress.current / achievement.progress.max) * 100}%`,
+            {/* Icon */}
+            <motion.div
+              animate={isUnlocked ? { 
+                rotate: [0, 3, -3, 0]
+              } : undefined}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative z-10"
+            >
+              {achievement.iconify ? (
+                <Icon
+                  icon={achievement.iconify}
+                  className={cn(
+                    'text-[72px]',
+                    isUnlocked ? 'text-[#00FF88]' : 'text-[#2A2A2A]'
+                  )}
+                  style={{
+                    filter: isUnlocked ? 'drop-shadow(0 0 20px rgba(0, 255, 136, 0.6))' : 'none'
                   }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
                 />
-              </div>
-              <p className="text-xs opacity-80">
-                {achievement.progress.current}/{achievement.progress.max}
-              </p>
-            </div>
-          )}
+              ) : (
+                <LucideIcon
+                  size={72}
+                  strokeWidth={1.5}
+                  className={cn(
+                    isUnlocked ? 'text-[#00FF88]' : 'text-[#2A2A2A]'
+                  )}
+                  style={{
+                    filter: isUnlocked ? 'drop-shadow(0 0 20px rgba(0, 255, 136, 0.6))' : 'none'
+                  }}
+                />
+              )}
+            </motion.div>
+          </div>
 
-          {/* UNLOCK DATE */}
-          {isUnlocked && achievement.unlockedAt && (
-            <p className="text-xs opacity-80 font-['JetBrains_Mono'] pt-2">
-              {new Date(achievement.unlockedAt).toLocaleDateString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-              })}
+          {/* RIGHT: Text Content */}
+          <div className="flex-1 flex flex-col justify-center space-y-2">
+            {/* Title */}
+            <h3 className={cn(
+              "text-base font-bold leading-tight uppercase tracking-wide",
+              "font-['JetBrains_Mono']",
+              isUnlocked ? 'text-white' : 'text-[#404040]'
+            )}
+            style={{
+              textShadow: isUnlocked ? '0 0 20px rgba(0, 255, 136, 0.3)' : 'none'
+            }}
+            >
+              {achievement.title}
+            </h3>
+
+            {/* Description */}
+            <p className={cn(
+              "text-xs leading-relaxed",
+              "font-['Manrope']",
+              isUnlocked ? 'text-white/70' : 'text-[#404040]'
+            )}>
+              {achievement.description}
             </p>
-          )}
+
+            {/* Bottom info: date or progress */}
+            {isUnlocked && achievement.unlockedAt ? (
+              <div className="flex items-center gap-2 pt-2">
+                <div className="h-[1px] w-6 bg-[#00FF88]/30" />
+                <p className="text-[10px] opacity-60 font-['JetBrains_Mono'] text-[#00FF88] uppercase tracking-wider">
+                  {new Date(achievement.unlockedAt).toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit'
+                  })}
+                </p>
+              </div>
+            ) : achievement.progress && !isUnlocked ? (
+              <div className="mt-2 space-y-1">
+                <div className="bg-[#1A1A1A] rounded-full h-1.5 overflow-hidden">
+                  <motion.div
+                    className="bg-[#00FF88]/60 h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${(achievement.progress.current / achievement.progress.max) * 100}%`,
+                    }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                </div>
+                <p className="text-[10px] opacity-50 font-['JetBrains_Mono'] text-white">
+                  {achievement.progress.current}/{achievement.progress.max}
+                </p>
+              </div>
+            ) : null}
+          </div>
         </div>
+
+        {/* Corner accent (unlocked only) */}
+        {isUnlocked && (
+          <div className="absolute bottom-0 right-0 w-16 h-16 opacity-20">
+            <div className="absolute bottom-0 right-0 w-full h-[1px] bg-gradient-to-l from-[#00FF88] to-transparent" />
+            <div className="absolute bottom-0 right-0 h-full w-[1px] bg-gradient-to-t from-[#00FF88] to-transparent" />
+          </div>
+        )}
       </div>
+
+      {/* External glow on hover */}
+      {isUnlocked && (
+        <motion.div
+          className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500 -z-10"
+          style={{
+            background: 'radial-gradient(circle, rgba(0, 255, 136, 0.3), transparent 70%)'
+          }}
+        />
+      )}
     </motion.div>
   );
 }

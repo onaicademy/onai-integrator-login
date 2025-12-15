@@ -289,3 +289,6 @@ export async function sendProftestResultSMS(phone: string, leadId?: string): Pro
 
 **Удачи!** 💪
 
+
+
+

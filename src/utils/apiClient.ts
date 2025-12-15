@@ -46,15 +46,19 @@ export function getAuthToken(endpoint?: string): string | null {
     // 1. Проверяем Tripwire JWT токен (сохранённый после логина)
     const tripwireToken = localStorage.getItem('tripwire_supabase_token');
     if (tripwireToken) {
+      console.log('🔑 [apiClient] Using tripwire_supabase_token');
       return tripwireToken;
     }
     
-    // 2. Проверяем Tripwire Supabase session
-    const tripwireSessionData = localStorage.getItem('sb-tripwire-auth-token');
+    // 2. Проверяем Tripwire Supabase session (ПРАВИЛЬНЫЙ КЛЮЧ!)
+    const tripwireSessionKey = 'sb-pjmvxecykysfrzppdcto-auth-token';
+    const tripwireSessionData = localStorage.getItem(tripwireSessionKey);
     if (tripwireSessionData) {
       try {
         const parsed = JSON.parse(tripwireSessionData);
+        // Supabase хранит токен в access_token
         if (parsed?.access_token) {
+          console.log('🔑 [apiClient] Using Tripwire Supabase session token');
           return parsed.access_token;
         }
       } catch (e) {

@@ -6,6 +6,8 @@ export interface TelegramConfig {
   mentorBotToken: string;
   adminBotToken: string;
   adminChatId?: string;
+  leadsBotToken?: string;
+  leadsChatId?: string;
 }
 
 /**
@@ -15,6 +17,8 @@ export function getTelegramConfig(): TelegramConfig {
   const mentorBotToken = process.env.TELEGRAM_MENTOR_BOT_TOKEN;
   const adminBotToken = process.env.TELEGRAM_ADMIN_BOT_TOKEN;
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const leadsBotToken = process.env.TELEGRAM_LEADS_BOT_TOKEN;
+  const leadsChatId = process.env.TELEGRAM_LEADS_CHAT_ID;
 
   if (!mentorBotToken) {
     throw new Error('Missing TELEGRAM_MENTOR_BOT_TOKEN in environment variables');
@@ -28,6 +32,8 @@ export function getTelegramConfig(): TelegramConfig {
     mentorBotToken,
     adminBotToken,
     adminChatId,
+    leadsBotToken,
+    leadsChatId,
   };
 }
 

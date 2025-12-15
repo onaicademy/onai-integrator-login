@@ -12,7 +12,6 @@ import type { User } from '@supabase/supabase-js';
 
 // Components
 import ProfileHeader from './components/ProfileHeader';
-import ProgressOverview from './components/ProgressOverview';
 import Achievements from './components/Achievements';
 // ❌ УБРАНО: ModuleProgress (по запросу пользователя - "это лишнее")
 import CertificateSection from './components/CertificateSection';
@@ -35,8 +34,6 @@ export default function TripwireProfile() {
   const [profile, setProfile] = useState<TripwireUserProfile | null>(null);
   const [achievements, setAchievements] = useState<TripwireAchievement[]>([]);
   const [certificate, setCertificate] = useState<TripwireCertificate | null>(null);
-  // ✅ FIX #4: Восстановлен moduleProgress state для отображения прогресса
-  const [moduleProgress, setModuleProgress] = useState<any[]>([]);
 
   // Achievement notification
   const [showFireworks, setShowFireworks] = useState(false);
@@ -212,10 +209,7 @@ export default function TripwireProfile() {
         setCertificate(certificateData as any);
       }
 
-      // 4. ✅ FIX #4: Восстановлен вызов loadModuleProgress
-      await loadModuleProgress();
-
-      // 5. ✅ ПЕРЕСЧИТЫВАЕМ modules_completed из реального прогресса!
+      // 4. ✅ ПЕРЕСЧИТЫВАЕМ modules_completed из реального прогресса!
       // Считаем сколько модулей завершено по tripwire_progress
       const { data: completedModulesData } = await tripwireSupabase
         .from('tripwire_progress')
@@ -255,72 +249,6 @@ export default function TripwireProfile() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const loadModuleProgress = async () => {
-    if (!user) return;
-
-    try {
-      // Для авторизованных пользователей используем user.id как tripwire_user_id
-      const tripwireUserId = user.id;
-
-      // Загружаем прогресс по урокам (используем tripwireSupabase!)
-      const { data: progressData, error: progressError } = await tripwireSupabase
-        .from('tripwire_progress')
-        .select('*')
-        .eq('tripwire_user_id', tripwireUserId);
-
-      if (progressError) {
-        console.error('❌ Error loading tripwire_progress:', progressError);
-        return;
-      }
-
-      console.log(`✅ Loaded ${progressData?.length || 0} progress records`);
-
-      if (progressData && progressData.length > 0) {
-        // Группируем по модулям (используем module_id напрямую из progress)
-        const moduleMap = new Map();
-
-        progressData.forEach((item: any) => {
-          const moduleId = item.module_id;
-          if (!moduleMap.has(moduleId)) {
-            moduleMap.set(moduleId, {
-              module_number: moduleId,
-              is_started: false,
-              is_completed: false,
-              lessons_completed: 0,
-              total_lessons: 0,
-              lessons: [],
-            });
-          }
-
-          const module = moduleMap.get(moduleId);
-          module.total_lessons++;
-          if (item.is_completed) {
-            module.lessons_completed++;
-            module.is_completed = module.lessons_completed === module.total_lessons;
-          }
-          if (item.video_progress_percent > 0) {
-            module.is_started = true;
-          }
-
-          module.lessons.push({
-            id: item.lesson_id,
-            title: `Lesson ${item.lesson_id}`,
-            is_completed: item.is_completed,
-            video_progress_percent: item.video_progress_percent,
-            watch_time_seconds: item.watch_time_seconds,
-            completed_at: item.completed_at,
-          });
-        });
-
-        // ✅ FIX #4: Восстановлен moduleProgress state
-        const progressArray = Array.from(moduleMap.values());
-        setModuleProgress(progressArray);
-      }
-    } catch (error) {
-      console.error('Error loading module progress:', error);
     }
   };
 
@@ -461,12 +389,6 @@ export default function TripwireProfile() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 space-y-12">
         {/* Header */}
         <ProfileHeader profile={profile} />
-
-        {/* Прогресс по модулям (Overview) */}
-        <ProgressOverview
-          modulesCompleted={profile.modules_completed}
-          moduleProgress={moduleProgress}
-        />
 
         {/* Achievements */}
         <Achievements achievements={achievements} />

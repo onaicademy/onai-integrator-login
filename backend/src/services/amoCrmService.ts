@@ -6,6 +6,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { supabase } from '../config/supabase';
 
 // ========================================
 // КОНФИГУРАЦИЯ ЭТАПОВ AMOCRM
@@ -19,27 +20,104 @@ const AMO_STAGES = {
 const AMO_PIPELINE_ID = parseInt(process.env.AMOCRM_PIPELINE_ID || '10350882');
 
 // ========================================
-// ХРАНИЛИЩЕ ТОКЕНОВ (В ПАМЯТИ)
+// ХРАНИЛИЩЕ ТОКЕНОВ (В БД + ПАМЯТИ)
 // ========================================
-// В продакшене лучше хранить в Redis или БД
+// ✅ Токены хранятся в БД для персистентности при рестартах
 let currentAccessToken = process.env.AMOCRM_ACCESS_TOKEN || '';
 let currentRefreshToken = process.env.AMOCRM_REFRESH_TOKEN || '';
 
 /**
- * Сохранение токенов в постоянное хранилище
- * TODO: Реализовать сохранение в БД для продакшена
+ * 💾 Загрузка токенов из БД при старте сервера
+ */
+async function loadTokensFromDB(): Promise<void> {
+  try {
+    console.log('📥 [AmoCRM] Загружаем токены из БД...');
+    
+    const { data, error } = await supabase
+      .from('integration_tokens')
+      .select('access_token, refresh_token, expires_at')
+      .eq('service_name', 'amocrm')
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Запись не найдена - это нормально при первом запуске
+        console.log('ℹ️ [AmoCRM] Токены в БД не найдены, используем env переменные');
+        
+        // Если есть токены в env - сохраним их в БД
+        if (currentAccessToken && currentRefreshToken) {
+          console.log('💾 [AmoCRM] Сохраняем токены из env в БД...');
+          await saveTokens(currentAccessToken, currentRefreshToken);
+        }
+        return;
+      }
+      
+      console.error('❌ [AmoCRM] Ошибка загрузки токенов из БД:', error);
+      return;
+    }
+    
+    if (data && data.access_token && data.refresh_token) {
+      currentAccessToken = data.access_token;
+      currentRefreshToken = data.refresh_token;
+      console.log('✅ [AmoCRM] Токены успешно загружены из БД');
+      console.log(`   - Access Token: ${currentAccessToken.substring(0, 20)}...`);
+      console.log(`   - Expires at: ${data.expires_at || 'unknown'}`);
+    } else {
+      console.warn('⚠️ [AmoCRM] Токены в БД найдены, но пустые');
+    }
+  } catch (error) {
+    console.error('❌ [AmoCRM] Критическая ошибка при загрузке токенов:', error);
+  }
+}
+
+/**
+ * 💾 Сохранение токенов в БД (и память)
  */
 async function saveTokens(accessToken: string, refreshToken: string): Promise<void> {
-  // Обновляем токены в памяти
+  // 1. Обновляем токены в памяти (для текущей сессии)
   currentAccessToken = accessToken;
   currentRefreshToken = refreshToken;
   
-  // TODO: Сохранить в БД или Redis для персистентности
-  // Пример:
-  // await db.query('UPDATE settings SET amocrm_access_token = $1, amocrm_refresh_token = $2', [accessToken, refreshToken]);
-  
-  console.log('💾 [AmoCRM] Токены обновлены в памяти (TODO: сохранить в БД)');
+  // 2. Сохраняем в БД (для персистентности)
+  try {
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // AmoCRM токены живут 24 часа
+    
+    const { error } = await supabase
+      .from('integration_tokens')
+      .upsert({
+        service_name: 'amocrm',
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_at: expiresAt.toISOString(),
+        metadata: {
+          token_type: 'Bearer',
+          last_refreshed: new Date().toISOString()
+        }
+      }, {
+        onConflict: 'service_name'
+      });
+    
+    if (error) {
+      console.error('❌ [AmoCRM] Ошибка сохранения токенов в БД:', error);
+      console.warn('⚠️ [AmoCRM] Токены обновлены только в памяти (могут потеряться при рестарте)');
+      return;
+    }
+    
+    console.log('✅ [AmoCRM] Токены сохранены в БД и памяти');
+  } catch (error) {
+    console.error('❌ [AmoCRM] Критическая ошибка при сохранении токенов:', error);
+    console.warn('⚠️ [AmoCRM] Токены обновлены только в памяти');
+  }
 }
+
+// ========================================
+// ИНИЦИАЛИЗАЦИЯ: Загрузка токенов при старте
+// ========================================
+// Загружаем токены из БД асинхронно (не блокируем импорт модуля)
+loadTokensFromDB().catch((error) => {
+  console.error('❌ [AmoCRM] Не удалось загрузить токены при старте:', error);
+});
 
 /**
  * Обновление Access Token через Refresh Token

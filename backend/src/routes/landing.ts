@@ -5,6 +5,7 @@ import { createOrUpdateLead } from '../lib/amocrm.js';
 import { scheduleProftestNotifications, sendProftestEmailWithTracking } from '../services/scheduledNotifications.js';
 import { PIXEL_CONFIGS, sendConversionApiEvent } from './facebook-conversion.js';
 import { sendProftestResultSMS } from '../services/mobizon.js';
+import { sendLeadNotification } from '../services/telegramService.js';
 
 const router = express.Router();
 
@@ -370,6 +371,27 @@ router.post('/submit', async (req: Request, res: Response) => {
     // 2. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
     (async () => {
       try {
+        // 🔔 TELEGRAM NOTIFICATION: Отправляем уведомление о новом лиде (первым делом!)
+        try {
+          console.log('📱 Sending Telegram lead notification...');
+          const telegramSent = await sendLeadNotification({
+            name,
+            phone,
+            email: email || undefined,
+            paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
+            source,
+          });
+          
+          if (telegramSent) {
+            console.log('✅ Telegram: Lead notification sent successfully');
+          } else {
+            console.warn('⚠️ Telegram: Lead notification skipped (not configured or failed)');
+          }
+        } catch (telegramError: any) {
+          console.error('❌ Telegram notification error:', telegramError.message);
+          // Продолжаем выполнение, не блокируем другие задачи
+        }
+
         // 🔥 CRITICAL: Check AmoCRM credentials before attempting sync
         if (!process.env.AMOCRM_ACCESS_TOKEN) {
           console.error('❌❌❌ AmoCRM: ACCESS_TOKEN NOT SET! Cannot sync to AmoCRM!');

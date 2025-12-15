@@ -93,6 +93,77 @@ export async function sendAdminNotification(message: string): Promise<boolean> {
 }
 
 /**
+ * Отправить уведомление о новом лиде через Leads бота
+ */
+export async function sendLeadNotification(
+  leadData: {
+    name: string;
+    phone: string;
+    email?: string;
+    paymentMethod?: 'kaspi' | 'card' | 'manager';
+    source?: string;
+  }
+): Promise<boolean> {
+  try {
+    if (!config.leadsBotToken) {
+      console.warn('⚠️ TELEGRAM_LEADS_BOT_TOKEN not configured, skipping lead notification');
+      return false;
+    }
+
+    if (!config.leadsChatId) {
+      console.warn('⚠️ TELEGRAM_LEADS_CHAT_ID not configured, skipping lead notification');
+      return false;
+    }
+
+    // Форматируем способ оплаты
+    const paymentMethodText = leadData.paymentMethod 
+      ? leadData.paymentMethod === 'kaspi' 
+        ? '💳 Kaspi банк'
+        : leadData.paymentMethod === 'card' 
+        ? '💰 Банковская карта'
+        : '💬 Чат с менеджером'
+      : '❓ Не выбран';
+
+    // Создаем красивое сообщение
+    const message = 
+      `🎯 *НОВАЯ ЗАЯВКА С ЭКСПРЕСС КУРСА*\n\n` +
+      `👤 *Имя:* ${leadData.name}\n` +
+      `📱 *Телефон:* ${leadData.phone}\n` +
+      `${leadData.email ? `📧 *Email:* ${leadData.email}\n` : ''}` +
+      `💳 *Способ оплаты:* ${paymentMethodText}\n` +
+      `📍 *Источник:* ${leadData.source || 'expresscourse'}\n\n` +
+      `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
+
+    const response = await fetch(
+      `https://api.telegram.org/bot${config.leadsBotToken}/sendMessage`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: config.leadsChatId,
+          text: message,
+          parse_mode: 'Markdown',
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Telegram Leads Bot API error:', errorData);
+      throw new Error(`Telegram API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Lead notification sent to chat ${config.leadsChatId}`);
+    return true;
+  } catch (error: any) {
+    console.error('❌ Failed to send lead notification:', error.message);
+    // Не выбрасываем ошибку, чтобы не блокировать основной процесс
+    return false;
+  }
+}
+
+/**
  * Шаблоны сообщений для студентов (Mentor Bot)
  */
 export const MENTOR_TEMPLATES = {
