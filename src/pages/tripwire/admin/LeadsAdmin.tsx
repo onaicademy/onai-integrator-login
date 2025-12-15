@@ -396,16 +396,51 @@ export default function LeadsAdmin() {
             </p>
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={20} />
-            <input
-              type="text"
-              placeholder="Поиск по email, имени, телефону или источнику..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-[400px] pl-12 pr-4 py-3 bg-white/[0.02] border border-white/5 rounded-xl text-white placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#00FF94]/30 transition-colors"
-            />
+          <div className="flex items-center gap-4">
+            {/* 🔥 МАССОВАЯ СИНХРОНИЗАЦИЯ AmoCRM */}
+            <button
+              onClick={async () => {
+                const unsyncedLeads = leads?.filter(l => !l.amocrm_lead_id) || [];
+                if (unsyncedLeads.length === 0) {
+                  alert('Все лиды уже синхронизированы с AmoCRM!');
+                  return;
+                }
+                
+                if (confirm(`Синхронизировать ${unsyncedLeads.length} лидов с AmoCRM?`)) {
+                  let success = 0;
+                  let failed = 0;
+                  
+                  for (const lead of unsyncedLeads) {
+                    try {
+                      await syncAmoCRMMutation.mutateAsync(lead.id);
+                      success++;
+                    } catch (error) {
+                      failed++;
+                    }
+                  }
+                  
+                  alert(`✅ Синхронизация завершена!\nУспешно: ${success}\nОшибок: ${failed}`);
+                }
+              }}
+              disabled={syncAmoCRMMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              title="Синхронизировать все несинхронизированные лиды с AmoCRM"
+            >
+              <TrendingUp size={18} />
+              {syncAmoCRMMutation.isPending ? 'Синхронизация...' : 'Синхронизация с AmoCRM'}
+            </button>
+
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={20} />
+              <input
+                type="text"
+                placeholder="Поиск по email, имени, телефону или источнику..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-[400px] pl-12 pr-4 py-3 bg-white/[0.02] border border-white/5 rounded-xl text-white placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#00FF94]/30 transition-colors"
+              />
+            </div>
           </div>
         </div>
 
