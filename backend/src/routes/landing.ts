@@ -1469,4 +1469,205 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/landing/sync-all-to-amocrm
+ * 🎯 Поэтапная синхронизация ВСЕХ landing_leads с AmoCRM
+ * Отправляет лиды по одному, ждёт ответа перед отправкой следующего
+ */
+router.post('/sync-all-to-amocrm', async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Starting batch sync of all landing_leads to AmoCRM...');
+
+    // 1. Получаем ВСЕ лиды из БД (без amocrm_lead_id или с ошибками)
+    const { data: leadsToSync, error: fetchError } = await landingSupabase
+      .from('landing_leads')
+      .select('*')
+      .order('created_at', { ascending: true }); // От старых к новым
+
+    if (fetchError) {
+      throw new Error(`Failed to fetch leads: ${fetchError.message}`);
+    }
+
+    if (!leadsToSync || leadsToSync.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No leads to sync',
+        total: 0,
+        synced: 0,
+        failed: 0
+      });
+    }
+
+    console.log(`📊 Found ${leadsToSync.length} leads to process`);
+
+    const results = {
+      total: leadsToSync.length,
+      synced: 0,
+      skipped: 0,
+      failed: 0,
+      errors: [] as any[]
+    };
+
+    // 2. Синхронизируем каждый лид ПО ОЧЕРЕДИ
+    for (const lead of leadsToSync) {
+      try {
+        // Пропускаем если уже есть amocrm_lead_id
+        if (lead.amocrm_lead_id) {
+          console.log(`⏭️  Skipping lead ${lead.id} - already has AmoCRM ID: ${lead.amocrm_lead_id}`);
+          results.skipped++;
+          continue;
+        }
+
+        console.log(`\n🔄 Syncing lead ${results.synced + 1}/${leadsToSync.length}: ${lead.name}`);
+
+        // Создаём контакт в AmoCRM
+        const contactId = await createAmoCRMContactSimple({
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone
+        });
+
+        if (!contactId) {
+          throw new Error('Failed to create contact in AmoCRM');
+        }
+
+        // Небольшая задержка между запросами
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Создаём сделку в AmoCRM
+        const leadId = await createAmoCRMLeadSimple({
+          name: `Профтест: ${lead.name}`,
+          contactId,
+          source: lead.source,
+          pipelineId: parseInt(AMOCRM_PIPELINE_ID)
+        });
+
+        if (!leadId) {
+          throw new Error('Failed to create lead in AmoCRM');
+        }
+
+        // Обновляем БД
+        const { error: updateError } = await landingSupabase
+          .from('landing_leads')
+          .update({
+            amocrm_lead_id: leadId.toString(),
+            amocrm_synced: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', lead.id);
+
+        if (updateError) {
+          throw new Error(`Failed to update DB: ${updateError.message}`);
+        }
+
+        console.log(`✅ Synced lead ${lead.id} → AmoCRM Lead ID: ${leadId}`);
+        results.synced++;
+
+        // Задержка между лидами для избежания rate limits
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+      } catch (error: any) {
+        console.error(`❌ Failed to sync lead ${lead.id}:`, error.message);
+        results.failed++;
+        results.errors.push({
+          leadId: lead.id,
+          name: lead.name,
+          error: error.message
+        });
+      }
+    }
+
+    console.log(`\n📊 Sync completed:`);
+    console.log(`   ✅ Synced: ${results.synced}`);
+    console.log(`   ⏭️  Skipped: ${results.skipped}`);
+    console.log(`   ❌ Failed: ${results.failed}`);
+
+    return res.status(200).json({
+      success: true,
+      message: `Sync completed: ${results.synced} synced, ${results.skipped} skipped, ${results.failed} failed`,
+      ...results
+    });
+
+  } catch (error: any) {
+    console.error('❌ Error in batch sync:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to sync leads',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Упрощённые функции для создания контакта и сделки
+ */
+async function createAmoCRMContactSimple(data: { name: string; email: string | null; phone: string }): Promise<number | null> {
+  try {
+    const customFieldsValues: any[] = [
+      { field_code: 'PHONE', values: [{ value: data.phone }] }
+    ];
+
+    if (data.email && data.email.trim()) {
+      customFieldsValues.push({
+        field_code: 'EMAIL',
+        values: [{ value: data.email }]
+      });
+    }
+
+    const response = await axios.post(
+      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/contacts`,
+      [{
+        name: data.name,
+        custom_fields_values: customFieldsValues
+      }],
+      {
+        headers: {
+          'Authorization': `Bearer ${AMOCRM_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    return response.data._embedded?.contacts?.[0]?.id || null;
+  } catch (error: any) {
+    console.error('❌ Error creating contact:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+async function createAmoCRMLeadSimple(data: { name: string; contactId: number; source: string; pipelineId: number }): Promise<number | null> {
+  try {
+    const leadData: any = {
+      name: data.name,
+      pipeline_id: data.pipelineId,
+      _embedded: {
+        contacts: [{ id: data.contactId }]
+      }
+    };
+
+    // Добавляем цену если это expresscourse
+    if (data.source === 'expresscourse') {
+      leadData.price = 5000;
+    }
+
+    const response = await axios.post(
+      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads`,
+      [leadData],
+      {
+        headers: {
+          'Authorization': `Bearer ${AMOCRM_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    return response.data._embedded?.leads?.[0]?.id || null;
+  } catch (error: any) {
+    console.error('❌ Error creating lead:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
 export default router;

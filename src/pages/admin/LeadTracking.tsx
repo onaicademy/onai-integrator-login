@@ -90,10 +90,22 @@ export default function LeadTracking() {
       setSyncing(true);
       setError(null);
       
-      const response = await axios.post(`${API_URL}/api/lead-tracking/sync`);
+      console.log('🚀 Starting batch sync to AmoCRM...');
+      
+      // ✅ Используем новый endpoint для поэтапной синхронизации
+      const response = await axios.post(`${API_URL}/api/landing/sync-all-to-amocrm`);
       
       if (response.data.success) {
-        console.log(`✅ Synced ${response.data.synced} leads`);
+        const { synced, skipped, failed, total } = response.data;
+        console.log(`✅ Sync completed: ${synced} synced, ${skipped} skipped, ${failed} failed out of ${total} total`);
+        
+        // Показываем результаты пользователю
+        alert(`✅ Синхронизация завершена!\n\n` +
+              `Всего лидов: ${total}\n` +
+              `✅ Синхронизировано: ${synced}\n` +
+              `⏭️  Пропущено (уже есть): ${skipped}\n` +
+              `❌ Ошибки: ${failed}`);
+        
         // Обновляем данные после синхронизации
         await fetchLeads();
       } else {
@@ -101,7 +113,9 @@ export default function LeadTracking() {
       }
     } catch (err: any) {
       console.error('Error syncing with AmoCRM:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to sync with AmoCRM');
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to sync with AmoCRM';
+      setError(errorMessage);
+      alert(`❌ Ошибка синхронизации:\n\n${errorMessage}`);
     } finally {
       setSyncing(false);
     }
