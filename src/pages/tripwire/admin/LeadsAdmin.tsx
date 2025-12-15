@@ -63,7 +63,7 @@ export default function LeadsAdmin() {
         .from('leads_with_journey')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(1000); // ✅ Увеличено с 100 до 1000!
       
       if (leadsError) {
         console.error('❌ Error fetching leads with journey:', leadsError);
@@ -72,7 +72,7 @@ export default function LeadsAdmin() {
           .from('landing_leads')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(100);
+          .limit(1000); // ✅ Увеличено с 100 до 1000!
         
         if (fallbackError) throw fallbackError;
         
