@@ -13,10 +13,10 @@ import { SalesGuard } from "./components/SalesGuard"; // ✅ Guard для admin 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initSentry, Sentry } from "@/config/sentryInit"; // 🛡️ Sentry Monitoring
-// Tripwire Guards
+// Integrator Guards
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
-import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Tripwire)
-import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGuard"; // ✅ Admin Guard (Tripwire)
+import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Integrator)
+import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGuard"; // ✅ Admin Guard (Integrator)
 
 // 🚀 ОПТИМИЗАЦИЯ: Синхронные импорты только для критичных страниц
 import Login from "./pages/Login";
@@ -50,8 +50,9 @@ const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatform
 const LeadTracking = lazy(() => import("./pages/admin/LeadTracking"));
 const UnifiedDashboard = lazy(() => import("./pages/admin/UnifiedDashboard"));
 const ShortLinksStats = lazy(() => import("./pages/admin/ShortLinksStats"));
+const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 
-// 🚀 ОПТИМИЗАЦИЯ: Lazy loading Tripwire страниц
+// 🚀 ОПТИМИЗАЦИЯ: Lazy loading Integrator страниц
 const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
 const TripwireLogin = lazy(() => import("./pages/tripwire/TripwireLogin"));
 const TripwireLanding = lazy(() => import("./pages/tripwire/TripwireLanding"));
@@ -61,7 +62,7 @@ const ProfTest = lazy(() => import("./pages/tripwire/ProfTest"));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
-// Tripwire Admin pages
+// Integrator Admin pages
 import TripwireAdminDashboard from "./pages/tripwire/admin/Dashboard";
 import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
 import TripwireStudents from "./pages/tripwire/admin/Students";
@@ -104,6 +105,9 @@ const AppRoutes = () => {
       <Route path="/update-password" element={<UpdatePassword />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/access-denied" element={<AccessDenied />} />
+      
+      {/* 🔗 Short link redirect */}
+      <Route path="/l/:shortCode" element={<ShortLinkRedirect />} />
       
       {/* Welcome - требует авторизацию, но доступна для новых пользователей */}
       <Route path="/welcome" element={

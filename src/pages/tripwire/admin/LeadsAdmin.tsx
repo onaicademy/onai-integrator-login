@@ -46,6 +46,7 @@ interface Stats {
   bySource: Record<string, number>;
 }
 
+// ✅ Version: 1.10.01 - Added sync button & live count (Dec 15, 2025)
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
@@ -447,7 +448,7 @@ export default function LeadsAdmin() {
               title="Синхронизировать все несинхронизированные лиды с AmoCRM (последовательно с очередью)"
             >
               <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
-              {syncing ? 'СИНХРОНИЗАЦИЯ...' : 'СИНХРОНИЗАЦИЯ С AMOCRM'}
+              {syncing ? 'СИНХРОНИЗАЦИЯ...' : 'СИНХРОНИЗАЦИЯ С AMOCRM 🚀'}
             </button>
 
             {/* Search */}

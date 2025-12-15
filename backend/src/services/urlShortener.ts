@@ -6,9 +6,10 @@ import crypto from 'crypto';
  * Создает короткие ссылки для SMS и отслеживает клики
  */
 
+// ✅ ВАЖНО: Используем LANDING DB для коротких ссылок (где хранятся landing_leads)
 const supabase = createClient(
-  process.env.SUPABASE_URL || 'https://fgrfrkxvmqomqsdqwssh.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  process.env.LANDING_SUPABASE_URL || 'https://xikaiavwqinamgolmtcy.supabase.co',
+  process.env.LANDING_SUPABASE_SERVICE_KEY || ''
 );
 
 interface CreateShortLinkParams {
@@ -289,6 +290,7 @@ export async function deactivateShortLink(shortCode: string): Promise<boolean> {
     return false;
   }
 }
+
 
 
 

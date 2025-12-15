@@ -847,6 +847,21 @@ router.post('/proftest', async (req: Request, res: Response) => {
     // 3. 🔥 BACKGROUND TASKS (fire-and-forget with retry)
     (async () => {
       try {
+        // 🔔 TELEGRAM NOTIFICATION: Отправляем уведомление о новом лиде (первым делом!)
+        try {
+          console.log('📱 Sending Telegram lead notification for ProfTest...');
+          const telegramSent = await sendLeadNotification({
+            name,
+            phone,
+            email: email || undefined,
+            source: source || `proftest_${campaignSlug || 'unknown'}`,
+          });
+          console.log(telegramSent ? '✅ Telegram notification sent' : '⚠️ Telegram notification failed');
+        } catch (telegramError: any) {
+          console.error('❌ Telegram notification error:', telegramError.message);
+          // Don't block the rest of the process
+        }
+
         // 🔥 CRITICAL: Check AmoCRM credentials before attempting sync
         if (!process.env.AMOCRM_ACCESS_TOKEN) {
           console.error('❌❌❌ AmoCRM: ACCESS_TOKEN NOT SET! Cannot sync to AmoCRM!');

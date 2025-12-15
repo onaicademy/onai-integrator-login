@@ -132,14 +132,14 @@ export async function sendLeadNotification(
         : '💬 Чат с менеджером'
       : '❓ Не выбран';
 
-    // Создаем красивое сообщение
+    // Создаем красивое сообщение (HTML формат - более надежный чем Markdown!)
     const message = 
-      `🎯 *НОВАЯ ЗАЯВКА - ${leadType}*\n\n` +
-      `👤 *Имя:* ${leadData.name}\n` +
-      `📱 *Телефон:* ${leadData.phone}\n` +
-      `${leadData.email ? `📧 *Email:* ${leadData.email}\n` : ''}` +
-      `${leadData.paymentMethod ? `💳 *Способ оплаты:* ${paymentMethodText}\n` : ''}` +
-      `📍 *Источник:* ${leadData.source || 'expresscourse'}\n\n` +
+      `🎯 <b>НОВАЯ ЗАЯВКА - ${leadType}</b>\n\n` +
+      `👤 <b>Имя:</b> ${leadData.name}\n` +
+      `📱 <b>Телефон:</b> ${leadData.phone}\n` +
+      `${leadData.email ? `📧 <b>Email:</b> ${leadData.email}\n` : ''}` +
+      `${leadData.paymentMethod ? `💳 <b>Способ оплаты:</b> ${paymentMethodText}\n` : ''}` +
+      `📍 <b>Источник:</b> ${leadData.source || 'expresscourse'}\n\n` +
       `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
 
     console.log(`📱 Sending lead notification to chat ${chatId} using ${config.leadsBotToken ? 'LEADS' : 'ADMIN'} bot`);
@@ -152,7 +152,7 @@ export async function sendLeadNotification(
         body: JSON.stringify({
           chat_id: chatId,
           text: message,
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
         }),
       }
     );
