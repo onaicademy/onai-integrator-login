@@ -6,15 +6,16 @@ const router = express.Router();
 
 // ============================================
 // SUPABASE CLIENT (Lazy Initialization)
+// ✅ CRITICAL FIX: Use LANDING_SUPABASE for landing_leads table
 // ============================================
 let supabase: any = null;
 
 function getSupabase() {
   if (!supabase) {
-    const TRIPWIRE_SUPABASE_URL = process.env.TRIPWIRE_SUPABASE_URL || '';
-    const TRIPWIRE_SUPABASE_SERVICE_KEY = process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || '';
+    const LANDING_SUPABASE_URL = process.env.LANDING_SUPABASE_URL || '';
+    const LANDING_SUPABASE_SERVICE_KEY = process.env.LANDING_SUPABASE_SERVICE_KEY || '';
     
-    supabase = createClient(TRIPWIRE_SUPABASE_URL, TRIPWIRE_SUPABASE_SERVICE_KEY, {
+    supabase = createClient(LANDING_SUPABASE_URL, LANDING_SUPABASE_SERVICE_KEY, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
@@ -196,9 +197,9 @@ router.get('/leads', async (req: Request, res: Response) => {
   try {
     console.log('📊 Fetching lead tracking data...');
 
-    // 1. Получаем лиды из базы
-    const { data: leadsFromDB, error: dbError } = await supabase
-      .from('lead_tracking')
+    // 1. Получаем лиды из базы (landing_leads таблица)
+    const { data: leadsFromDB, error: dbError } = await getSupabase()
+      .from('landing_leads')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(500); // Увеличено с 100 до 500
@@ -250,8 +251,8 @@ router.get('/leads', async (req: Request, res: Response) => {
         const statusName = await getStatusName(amoDeal.status_id);
 
         // Создаем новую запись в базе
-        const { error: insertError } = await supabase
-          .from('lead_tracking')
+        const { error: insertError } = await getSupabase()
+          .from('landing_leads')
           .insert({
             full_name: amoDeal.name,
             email,
@@ -275,8 +276,8 @@ router.get('/leads', async (req: Request, res: Response) => {
         // Обновляем статус существующей сделки
         const statusName = await getStatusName(amoDeal.status_id);
         
-        const { error: updateError } = await supabase
-          .from('lead_tracking')
+        const { error: updateError } = await getSupabase()
+          .from('landing_leads')
           .update({ amocrm_status: statusName })
           .eq('id', existingLead.id);
 
@@ -286,9 +287,9 @@ router.get('/leads', async (req: Request, res: Response) => {
       }
     }
 
-    // 4. Получаем обновленные данные из базы
-    const { data: updatedLeads, error: updatedError } = await supabase
-      .from('lead_tracking')
+    // 4. Получаем обновленные данные из базы (landing_leads таблица)
+    const { data: updatedLeads, error: updatedError } = await getSupabase()
+      .from('landing_leads')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(500); // Увеличено с 100 до 500
@@ -355,10 +356,10 @@ router.post('/sync', async (req: Request, res: Response) => {
 
     for (const amoDeal of amoCRMLeads) {
       // Проверяем, есть ли уже эта сделка в базе
-      const { data: existingLead } = await supabase
-        .from('lead_tracking')
+      const { data: existingLead } = await getSupabase()
+        .from('landing_leads')
         .select('*')
-        .eq('amocrm_deal_id', amoDeal.id.toString())
+        .eq('amocrm_lead_id', amoDeal.id.toString())
         .single();
 
       const contactId = amoDeal._embedded?.contacts?.[0]?.id;
@@ -384,10 +385,10 @@ router.post('/sync', async (req: Request, res: Response) => {
 
       if (!existingLead) {
         // Создаем новую запись
-        const { error: insertError } = await supabase
-          .from('lead_tracking')
+        const { error: insertError } = await getSupabase()
+          .from('landing_leads')
           .insert({
-            full_name: amoDeal.name,
+            name: amoDeal.name,
             email,
             phone,
             source: 'amocrm',
@@ -405,8 +406,8 @@ router.post('/sync', async (req: Request, res: Response) => {
         }
       } else {
         // Обновляем существующую запись
-        const { error: updateError } = await supabase
-          .from('lead_tracking')
+        const { error: updateError } = await getSupabase()
+          .from('landing_leads')
           .update({ amocrm_status: statusName })
           .eq('id', existingLead.id);
 
@@ -456,8 +457,8 @@ router.post('/update-email-status', async (req: Request, res: Response) => {
       email_error: status === 'error' ? error : null
     };
 
-    const { error: updateError } = await supabase
-      .from('lead_tracking')
+    const { error: updateError } = await getSupabase()
+      .from('landing_leads')
       .update(updateData)
       .eq('id', leadId);
 
@@ -506,8 +507,8 @@ router.post('/update-sms-status', async (req: Request, res: Response) => {
       sms_error: status === 'error' ? error : null
     };
 
-    const { error: updateError } = await supabase
-      .from('lead_tracking')
+    const { error: updateError } = await getSupabase()
+      .from('landing_leads')
       .update(updateData)
       .eq('id', leadId);
 
@@ -549,7 +550,7 @@ router.post('/track-click', async (req: Request, res: Response) => {
     }
 
     // Находим лида по email или телефону
-    let query = getSupabase().from('lead_tracking').select('*');
+    let query = getSupabase().from('landing_leads').select('*');
     
     if (email) {
       query = query.eq('email', email);
@@ -592,8 +593,8 @@ router.post('/track-click', async (req: Request, res: Response) => {
       if (utm.term) updateData.utm_term = utm.term;
     }
 
-    const { error: updateError } = await supabase
-      .from('lead_tracking')
+    const { error: updateError } = await getSupabase()
+      .from('landing_leads')
       .update(updateData)
       .eq('id', lead.id);
 
@@ -627,8 +628,8 @@ router.post('/track-click', async (req: Request, res: Response) => {
  */
 router.get('/stats', async (req: Request, res: Response) => {
   try {
-    const { data: leads, error } = await supabase
-      .from('lead_tracking')
+    const { data: leads, error } = await getSupabase()
+      .from('landing_leads')
       .select('*')
       .order('created_at', { ascending: false });
 
