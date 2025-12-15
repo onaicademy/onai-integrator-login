@@ -37,6 +37,11 @@ export const initSentry = () => {
         maskAllText: false,
         blockAllMedia: true,
       }),
+      
+      // ✅ Console Logging - отправляет console.log/warn/error в Sentry
+      Sentry.consoleIntegration({ 
+        levels: ['log', 'warn', 'error'] 
+      }),
     ],
 
     // 📊 Performance Monitoring
@@ -47,6 +52,9 @@ export const initSentry = () => {
     // 🎥 Session Replay
     replaysSessionSampleRate: 0.1, // 10% всех сессий
     replaysOnErrorSampleRate: 1.0, // 100% сессий с ошибками
+    
+    // 📝 Enable logs to be sent to Sentry
+    enableLogs: true,
 
     // 🌐 Distributed Tracing - Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
     tracePropagationTargets: [
