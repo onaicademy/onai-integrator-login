@@ -462,62 +462,50 @@ export default function TripwireProductPage() {
               </p>
             </div>
 
-            {/* 🟢 AI CURATOR BUTTON - LOCKED FOR STUDENTS - COMPACT VERSION */}
-            <motion.button
-              whileHover={{ scale: isAdmin ? 1.02 : 1, boxShadow: isAdmin ? '0 0 30px rgba(0,255,136,0.3)' : 'none' }}
-              whileTap={{ scale: isAdmin ? 0.98 : 1 }}
-              onClick={() => {
-                if (isAdmin) {
-                  setIsAIChatOpen(true);
-                } else {
-                  showLocked('AI Куратор');
-                }
-              }}
-              className={`group relative px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2.5 overflow-hidden rounded-md sm:rounded-lg flex items-center gap-2 sm:gap-2.5 border transition-all duration-300 flex-shrink-0 md:w-auto ${
-                isAdmin 
-                  ? 'border-[#00FF88]/40 hover:border-[#00FF88] cursor-pointer' 
-                  : 'border-white/10 cursor-not-allowed opacity-50'
-              }`}
-              style={{
-                background: isAdmin 
-                  ? `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`
-                  : `linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)`,
-                backdropFilter: 'blur(20px)',
-              }}
-            >
-              {/* Shimmer Effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                initial={{ x: '-200%' }}
-                animate={{ x: '200%' }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatDelay: 1,
-                  ease: "easeInOut"
+            {/* 🟢 AI CURATOR BUTTON - ТОЛЬКО ДЛЯ АДМИНОВ */}
+            {isAdmin && (
+              <motion.button
+                whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(0,255,136,0.3)' }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsAIChatOpen(true)}
+                className="group relative px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2.5 overflow-hidden rounded-md sm:rounded-lg flex items-center gap-2 sm:gap-2.5 border border-[#00FF88]/40 hover:border-[#00FF88] cursor-pointer transition-all duration-300 flex-shrink-0 md:w-auto"
+                style={{
+                  background: `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`,
+                  backdropFilter: 'blur(20px)',
                 }}
-              />
-              
-              {/* Icon Container */}
-              <div className="relative z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-sm sm:rounded-md bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/30 group-hover:bg-[#00FF88]/20 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
-                <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-5 lg:h-5 text-[#00FF88]" />
-              </div>
+              >
+                {/* Shimmer Effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                  initial={{ x: '-200%' }}
+                  animate={{ x: '200%' }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 1,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Icon Container */}
+                <div className="relative z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-sm sm:rounded-md bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/30 group-hover:bg-[#00FF88]/20 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
+                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-5 lg:h-5 text-[#00FF88]" />
+                </div>
 
-              {/* Text */}
-              <div className="relative z-10 text-left flex-1 min-w-0">
-                <p className={`font-bold font-mono text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs leading-none mb-0.5 transition-colors ${
-                  isAdmin ? 'text-white group-hover:text-[#00FF88]' : 'text-white/60'
-                }`}>
-                  AI Куратор
-                </p>
-                <p className="text-[7px] sm:text-[8px] md:text-[8px] lg:text-[9px] text-white/60 font-mono tracking-wide leading-none truncate">
-                  {isAdmin ? 'Онлайн 24/7' : '🔒 Доступно на полной версии'}
-                </p>
-              </div>
+                {/* Text */}
+                <div className="relative z-10 text-left flex-1 min-w-0">
+                  <p className="font-bold font-mono text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs leading-none mb-0.5 transition-colors text-white group-hover:text-[#00FF88]">
+                    AI Куратор
+                  </p>
+                  <p className="text-[7px] sm:text-[8px] md:text-[8px] lg:text-[9px] text-white/60 font-mono tracking-wide leading-none truncate">
+                    Онлайн 24/7
+                  </p>
+                </div>
 
-              {/* Glow Effect */}
-              <div className="absolute inset-0 bg-[#00FF88]/5 group-hover:bg-[#00FF88]/10 transition-colors duration-500 pointer-events-none" />
-            </motion.button>
+                {/* Glow Effect */}
+                <div className="absolute inset-0 bg-[#00FF88]/5 group-hover:bg-[#00FF88]/10 transition-colors duration-500 pointer-events-none" />
+              </motion.button>
+            )}
           </div>
         </motion.header>
 

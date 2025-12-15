@@ -267,26 +267,38 @@ const TripwireLesson = () => {
           // 🔍 Проверяем статус обработки видео
           try {
             const statusRes = await api.get(`/api/videos/bunny-status/${videoId}`);
-            const { status: videoStatus } = statusRes;
+            const { status: videoStatus, bunnyStatus } = statusRes;
             
-            // Status codes: 0=Created, 1=Uploading, 2=Uploaded, 3=Processing, 4=Encoded, 5=Error
-            if (videoStatus === 4) {
+            console.log('🎥 [VIDEO DEBUG] Status check:', { videoStatus, bunnyStatus });
+            
+            // ✅ Проверяем статус (может быть строка "ready" или число 4)
+            if (videoStatus === 'ready' || videoStatus === 'completed' || bunnyStatus === 4) {
               // ✅ Видео готово
+              console.log('✅ [VIDEO DEBUG] Video is ready! Setting video state...');
               setVideo({
                 ...fetchedVideo,
                 video_url: `https://video.onai.academy/${videoId}/playlist.m3u8`,
                 thumbnail_url: `https://video.onai.academy/${videoId}/thumbnail.jpg`
               });
               setIsVideoProcessing(false);
-            } else if (videoStatus === 3 || videoStatus === 2 || videoStatus === 1) {
+            } else if (videoStatus === 'processing' || bunnyStatus === 3 || bunnyStatus === 2 || bunnyStatus === 1) {
               // ⏳ Видео обрабатывается
-              console.log('⏳ Video is still processing:', videoStatus);
+              console.log('⏳ Video is still processing:', { videoStatus, bunnyStatus });
               setProcessingVideoId(videoId);
               setIsVideoProcessing(true);
               setVideo(null);
-            } else {
-              console.warn('⚠️ Unknown video status:', videoStatus);
+            } else if (videoStatus === 'failed' || bunnyStatus === 5) {
+              // ❌ Ошибка обработки
+              console.error('❌ Video processing failed:', { videoStatus, bunnyStatus });
               setVideo(null);
+            } else {
+              console.warn('⚠️ Unknown video status:', { videoStatus, bunnyStatus });
+              // Всё равно пытаемся показать видео
+              setVideo({
+                ...fetchedVideo,
+                video_url: `https://video.onai.academy/${videoId}/playlist.m3u8`,
+                thumbnail_url: `https://video.onai.academy/${videoId}/thumbnail.jpg`
+              });
             }
           } catch (statusError) {
             // Если не удалось проверить статус, показываем видео
@@ -1041,7 +1053,8 @@ const TripwireLesson = () => {
               </motion.div>
             )}
 
-            {/* 🤖 GLASS PANEL: AI Curator - ВТОРОЙ */}
+            {/* 🤖 GLASS PANEL: AI Curator - ТОЛЬКО ДЛЯ АДМИНОВ */}
+            {isAdmin && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1052,55 +1065,34 @@ const TripwireLesson = () => {
                 }}
               >
               <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl border flex items-center justify-center flex-shrink-0 ${
-                  isAdmin 
-                    ? 'bg-[#00FF88]/10 border-[#00FF88]/30' 
-                    : 'bg-white/5 border-white/10'
-                }`}>
-                  <Bot className={`w-5 h-5 sm:w-6 sm:h-6 ${isAdmin ? 'text-[#00FF88]' : 'text-white/40'}`} />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-[#00FF88]" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className={`font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-sm sm:text-base truncate ${
-                    isAdmin ? 'text-white' : 'text-white/50'
-                  }`}>AI-Куратор</h3>
-                  <p className="text-[10px] sm:text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">
-                    {isAdmin ? 'Онлайн 24/7' : '🔒 Полная версия'}
-                  </p>
+                  <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-sm sm:text-base truncate">AI-Куратор</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">Онлайн 24/7</p>
                 </div>
               </div>
               
               <p className="text-sm text-gray-400 font-['Manrope'] mb-4 leading-relaxed">
-                {isAdmin 
-                  ? 'Задавайте вопросы, отправляйте голосовые сообщения и файлы'
-                  : 'Доступно на полной версии продукта'
-                }
+                Задавайте вопросы, отправляйте голосовые сообщения и файлы
               </p>
               
               <motion.button
-                onClick={() => {
-                  if (isAdmin) {
-                    setIsAIChatOpen(true);
-                  } else {
-                    showLocked('AI Куратор');
-                  }
-                }}
-                disabled={!isAdmin}
-                className={`w-full group relative px-4 sm:px-6 py-3 font-sans font-bold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 overflow-hidden ${
-                  isAdmin 
-                    ? 'bg-[#00FF88] text-black hover:shadow-[0_0_40px_rgba(0,255,136,0.6)] cursor-pointer'
-                    : 'bg-white/10 text-white/40 cursor-not-allowed'
-                }`}
+                onClick={() => setIsAIChatOpen(true)}
+                className="w-full group relative px-4 sm:px-6 py-3 font-sans font-bold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 overflow-hidden bg-[#00FF88] text-black hover:shadow-[0_0_40px_rgba(0,255,136,0.6)] cursor-pointer"
                 style={{
                   transform: 'skewX(-10deg)',
-                  boxShadow: isAdmin ? '0 0 20px rgba(0, 255, 136, 0.3)' : 'none'
+                  boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)'
                 }}
               >
                 <span className="flex items-center justify-center gap-2 not-italic" style={{ transform: 'skewX(10deg)' }}>
                   <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {isAdmin ? 'Написать куратору' : 'Заблокировано'}
+                  Написать куратору
                 </span>
               </motion.button>
             </motion.div>
+            )}
 
             {/* 📊 GLASS PANEL: Progress - ТРЕТИЙ */}
             <motion.div
