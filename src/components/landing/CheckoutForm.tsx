@@ -13,6 +13,7 @@ interface CheckoutFormProps {
 export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campaignSlug }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +26,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', phone: '' });
+      setFormData({ name: '', email: '', phone: '' });
       setIsSubmitting(false);
       setShowThankYou(false);
       setRedirectCountdown(8); // Reset to 8 seconds
@@ -198,9 +199,33 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
   const handleSubmit = async (e: React.FormEvent, paymentMethod: string) => {
     e.preventDefault();
     
-    // Validate form
-    if (!formData.name.trim() || !formData.phone.trim()) {
-      alert('Пожалуйста, заполните все поля');
+    // ✅ CRITICAL FIX: Validate ALL required fields (name, email, phone)
+    if (!formData.name.trim()) {
+      alert('❌ Пожалуйста, укажите ваше имя');
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      alert('❌ Пожалуйста, укажите ваш email');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      alert('❌ Пожалуйста, введите корректный email адрес');
+      return;
+    }
+    
+    if (!formData.phone.trim()) {
+      alert('❌ Пожалуйста, укажите ваш номер телефона');
+      return;
+    }
+    
+    // Validate phone has at least 11 digits
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 11) {
+      alert('❌ Пожалуйста, введите полный номер телефона');
       return;
     }
 
@@ -379,6 +404,24 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
                       onChange={handleChange}
                       required
                       placeholder="Ваше полное имя"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* Email Input */}
+                  <div>
+                    <label htmlFor="email" className="block text-xs font-mono text-gray-400 uppercase mb-2">
+                      EMAIL *
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      placeholder="your@email.com"
                       disabled={isSubmitting}
                       className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
                     />

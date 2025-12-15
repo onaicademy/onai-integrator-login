@@ -254,11 +254,43 @@ router.post('/submit', async (req: Request, res: Response) => {
   try {
     const { email, name, phone, source = 'expresscourse', paymentMethod, campaignSlug, metadata = {} } = req.body;
 
-    // Валидация
-    if (!name || !phone) {
+    // ✅ CRITICAL FIX: Validate ALL required fields (email, name, phone)
+    if (!email || !email.trim()) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: name, phone'
+        error: 'Email обязателен для заполнения'
+      });
+    }
+    
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Имя обязательно для заполнения'
+      });
+    }
+    
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Телефон обязателен для заполнения'
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Неверный формат email адреса'
+      });
+    }
+
+    // Validate phone format (basic check)
+    const phoneRegex = /^[\d\s\+\-\(\)]+$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Неверный формат номера телефона'
       });
     }
 
