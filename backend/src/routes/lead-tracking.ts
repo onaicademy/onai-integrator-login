@@ -201,7 +201,7 @@ router.get('/leads', async (req: Request, res: Response) => {
       .from('lead_tracking')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(500); // Увеличено с 100 до 500
 
     if (dbError) {
       console.error('❌ Database error:', dbError);
@@ -291,7 +291,7 @@ router.get('/leads', async (req: Request, res: Response) => {
       .from('lead_tracking')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(500); // Увеличено с 100 до 500
 
     if (updatedError) {
       console.error('❌ Error fetching updated leads:', updatedError);
