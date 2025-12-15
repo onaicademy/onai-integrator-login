@@ -499,8 +499,19 @@ export default function LeadsAdmin() {
 
                     {/* Notification Status */}
                     <td className="px-6 py-4">
-                      {/* ✅ СРОЧНЫЙ ФИКС: Проверяем источник - если expresscourse, показываем LID статус */}
-                      {(lead.source?.toLowerCase().includes('express') || lead.source?.startsWith('payment_')) ? (
+                      {/* ✅ СРОЧНЫЙ ФИКС: Проверяем источник И journey stages - если expresscourse, показываем LID статус */}
+                      {(() => {
+                        // Проверка source
+                        const isExpressBySource = lead.source?.toLowerCase().includes('express') || lead.source?.startsWith('payment_');
+                        
+                        // Проверка journey stages (если есть payment_ этапы - это экспресс-курс!)
+                        const hasPaymentJourney = lead.journey_stages?.some(stage => 
+                          stage.stage?.startsWith('payment_') || 
+                          stage.stage?.toLowerCase().includes('express')
+                        );
+                        
+                        return isExpressBySource || hasPaymentJourney;
+                      })() ? (
                         <div className="flex flex-col gap-2">
                           {/* LID Badge */}
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
