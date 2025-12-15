@@ -42,6 +42,9 @@ const studentMenuItems: MenuItem[] = [
   { title: "Мой профиль", url: "/profile", icon: User },
   { title: "Достижения", url: "/achievements", icon: Trophy },
   { title: "onAIgram", url: "/messages", icon: OnAIgramIcon, isCustomIcon: true },
+];
+
+const adminMenuItems: MenuItem[] = [
   { title: "Админ панель", url: "/admin", icon: ChartBar },
 ];
 
@@ -60,16 +63,10 @@ export function AppSidebar({ role }: AppSidebarProps) {
 
   const { state, setOpenMobile, isMobile } = useSidebar();
 
-  // ВСЕГДА показываем studentMenuItems, просто фильтруем для студентов
-  const menuItems = studentMenuItems.filter(item => {
-    // Если студент - скрываем админ-панель
-    if (role === "student" && item.url === "/admin") {
-      console.log('🚫 Скрываем админ-панель для студента');
-      return false;
-    }
-    // Для админов показываем ВСЁ (включая админ-панель)
-    return true;
-  });
+  // Формируем меню в зависимости от роли
+  const menuItems = role === "admin" 
+    ? [...studentMenuItems, ...adminMenuItems] 
+    : studentMenuItems;
 
   const isCollapsed = state === "collapsed";
 

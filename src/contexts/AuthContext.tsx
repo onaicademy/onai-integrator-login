@@ -85,10 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // 📡 Загружаем из БД
+      // 📡 Загружаем из БД (КРИТИЧНО: включаем role!)
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url, level, xp, current_streak, longest_streak')
+        .select('full_name, avatar_url, level, xp, current_streak, longest_streak, role')
         .eq('id', userId)
         .single();
 

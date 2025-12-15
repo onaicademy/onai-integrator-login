@@ -120,7 +120,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       <Route path="/neurohub" element={
-        <ProtectedRoute>
+        <ProtectedRoute requireAdmin={true}>
           <MainLayout><NeuroHub /></MainLayout>
         </ProtectedRoute>
       } />
