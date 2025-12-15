@@ -127,11 +127,21 @@ export default function TripwireProductPage() {
 
   // 🔥 Load Tripwire user from tripwireSupabase
   useEffect(() => {
-    tripwireSupabase.auth.getSession().then(({ data: { session } }: any) => {
+    tripwireSupabase.auth.getSession().then(async ({ data: { session } }: any) => {
       if (session?.user) {
         console.log('🔥 TripwireProductPage: Loaded tripwire user:', session.user.email);
         setTripwireUser(session.user);
-        setIsAdmin(session.user.user_metadata?.role === 'admin');
+        
+        // ✅ ПРАВИЛЬНАЯ ПРОВЕРКА РОЛИ: Читаем из таблицы users, а НЕ из user_metadata
+        const { data: userData } = await tripwireSupabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        const userRole = userData?.role || 'student';
+        console.log('🔒 TripwireProductPage: User role from DB:', userRole);
+        setIsAdmin(userRole === 'admin' || userRole === 'manager');
       }
     });
   }, []);
