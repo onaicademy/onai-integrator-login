@@ -48,9 +48,10 @@ export const initSentry = () => {
       }),
       
       // ✅ Console Logging - отправляет console.log/warn/error в Sentry
-      Sentry.consoleIntegration({ 
-        levels: ['log', 'warn', 'error'] 
-      }),
+      // ВРЕМЕННО ОТКЛЮЧЕНО: consoleIntegration deprecated in newer Sentry versions
+      // Sentry.consoleIntegration({ 
+      //   levels: ['log', 'warn', 'error'] 
+      // }),
     ],
 
     // 📊 Performance Monitoring

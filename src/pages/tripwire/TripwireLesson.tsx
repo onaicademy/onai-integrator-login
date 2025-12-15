@@ -927,13 +927,18 @@ const TripwireLesson = () => {
 
               <div className="space-y-3 sm:space-y-4">
                 {/* Адаптивный блок длительности */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/5 rounded-lg sm:rounded-xl border border-white/5 backdrop-blur-sm">
-                  <div className="flex items-center gap-2 text-white/60">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white/5 rounded-lg sm:rounded-xl border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 text-white/60 min-w-[120px]">
                     <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="text-xs sm:text-sm font-medium">Длительность</span>
+                    <span className="text-xs sm:text-sm font-medium">Длительность:</span>
                   </div>
                   <span className="text-[#00FF88] font-mono font-bold text-base sm:text-lg">
-                    {lesson.video_duration || 0} мин
+                    {(() => {
+                      const totalSeconds = lesson.video_duration || 0;
+                      const minutes = Math.floor(totalSeconds / 60);
+                      const seconds = totalSeconds % 60;
+                      return `${minutes} минут ${seconds} секунд`;
+                    })()}
                   </span>
                 </div>
               </div>
