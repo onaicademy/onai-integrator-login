@@ -127,6 +127,16 @@ export async function recoverPendingNotifications(): Promise<void> {
     console.log(`📋 [RECOVERY] Found ${data.length} pending notifications`);
 
     for (const notif of data) {
+      // 🚫 КРИТИЧЕСКИ ВАЖНО: НИКОГДА не отправлять SMS/Email для экспресс-курса!
+      const isExpressCourse = notif.source_campaign?.toLowerCase().includes('express');
+      
+      if (isExpressCourse) {
+        console.log(`🚫 [Lead ${notif.lead_id}] SKIPPING - ExpressCourse lead (no SMS/Email allowed)`);
+        // Отменяем в БД
+        await updateNotificationStatus(notif.lead_id, 'cancelled', 'ExpressCourse leads do not receive SMS/Email');
+        continue; // Пропускаем этот лид
+      }
+
       const scheduledFor = new Date(notif.scheduled_for);
       const now = new Date();
       const delayMs = scheduledFor.getTime() - now.getTime();
@@ -385,6 +395,15 @@ async function executeNotification(
   notification: ScheduledNotification
 ): Promise<void> {
   const { leadId, name, email, phone, sourceCampaign } = notification;
+
+  // 🚫 ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Никогда не отправлять для экспресс-курса!
+  const isExpressCourse = sourceCampaign?.toLowerCase().includes('express');
+  
+  if (isExpressCourse) {
+    console.log(`🚫 [Lead ${leadId}] BLOCKED - ExpressCourse lead cannot receive SMS/Email`);
+    await updateNotificationStatus(leadId, 'cancelled', 'ExpressCourse leads do not receive SMS/Email');
+    return; // Выходим без отправки
+  }
 
   console.log(`\n🚀 [Lead ${leadId}] Executing scheduled notification...`);
 
