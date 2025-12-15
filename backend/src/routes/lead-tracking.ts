@@ -666,5 +666,48 @@ router.get('/stats', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * DELETE /api/lead-tracking/:id
+ * Удалить лид из базы данных
+ */
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Lead ID is required'
+      });
+    }
+
+    console.log(`🗑️ Deleting lead: ${id}`);
+
+    // Удаляем лид из базы данных
+    const { error } = await getSupabase()
+      .from('landing_leads')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('❌ Error deleting lead:', error);
+      throw error;
+    }
+
+    console.log(`✅ Lead deleted successfully: ${id}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('❌ Error in DELETE /lead-tracking/:id:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
 export default router;
 

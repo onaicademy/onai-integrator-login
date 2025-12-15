@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, Mail, MessageSquare, RefreshCw, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Mail, MessageSquare, RefreshCw, AlertCircle, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 interface LeadData {
@@ -118,6 +118,27 @@ export default function LeadTracking() {
       alert(`❌ Ошибка синхронизации:\n\n${errorMessage}`);
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const deleteLead = async (leadId: string, leadName: string) => {
+    if (!confirm(`Вы уверены что хотите удалить лид "${leadName}"?\n\nЭто действие НЕОБРАТИМО!`)) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API_URL}/api/lead-tracking/${leadId}`);
+      
+      if (response.data.success) {
+        alert(`✅ Лид "${leadName}" успешно удален!`);
+        await fetchLeads(); // Refresh leads after deletion
+      } else {
+        throw new Error(response.data.error || 'Failed to delete lead');
+      }
+    } catch (err: any) {
+      console.error('Error deleting lead:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete lead';
+      alert(`❌ Ошибка удаления:\n\n${errorMessage}`);
     }
   };
 
@@ -360,6 +381,7 @@ export default function LeadTracking() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Источник</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">AmoCRM</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Дата</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-300">Действия</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -462,6 +484,15 @@ export default function LeadTracking() {
                       <div className="text-sm text-gray-400">
                         {formatDate(lead.created_at)}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => deleteLead(lead.id, lead.full_name)}
+                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 transition-all group"
+                        title="Удалить лид"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-300" />
+                      </button>
                     </td>
                   </motion.tr>
                 ))}
