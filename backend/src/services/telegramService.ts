@@ -119,6 +119,10 @@ export async function sendLeadNotification(
       return false;
     }
 
+    // Определяем тип заявки по source
+    const isProftest = leadData.source?.toLowerCase().includes('proftest');
+    const leadType = isProftest ? '📝 ПРОФТЕСТ' : '🎓 ЭКСПРЕСС КУРС';
+    
     // Форматируем способ оплаты
     const paymentMethodText = leadData.paymentMethod 
       ? leadData.paymentMethod === 'kaspi' 
@@ -130,11 +134,11 @@ export async function sendLeadNotification(
 
     // Создаем красивое сообщение
     const message = 
-      `🎯 *НОВАЯ ЗАЯВКА С ЭКСПРЕСС КУРСА*\n\n` +
+      `🎯 *НОВАЯ ЗАЯВКА - ${leadType}*\n\n` +
       `👤 *Имя:* ${leadData.name}\n` +
       `📱 *Телефон:* ${leadData.phone}\n` +
       `${leadData.email ? `📧 *Email:* ${leadData.email}\n` : ''}` +
-      `💳 *Способ оплаты:* ${paymentMethodText}\n` +
+      `${leadData.paymentMethod ? `💳 *Способ оплаты:* ${paymentMethodText}\n` : ''}` +
       `📍 *Источник:* ${leadData.source || 'expresscourse'}\n\n` +
       `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
 
