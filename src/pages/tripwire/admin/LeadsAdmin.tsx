@@ -48,6 +48,7 @@ interface Stats {
 
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [syncing, setSyncing] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch leads with notification status AND journey stages
@@ -419,34 +420,34 @@ export default function LeadsAdmin() {
             {/* 🔥 МАССОВАЯ СИНХРОНИЗАЦИЯ AmoCRM */}
             <button
               onClick={async () => {
-                const unsyncedLeads = leads?.filter(l => !l.amocrm_lead_id) || [];
-                if (unsyncedLeads.length === 0) {
-                  alert('Все лиды уже синхронизированы с AmoCRM!');
+                if (!confirm(`Синхронизировать все несинхронизированные лиды с AmoCRM?\n\nСервер будет отправлять их по очереди с подтверждением от AmoCRM.`)) {
                   return;
                 }
                 
-                if (confirm(`Синхронизировать ${unsyncedLeads.length} лидов с AmoCRM?`)) {
-                  let success = 0;
-                  let failed = 0;
+                try {
+                  setSyncing(true);
+                  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                  const response = await axios.post(`${apiUrl}/api/landing/sync-all-to-amocrm`);
                   
-                  for (const lead of unsyncedLeads) {
-                    try {
-                      await syncAmoCRMMutation.mutateAsync(lead.id);
-                      success++;
-                    } catch (error) {
-                      failed++;
-                    }
+                  if (response.data.success) {
+                    alert(`✅ Синхронизация завершена!\n\nУспешно: ${response.data.synced}\nПропущено: ${response.data.skipped}\nОшибки: ${response.data.failed}`);
+                    queryClient.invalidateQueries({ queryKey: ['landing', 'leads'] });
+                    queryClient.invalidateQueries({ queryKey: ['landing', 'leads', 'count'] });
+                  } else {
+                    throw new Error(response.data.error || 'Failed to sync');
                   }
-                  
-                  alert(`✅ Синхронизация завершена!\nУспешно: ${success}\nОшибок: ${failed}`);
+                } catch (error: any) {
+                  alert(`❌ Ошибка синхронизации:\n${error.response?.data?.message || error.message}`);
+                } finally {
+                  setSyncing(false);
                 }
               }}
-              disabled={syncAmoCRMMutation.isPending}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              title="Синхронизировать все несинхронизированные лиды с AmoCRM"
+              disabled={syncing}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00FF94]/10 border border-[#00FF94]/20 text-[#00FF94] hover:bg-[#00FF94]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+              title="Синхронизировать все несинхронизированные лиды с AmoCRM (последовательно с очередью)"
             >
-              <TrendingUp size={18} />
-              {syncAmoCRMMutation.isPending ? 'Синхронизация...' : 'Синхронизация с AmoCRM'}
+              <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+              {syncing ? 'СИНХРОНИЗАЦИЯ...' : 'СИНХРОНИЗАЦИЯ С AMOCRM'}
             </button>
 
             {/* Search */}
