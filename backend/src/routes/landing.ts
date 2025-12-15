@@ -76,18 +76,25 @@ async function createAmoCRMContact(lead: LandingLead): Promise<number | null> {
   }
 
   try {
+    // Создаём custom_fields_values только с существующими полями
+    const customFieldsValues: any[] = [
+      {
+        field_code: 'PHONE',
+        values: [{ value: lead.phone }]
+      }
+    ];
+
+    // Добавляем email ТОЛЬКО если он есть
+    if (lead.email && lead.email.trim()) {
+      customFieldsValues.push({
+        field_code: 'EMAIL',
+        values: [{ value: lead.email }]
+      });
+    }
+
     const contactData: AmoCRMContact = {
       name: lead.name,
-      custom_fields_values: [
-        {
-          field_code: 'EMAIL',
-          values: [{ value: lead.email }]
-        },
-        {
-          field_code: 'PHONE',
-          values: [{ value: lead.phone }]
-        }
-      ]
+      custom_fields_values: customFieldsValues
     };
 
     const response = await axios.post(
@@ -254,14 +261,7 @@ router.post('/submit', async (req: Request, res: Response) => {
   try {
     const { email, name, phone, source = 'expresscourse', paymentMethod, campaignSlug, metadata = {} } = req.body;
 
-    // ✅ CRITICAL FIX: Validate ALL required fields (email, name, phone)
-    if (!email || !email.trim()) {
-      return res.status(400).json({
-        success: false,
-        error: 'Email обязателен для заполнения'
-      });
-    }
-    
+    // ✅ ВАЛИДАЦИЯ: Только имя и телефон обязательны (email опционален)
     if (!name || !name.trim()) {
       return res.status(400).json({
         success: false,
@@ -276,13 +276,15 @@ router.post('/submit', async (req: Request, res: Response) => {
       });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Неверный формат email адреса'
-      });
+    // Validate email format ТОЛЬКО если email указан
+    if (email && email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Неверный формат email адреса'
+        });
+      }
     }
 
     // Validate phone format (basic check)
