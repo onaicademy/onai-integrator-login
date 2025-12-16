@@ -313,6 +313,7 @@ export default function LeadsAdmin() {
       'proftest_cursor_debug': { name: 'Debug', emoji: '🐛', color: 'pink' },
       'proftest_journey_test': { name: 'Journey', emoji: '🗺️', color: 'green' },
       'proftest_unknown': { name: 'Неизв.', emoji: '❓', color: 'gray' },
+      'TF4': { name: 'Траф4', emoji: '🚀', color: 'red' },
     };
     
     return sourceMap[source] || { name: source, emoji: '📌', color: 'gray' };
