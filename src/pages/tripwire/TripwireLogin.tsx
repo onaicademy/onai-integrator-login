@@ -38,13 +38,13 @@ export default function TripwireLogin() {
           className="text-center mb-8"
         >
           <h1 
-            className="text-3xl sm:text-4xl font-bold text-white mb-3 font-display uppercase tracking-wider"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 font-display tracking-wider"
             style={{
               textShadow: '0 0 30px rgba(0, 255, 136, 0.3)',
             }}
           >
-            ИНТЕГРАТОР<br />
-            <span className="text-[#00FF88]">ОТ 0 ДО 1000$</span>
+            Добро пожаловать в мир интеграций<br />
+            <span className="text-[#00FF88]">onAI Academy</span>
           </h1>
           <motion.p
             initial={{ opacity: 0 }}
