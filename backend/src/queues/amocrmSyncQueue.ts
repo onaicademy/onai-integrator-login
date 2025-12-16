@@ -6,6 +6,7 @@ import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import redis from '../config/redis';
 import { landingSupabase } from '../config/supabase-landing';
 import { amoCrmBulkService } from '../services/amoCrmBulkService';
+import { errorTracking, ErrorSeverity, ErrorCategory } from '../services/errorTrackingService';
 import pino from 'pino';
 
 const logger = pino();
@@ -199,6 +200,23 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
           error: error.message,
           attempt: attemptNum,
         });
+
+        // 🛡️ Track critical error
+        await errorTracking.trackError(
+          error,
+          ErrorSeverity.HIGH,
+          ErrorCategory.AMOCRM,
+          {
+            leadId,
+            syncId,
+            jobId: job.id?.toString(),
+            metadata: {
+              attempts: attemptNum,
+              leadName: name,
+              phone: phone,
+            },
+          }
+        );
 
         logger.error(`💀 [Job ${job.id}] FINAL FAILURE after ${maxAttempts} attempts`);
 

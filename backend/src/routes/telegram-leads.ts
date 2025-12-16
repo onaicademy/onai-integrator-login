@@ -11,6 +11,7 @@
 import { Router } from 'express';
 import TelegramBot from 'node-telegram-bot-api';
 import { createClient } from '@supabase/supabase-js';
+import { errorTracking, ErrorSeverity, ErrorCategory } from '../services/errorTrackingService';
 
 const router = Router();
 
@@ -39,34 +40,165 @@ const landingSupabase = createClient(LANDING_SUPABASE_URL, LANDING_SUPABASE_SERV
 // ИНИЦИАЛИЗАЦИЯ БОТА
 // ============================================
 let leadsBot: TelegramBot | null = null;
+let botStartTime: Date | null = null;
+let botRestartCount = 0;
+let lastError: any = null;
 
-if (LEADS_BOT_TOKEN) {
-  const isProduction = process.env.NODE_ENV === 'production';
-  
-  if (isProduction && process.env.BACKEND_URL) {
-    // PRODUCTION: Webhook mode
-    leadsBot = new TelegramBot(LEADS_BOT_TOKEN);
-    const webhookUrl = `${process.env.BACKEND_URL}/api/telegram-leads/webhook/${LEADS_BOT_TOKEN}`;
+/**
+ * 🔄 Функция инициализации бота с защитой от крашей
+ */
+async function initializeLeadsBot() {
+  try {
+    if (!LEADS_BOT_TOKEN) {
+      console.warn('⚠️ TELEGRAM_LEADS_BOT_TOKEN not configured! Leads bot disabled.');
+      return;
+    }
+
+    const isProduction = process.env.NODE_ENV === 'production';
     
-    leadsBot.setWebHook(webhookUrl)
-      .then(() => {
-        console.log('✅ Telegram Leads Bot webhook set:', webhookUrl);
-      })
-      .catch((error) => {
-        console.error('❌ Failed to set Telegram Leads Bot webhook:', error);
+    if (isProduction && process.env.BACKEND_URL) {
+      // PRODUCTION: Webhook mode
+      leadsBot = new TelegramBot(LEADS_BOT_TOKEN);
+      const webhookUrl = `${process.env.BACKEND_URL}/api/telegram-leads/webhook/${LEADS_BOT_TOKEN}`;
+      
+      await leadsBot.setWebHook(webhookUrl);
+      console.log('✅ Telegram Leads Bot webhook set:', webhookUrl);
+    } else {
+      // DEVELOPMENT: Polling mode
+      leadsBot = new TelegramBot(LEADS_BOT_TOKEN, { 
+        polling: {
+          params: {
+            allowed_updates: ['message', 'my_chat_member']
+          }
+        }
       });
-  } else {
-    // DEVELOPMENT: Polling mode
-    leadsBot = new TelegramBot(LEADS_BOT_TOKEN, { 
-      polling: {
-        params: {
-          allowed_updates: ['message', 'my_chat_member']
+      console.log('✅ Telegram Leads Bot started in POLLING mode (development)');
+    }
+
+    botStartTime = new Date();
+    lastError = null;
+
+    // Установка обработчиков ошибок
+    setupBotErrorHandlers();
+    
+    return leadsBot;
+  } catch (error: any) {
+    console.error('❌ Failed to initialize Telegram Leads Bot:', error);
+    lastError = error;
+    await errorTracking.trackError(
+      error,
+      ErrorSeverity.CRITICAL,
+      ErrorCategory.TELEGRAM,
+      {
+        metadata: { 
+          context: 'bot_initialization',
+          restartCount: botRestartCount
         }
       }
-    });
-    console.log('✅ Telegram Leads Bot started in POLLING mode (development)');
+    );
+    
+    // Попытка автоматического перезапуска через 10 секунд
+    if (botRestartCount < 5) {
+      botRestartCount++;
+      console.log(`🔄 Attempting to restart bot in 10 seconds... (Attempt ${botRestartCount}/5)`);
+      setTimeout(() => initializeLeadsBot(), 10000);
+    } else {
+      console.error('🚨 Bot failed to start after 5 attempts. Manual intervention required.');
+    }
+    
+    return null;
   }
 }
+
+/**
+ * 🛡️ Установка глобальных обработчиков ошибок бота
+ */
+function setupBotErrorHandlers() {
+  if (!leadsBot) return;
+
+  leadsBot.on('polling_error', async (error) => {
+    console.error('❌ Telegram polling error:', error);
+    lastError = error;
+    
+    await errorTracking.trackError(
+      error,
+      ErrorSeverity.HIGH,
+      ErrorCategory.TELEGRAM,
+      {
+        metadata: { 
+          context: 'polling_error',
+          errorCode: (error as any).code
+        }
+      }
+    );
+
+    // Если критическая ошибка - перезапуск
+    if ((error as any).code === 'ETELEGRAM' || (error as any).code === 'EFATAL') {
+      console.log('🔄 Critical polling error detected. Restarting bot...');
+      await restartBot();
+    }
+  });
+
+  leadsBot.on('webhook_error', async (error) => {
+    console.error('❌ Telegram webhook error:', error);
+    lastError = error;
+    
+    await errorTracking.trackError(
+      error,
+      ErrorSeverity.HIGH,
+      ErrorCategory.TELEGRAM,
+      {
+        metadata: { 
+          context: 'webhook_error'
+        }
+      }
+    );
+  });
+
+  console.log('🛡️ Bot error handlers installed');
+}
+
+/**
+ * 🔄 Перезапуск бота
+ */
+async function restartBot() {
+  try {
+    console.log('🔄 Restarting Telegram Leads Bot...');
+    
+    if (leadsBot) {
+      // Остановка старого бота
+      try {
+        await leadsBot.stopPolling();
+      } catch (e) {
+        console.warn('⚠️ Error stopping bot polling:', e);
+      }
+      leadsBot = null;
+    }
+
+    botRestartCount++;
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+    
+    await initializeLeadsBot();
+    
+    console.log('✅ Bot restarted successfully');
+  } catch (error: any) {
+    console.error('❌ Failed to restart bot:', error);
+    await errorTracking.trackError(
+      error,
+      ErrorSeverity.CRITICAL,
+      ErrorCategory.TELEGRAM,
+      {
+        metadata: { 
+          context: 'bot_restart_failed',
+          restartCount: botRestartCount
+        }
+      }
+    );
+  }
+}
+
+// Инициализация бота
+initializeLeadsBot();
 
 // ============================================
 // WEBHOOK ENDPOINT
@@ -98,12 +230,19 @@ router.post('/webhook/:token', async (req, res) => {
 // ОБРАБОТЧИКИ СООБЩЕНИЙ
 // ============================================
 
-if (leadsBot) {
+/**
+ * 🎯 Установка всех обработчиков сообщений
+ */
+function setupMessageHandlers() {
+  if (!leadsBot) return;
+
   /**
    * 🎯 ГЛАВНЫЙ ОБРАБОТЧИК: Активация группы по коду "2134"
    */
   leadsBot.on('message', async (msg) => {
     try {
+      console.log(`📨 Message received: "${msg.text}" from chat ${msg.chat.id} (${msg.chat.title})`);
+      
       const chatId = msg.chat.id;
       const chatType = msg.chat.type;
       const messageText = msg.text?.trim();
@@ -234,8 +373,33 @@ if (leadsBot) {
           { parse_mode: 'HTML' }
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error in message handler:', error);
+      lastError = error;
+      
+      await errorTracking.trackError(
+        error,
+        ErrorSeverity.MEDIUM,
+        ErrorCategory.TELEGRAM,
+        {
+          metadata: {
+            context: 'message_handler',
+            chatId: msg.chat.id,
+            messageText: msg.text,
+            chatType: msg.chat.type
+          }
+        }
+      );
+
+      // Попытка отправить сообщение об ошибке пользователю
+      try {
+        await leadsBot!.sendMessage(
+          msg.chat.id,
+          '❌ Произошла ошибка при обработке сообщения. Попробуйте позже или обратитесь в поддержку.'
+        );
+      } catch (e) {
+        console.error('Failed to send error message to user:', e);
+      }
     }
   });
 
@@ -275,8 +439,23 @@ if (leadsBot) {
           .update({ is_active: false })
           .eq('chat_id', chat.id.toString());
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error in my_chat_member handler:', error);
+      lastError = error;
+      
+      await errorTracking.trackError(
+        error,
+        ErrorSeverity.MEDIUM,
+        ErrorCategory.TELEGRAM,
+        {
+          metadata: {
+            context: 'my_chat_member_handler',
+            chatId: update.chat.id,
+            newStatus: update.new_chat_member.status,
+            oldStatus: update.old_chat_member.status
+          }
+        }
+      );
     }
   });
 
@@ -284,22 +463,29 @@ if (leadsBot) {
    * 🛠️ Команда /help
    */
   leadsBot.onText(/\/help/, async (msg) => {
-    const chatId = msg.chat.id;
-    
-    await leadsBot!.sendMessage(
-      chatId,
-      '🤖 <b>Leads Bot - Справка</b>\n\n' +
-      '<b>Как активировать группу:</b>\n' +
-      '1️⃣ Добавьте меня в группу как администратора\n' +
-      '2️⃣ Отправьте код: <code>2134</code>\n' +
-      '3️⃣ Готово! Все лиды будут приходить в эту группу\n\n' +
-      '<b>Команды:</b>\n' +
-      '/help - Показать эту справку\n' +
-      '/status - Проверить статус группы\n' +
-      '/deactivate - Деактивировать группу\n\n' +
-      '<b>Поддержка:</b> @onaiagency',
-      { parse_mode: 'HTML' }
-    );
+    try {
+      const chatId = msg.chat.id;
+      
+      await leadsBot!.sendMessage(
+        chatId,
+        '🤖 <b>Leads Bot - Справка</b>\n\n' +
+        '<b>Как активировать группу:</b>\n' +
+        '1️⃣ Добавьте меня в группу как администратора\n' +
+        '2️⃣ Отправьте код: <code>2134</code>\n' +
+        '3️⃣ Готово! Все лиды будут приходить в эту группу\n\n' +
+        '<b>Команды:</b>\n' +
+        '/help - Показать эту справку\n' +
+        '/status - Проверить статус группы\n' +
+        '/deactivate - Деактивировать группу\n\n' +
+        '<b>Поддержка:</b> @onaiagency',
+        { parse_mode: 'HTML' }
+      );
+    } catch (error: any) {
+      console.error('❌ Error in /help handler:', error);
+      await errorTracking.trackError(error, ErrorSeverity.LOW, ErrorCategory.TELEGRAM, {
+        metadata: { context: 'help_command', chatId: msg.chat.id }
+      });
+    }
   });
 
   /**
@@ -343,6 +529,10 @@ if (leadsBot) {
     } catch (error) {
       console.error('❌ Error checking status:', error);
       await leadsBot!.sendMessage(chatId, '❌ Ошибка при проверке статуса.');
+      
+      await errorTracking.trackError(error, ErrorSeverity.LOW, ErrorCategory.TELEGRAM, {
+        metadata: { context: 'status_command', chatId: msg.chat.id }
+      });
     }
   });
 
@@ -391,9 +581,22 @@ if (leadsBot) {
     } catch (error) {
       console.error('❌ Error in deactivate handler:', error);
       await leadsBot!.sendMessage(chatId, '❌ Ошибка при деактивации группы.');
+      
+      await errorTracking.trackError(error, ErrorSeverity.MEDIUM, ErrorCategory.TELEGRAM, {
+        metadata: { context: 'deactivate_command', chatId: msg.chat.id }
+      });
     }
   });
+
+  console.log('✅ All message handlers installed');
 }
+
+// Установка обработчиков после инициализации бота
+setTimeout(() => {
+  if (leadsBot) {
+    setupMessageHandlers();
+  }
+}, 1000);
 
 // ============================================
 // API ENDPOINTS
@@ -471,6 +674,10 @@ router.post('/test', async (req, res) => {
       } catch (error: any) {
         console.error(`❌ Error sending to ${group.chat_id}:`, error);
         results.push({ chat_id: group.chat_id, success: false, error: error.message });
+        
+        await errorTracking.trackError(error, ErrorSeverity.MEDIUM, ErrorCategory.TELEGRAM, {
+          metadata: { context: 'test_notification', chatId: group.chat_id }
+        });
       }
     }
 
@@ -481,6 +688,142 @@ router.post('/test', async (req, res) => {
     });
   } catch (error: any) {
     console.error('❌ Error sending test notification:', error);
+    await errorTracking.trackError(error, ErrorSeverity.MEDIUM, ErrorCategory.TELEGRAM, {
+      metadata: { context: 'test_notification_endpoint' }
+    });
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/telegram-leads/health
+ * 🏥 Healthcheck endpoint - проверка статуса бота
+ */
+router.get('/health', async (req, res) => {
+  try {
+    const status = {
+      bot_running: !!leadsBot,
+      bot_start_time: botStartTime?.toISOString() || null,
+      uptime_seconds: botStartTime ? Math.floor((Date.now() - botStartTime.getTime()) / 1000) : 0,
+      restart_count: botRestartCount,
+      last_error: lastError ? {
+        message: lastError.message,
+        code: lastError.code,
+        timestamp: new Date().toISOString()
+      } : null,
+      environment: process.env.NODE_ENV || 'development',
+      polling_mode: process.env.NODE_ENV !== 'production'
+    };
+
+    // Проверяем подключение к БД
+    try {
+      const { data, error } = await landingSupabase
+        .from('telegram_groups')
+        .select('count')
+        .eq('is_active', true)
+        .single();
+      
+      status['database_connected'] = !error;
+      status['active_groups_count'] = data?.count || 0;
+    } catch (e) {
+      status['database_connected'] = false;
+    }
+
+    const httpStatus = status.bot_running ? 200 : 503;
+    res.status(httpStatus).json({
+      success: status.bot_running,
+      status
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/telegram-leads/dashboard
+ * 📊 Dashboard - полная информация о боте и ошибках
+ */
+router.get('/dashboard', async (req, res) => {
+  try {
+    // 1. Статус бота
+    const botStatus = {
+      running: !!leadsBot,
+      start_time: botStartTime?.toISOString() || null,
+      uptime_hours: botStartTime ? ((Date.now() - botStartTime.getTime()) / 3600000).toFixed(2) : 0,
+      restart_count: botRestartCount,
+      last_error: lastError ? {
+        message: lastError.message,
+        code: lastError.code,
+        timestamp: new Date().toISOString()
+      } : null
+    };
+
+    // 2. Активные группы
+    const { data: activeGroups } = await landingSupabase
+      .from('telegram_groups')
+      .select('*')
+      .eq('group_type', 'leads')
+      .eq('is_active', true)
+      .order('activated_at', { ascending: false });
+
+    // 3. Последние ошибки
+    const recentErrors = await errorTracking.getRecentErrors(20, ErrorCategory.TELEGRAM);
+
+    // 4. Статистика ошибок за последние 24 часа
+    const errorStats = await errorTracking.getErrorStats(24);
+
+    // 5. Общая статистика групп
+    const { data: allGroups } = await landingSupabase
+      .from('telegram_groups')
+      .select('*')
+      .eq('group_type', 'leads');
+
+    const groupStats = {
+      total: allGroups?.length || 0,
+      active: activeGroups?.length || 0,
+      inactive: (allGroups?.length || 0) - (activeGroups?.length || 0)
+    };
+
+    res.json({
+      success: true,
+      data: {
+        bot_status: botStatus,
+        group_stats: groupStats,
+        active_groups: activeGroups || [],
+        recent_errors: recentErrors,
+        error_stats: errorStats,
+        generated_at: new Date().toISOString()
+      }
+    });
+  } catch (error: any) {
+    console.error('❌ Error generating dashboard:', error);
+    await errorTracking.trackError(error, ErrorSeverity.LOW, ErrorCategory.API, {
+      metadata: { context: 'dashboard_endpoint' }
+    });
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/telegram-leads/restart
+ * 🔄 Принудительный перезапуск бота (для админов)
+ */
+router.post('/restart', async (req, res) => {
+  try {
+    console.log('🔄 Manual bot restart requested');
+    
+    res.json({
+      success: true,
+      message: 'Bot restart initiated'
+    });
+
+    // Перезапуск в фоне
+    setTimeout(() => restartBot(), 100);
+  } catch (error: any) {
+    console.error('❌ Error restarting bot:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
