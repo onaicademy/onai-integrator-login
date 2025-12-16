@@ -84,3 +84,5 @@ Write-Host ""
 Write-Host "❌ Если тест НЕ прошёл - запусти:" -ForegroundColor Red
 Write-Host "   .\БЫСТРЫЙ_ФИКС.ps1" -ForegroundColor Yellow
 Write-Host ""
+
+

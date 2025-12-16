@@ -1,4 +1,4 @@
-import { tripwirePool } from '../src/config/tripwire-db';
+import { tripwirePool } from '../src/config/tripwire-pool';
 
 async function resetProgress() {
   console.log('🔄 Resetting progress for icekvup@gmail.com...');

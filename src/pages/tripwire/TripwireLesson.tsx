@@ -935,9 +935,8 @@ const TripwireLesson = () => {
                   <span className="text-[#00FF88] font-mono font-bold text-base sm:text-lg">
                     {(() => {
                       const totalSeconds = lesson.video_duration || 0;
-                      const minutes = Math.floor(totalSeconds / 60);
-                      const seconds = totalSeconds % 60;
-                      return `${minutes} минут ${seconds} секунд`;
+                      const minutes = Math.round(totalSeconds / 60);
+                      return `${minutes} минут`;
                     })()}
                   </span>
                 </div>

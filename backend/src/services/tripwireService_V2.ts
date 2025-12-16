@@ -96,6 +96,9 @@ export async function createTripwireUser(data: CreateTripwireUserData) {
     await withTransaction(
       tripwirePool,
       async (client) => {
+        // 🔥 TIMEOUT PROTECTION: 10s max for user creation
+        await client.query('SET statement_timeout = 10000');
+
         // 2.1. Insert into public.users
         await client.query(
           `INSERT INTO public.users (id, email, full_name, role, created_at, updated_at)
@@ -215,6 +218,9 @@ export async function completeLesson(data: CompleteLessonData) {
   return withTransaction(
     tripwirePool,
     async (client) => {
+      // 🔥 TIMEOUT PROTECTION: 8s max for lesson completion
+      await client.query('SET statement_timeout = 8000');
+
       // Step 1: Проверяем что видео просмотрено на 80%+
       const videoCheck = await client.query(
         `SELECT is_qualified_for_completion FROM public.video_tracking 
@@ -399,6 +405,9 @@ export async function updateVideoTracking(
   return withTransaction(
     tripwirePool,
     async (client) => {
+      // 🔥 TIMEOUT PROTECTION: 5s max for video tracking updates
+      await client.query('SET statement_timeout = 5000');
+
       // Calculate unique watched seconds from segments
       const mergedSegments = mergeSegments(watchedSegments);
       const totalWatchedSeconds = calculateTotalWatched(mergedSegments);

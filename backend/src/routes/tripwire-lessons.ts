@@ -172,7 +172,7 @@ router.get('/progress/:lessonId', async (req, res) => {
 // POST /api/tripwire/complete - Mark lesson as complete
 // ✅ PERPLEXITY BEST PRACTICE: ACID Transaction + Security Checks + Detailed Logging
 router.post('/complete', async (req, res) => {
-  const { tripwirePool } = await import('../config/tripwire-db');
+  const { tripwirePool } = await import('../config/tripwire-pool');
   const client = await tripwirePool.connect();
   let transactionStarted = false;
 
@@ -249,7 +249,7 @@ router.post('/complete', async (req, res) => {
         AND is_completed = TRUE
       `, [main_user_id, module_id]);
 
-      const completedLessonIds = completedLessonsResult.rows.map(row => row.lesson_id);
+      const completedLessonIds = completedLessonsResult.rows.map((row: any) => row.lesson_id);
       console.log(`[STEP 4 RESULT] User completed ${completedLessonIds.length}/${allLessonIds.length} lessons in module ${module_id}`);
 
       // ✅ STEP 5: Check if ALL lessons are completed

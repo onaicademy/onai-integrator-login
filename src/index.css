@@ -339,4 +339,79 @@ All colors MUST be HSL.
   .text-signal-glow {
     text-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
   }
+
+  /* 🎮 CYBER SCROLLBAR: Premium Gaming Aesthetic */
+  .cyber-scrollbar::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-track {
+    background: linear-gradient(90deg, 
+      rgba(0, 255, 136, 0.05) 0%, 
+      rgba(0, 255, 136, 0.1) 50%, 
+      rgba(0, 255, 136, 0.05) 100%
+    );
+    border-radius: 100px;
+    margin: 0 20px;
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, 
+      rgba(0, 255, 136, 0.4) 0%, 
+      rgba(0, 255, 136, 0.8) 50%, 
+      rgba(0, 255, 136, 0.4) 100%
+    );
+    border-radius: 100px;
+    border: 2px solid rgba(0, 255, 136, 0.2);
+    box-shadow: 
+      0 0 10px rgba(0, 255, 136, 0.4),
+      inset 0 0 10px rgba(0, 255, 136, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, 
+      rgba(0, 255, 136, 0.6) 0%, 
+      rgba(0, 255, 136, 1) 50%, 
+      rgba(0, 255, 136, 0.6) 100%
+    );
+    border-color: rgba(0, 255, 136, 0.5);
+    box-shadow: 
+      0 0 20px rgba(0, 255, 136, 0.8),
+      0 0 40px rgba(0, 255, 136, 0.4),
+      inset 0 0 15px rgba(0, 255, 136, 0.5);
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(90deg, 
+      rgba(0, 255, 136, 0.8) 0%, 
+      rgba(0, 255, 136, 1) 50%, 
+      rgba(0, 255, 136, 0.8) 100%
+    );
+    box-shadow: 
+      0 0 30px rgba(0, 255, 136, 1),
+      0 0 60px rgba(0, 255, 136, 0.6),
+      inset 0 0 20px rgba(0, 255, 136, 0.7);
+  }
+
+  /* Firefox support */
+  .cyber-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 255, 136, 0.8) rgba(0, 255, 136, 0.1);
+  }
+
+  /* 🎮 ANIMATED SCROLLBAR PULSE */
+  @keyframes scrollbar-pulse {
+    0%, 100% {
+      box-shadow: 
+        0 0 10px rgba(0, 255, 136, 0.4),
+        inset 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    50% {
+      box-shadow: 
+        0 0 20px rgba(0, 255, 136, 0.6),
+        inset 0 0 15px rgba(0, 255, 136, 0.5);
+    }
+  }
 }

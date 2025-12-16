@@ -24,3 +24,5 @@ Write-Host "   https://onai.academy/integrator/expresscourse" -ForegroundColor W
 Write-Host ""
 Write-Host "📱 Проверь Telegram ID: 789638302" -ForegroundColor Cyan
 Write-Host ""
+
+

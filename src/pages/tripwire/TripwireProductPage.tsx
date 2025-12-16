@@ -36,7 +36,7 @@ const tripwireModules = [
     title: "ВВОДНЫЙ МОДУЛЬ",
     subtitle: "ОПРЕДЕЛИМ КАКОЕ НАПРАВЛЕНИЕ В ИИ ТВОЕ",
     description: "Базовое погружение в нейросети. Разбор основных инструментов и выбор специализации для заработка.",
-    duration: "9 мин",
+    duration: "20 мин",
     lessons: 1,
     icon: Rocket,
     status: "active",

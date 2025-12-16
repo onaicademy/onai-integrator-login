@@ -61,3 +61,5 @@ if ($pm2Installed) {
 
 Write-Host "📝 Смотреть логи: pm2 logs" -ForegroundColor Gray
 Write-Host ""
+
+

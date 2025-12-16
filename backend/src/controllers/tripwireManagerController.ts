@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as tripwireManagerService from '../services/tripwireManagerService';
 import { supabase } from '../config/supabase';
-import { tripwirePool } from '../config/tripwire-db'; // 🔥 DIRECT POSTGRES для stats
+import { tripwirePool } from '../config/tripwire-pool'; // 🔥 DIRECT POSTGRES для stats
 
 /**
  * POST /api/admin/tripwire/users

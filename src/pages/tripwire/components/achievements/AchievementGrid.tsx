@@ -90,7 +90,7 @@ export function AchievementGrid({ achievements }: AchievementGridProps) {
         <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#030303] to-transparent z-10 pointer-events-none" />
         
         {/* Scrollable container */}
-        <div className="overflow-x-auto overflow-y-visible pb-6 -mx-4 px-4 scrollbar-thin scrollbar-thumb-[#00FF88]/30 scrollbar-track-transparent hover:scrollbar-thumb-[#00FF88]/50">
+        <div className="overflow-x-auto overflow-y-visible pb-6 -mx-4 px-4 cyber-scrollbar">
           <div className="flex gap-6 min-w-max">
             {achievements.map((achievement, idx) => (
               <motion.div

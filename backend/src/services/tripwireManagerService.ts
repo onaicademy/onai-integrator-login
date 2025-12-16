@@ -1,7 +1,7 @@
 import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
 import crypto from 'crypto';
 import { sendWelcomeEmail } from './emailService';
-import { tripwirePool } from '../config/tripwire-db'; // 🔥 DIRECT POSTGRES CONNECTION!
+import { tripwirePool } from '../config/tripwire-pool'; // 🔥 DIRECT POSTGRES CONNECTION!
 
 /**
  * Sales Manager Service - создание и управление Tripwire пользователями
@@ -85,6 +85,8 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     const client = await tripwirePool.connect();
     try {
       await client.query('BEGIN');
+      // 🔥 TIMEOUT PROTECTION: 10s max for user creation
+      await client.query('SET statement_timeout = 10000');
 
       // ✅ public.users - используем WHERE NOT EXISTS вместо ON CONFLICT
       await client.query(`
@@ -248,7 +250,8 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
  * 🔥 DIRECT POSTGRES CONNECTION - обход PostgREST/Kong cache!
  */
 export async function getTripwireUsers(params: GetTripwireUsersParams & { startDate?: string; endDate?: string }) {
-  const { managerId, status, page = 1, limit = 20, startDate, endDate } = params;
+  // 🔥 DEFAULT LIMIT: защита от неограниченной загрузки
+  const { managerId, status, page = 1, limit = 50, startDate, endDate } = params;
 
   try {
     console.log(`🔌 [DIRECT] getTripwireUsers called with manager=${managerId}, status=${status}`);
@@ -256,6 +259,9 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
     // 🔥 DIRECT PostgreSQL connection
     const client = await tripwirePool.connect();
     try {
+      // 🔥 TIMEOUT PROTECTION: 5s max for stats query
+      await client.query('SET statement_timeout = 5000');
+
       const result = await client.query(`
         SELECT * FROM public.rpc_get_tripwire_users(
           p_end_date := $1,
@@ -296,6 +302,9 @@ export async function getTripwireStats(managerId?: string, startDate?: string, e
     // 🔥 DIRECT PostgreSQL connection
     const client = await tripwirePool.connect();
     try {
+      // 🔥 TIMEOUT PROTECTION: 5s max for stats query
+      await client.query('SET statement_timeout = 5000');
+
       const result = await client.query(`
         SELECT * FROM public.rpc_get_tripwire_stats(
           p_end_date := $1,
@@ -374,6 +383,9 @@ export async function getSalesLeaderboard() {
     
     const client = await tripwirePool.connect();
     try {
+      // 🔥 TIMEOUT PROTECTION: 5s max for leaderboard query
+      await client.query('SET statement_timeout = 5000');
+
       const result = await client.query(`
         SELECT 
           granted_by as manager_id,
@@ -433,6 +445,9 @@ export async function getSalesChartData(
 
     const client = await tripwirePool.connect();
     try {
+      // 🔥 TIMEOUT PROTECTION: 5s max for chart query
+      await client.query('SET statement_timeout = 5000');
+
       const query = `
         SELECT 
           DATE(created_at) as date,

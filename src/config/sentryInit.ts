@@ -74,12 +74,25 @@ export const initSentry = () => {
     attachStacktrace: true, // Везде показывать stacktrace
     maxBreadcrumbs: 100, // Отслеживать последние 100 действий
 
-    // 🌐 Distributed Tracing - Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
+    // 🌐 Distributed Tracing - ВСЕ маршруты КРОМЕ video CDN (CORS issue)
+    // ⚠️ КРИТИЧНО: video.onai.academy исключён из-за CORS!
     tracePropagationTargets: [
       'localhost',
-      'onai.academy',
-      /^\//,  // Relative URLs
+      '127.0.0.1',
+      /onai\.academy/,  // Все поддомены onai.academy
+      /supabase\.co/,   // Supabase API
+      /^\//,            // Relative URLs
+      /.*/,             // ВСЁ ОСТАЛЬНОЕ
     ],
+    
+    // 🚫 НО! Блокируем video CDN через shouldCreateSpanForRequest
+    shouldCreateSpanForRequest: (url: string) => {
+      // Блокируем video.onai.academy из-за CORS
+      if (url.includes('video.onai.academy')) {
+        return false;
+      }
+      return true;
+    },
 
     // 🔍 Debug mode (только в dev)
     debug: import.meta.env.DEV,

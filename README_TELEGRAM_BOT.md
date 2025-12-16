@@ -225,3 +225,5 @@ npx tsx test-telegram-bot.ts
 
 _Разработано с ❤️ для онлайн-школы onAI Academy_
 
+
+

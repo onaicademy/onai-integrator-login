@@ -245,6 +245,8 @@ app.use(cors({
     'X-Requested-With',
     'Accept',
     'X-Retry-Attempt', // ✅ Для smart retries
+    'baggage', // ✅ Sentry tracing header
+    'sentry-trace', // ✅ Sentry tracing header
   ],
   exposedHeaders: [
     'Content-Range',
