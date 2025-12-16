@@ -715,18 +715,22 @@ router.get('/health', async (req, res) => {
       polling_mode: process.env.NODE_ENV !== 'production'
     };
 
-    // Проверяем подключение к БД
+    // Проверяем подключение к БД (с timeout)
     try {
-      const { data, error } = await landingSupabase
-        .from('telegram_groups')
-        .select('count')
-        .eq('is_active', true)
-        .single();
+      const dbCheck = Promise.race([
+        landingSupabase
+          .from('telegram_groups')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_active', true),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('DB timeout')), 3000))
+      ]);
       
-      status['database_connected'] = !error;
-      status['active_groups_count'] = data?.count || 0;
+      const result: any = await dbCheck;
+      status['database_connected'] = !result.error;
+      status['active_groups_count'] = result.count || 0;
     } catch (e) {
       status['database_connected'] = false;
+      status['active_groups_count'] = 0;
     }
 
     const httpStatus = status.bot_running ? 200 : 503;
