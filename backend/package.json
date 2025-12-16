@@ -6,9 +6,15 @@
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
     "dev:clean": "bash scripts/start-clean.sh",
+    "dev:pm2": "pm2 start ecosystem.config.js --env development --watch",
     "check": "bash scripts/check-duplicates.sh",
     "build": "tsc",
     "start": "node dist/server.js",
+    "start:pm2": "pm2 start ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop onai-backend",
+    "pm2:restart": "pm2 restart onai-backend",
+    "pm2:logs": "pm2 logs onai-backend",
+    "pm2:status": "pm2 status",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -68,6 +74,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.11",
+    "pm2": "^6.0.14",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

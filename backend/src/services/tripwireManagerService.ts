@@ -1,7 +1,8 @@
 import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
+import { tripwirePool } from '../config/tripwire-pool'; // 🔥 DIRECT POSTGRES для транзакций
 import crypto from 'crypto';
 import { sendWelcomeEmail } from './emailService';
-import { tripwirePool } from '../config/tripwire-pool'; // 🔥 DIRECT POSTGRES CONNECTION!
+import { withRetry, supabaseRpcWithRetry } from '../utils/retry-wrapper'; // 🛡️ RETRY PROTECTION
 
 /**
  * Sales Manager Service - создание и управление Tripwire пользователями
@@ -79,121 +80,69 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     }
 
     const userId = newUser.user.id;
-    console.log(`✅ [DIRECT DB] User created in auth.users: ${userId}`);
+    console.log(`✅ [SUPABASE] User created in auth.users: ${userId}`);
 
-    // 2️⃣ DIRECT DB INSERT - ВСЕ ТАБЛИЦЫ
-    const client = await tripwirePool.connect();
+    // 2️⃣ INSERT В ТАБЛИЦЫ через Supabase JS (без tripwirePool!)
     try {
-      await client.query('BEGIN');
-      // 🔥 TIMEOUT PROTECTION: 10s max for user creation
-      await client.query('SET statement_timeout = 10000');
+      console.log(`📝 [SUPABASE] Создаём записи в таблицах...`);
 
-      // ✅ public.users - используем WHERE NOT EXISTS вместо ON CONFLICT
-      await client.query(`
-        INSERT INTO public.users (id, email, full_name, role, created_at, updated_at)
-        SELECT $1, $2, $3, 'student', NOW(), NOW()
-        WHERE NOT EXISTS (SELECT 1 FROM public.users WHERE id = $1)
-      `, [userId, email, full_name]);
+      // 1. tripwire_users
+      const { error: twError } = await tripwireAdminSupabase
+        .from('tripwire_users')
+        .insert({
+          user_id: userId,
+          email,
+          full_name,
+          granted_by: currentUserId,
+          manager_name: currentUserName || currentUserEmail || 'Unknown Manager',
+          status: 'active',
+          modules_completed: 0,
+          price: 5000
+        });
+      if (twError) throw new Error(`tripwire_users: ${twError.message}`);
+      console.log('   ✅ tripwire_users');
 
-      // ✅ tripwire_users - используем WHERE NOT EXISTS
-      await client.query(`
-        INSERT INTO public.tripwire_users (
-          id, user_id, email, full_name, granted_by, manager_name,
-          status, modules_completed, price, created_at
-        )
-        SELECT gen_random_uuid(), $1, $2, $3, $4, $5, 'active', 0, 5000, NOW()
-        WHERE NOT EXISTS (SELECT 1 FROM public.tripwire_users WHERE user_id = $1)
-      `, [userId, email, full_name, currentUserId, currentUserName || currentUserEmail || 'Unknown Manager']);
+      // 2. tripwire_user_profile
+      const { error: profileError } = await tripwireAdminSupabase
+        .from('tripwire_user_profile')
+        .insert({
+          user_id: userId,
+          full_name,
+          total_modules: 3,
+          modules_completed: 0
+        });
+      if (profileError) throw new Error(`tripwire_user_profile: ${profileError.message}`);
+      console.log('   ✅ tripwire_user_profile');
 
-      // ✅ tripwire_user_profile - используем WHERE NOT EXISTS
-      await client.query(`
-        INSERT INTO public.tripwire_user_profile (
-          id, user_id, total_modules, modules_completed, created_at
-        )
-        SELECT gen_random_uuid(), $1, 3, 0, NOW()
-        WHERE NOT EXISTS (SELECT 1 FROM public.tripwire_user_profile WHERE user_id = $1)
-      `, [userId]);
+      // 3. module_unlocks (Module 16)
+      const { error: unlockError } = await tripwireAdminSupabase
+        .from('module_unlocks')
+        .insert({
+          user_id: userId,
+          module_id: 16,
+          unlocked_at: new Date().toISOString()
+        });
+      if (unlockError) throw new Error(`module_unlocks: ${unlockError.message}`);
+      console.log('   ✅ module_unlocks');
 
-      // ✅ module_unlocks (открываем Module 16) - используем WHERE NOT EXISTS
-      await client.query(`
-        INSERT INTO public.module_unlocks (id, user_id, module_id, unlocked_at)
-        SELECT gen_random_uuid(), $1, 16, NOW()
-        WHERE NOT EXISTS (
-          SELECT 1 FROM public.module_unlocks 
-          WHERE user_id = $1 AND module_id = 16
-        )
-      `, [userId]);
+      // 4. sales_activity_log
+      const { error: activityError } = await tripwireAdminSupabase
+        .from('sales_activity_log')
+        .insert({
+          manager_id: currentUserId,
+          action_type: 'user_created',
+          target_user_id: userId,
+          target_user_email: email,
+          details: { email, full_name }
+        });
+      if (activityError) console.warn('⚠️ sales_activity_log:', activityError.message);
 
-      // ✅ student_progress (ТОЛЬКО для Module 16 - первый модуль!)
-      // Остальные модули откроются после завершения предыдущего
-      // Используем WHERE NOT EXISTS вместо ON CONFLICT (нет UNIQUE constraint)
-      await client.query(`
-        INSERT INTO public.student_progress (
-          id, user_id, module_id, lesson_id, status, created_at
-        )
-        SELECT gen_random_uuid(), $1, 16, 67, 'not_started', NOW()
-        WHERE NOT EXISTS (
-          SELECT 1 FROM public.student_progress 
-          WHERE user_id = $1 AND lesson_id = 67
-        )
-      `, [userId]);
+      console.log(`✅ [SUPABASE] All tables initialized for ${email}`);
 
-      // ✅ user_achievements (4 достижения для Tripwire)
-      const achievements = [
-        'first_module_complete',
-        'second_module_complete',
-        'third_module_complete',
-        'tripwire_graduate'
-      ];
-
-      for (const achievement of achievements) {
-        await client.query(`
-          INSERT INTO public.user_achievements (
-            id, user_id, achievement_id, current_value, required_value, is_completed, created_at
-          )
-          SELECT gen_random_uuid(), $1, $2, 0, 1, false, NOW()
-          WHERE NOT EXISTS (
-            SELECT 1 FROM public.user_achievements 
-            WHERE user_id = $1 AND achievement_id = $2
-          )
-        `, [userId, achievement]);
-    }
-
-      // ✅ user_statistics - используем WHERE NOT EXISTS
-      await client.query(`
-        INSERT INTO public.user_statistics (
-          user_id, lessons_completed, total_time_spent, created_at
-        )
-        SELECT $1, 0, 0, NOW()
-        WHERE NOT EXISTS (SELECT 1 FROM public.user_statistics WHERE user_id = $1)
-      `, [userId]);
-
-      // ✅ sales_activity_log
-      const tripwireUserResult = await client.query(`
-        SELECT id FROM public.tripwire_users WHERE user_id = $1
-      `, [userId]);
-
-      if (tripwireUserResult.rows.length > 0) {
-        await client.query(`
-          INSERT INTO public.sales_activity_log (
-            id, manager_id, action_type, target_user_id, details, created_at
-          )
-          VALUES (gen_random_uuid(), $1, 'user_created', $2, $3, NOW())
-        `, [
-          currentUserId,
-          userId,
-          JSON.stringify({ email, full_name })
-        ]);
-      }
-
-      await client.query('COMMIT');
-      console.log(`✅ [DIRECT DB] All tables initialized for ${email}`);
-
-    } catch (dbError) {
-      await client.query('ROLLBACK');
-      console.error('❌ [DIRECT DB] Transaction failed:', dbError);
+    } catch (dbError: any) {
+      console.error('❌ [SUPABASE] Insert failed:', dbError);
       
-      // 🔥 ROLLBACK: DELETE USER FROM auth.users если DB transaction failed
+      // 🔥 ROLLBACK: DELETE USER FROM auth.users
       try {
         console.log(`🗑️ Rolling back auth user ${userId}...`);
         await tripwireAdminSupabase.auth.admin.deleteUser(userId);
@@ -203,8 +152,6 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       }
       
       throw dbError;
-    } finally {
-      client.release();
     }
 
     // 3️⃣ SEND WELCOME EMAIL
@@ -254,39 +201,56 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
   const { managerId, status, page = 1, limit = 50, startDate, endDate } = params;
 
   try {
-    console.log(`🔌 [DIRECT] getTripwireUsers called with manager=${managerId}, status=${status}`);
+    console.log(`🔌 [DIRECT QUERY] getTripwireUsers called with manager=${managerId}, status=${status}`);
 
-    // 🔥 DIRECT PostgreSQL connection
-    const client = await tripwirePool.connect();
-    try {
-      // 🔥 TIMEOUT PROTECTION: 5s max for stats query
-      await client.query('SET statement_timeout = 5000');
+    // 🔧 FIX: Прямой запрос вместо RPC (т.к. RPC возвращает NULL для email/full_name)
+    const offset = (page - 1) * limit;
 
-      const result = await client.query(`
-        SELECT * FROM public.rpc_get_tripwire_users(
-          p_end_date := $1,
-          p_limit := $2,
-          p_manager_id := $3,
-          p_page := $4,
-          p_start_date := $5,
-          p_status := $6
-        )
-      `, [
-        endDate || null,
-        limit,
-        managerId || null,
-        page,
-        startDate || null,
-        status || null
-      ]);
+    let query = tripwireAdminSupabase
+      .from('tripwire_users')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-      console.log(`✅ [DIRECT] Found ${result.rows.length} users`);
-      return result.rows;
-    } finally {
-      client.release();
+    // Фильтры
+    if (managerId) {
+      query = query.eq('granted_by', managerId);
     }
+    if (status) {
+      query = query.eq('status', status);
+    }
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+
+    const { data, error, count } = await withRetry(
+      async () => {
+        const result = await query;
+        if (result.error) throw result.error;
+        return result;
+      },
+      {
+        maxRetries: 3,
+        delayMs: 500,
+        onRetry: (attempt) => console.warn(`   ⚠️ Retry ${attempt}/3 for getTripwireUsers`)
+      }
+    );
+
+    console.log(`✅ [DIRECT QUERY] Found ${data?.length || 0} users (total: ${count})`);
+    
+    // Преобразуем к ожидаемому формату (добавляем total_count к каждой записи)
+    const usersWithCount = data?.map(user => ({
+      ...user,
+      user_id: user.user_id || user.id, // fallback
+      total_count: count || 0
+    })) || [];
+
+    return usersWithCount;
   } catch (error: any) {
-    console.error('❌ [DIRECT] Error fetching tripwire users:', error);
+    console.error('❌ [DIRECT QUERY] Error fetching tripwire users:', error);
     throw error;
   }
 }
@@ -299,20 +263,40 @@ export async function getTripwireStats(managerId?: string, startDate?: string, e
   try {
     console.log(`🔌 [SUPABASE RPC] getTripwireStats called for manager=${managerId}`);
 
-    // ⚡ TEMPORARY: Use Supabase RPC instead of direct Postgres
-    const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_tripwire_stats', {
-      p_end_date: endDate || null,
-      p_manager_id: managerId || null,
-      p_start_date: startDate || null
-    });
-
-    if (error) {
-      console.error('❌ [SUPABASE RPC] Error:', error);
-      throw error;
-    }
+    // 🛡️ RETRY PROTECTION
+    const data = await supabaseRpcWithRetry(
+      () => tripwireAdminSupabase.rpc('rpc_get_tripwire_stats', {
+        p_end_date: endDate || null,
+        p_manager_id: managerId || null,
+        p_start_date: startDate || null
+      }),
+      {
+        maxRetries: 3,
+        delayMs: 500,
+        onRetry: (attempt) => console.warn(`   ⚠️ Retry ${attempt}/3 for getTripwireStats`)
+      }
+    );
 
     console.log(`✅ [SUPABASE RPC] Stats:`, data);
-    return data;
+    
+    // 🔧 FIX: RPC возвращает массив, берём первый элемент
+    if (Array.isArray(data) && data.length > 0) {
+      return data[0];
+    }
+    
+    // Fallback: пустой объект если нет данных
+    return {
+      total_students: 0,
+      active_students: 0,
+      completed_students: 0,
+      inactive_students: 0,
+      total_revenue: 0,
+      avg_completion_rate: 0,
+      students_this_month: 0,
+      students_this_week: 0,
+      revenue_this_month: 0,
+      avg_modules_completed: 0
+    };
   } catch (error: any) {
     console.error('❌ [SUPABASE RPC] Error fetching tripwire stats:', error);
     throw error;
@@ -374,35 +358,64 @@ export async function getSalesActivityLog(managerId: string, limit = 50, startDa
  */
 export async function getSalesLeaderboard() {
   try {
-    console.log('📊 [LEADERBOARD] Fetching sales leaderboard via DIRECT SQL');
+    console.log('📊 [LEADERBOARD] Fetching sales leaderboard via SUPABASE');
     
-    const client = await tripwirePool.connect();
-    try {
-      // 🔥 TIMEOUT PROTECTION: 5s max for leaderboard query
-      await client.query('SET statement_timeout = 5000');
+    // 🛡️ RETRY PROTECTION
+    const data = await withRetry(
+      async () => {
+        const { data, error } = await tripwireAdminSupabase
+          .from('tripwire_users')
+          .select('granted_by, manager_name, created_at, price, status')
+          .not('granted_by', 'is', null);
 
-      const result = await client.query(`
-        SELECT 
-          granted_by as manager_id,
-          manager_name,
-          COUNT(*) as total_sales,
-          SUM(price) as total_revenue,
-          SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_users,
-          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_users,
-          SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN 1 ELSE 0 END) as this_month_sales,
-          SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN price ELSE 0 END) as this_month_revenue
-        FROM public.tripwire_users
-        WHERE granted_by IS NOT NULL
-        GROUP BY granted_by, manager_name
-        ORDER BY total_sales DESC
-        LIMIT 10
-      `);
+        if (error) throw error;
+        return data;
+      },
+      {
+        maxRetries: 3,
+        delayMs: 500,
+        onRetry: (attempt) => console.warn(`   ⚠️ Retry ${attempt}/3 for getSalesLeaderboard`)
+      }
+    );
 
-      console.log(`✅ [LEADERBOARD] Found ${result.rows.length} managers`);
-      return result.rows;
-    } finally {
-      client.release();
-    }
+    // Агрегируем данные на клиенте
+    const leaderboard = data.reduce((acc: any, user: any) => {
+      const managerId = user.granted_by;
+      if (!acc[managerId]) {
+        acc[managerId] = {
+          manager_id: managerId,
+          manager_name: user.manager_name,
+          total_sales: 0,
+          total_revenue: 0,
+          active_users: 0,
+          completed_users: 0,
+          this_month_sales: 0,
+          this_month_revenue: 0
+        };
+      }
+
+      acc[managerId].total_sales++;
+      acc[managerId].total_revenue += user.price || 0;
+      
+      if (user.status === 'active') acc[managerId].active_users++;
+      if (user.status === 'completed') acc[managerId].completed_users++;
+      
+      const createdAt = new Date(user.created_at);
+      const now = new Date();
+      if (createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear()) {
+        acc[managerId].this_month_sales++;
+        acc[managerId].this_month_revenue += user.price || 0;
+      }
+
+      return acc;
+    }, {});
+
+    const result = Object.values(leaderboard)
+      .sort((a: any, b: any) => b.total_sales - a.total_sales)
+      .slice(0, 10);
+
+    console.log(`✅ [LEADERBOARD] Found ${result.length} managers`);
+    return result;
   } catch (error: any) {
     console.error('❌ Error fetching sales leaderboard:', error);
     throw error;
@@ -438,34 +451,48 @@ export async function getSalesChartData(
       startDate = startDateObj.toISOString();
     }
 
-    const client = await tripwirePool.connect();
-    try {
-      // 🔥 TIMEOUT PROTECTION: 5s max for chart query
-      await client.query('SET statement_timeout = 5000');
+    // 🛡️ RETRY PROTECTION
+    const data = await withRetry(
+      async () => {
+        let query = tripwireAdminSupabase
+          .from('tripwire_users')
+          .select('created_at, price')
+          .gte('created_at', startDate)
+          .lte('created_at', endDate);
 
-      const query = `
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(*) as sales,
-          SUM(price) as revenue
-        FROM public.tripwire_users
-        WHERE created_at >= $1 AND created_at <= $2
-          ${managerId ? 'AND granted_by = $3' : ''}
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-      `;
+        if (managerId) {
+          query = query.eq('granted_by', managerId);
+        }
 
-      const params = managerId 
-        ? [startDate, endDate, managerId]
-        : [startDate, endDate];
+        const { data, error } = await query;
 
-      const result = await client.query(query, params);
-      
-      console.log(`✅ [SALES_CHART] Found ${result.rows.length} data points`);
-      return result.rows;
-    } finally {
-      client.release();
-    }
+        if (error) throw error;
+        return data;
+      },
+      {
+        maxRetries: 3,
+        delayMs: 500,
+        onRetry: (attempt) => console.warn(`   ⚠️ Retry ${attempt}/3 for getSalesChartData`)
+      }
+    );
+
+    // Агрегируем данные по датам на клиенте
+    const chartData = data.reduce((acc: any, user: any) => {
+      const date = user.created_at.split('T')[0]; // YYYY-MM-DD
+      if (!acc[date]) {
+        acc[date] = { date, sales: 0, revenue: 0 };
+      }
+      acc[date].sales++;
+      acc[date].revenue += user.price || 0;
+      return acc;
+    }, {});
+
+    const result = Object.values(chartData).sort((a: any, b: any) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    console.log(`✅ [SALES_CHART] Found ${result.length} data points`);
+    return result;
   } catch (error: any) {
     console.error('❌ Error fetching sales chart data:', error);
     throw error;
@@ -481,38 +508,37 @@ export async function deleteTripwireUser(userId: string) {
   try {
     console.log(`🗑️ [DELETE] Deleting user: ${userId}`);
 
-    // 1. Вызываем RPC для удаления из DB tables (через DIRECT connection)
-    const client = await tripwirePool.connect();
-    try {
-      const result = await client.query(`
-        SELECT * FROM public.rpc_delete_tripwire_user(p_user_id := $1)
-      `, [userId]);
+    // 1. Вызываем RPC для удаления из DB tables (через Supabase RPC)
+    const { data: rpcResult, error: rpcError } = await tripwireAdminSupabase.rpc('rpc_delete_tripwire_user', {
+      p_user_id: userId
+    });
 
-      const rpcResult = result.rows[0];
-      console.log('✅ [DELETE] RPC result:', rpcResult);
-
-      if (!rpcResult || !rpcResult.success) {
-        throw new Error(rpcResult?.error || 'Failed to delete user from database');
-      }
-
-      // 2. Удаляем из auth.users через Admin API
-      const { error: authError } = await tripwireAdminSupabase.auth.admin.deleteUser(userId);
-      
-      if (authError) {
-        console.error('⚠️ [DELETE] Auth deletion error:', authError.message);
-        // Не критичная ошибка, продолжаем
-      } else {
-        console.log('✅ [DELETE] Deleted from auth.users');
-      }
-
-      return {
-        success: true,
-        email: rpcResult.email,
-        full_name: rpcResult.full_name,
-      };
-    } finally {
-      client.release();
+    if (rpcError) {
+      console.error('❌ [DELETE] RPC error:', rpcError);
+      throw new Error(`Failed to delete user from database: ${rpcError.message}`);
     }
+
+    console.log('✅ [DELETE] RPC result:', rpcResult);
+
+    if (!rpcResult || !rpcResult.success) {
+      throw new Error(rpcResult?.error || 'Failed to delete user from database');
+    }
+
+    // 2. Удаляем из auth.users через Admin API
+    const { error: authError } = await tripwireAdminSupabase.auth.admin.deleteUser(userId);
+    
+    if (authError) {
+      console.error('⚠️ [DELETE] Auth deletion error:', authError.message);
+      // Не критичная ошибка, продолжаем
+    } else {
+      console.log('✅ [DELETE] Deleted from auth.users');
+    }
+
+    return {
+      success: true,
+      email: rpcResult.email,
+      full_name: rpcResult.full_name,
+    };
   } catch (error: any) {
     console.error('❌ [DELETE] Error deleting user:', error);
     throw error;

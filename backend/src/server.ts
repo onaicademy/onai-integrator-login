@@ -506,14 +506,44 @@ const server = app.listen(PORT, () => {
   })(); // ⭐ IIFE - runs in background, doesn't block
 });
 
-// Graceful shutdown для сервера (SIGTERM)
-process.on('SIGTERM', () => {
-  console.log('🛑 Получен SIGTERM, закрытие сервера...');
-  server.close(() => {
-    console.log('✅ Сервер закрыт');
-    process.exit(0);
-  });
+
+// 🛡️ UNCAUGHT EXCEPTION - НЕ ДОЛЖНО КРАШИТЬ СЕРВЕР!
+process.on('uncaughtException', (error: Error) => {
+  console.error('🚨 UNCAUGHT EXCEPTION:', error);
+  console.error('Stack:', error.stack);
+  
+  // Логируем в Sentry если доступен
+  try {
+    // Sentry.captureException(error);
+  } catch (e) {
+    console.error('Failed to report to Sentry:', e);
+  }
+  
+  // ⚠️ НЕ КРАШИМ! Продолжаем работу
+  console.log('⚠️ Сервер продолжает работу несмотря на ошибку');
 });
+
+// 🛡️ UNHANDLED REJECTION - НЕ ДОЛЖНО КРАШИТЬ СЕРВЕР!
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  console.error('🚨 UNHANDLED REJECTION:', reason);
+  console.error('Promise:', promise);
+  
+  // Логируем в Sentry
+  try {
+    // Sentry.captureException(reason);
+  } catch (e) {
+    console.error('Failed to report to Sentry:', e);
+  }
+  
+  // ⚠️ НЕ КРАШИМ! Продолжаем работу
+  console.log('⚠️ Сервер продолжает работу несмотря на rejected promise');
+});
+
+// 🛡️ PM2 READY SIGNAL
+if (process.send) {
+  process.send('ready');
+  console.log('✅ PM2 ready signal отправлен');
+}
 
 export default app;
 

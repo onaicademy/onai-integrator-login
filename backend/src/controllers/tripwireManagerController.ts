@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as tripwireManagerService from '../services/tripwireManagerService';
 import { supabase } from '../config/supabase';
+import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // 🔥 TRIPWIRE SUPABASE
 import { tripwirePool } from '../config/tripwire-pool'; // 🔥 DIRECT POSTGRES для stats
 
 /**
@@ -355,25 +356,26 @@ export async function getMyStats(req: Request, res: Response) {
 
     console.log(`📊 Getting personal stats for user_id: ${userId}`);
 
-    // Получаем всех пользователей, добавленных ЭТИМ менеджером
-    const { data: myUsers, error: usersError } = await supabase
-      .from('tripwire_user_profile')
+    // 🔧 FIX: Ищем в tripwire_users по granted_by (правильная колонка!)
+    const { data: myUsers, error: usersError } = await tripwireAdminSupabase
+      .from('tripwire_users')
       .select('*')
-      .eq('added_by_manager_id', userId);
+      .eq('granted_by', userId);
 
     if (usersError) {
       console.error('❌ Error fetching my users:', usersError);
       throw usersError;
     }
 
+    console.log(`📊 Found ${myUsers?.length || 0} users for manager ${userId}`);
+
     const totalUsers = myUsers?.length || 0;
     
-    // Считаем активных (есть хотя бы 1 просмотренный урок)
-    const activeUsers = myUsers?.filter((u: any) => (u.lessons_watched || 0) > 0).length || 0;
+    // Считаем активных (status = 'active')
+    const activeUsers = myUsers?.filter((u: any) => u.status === 'active').length || 0;
 
-    // Считаем выручку: totalUsers * 2490 тенге
-    const revenuePerUser = 2490;
-    const totalRevenue = totalUsers * revenuePerUser;
+    // Считаем выручку: сумма всех price
+    const totalRevenue = myUsers?.reduce((sum: number, u: any) => sum + (u.price || 0), 0) || 0;
 
     // Продажи за этот месяц
     const currentMonth = new Date().toISOString().slice(0, 7); // "2025-12"

@@ -1,41 +1,44 @@
+/**
+ * 🛡️ PM2 CONFIGURATION - ЗАЩИТА ОТ ПАДЕНИЙ
+ * 
+ * PM2 автоматически перезапустит backend при крашах
+ * Мониторинг, логи, автоматический restart
+ */
+
 module.exports = {
   apps: [{
     name: 'onai-backend',
-    script: 'npx',
-    args: 'tsx src/server.ts',
+    script: 'tsx',
+    args: 'src/server.ts',
     instances: 1,
-    exec_mode: 'fork',
-    
-    // 🚀 Память через NODE_OPTIONS (tsx требует)
-    max_memory_restart: '4G', // Рестарт если память > 4GB
-    
-    // 📊 Логирование
-    error_file: '/root/.pm2/logs/onai-backend-error.log',
-    out_file: '/root/.pm2/logs/onai-backend-out.log',
-    log_date_format: 'YYYY-MM-DD HH:mm:ss',
-    merge_logs: true,
-    
-    // 🔄 Агрессивный автоперезапуск при падении
     autorestart: true,
-    max_restarts: 50, // Увеличено с 10 до 50 попыток
-    min_uptime: '5s', // Уменьшено с 10s до 5s для быстрого обнаружения проблем
-    restart_delay: 2000, // 2 секунды между рестартами
-    exp_backoff_restart_delay: 100, // Экспоненциальная задержка: 2s → 4s → 8s → 16s...
-    
-    // 🎯 Дополнительные настройки стабильности
-    watch: false, // Не перезапускаем при изменении файлов (только для production)
-    ignore_watch: ['node_modules', 'logs', '.git', 'dist'],
-    
-    // 🌐 Окружение
+    watch: false,
+    max_memory_restart: '500M',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000,
-      NODE_OPTIONS: '--max-old-space-size=4096', // 4GB для Node через ENV (сервер имеет 31GB RAM)
+      PORT: 3000
     },
+    env_development: {
+      NODE_ENV: 'development',
+      PORT: 3000
+    },
+    error_file: './logs/pm2-error.log',
+    out_file: './logs/pm2-out.log',
+    log_file: './logs/pm2-combined.log',
+    time: true,
     
-    // 📈 Мониторинг
-    listen_timeout: 30000, // 30 секунд
-    kill_timeout: 10000, // 10 секунд
+    // 🛡️ ЗАЩИТА ОТ КРАХА
+    min_uptime: '5s',         // Минимальное время работы
+    max_restarts: 15,         // Макс 15 рестартов за listen_timeout
+    listen_timeout: 10000,    // Таймаут на старт (10 сек)
+    kill_timeout: 5000,       // Таймаут на остановку
+    wait_ready: false,        // НЕ ждать ready signal (избегаем зависаний)
+    
+    // 🔄 RESTART STRATEGY
+    exp_backoff_restart_delay: 100,  // Экспоненциальная задержка
+    
+    // 📊 МОНИТОРИНГ
+    merge_logs: true,
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
   }]
 };
-

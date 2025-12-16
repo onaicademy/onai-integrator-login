@@ -41,16 +41,20 @@ console.log('✅ Tripwire Pool initialized');
 console.log('   Max connections:', 20);
 console.log('   SSL:', 'enabled');
 
-// ✅ FIXED: Re-enabled connection test (Direct mode connection string)
-// Test connection on startup
-tripwirePool.connect((err, client, release) => {
-  if (err) {
-    console.error('❌ Failed to connect to Tripwire database:', err.message);
-    return;
-  }
-  
-  console.log('✅ Tripwire database connection successful');
-  release();
+// 🛡️ NON-BLOCKING CONNECTION TEST
+// ⚠️ ВАЖНО: Ошибка подключения НЕ крашит сервер!
+setImmediate(() => {
+  tripwirePool.connect((err, client, release) => {
+    if (err) {
+      console.error('⚠️ [TRIPWIRE POOL] Connection test failed:', err.message);
+      console.error('   Server will continue, but Tripwire features may not work');
+      console.error('   Check TRIPWIRE_DATABASE_URL in env.env');
+      return;
+    }
+    
+    console.log('✅ Tripwire database connection test successful');
+    release();
+  });
 });
 
 // Graceful shutdown
