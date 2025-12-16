@@ -669,10 +669,11 @@ export default function LeadsAdmin() {
                 cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400' },
                 pink: { bg: 'bg-pink-500/10', border: 'border-pink-500/20', text: 'text-pink-400' },
                 green: { bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-400' },
+                red: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400' },
                 gray: { bg: 'bg-gray-500/10', border: 'border-gray-500/20', text: 'text-gray-400' },
               };
               
-              const colors = colorClasses[display.color];
+              const colors = colorClasses[display.color] || colorClasses.gray;
               
               return (
                 <div key={source} className={`border ${colors.border} rounded-xl overflow-hidden transition-all ${isExpanded ? colors.bg : 'bg-white/[0.02]'}`}>
