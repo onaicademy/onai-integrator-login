@@ -293,33 +293,28 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
 
 /**
  * Получает статистику по Tripwire пользователям для менеджера
- * 🔥 DIRECT POSTGRES CONNECTION - обход PostgREST/Kong cache!
+ * ⚡ TEMPORARY FIX: Using Supabase RPC instead of direct Postgres (Pool connection issue)
  */
 export async function getTripwireStats(managerId?: string, startDate?: string, endDate?: string) {
   try {
-    console.log(`🔌 [DIRECT] getTripwireStats called for manager=${managerId}`);
+    console.log(`🔌 [SUPABASE RPC] getTripwireStats called for manager=${managerId}`);
 
-    // 🔥 DIRECT PostgreSQL connection
-    const client = await tripwirePool.connect();
-    try {
-      // 🔥 TIMEOUT PROTECTION: 5s max for stats query
-      await client.query('SET statement_timeout = 5000');
+    // ⚡ TEMPORARY: Use Supabase RPC instead of direct Postgres
+    const { data, error } = await tripwireAdminSupabase.rpc('rpc_get_tripwire_stats', {
+      p_end_date: endDate || null,
+      p_manager_id: managerId || null,
+      p_start_date: startDate || null
+    });
 
-      const result = await client.query(`
-        SELECT * FROM public.rpc_get_tripwire_stats(
-          p_end_date := $1,
-          p_manager_id := $2,
-          p_start_date := $3
-        )
-      `, [endDate || null, managerId || null, startDate || null]);
-
-      console.log(`✅ [DIRECT] Stats:`, result.rows[0]);
-      return result.rows[0];
-    } finally {
-      client.release();
+    if (error) {
+      console.error('❌ [SUPABASE RPC] Error:', error);
+      throw error;
     }
+
+    console.log(`✅ [SUPABASE RPC] Stats:`, data);
+    return data;
   } catch (error: any) {
-    console.error('❌ [DIRECT] Error fetching tripwire stats:', error);
+    console.error('❌ [SUPABASE RPC] Error fetching tripwire stats:', error);
     throw error;
   }
 }

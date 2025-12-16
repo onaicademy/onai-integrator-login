@@ -125,6 +125,10 @@ import { startNotificationScheduler } from './services/notificationScheduler.js'
 import { recoverPendingNotifications } from './services/scheduledNotifications.js';
 import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
 
+// ⭐ Import isolated services
+import { initAmoCRMRedis, getAmoCRMRedisStatus, closeAmoCRMRedis } from './config/redis-amocrm';
+import { initTelegramService, getTelegramStatus, closeTelegramService } from './config/telegram-service';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -440,27 +444,66 @@ process.on('SIGINT', () => {
   });
 });
 
-// Запуск сервера
-const server = app.listen(PORT, async () => {
-  console.log(`🚀 Backend API запущен на http://localhost:${PORT}`);
+// ⭐ CRITICAL: Graceful shutdown
+async function gracefulShutdown(signal: string) {
+  console.log(`🛑 Received ${signal}, shutting down gracefully...`);
+  try {
+    await closeTelegramService();
+    await closeAmoCRMRedis();
+    console.log('✅ All services closed');
+  } catch (err: any) {
+    console.error('❌ Shutdown error:', err.message);
+  }
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// ================================================
+// ⭐ START SERVER (NON-BLOCKING!)
+// ================================================
+const server = app.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════════════════╗
+║ 🚀 Backend API запущен на http://localhost:${PORT} ║
+║                                                    ║
+║ Server ready for HTTP requests                     ║
+║ Initializing services in background...             ║
+╚════════════════════════════════════════════════════╝
+  `);
   console.log(`Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log('🛡️ Обработчики критических ошибок активированы');
   
-  // 🔥 RECOVER PENDING SMS/EMAIL NOTIFICATIONS FROM DB
-  await recoverPendingNotifications();
-  
-  // Start notification scheduler (проверяет просроченные notifications каждую минуту)
-  startNotificationScheduler();
-  
-  // Start reminder scheduler
-  startReminderScheduler();
-  
-  // Start AI Mentor scheduler (ежедневные отчеты в 9:00)
-  startAIMentorScheduler();
-  
-  // Start AI Analytics scheduler (ежедневные отчеты в 9:00)
-  startAIAnalyticsScheduler();
+  // ⭐ CRITICAL: DON'T AWAIT HERE!
+  // These run in BACKGROUND without blocking HTTP
+  (async () => {
+    try {
+      console.log('📦 Initializing services in background...');
+
+      // 1. Initialize AmoCRM Redis (for BullMQ)
+      await initAmoCRMRedis();
+
+      // 2. Initialize Telegram (independent from Redis)
+      await initTelegramService();
+
+      // 3. Recover notifications (background task)
+      await recoverPendingNotifications();
+
+      // 4. Start schedulers (background)
+      startNotificationScheduler();
+      startReminderScheduler();
+      startAIMentorScheduler();
+      startAIAnalyticsScheduler();
+
+      console.log('✅ All background services initialized');
+
+    } catch (err: any) {
+      console.error('❌ Service initialization error:', err.message);
+      // Don't crash - continue running
+    }
+  })(); // ⭐ IIFE - runs in background, doesn't block
 });
 
 // Graceful shutdown для сервера (SIGTERM)

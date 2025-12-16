@@ -326,11 +326,11 @@ export default function TripwireProductPage() {
     }
     
     if (module.id === 17 || module.id === 18) {
-      console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (обновление скоро)`);
+      console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (открытие 16.12.25)`);
       return {
         ...module,
         status: 'locked',
-        lockMessage: 'ОБНОВЛЕНИЕ СКОРО' // ✅ Custom lock message
+        lockMessage: 'Открытие модуля 16.12.25' // ✅ Custom lock message with date
       };
     }
     
@@ -903,7 +903,7 @@ export default function TripwireProductPage() {
                         {isLocked && (
                           <div className="flex items-center gap-2 text-xs" style={{ color: BRAND.colors.text_dim, opacity: 0.5 }}>
                             <Lock className="w-3 h-3" />
-                            <span>ЗАБЛОКИРОВАНО</span>
+                            <span>{(module as any).lockMessage || 'ЗАБЛОКИРОВАНО'}</span>
                           </div>
                         )}
                       </div>

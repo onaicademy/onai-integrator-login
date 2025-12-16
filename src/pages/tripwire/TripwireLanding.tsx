@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckoutForm } from '@/components/landing/CheckoutForm';
 import { Logo } from '@/components/Logo';
 import FacebookPixel from '@/components/FacebookPixel';
+import UTMTracker from '@/components/UTMTracker';
 import { getPixelConfig } from '@/config/pixels';
 import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
 
@@ -218,6 +219,9 @@ export default function TripwireLanding() {
 
   return (
     <div className="bg-[#030303] text-white overflow-x-hidden selection:bg-[#00FF94] selection:text-black">
+      {/* UTM Tracker */}
+      <UTMTracker />
+      
       {/* Custom Styles */}
       <style>{`
         * { box-sizing: border-box; }

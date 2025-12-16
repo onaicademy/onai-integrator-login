@@ -153,7 +153,7 @@ router.get('/queue', async (req: Request, res: Response) => {
     const waitingJobs = await redis.llen('bull:amocrm-sync:wait');
     const failedJobs = await redis.zcard('bull:amocrm-sync:failed');
     const completedJobs = await redis.zcard('bull:amocrm-sync:completed');
-
+    
     res.json({
       success: true,
       queue: {

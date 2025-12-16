@@ -261,26 +261,34 @@ router.post('/complete', async (req, res) => {
       let achievement: any = null;
 
       if (moduleCompleted) {
-        console.log(`[STEP 6] 🔓 Module ${module_id} FULLY COMPLETED! Unlocking next module...`);
+        console.log(`[STEP 6] ✅ Module ${module_id} COMPLETED! (Auto-unlock check...)`);
 
-        // ✅ STEP 6a: Unlock next module (16→17, 17→18, 18→none)
-        const nextModuleId = module_id + 1;
-        const maxModuleId = 18; // Tripwire has modules 16, 17, 18
+        // 🚫 TEMPORARY: Disable auto-unlock until modules 2-3 content is ready
+        // TODO: Set to true when ready to enable auto-unlock progression
+        const AUTO_UNLOCK_ENABLED = false;
 
-        if (nextModuleId <= maxModuleId) {
-          // Create module_unlock record for animation
-          // ❗ Use main_user_id (users.id), NOT tripwire_user_id
-          await client.query(`
-            INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
-            VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
-            ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
-          `, [main_user_id, nextModuleId]);
+        if (AUTO_UNLOCK_ENABLED) {
+          // ✅ STEP 6a: Unlock next module (16→17, 17→18, 18→none)
+          const nextModuleId = module_id + 1;
+          const maxModuleId = 18; // Tripwire has modules 16, 17, 18
 
-          unlockedModuleId = nextModuleId;
-          console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
+          if (nextModuleId <= maxModuleId) {
+            // Create module_unlock record for animation
+            // ❗ Use main_user_id (users.id), NOT tripwire_user_id
+            await client.query(`
+              INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
+              VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
+              ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
+            `, [main_user_id, nextModuleId]);
+
+            unlockedModuleId = nextModuleId;
+            console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
+          }
+        } else {
+          console.log(`⏸️ [STEP 6a SKIPPED] Auto-unlock disabled (waiting for module 2-3 content)`);
         }
 
-        // ✅ STEP 6b: Create achievement
+        // ✅ STEP 6b: Create achievement (always runs, independent of unlock)
         // ❗ Use main_user_id (users.id), NOT tripwire_user_id
         const achievementId = module_id === 16 ? 'first_module_complete' 
                             : module_id === 17 ? 'second_module_complete'

@@ -41,6 +41,7 @@ console.log('✅ Tripwire Pool initialized');
 console.log('   Max connections:', 20);
 console.log('   SSL:', 'enabled');
 
+// ✅ FIXED: Re-enabled connection test (Direct mode connection string)
 // Test connection on startup
 tripwirePool.connect((err, client, release) => {
   if (err) {

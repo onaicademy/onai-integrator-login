@@ -45,7 +45,7 @@ export default function LeadSyncModal({ onClose }: Props) {
   const [syncId, setSyncId] = useState<string | null>(null);
   const [result, setResult] = useState<LeadSyncResult | null>(null);
   const [selectedTab, setSelectedTab] = useState<'synced' | 'not_synced'>('synced');
-  
+
   // Use SSE hook for real-time progress
   const { progress, error: progressError, isConnected } = useBulkSyncProgress(syncId);
 
