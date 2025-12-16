@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send, RefreshCw, Trash2, AlertCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, Search, TrendingUp, Users, Send, RefreshCw, Trash2, AlertCircle, Clock, ChevronDown, ChevronUp, DollarSign, Target } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { landingSupabase } from '@/lib/supabase-landing'; // ✅ Use singleton instance
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface JourneyStage {
   id: string;
@@ -46,11 +47,16 @@ interface Stats {
   bySource: Record<string, number>;
 }
 
-// ✅ Version: 1.10.02 - Added pagination (Dec 16, 2025)
+// 🎯 Dynamic source filter - uses real source values from database
+type SourceFilter = string; // Can be 'all' or any source value like 'expresscourse', 'proftest_kenesary', etc.
+
+// ✅ Version: 1.10.03 - Added source filtering (Dec 16, 2025)
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all'); // 'all' or real source value
+  const [expandedSource, setExpandedSource] = useState<string | null>(null); // 🎯 Для аккордеона
   const ITEMS_PER_PAGE = 10;
   const queryClient = useQueryClient();
 
@@ -247,7 +253,39 @@ export default function LeadsAdmin() {
     enabled: !!landingSupabase,
   });
 
-  const filteredLeads = leads?.filter(lead => 
+  // 🎯 NEW: Get unique sources and count by source (динамическая группировка)
+  const sourceStats = leads?.reduce((acc, lead) => {
+    const source = lead.source || 'unknown';
+    if (!acc[source]) {
+      acc[source] = {
+        count: 0,
+        emailsSent: 0,
+        smsSent: 0,
+        emailClicks: 0,
+        smsClicks: 0,
+      };
+    }
+    acc[source].count++;
+    if (lead.email_sent) acc[source].emailsSent++;
+    if (lead.sms_sent) acc[source].smsSent++;
+    if (lead.email_clicked) acc[source].emailClicks++;
+    if (lead.sms_clicked) acc[source].smsClicks++;
+    return acc;
+  }, {} as Record<string, { count: number; emailsSent: number; smsSent: number; emailClicks: number; smsClicks: number }>);
+
+  // 🎯 Sort sources by count (descending)
+  const sortedSources = Object.entries(sourceStats || {})
+    .sort(([, a], [, b]) => b.count - a.count)
+    .map(([source]) => source);
+
+  // 🎯 Apply source filter (по реальному источнику из БД)
+  const sourceFilteredLeads = leads?.filter(lead => {
+    if (sourceFilter === 'all') return true;
+    return lead.source === sourceFilter;
+  });
+
+  // 🎯 Apply search filter
+  const filteredLeads = sourceFilteredLeads?.filter(lead => 
     lead.email?.toLowerCase().includes(searchQuery.toLowerCase()) || 
     lead.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     lead.phone?.includes(searchQuery) ||
@@ -260,10 +298,71 @@ export default function LeadsAdmin() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedLeads = filteredLeads?.slice(startIndex, endIndex);
 
-  // Reset to page 1 when search query changes
+  // Reset to page 1 when search query or source filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, sourceFilter]);
+
+  // 🎯 Helper function to get source display name with emoji (КОРОТКИЕ названия!)
+  const getSourceDisplay = (source: string): { name: string; emoji: string; color: string } => {
+    const sourceMap: Record<string, { name: string; emoji: string; color: string }> = {
+      'expresscourse': { name: 'Экспресс', emoji: '🎓', color: 'orange' },
+      'proftest_kenesary': { name: 'Кенисары', emoji: '👨‍💼', color: 'blue' },
+      'proftest_arystan': { name: 'Арыстан', emoji: '⚡', color: 'purple' },
+      'proftest_test': { name: 'Тест', emoji: '🧪', color: 'cyan' },
+      'proftest_cursor_debug': { name: 'Debug', emoji: '🐛', color: 'pink' },
+      'proftest_journey_test': { name: 'Journey', emoji: '🗺️', color: 'green' },
+      'proftest_unknown': { name: 'Неизв.', emoji: '❓', color: 'gray' },
+    };
+    
+    return sourceMap[source] || { name: source, emoji: '📌', color: 'gray' };
+  };
+
+  // 🎯 NEW: Группировка лидов по дням для графиков
+  const getChartDataBySource = (source: string) => {
+    const sourceLeads = leads?.filter(l => l.source === source) || [];
+    
+    // Группируем по дням (последние 7 дней)
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      date.setHours(0, 0, 0, 0);
+      return date;
+    });
+
+    const chartData = last7Days.map(date => {
+      const dayStart = date.getTime();
+      const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+      
+      const dayLeads = sourceLeads.filter(lead => {
+        const leadTime = new Date(lead.created_at).getTime();
+        return leadTime >= dayStart && leadTime < dayEnd;
+      });
+      
+      return {
+        date: date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+        leads: dayLeads.length,
+        emailClicks: dayLeads.filter(l => l.email_clicked).length,
+        smsClicks: dayLeads.filter(l => l.sms_clicked).length,
+      };
+    });
+
+    return chartData;
+  };
+
+  // 🎯 NEW: Подсчет трендов (новые лиды за последние 24ч по источнику)
+  const getTrend24h = (source: string) => {
+    const now = Date.now();
+    const yesterday = now - 24 * 60 * 60 * 1000;
+    
+    const sourceLeads = leads?.filter(l => l.source === source) || [];
+    const last24h = sourceLeads.filter(lead => {
+      const leadTime = new Date(lead.created_at).getTime();
+      return leadTime >= yesterday;
+    }).length;
+    
+    return last24h;
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -421,6 +520,7 @@ export default function LeadsAdmin() {
           </div>
         </div>
 
+
         {/* Header + Search */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -501,6 +601,213 @@ export default function LeadsAdmin() {
             </div>
           </div>
         </div>
+
+        {/* 🎯 ПРОСТОЙ фильтр - компактные кнопки */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {/* "Все" Button */}
+          <button
+            onClick={() => setSourceFilter('all')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+              sourceFilter === 'all'
+                ? 'bg-[#00FF94]/20 border border-[#00FF94]/30 text-[#00FF94]'
+                : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white'
+            }`}
+          >
+            🌍 Все ({leads?.length || 0})
+          </button>
+          
+          {/* Dynamic source buttons - КОРОТКИЕ */}
+          {sortedSources.map(source => {
+            const display = getSourceDisplay(source);
+            const count = sourceStats![source].count;
+            
+            const colorClasses: Record<string, string> = {
+              orange: 'bg-orange-500/20 border-orange-500/30 text-orange-400',
+              blue: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
+              purple: 'bg-purple-500/20 border-purple-500/30 text-purple-400',
+              cyan: 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400',
+              pink: 'bg-pink-500/20 border-pink-500/30 text-pink-400',
+              green: 'bg-green-500/20 border-green-500/30 text-green-400',
+              gray: 'bg-gray-500/20 border-gray-500/30 text-gray-400',
+            };
+            
+            return (
+              <button
+                key={source}
+                onClick={() => setSourceFilter(source)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+                  sourceFilter === source
+                    ? `border ${colorClasses[display.color]}`
+                    : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white'
+                }`}
+              >
+                {display.emoji} {display.name} · {count}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 🎯 ИНТЕРАКТИВНЫЙ ДАШБОРД с аккордеонами по источникам */}
+        {sourceFilter === 'all' ? (
+          // Если "Все" - показываем аккордеоны для всех источников
+          <div className="mb-6 space-y-3">
+            {sortedSources.map(source => {
+              const stats = sourceStats![source];
+              const display = getSourceDisplay(source);
+              const isExpanded = expandedSource === source;
+              const trend24h = getTrend24h(source);
+              const chartData = getChartDataBySource(source);
+              
+              const colorClasses: Record<string, { bg: string; border: string; text: string }> = {
+                orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400' },
+                blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400' },
+                purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400' },
+                cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400' },
+                pink: { bg: 'bg-pink-500/10', border: 'border-pink-500/20', text: 'text-pink-400' },
+                green: { bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-400' },
+                gray: { bg: 'bg-gray-500/10', border: 'border-gray-500/20', text: 'text-gray-400' },
+              };
+              
+              const colors = colorClasses[display.color];
+              
+              return (
+                <div key={source} className={`border ${colors.border} rounded-xl overflow-hidden transition-all ${isExpanded ? colors.bg : 'bg-white/[0.02]'}`}>
+                  {/* Заголовок аккордеона */}
+                  <button
+                    onClick={() => setExpandedSource(isExpanded ? null : source)}
+                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{display.emoji}</span>
+                      <div className="text-left">
+                        <h3 className={`font-bold ${colors.text}`}>{display.name}</h3>
+                        <p className="text-[#9CA3AF] text-xs">
+                          {stats.count} лидов · 
+                          <span className="text-green-400 ml-1">+{trend24h} за 24ч</span>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      {/* Быстрые метрики */}
+                      <div className="text-right hidden md:block">
+                        <div className="text-xs text-[#9CA3AF]">
+                          📧 {stats.emailClicks}/{stats.emailsSent} · 
+                          💬 {stats.smsClicks}/{stats.smsSent}
+                        </div>
+                      </div>
+                      
+                      {isExpanded ? <ChevronUp size={20} className="text-[#9CA3AF]" /> : <ChevronDown size={20} className="text-[#9CA3AF]" />}
+                    </div>
+                  </button>
+                  
+                  {/* Развернутый контент */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 space-y-4 border-t border-white/5">
+                      {/* Основные метрики */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                        <div className="text-center">
+                          <div className="text-xs text-[#9CA3AF] mb-1">📧 Email отправлено</div>
+                          <div className="text-white font-bold text-xl">{stats.emailsSent}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-[#9CA3AF] mb-1">✅ Email клики</div>
+                          <div className={`font-bold text-xl ${colors.text}`}>
+                            {stats.emailClicks} ({stats.emailsSent > 0 ? Math.round((stats.emailClicks / stats.emailsSent) * 100) : 0}%)
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-[#9CA3AF] mb-1">💬 SMS отправлено</div>
+                          <div className="text-white font-bold text-xl">{stats.smsSent}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-[#9CA3AF] mb-1">✅ SMS клики</div>
+                          <div className={`font-bold text-xl ${colors.text}`}>
+                            {stats.smsClicks} ({stats.smsSent > 0 ? Math.round((stats.smsClicks / stats.smsSent) * 100) : 0}%)
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* График динамики */}
+                      <div>
+                        <h4 className="text-xs text-[#9CA3AF] mb-3 uppercase tracking-wide">📈 Динамика за неделю</h4>
+                        <ResponsiveContainer width="100%" height={150}>
+                          <AreaChart data={chartData}>
+                            <defs>
+                              <linearGradient id={`gradient-${source}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={display.color === 'orange' ? '#fb923c' : display.color === 'blue' ? '#60a5fa' : '#a78bfa'} stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor={display.color === 'orange' ? '#fb923c' : display.color === 'blue' ? '#60a5fa' : '#a78bfa'} stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                            <XAxis dataKey="date" stroke="#9CA3AF" style={{ fontSize: 10 }} />
+                            <YAxis stroke="#9CA3AF" style={{ fontSize: 10 }} />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'rgba(0,0,0,0.9)', 
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '8px',
+                                fontSize: 12
+                              }}
+                            />
+                            <Area type="monotone" dataKey="leads" stroke={display.color === 'orange' ? '#fb923c' : display.color === 'blue' ? '#60a5fa' : '#a78bfa'} fill={`url(#gradient-${source})`} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                      
+                      {/* 💰 ROI Placeholders (для будущего) */}
+                      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
+                        <div className="text-center p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                          <div className="text-xs text-[#9CA3AF] mb-1 flex items-center justify-center gap-1">
+                            <DollarSign size={12} />
+                            Расходы
+                          </div>
+                          <div className="text-white font-bold text-lg">---</div>
+                          <div className="text-xs text-[#9CA3AF]">Coming soon</div>
+                        </div>
+                        <div className="text-center p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                          <div className="text-xs text-[#9CA3AF] mb-1 flex items-center justify-center gap-1">
+                            <Target size={12} />
+                            CPL
+                          </div>
+                          <div className="text-white font-bold text-lg">---</div>
+                          <div className="text-xs text-[#9CA3AF]">Coming soon</div>
+                        </div>
+                        <div className="text-center p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                          <div className="text-xs text-[#9CA3AF] mb-1 flex items-center justify-center gap-1">
+                            <TrendingUp size={12} />
+                            ROI
+                          </div>
+                          <div className="text-white font-bold text-lg">---</div>
+                          <div className="text-xs text-[#9CA3AF]">Coming soon</div>
+                        </div>
+                      </div>
+                      
+                      {/* Кнопка фильтрации */}
+                      <button
+                        onClick={() => setSourceFilter(source)}
+                        className={`w-full py-2 rounded-lg border ${colors.border} ${colors.text} hover:${colors.bg} transition-colors text-sm font-medium`}
+                      >
+                        Показать только {display.name}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          // Если выбран конкретный источник - показываем его развернутым
+          <div className="mb-6">
+            <button
+              onClick={() => setSourceFilter('all')}
+              className="mb-3 text-xs text-[#9CA3AF] hover:text-[#00FF94] transition-colors"
+            >
+              ← Показать все источники
+            </button>
+            {/* Здесь тот же контент что в аккордеоне, но всегда развернут */}
+          </div>
+        )}
 
         {/* Table */}
         <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
