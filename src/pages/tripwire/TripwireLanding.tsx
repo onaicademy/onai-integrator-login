@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckoutForm } from '@/components/landing/CheckoutForm';
 import { Logo } from '@/components/Logo';
 import FacebookPixel from '@/components/FacebookPixel';
+import YandexMetrika from '@/components/YandexMetrika';
 import UTMTracker from '@/components/UTMTracker';
 import { getPixelConfig } from '@/config/pixels';
 import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
@@ -697,6 +698,9 @@ export default function TripwireLanding() {
 
       {/* Facebook Pixel */}
       {pixelConfig && <FacebookPixel pixelConfig={pixelConfig} />}
+      
+      {/* Yandex Metrika */}
+      <YandexMetrika counterId={105875572} />
 
       {/* Checkout Form Modal */}
       <CheckoutForm

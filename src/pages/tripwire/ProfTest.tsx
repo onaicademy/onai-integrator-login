@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import FacebookPixel from '@/components/FacebookPixel';
+import YandexMetrika from '@/components/YandexMetrika';
 import UTMTracker from '@/components/UTMTracker';
 import { getPixelConfig } from '@/config/pixels';
 import { trackLead } from '@/lib/facebook-pixel';
@@ -560,6 +561,9 @@ export default function ProfTest() {
       
       {/* Facebook Pixel */}
       {pixelConfig && <FacebookPixel pixelConfig={pixelConfig} />}
+      
+      {/* Yandex Metrika */}
+      <YandexMetrika counterId={105875572} />
       
       {/* Custom Styles */}
       <style>{`
