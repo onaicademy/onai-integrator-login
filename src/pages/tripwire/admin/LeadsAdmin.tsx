@@ -428,17 +428,41 @@ export default function LeadsAdmin() {
                 try {
                   setSyncing(true);
                   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-                  const response = await axios.post(`${apiUrl}/api/landing/sync-all-to-amocrm`);
+                  
+                  // 🔥 FIX: Правильный endpoint для синхронизации
+                  const response = await axios.post(`${apiUrl}/api/landing/sync-all-to-amocrm`, {}, {
+                    timeout: 300000 // 5 минут на batch sync
+                  });
                   
                   if (response.data.success) {
-                    alert(`✅ Синхронизация завершена!\n\nУспешно: ${response.data.synced}\nПропущено: ${response.data.skipped}\nОшибки: ${response.data.failed}`);
+                    const { total, synced, skipped, failed, errors } = response.data;
+                    
+                    let message = `✅ Синхронизация завершена!\n\n`;
+                    message += `📊 Всего лидов: ${total}\n`;
+                    message += `✅ Успешно синхронизировано: ${synced}\n`;
+                    message += `⏭️  Пропущено (уже есть): ${skipped}\n`;
+                    message += `❌ Ошибки: ${failed}\n`;
+                    
+                    if (errors && errors.length > 0) {
+                      message += `\n🔍 Детали ошибок:\n`;
+                      errors.slice(0, 3).forEach((err: any) => {
+                        message += `- ${err.name}: ${err.error}\n`;
+                      });
+                      if (errors.length > 3) {
+                        message += `... и ещё ${errors.length - 3} ошибок\n`;
+                      }
+                    }
+                    
+                    alert(message);
                     queryClient.invalidateQueries({ queryKey: ['landing', 'leads'] });
                     queryClient.invalidateQueries({ queryKey: ['landing', 'leads', 'count'] });
                   } else {
                     throw new Error(response.data.error || 'Failed to sync');
                   }
                 } catch (error: any) {
-                  alert(`❌ Ошибка синхронизации:\n${error.response?.data?.message || error.message}`);
+                  console.error('❌ Sync error:', error);
+                  const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message;
+                  alert(`❌ Ошибка синхронизации:\n\n${errorMsg}`);
                 } finally {
                   setSyncing(false);
                 }

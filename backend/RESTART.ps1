@@ -26,3 +26,5 @@ Write-Host "📱 Проверь Telegram ID: 789638302" -ForegroundColor Cyan
 Write-Host ""
 
 
+
+

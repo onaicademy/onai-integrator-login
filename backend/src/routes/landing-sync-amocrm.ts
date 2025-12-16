@@ -45,9 +45,9 @@ interface AmoCRMLead {
 }
 
 /**
- * Получить все лиды из AmoCRM (по pipeline)
+ * Получить лиды из AmoCRM (ограниченное количество для оптимизации)
  */
-async function fetchAllAmoCRMLeads(): Promise<AmoCRMLead[]> {
+async function fetchRecentAmoCRMLeads(maxLeads = 500): Promise<AmoCRMLead[]> {
   if (!AMOCRM_TOKEN) {
     throw new Error('AmoCRM not configured');
   }
@@ -56,10 +56,15 @@ async function fetchAllAmoCRMLeads(): Promise<AmoCRMLead[]> {
     const allLeads: AmoCRMLead[] = [];
     let page = 1;
     const limit = 250; // Max per page
+    const maxPages = Math.ceil(maxLeads / limit);
 
-    while (true) {
+    console.log(`🔄 Fetching up to ${maxLeads} recent leads from AmoCRM...`);
+
+    while (page <= maxPages) {
+      console.log(`  📥 Page ${page}/${maxPages}...`);
+      
       const response = await fetchWithTimeout(
-        `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[pipeline_id]=${AMOCRM_CONFIG.PIPELINE_ID}&with=contacts&limit=${limit}&page=${page}`,
+        `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[pipeline_id]=${AMOCRM_CONFIG.PIPELINE_ID}&with=contacts&limit=${limit}&page=${page}&order[created_at]=desc`,
         {
           headers: {
             Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -69,7 +74,8 @@ async function fetchAllAmoCRMLeads(): Promise<AmoCRMLead[]> {
       );
 
       if (!response.ok) {
-        throw new Error(`AmoCRM API error: ${response.status}`);
+        console.error(`❌ AmoCRM API error: ${response.status}`);
+        break;
       }
 
       const data: any = await response.json();
@@ -83,6 +89,9 @@ async function fetchAllAmoCRMLeads(): Promise<AmoCRMLead[]> {
       if (leads.length < limit) break;
 
       page++;
+      
+      // Небольшая пауза между запросами чтобы не нагружать AmoCRM API
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     console.log(`✅ Fetched ${allLeads.length} leads from AmoCRM`);
@@ -126,11 +135,11 @@ router.post('/sync-amocrm', async (req: Request, res: Response) => {
   try {
     console.log('🔄 Starting AmoCRM sync...');
 
-    // 1. Получить все лиды из AmoCRM
-    const amocrmLeads = await fetchAllAmoCRMLeads();
+    // 1. Получить последние лиды из AmoCRM (ограничено 500 для оптимизации)
+    const amocrmLeads = await fetchRecentAmoCRMLeads(500);
 
     // 2. Получить все лиды из landing_leads (LANDING DB)
-    const { data: landingLeads, error: dbError } = await supabaseLanding
+    const { data: landingLeads, error: dbError } = await landingSupabase
       .from('landing_leads')
       .select('*')
       .order('created_at', { ascending: false });
@@ -230,7 +239,7 @@ router.post('/sync-amocrm', async (req: Request, res: Response) => {
         
         // Обновляем amocrm_lead_id если его нет
         if (!lead.amocrm_lead_id || lead.amocrm_lead_id !== amocrmLead.id.toString()) {
-          await supabaseLanding
+          await landingSupabase
             .from('landing_leads')
             .update({
               amocrm_lead_id: amocrmLead.id.toString(),

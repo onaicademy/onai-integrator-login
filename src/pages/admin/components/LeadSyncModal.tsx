@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { X, RefreshCw, CheckCircle, XCircle, Mail, MessageSquare, AlertCircle } from 'lucide-react';
 import { api } from '@/utils/apiClient';
-import { toast } from 'react-hot-toast';
 
 interface LeadSyncResult {
   total_landing_leads: number;
@@ -47,12 +46,24 @@ export default function LeadSyncModal({ onClose }: Props) {
   const handleSync = async () => {
     setLoading(true);
     try {
-      const response = await api.post('/api/admin/landing/sync-amocrm');
+      // Добавляем timeout 2 минуты для синхронизации
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 минуты
+      
+      const response = await api.post('/api/admin/landing/sync-amocrm', {}, {
+        signal: controller.abort
+      });
+      
+      clearTimeout(timeoutId);
       setResult(response.data);
       toast.success('✅ Синхронизация завершена!');
     } catch (error: any) {
       console.error('Sync error:', error);
-      toast.error(error.message || 'Ошибка синхронизации');
+      if (error.name === 'AbortError') {
+        toast.error('⏱️ Превышено время ожидания. Попробуйте позже.');
+      } else {
+        toast.error(error.message || 'Ошибка синхронизации');
+      }
     } finally {
       setLoading(false);
     }
@@ -316,4 +327,6 @@ export default function LeadSyncModal({ onClose }: Props) {
     </div>
   );
 }
+
+
 
