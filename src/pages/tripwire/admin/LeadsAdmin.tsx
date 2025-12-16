@@ -46,10 +46,12 @@ interface Stats {
   bySource: Record<string, number>;
 }
 
-// ✅ Version: 1.10.01 - Added sync button & live count (Dec 15, 2025)
+// ✅ Version: 1.10.02 - Added pagination (Dec 16, 2025)
 export default function LeadsAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const queryClient = useQueryClient();
 
   // Fetch leads with notification status AND journey stages
@@ -251,6 +253,17 @@ export default function LeadsAdmin() {
     lead.phone?.includes(searchQuery) ||
     lead.source?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Pagination calculations
+  const totalPages = Math.ceil((filteredLeads?.length || 0) / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedLeads = filteredLeads?.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -519,8 +532,8 @@ export default function LeadsAdmin() {
                     Загрузка списка заявок...
                   </td>
                 </tr>
-              ) : filteredLeads && filteredLeads.length > 0 ? (
-                filteredLeads.map((lead) => (
+              ) : paginatedLeads && paginatedLeads.length > 0 ? (
+                paginatedLeads.map((lead) => (
                   <tr key={lead.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                     {/* Contact Info */}
                     <td className="px-6 py-4">
@@ -793,6 +806,74 @@ export default function LeadsAdmin() {
             </tbody>
           </table>
           </div>
+
+          {/* Pagination Controls */}
+          {filteredLeads && filteredLeads.length > ITEMS_PER_PAGE && (
+            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
+              <div className="text-sm text-[#9CA3AF]">
+                Показано {startIndex + 1}-{Math.min(endIndex, filteredLeads.length)} из {filteredLeads.length} участников
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  ← Назад
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => {
+                    // Show first page, last page, current page, and pages around current
+                    const showPage = 
+                      pageNum === 1 || 
+                      pageNum === totalPages || 
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+                    
+                    const showEllipsis = 
+                      (pageNum === 2 && currentPage > 3) ||
+                      (pageNum === totalPages - 1 && currentPage < totalPages - 2);
+
+                    if (showEllipsis) {
+                      return (
+                        <span key={pageNum} className="px-2 text-[#9CA3AF]">
+                          ...
+                        </span>
+                      );
+                    }
+
+                    if (!showPage) return null;
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === pageNum
+                            ? 'bg-[#00FF94]/20 border border-[#00FF94]/30 text-[#00FF94]'
+                            : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  Вперёд →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
