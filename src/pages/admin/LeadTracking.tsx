@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, Mail, MessageSquare, RefreshCw, AlertCircle, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Mail, MessageSquare, RefreshCw, AlertCircle, Trash2, BarChart3 } from 'lucide-react';
 import axios from 'axios';
+import LeadSyncModal from './components/LeadSyncModal';
 
 interface LeadData {
   id: string;
@@ -61,6 +62,7 @@ export default function LeadTracking() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
@@ -213,6 +215,16 @@ export default function LeadTracking() {
             >
               <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
               Синхронизировать с AmoCRM
+            </button>
+
+            <button
+              onClick={() => setShowSyncModal(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-purple-600/20 hover:bg-purple-600/30 
+                       text-purple-400 border border-purple-500/30 font-bold rounded-lg 
+                       hover:scale-105 transition-transform"
+            >
+              <BarChart3 className="w-5 h-5" />
+              Детальная Синхронизация
             </button>
           </div>
         </div>
@@ -514,6 +526,11 @@ export default function LeadTracking() {
           Автообновление каждые 30 секунд
         </div>
       </div>
+
+      {/* Lead Sync Modal */}
+      {showSyncModal && (
+        <LeadSyncModal onClose={() => setShowSyncModal(false)} />
+      )}
     </div>
   );
 }

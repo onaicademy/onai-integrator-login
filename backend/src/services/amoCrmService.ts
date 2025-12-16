@@ -3,10 +3,11 @@
  * При прохождении уроков в Tripwire воронке
  * 
  * 🔥 С АВТОМАТИЧЕСКИМ ОБНОВЛЕНИЕМ ТОКЕНОВ (Refresh Token Flow)
+ * 🎯 ИСПОЛЬЗУЕТ LANDING SUPABASE - там хранятся токены и лиды
  */
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { supabase } from '../config/supabase';
+import { landingSupabase } from '../config/supabase-landing';
 
 // ========================================
 // КОНФИГУРАЦИЯ ЭТАПОВ AMOCRM
@@ -31,9 +32,9 @@ let currentRefreshToken = process.env.AMOCRM_REFRESH_TOKEN || '';
  */
 async function loadTokensFromDB(): Promise<void> {
   try {
-    console.log('📥 [AmoCRM] Загружаем токены из БД...');
+    console.log('📥 [AmoCRM] Загружаем токены из LANDING БД...');
     
-    const { data, error } = await supabase
+    const { data, error } = await landingSupabase
       .from('integration_tokens')
       .select('access_token, refresh_token, expires_at')
       .eq('service_name', 'amocrm')
@@ -78,12 +79,12 @@ async function saveTokens(accessToken: string, refreshToken: string): Promise<vo
   currentAccessToken = accessToken;
   currentRefreshToken = refreshToken;
   
-  // 2. Сохраняем в БД (для персистентности)
+  // 2. Сохраняем в LANDING БД (для персистентности)
   try {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // AmoCRM токены живут 24 часа
     
-    const { error } = await supabase
+    const { error } = await landingSupabase
       .from('integration_tokens')
       .upsert({
         service_name: 'amocrm',
