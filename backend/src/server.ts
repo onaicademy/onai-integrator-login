@@ -74,6 +74,7 @@ import usersRouter from './routes/users';
 import diagnosticsRouter from './routes/diagnostics';
 import openaiRouter from './routes/openai';
 import telegramRouter from './routes/telegram';
+import telegramLeadsRouter from './routes/telegram-leads'; // 🤖 Telegram Leads Bot (код активации 2134)
 import supabaseRouter from './routes/supabase';
 import studentsRouter from './routes/students';
 import tokensRouter from './routes/tokens';
@@ -348,6 +349,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
+app.use('/api/telegram-leads', telegramLeadsRouter); // 🤖 Telegram Leads Bot (активация группы кодом 2134)
 app.use('/api/debug', debugRouter); // 🔍 DEBUG: Check env variables
 app.use('/api/tripwire', tripwireRouter);
 app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints

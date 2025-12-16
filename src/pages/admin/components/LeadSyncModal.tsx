@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { X, RefreshCw, CheckCircle, XCircle, Mail, MessageSquare, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, RefreshCw, CheckCircle, XCircle, Mail, MessageSquare, AlertCircle, Clock } from 'lucide-react';
 import { api } from '@/utils/apiClient';
+import { useBulkSyncProgress } from '@/hooks/useBulkSyncProgress';
+import { toast } from 'react-hot-toast';
 
 interface LeadSyncResult {
   total_landing_leads: number;
@@ -40,32 +42,96 @@ interface Props {
 
 export default function LeadSyncModal({ onClose }: Props) {
   const [loading, setLoading] = useState(false);
+  const [syncId, setSyncId] = useState<string | null>(null);
   const [result, setResult] = useState<LeadSyncResult | null>(null);
   const [selectedTab, setSelectedTab] = useState<'synced' | 'not_synced'>('synced');
+  
+  // Use SSE hook for real-time progress
+  const { progress, error: progressError, isConnected } = useBulkSyncProgress(syncId);
 
+  // Handle new bulk sync
   const handleSync = async () => {
     setLoading(true);
+    setResult(null);
+    setSyncId(null);
+    
     try {
-      // Добавляем timeout 2 минуты для синхронизации
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 минуты
+      console.log('🚀 Starting bulk sync...');
       
-      const response = await api.post('/api/admin/landing/sync-amocrm', {}, {
-        signal: controller.abort
+      // Start bulk sync (new API)
+      const response = await api.post('/api/bulk-sync/sync-all', {
+        source: null, // Sync all sources
       });
       
-      clearTimeout(timeoutId);
-      setResult(response.data);
-      toast.success('✅ Синхронизация завершена!');
+      if (response.data.success && response.data.syncId) {
+        setSyncId(response.data.syncId);
+        toast.success(`✅ Синхронизация запущена! (${response.data.totalLeads} лидов)`);
+      } else {
+        toast.info('ℹ️ Нет лидов для синхронизации');
+      }
     } catch (error: any) {
       console.error('Sync error:', error);
-      if (error.name === 'AbortError') {
-        toast.error('⏱️ Превышено время ожидания. Попробуйте позже.');
-      } else {
-        toast.error(error.message || 'Ошибка синхронизации');
-      }
+      toast.error(error.message || 'Ошибка запуска синхронизации');
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // Fetch detailed results when sync completes
+  useEffect(() => {
+    if (progress?.status === 'completed' && syncId) {
+      fetchResults(syncId);
+    }
+  }, [progress?.status, syncId]);
+  
+  const fetchResults = async (id: string) => {
+    try {
+      const response = await api.get(`/api/bulk-sync/results/${id}`);
+      
+      if (response.data.success) {
+        const summary = response.data.summary;
+        
+        // Transform to old format for compatibility
+        setResult({
+          total_landing_leads: summary.totalLeads,
+          total_amocrm_leads: summary.totalLeads,
+          synced: summary.results.filter((r: any) => r.status === 'success').map((r: any) => ({
+            id: r.lead_id,
+            name: '',
+            phone: '',
+            source: '',
+            created_at: r.created_at,
+            in_amocrm: true,
+            amocrm_lead_id: r.deal_id?.toString(),
+            amocrm_synced: true,
+            email_sent: false,
+            sms_sent: false,
+            email_opened: false,
+            email_clicked: false,
+            sms_clicked: false,
+          })),
+          not_synced: summary.results.filter((r: any) => r.status === 'failed').map((r: any) => ({
+            id: r.lead_id,
+            name: '',
+            phone: '',
+            source: '',
+            created_at: r.created_at,
+            in_amocrm: false,
+            amocrm_synced: false,
+            email_sent: false,
+            sms_sent: false,
+            email_opened: false,
+            email_clicked: false,
+            sms_clicked: false,
+          })),
+          email_sent: 0,
+          email_failed: 0,
+          sms_sent: 0,
+          sms_failed: 0,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error fetching results:', error);
     }
   };
 
@@ -114,7 +180,7 @@ export default function LeadSyncModal({ onClose }: Props) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {!result ? (
+          {!syncId && !result ? (
             // Initial State
             <div className="flex flex-col items-center justify-center py-12 space-y-6">
               <RefreshCw className="w-16 h-16 text-[#00FF94]/50" />
@@ -123,7 +189,7 @@ export default function LeadSyncModal({ onClose }: Props) {
                   Запустить синхронизацию
                 </h3>
                 <p className="text-white/60 max-w-md">
-                  Синхронизация сопоставит лиды из админки с AmoCRM и покажет статусы отправки Email/SMS
+                  Bulk синхронизация с AmoCRM через очередь с автоматическими повторными попытками
                 </p>
               </div>
               <button
@@ -136,12 +202,103 @@ export default function LeadSyncModal({ onClose }: Props) {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-5 h-5 animate-spin" />
-                    Синхронизация...
+                    Запуск...
                   </span>
                 ) : (
                   'ЗАПУСТИТЬ СИНХРОНИЗАЦИЮ'
                 )}
               </button>
+            </div>
+          ) : syncId && progress && !result ? (
+            // Real-time Progress
+            <div className="space-y-6">
+              {/* Progress Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <RefreshCw className={`w-6 h-6 text-[#00FF94] ${progress.status === 'in_progress' ? 'animate-spin' : ''}`} />
+                  <div>
+                    <h3 className="text-xl font-bold text-white font-['JetBrains_Mono']">
+                      {progress.status === 'completed' ? '✅ Завершено' : 
+                       progress.status === 'failed' ? '❌ Ошибка' : 
+                       '🔄 Синхронизация...'}
+                    </h3>
+                    <p className="text-white/60 text-sm">ID: {syncId.slice(0, 8)}...</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-white/60 text-sm">
+                  {isConnected ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span>Live</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                      <span>Polling</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-white/80 font-['JetBrains_Mono']">
+                  <span>{progress.processed} / {progress.totalLeads} лидов</span>
+                  <span>{progress.progress}%</span>
+                </div>
+                <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#00FF94] to-[#00D9FF] transition-all duration-500 ease-out"
+                    style={{ width: `${progress.progress}%` }}
+                  />
+                </div>
+                {progress.estimatedTimeRemaining && progress.estimatedTimeRemaining > 0 && (
+                  <div className="flex items-center gap-2 text-white/60 text-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>Осталось ~{Math.ceil(progress.estimatedTimeRemaining / 60)} мин</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-xl p-4">
+                  <div className="text-white/60 text-sm mb-1">✅ Успешно</div>
+                  <div className="text-3xl font-bold text-green-400">{progress.successful}</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 border border-yellow-500/30 rounded-xl p-4">
+                  <div className="text-white/60 text-sm mb-1">🔄 Повтор</div>
+                  <div className="text-3xl font-bold text-yellow-400">{progress.retrying}</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/30 rounded-xl p-4">
+                  <div className="text-white/60 text-sm mb-1">❌ Ошибки</div>
+                  <div className="text-3xl font-bold text-red-400">{progress.failed}</div>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {progressError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-red-400">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="font-semibold">Ошибка подключения</span>
+                  </div>
+                  <p className="text-white/60 text-sm mt-1">{progressError}</p>
+                </div>
+              )}
+
+              {/* Completion Message */}
+              {progress.status === 'completed' && (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center">
+                  <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-2" />
+                  <p className="text-green-400 font-bold">Синхронизация завершена!</p>
+                  <p className="text-white/60 text-sm mt-1">
+                    {progress.successful} из {progress.totalLeads} лидов успешно синхронизированы
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             // Results

@@ -3,8 +3,20 @@
  */
 
 import { getTelegramConfig } from '../config/telegram';
+import { createClient } from '@supabase/supabase-js';
 
 const config = getTelegramConfig();
+
+// Подключение к Landing Supabase для получения активных групп
+const LANDING_SUPABASE_URL = process.env.LANDING_SUPABASE_URL || '';
+const LANDING_SUPABASE_SERVICE_KEY = process.env.LANDING_SUPABASE_SERVICE_KEY || '';
+
+const landingSupabase = createClient(LANDING_SUPABASE_URL, LANDING_SUPABASE_SERVICE_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 /**
  * Отправить сообщение через Mentor бота
@@ -94,6 +106,7 @@ export async function sendAdminNotification(message: string): Promise<boolean> {
 
 /**
  * Отправить уведомление о новом лиде через Leads бота
+ * 🔥 ОБНОВЛЕНО: Теперь использует активные группы из БД вместо статичного chat_id
  */
 export async function sendLeadNotification(
   leadData: {
@@ -107,17 +120,38 @@ export async function sendLeadNotification(
   try {
     // Используем LEADS бот если настроен, иначе ADMIN бот
     const botToken = config.leadsBotToken || config.adminBotToken;
-    const chatId = config.leadsChatId || config.adminChatId;
 
     if (!botToken) {
       console.warn('⚠️ No Telegram bot token configured for lead notifications');
       return false;
     }
 
-    if (!chatId) {
-      console.warn('⚠️ No Telegram chat ID configured for lead notifications');
+    // 🔥 НОВОЕ: Получаем активные группы из БД
+    const { data: activeGroups, error: dbError } = await landingSupabase
+      .from('telegram_groups')
+      .select('chat_id, chat_title')
+      .eq('group_type', 'leads')
+      .eq('is_active', true);
+
+    if (dbError) {
+      console.error('❌ Error fetching active groups from DB:', dbError);
+      // Fallback на старый метод
+      const fallbackChatId = config.leadsChatId || config.adminChatId;
+      if (!fallbackChatId) {
+        console.warn('⚠️ No active groups found and no fallback chat ID configured');
+        return false;
+      }
+      console.log(`⚠️ Using fallback chat ID: ${fallbackChatId}`);
+      activeGroups = [{ chat_id: fallbackChatId, chat_title: 'Fallback Group' }];
+    }
+
+    if (!activeGroups || activeGroups.length === 0) {
+      console.warn('⚠️ No active Telegram groups found for lead notifications');
+      console.warn('💡 Add bot to a group and send activation code "2134" to activate it!');
       return false;
     }
+
+    console.log(`📱 Found ${activeGroups.length} active group(s) for lead notifications`);
 
     // Определяем тип заявки по source
     const isProftest = leadData.source?.toLowerCase().includes('proftest');
@@ -142,30 +176,52 @@ export async function sendLeadNotification(
       `📍 <b>Источник:</b> ${leadData.source || 'expresscourse'}\n\n` +
       `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
 
-    console.log(`📱 Sending lead notification to chat ${chatId} using ${config.leadsBotToken ? 'LEADS' : 'ADMIN'} bot`);
+    // 🔥 НОВОЕ: Отправляем во ВСЕ активные группы
+    let successCount = 0;
+    let failCount = 0;
 
-    const response = await fetch(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: 'HTML',
-        }),
+    for (const group of activeGroups) {
+      try {
+        console.log(`📱 Sending lead notification to group "${group.chat_title}" (${group.chat_id})`);
+
+        const response = await fetch(
+          `https://api.telegram.org/bot${botToken}/sendMessage`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: group.chat_id,
+              text: message,
+              parse_mode: 'HTML',
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`❌ Failed to send to group ${group.chat_id}:`, errorData);
+          failCount++;
+          
+          // Если бот был заблокирован или удален из группы, деактивируем её
+          if (errorData.error_code === 403 || errorData.error_code === 400) {
+            console.log(`🚫 Deactivating group ${group.chat_id} due to error ${errorData.error_code}`);
+            await landingSupabase
+              .from('telegram_groups')
+              .update({ is_active: false })
+              .eq('chat_id', group.chat_id);
+          }
+        } else {
+          console.log(`✅ Lead notification sent to group "${group.chat_title}" (${group.chat_id})`);
+          successCount++;
+        }
+      } catch (error: any) {
+        console.error(`❌ Error sending to group ${group.chat_id}:`, error.message);
+        failCount++;
       }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('❌ Telegram Leads Bot API error:', errorData);
-      throw new Error(`Telegram API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log(`✅ Lead notification sent to chat ${chatId} using ${config.leadsBotToken ? 'LEADS' : 'ADMIN'} bot`);
-    return true;
+    console.log(`📊 Lead notification results: ${successCount} success, ${failCount} failed out of ${activeGroups.length} groups`);
+    return successCount > 0; // Успех если хотя бы в одну группу отправили
   } catch (error: any) {
     console.error('❌ Failed to send lead notification:', error.message);
     // Не выбрасываем ошибку, чтобы не блокировать основной процесс
