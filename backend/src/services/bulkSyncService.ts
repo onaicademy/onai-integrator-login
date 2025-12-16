@@ -34,7 +34,8 @@ export interface SyncProgress {
   processed: number;
   successful: number;
   failed: number;
-  retrying: number;
+  in_progress: number;
+  queued: number;
   progress: number; // Percentage (0-100)
   status: 'pending' | 'in_progress' | 'completed' | 'failed';
   startedAt: string;
@@ -95,7 +96,7 @@ class BulkSyncService {
         processed: 0,
         successful: 0,
         failed: 0,
-        retrying: 0,
+        in_progress: 0,
       });
 
       // Set TTL for progress data (expire after 7 days)
@@ -160,7 +161,8 @@ class BulkSyncService {
       const processed = parseInt(progress.processed || '0');
       const successful = parseInt(progress.successful || '0');
       const failed = parseInt(progress.failed || '0');
-      const retrying = parseInt(progress.retrying || '0');
+      const inProgress = parseInt(progress.in_progress || '0');
+      const queued = total - processed - inProgress;
 
       // Calculate progress percentage
       const progressPercent = total > 0 ? Math.round((processed / total) * 100) : 0;
@@ -191,7 +193,8 @@ class BulkSyncService {
         processed,
         successful,
         failed,
-        retrying,
+        in_progress: inProgress,
+        queued: queued > 0 ? queued : 0,
         progress: progressPercent,
         status,
         startedAt: syncRecord.started_at,

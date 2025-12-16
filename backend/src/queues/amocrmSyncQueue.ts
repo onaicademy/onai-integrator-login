@@ -85,9 +85,15 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
     const { leadId, name, email, phone, campaignSlug, paymentMethod, utmParams, syncId } =
       job.data;
 
-    logger.info(`🔄 Processing job ${job.id} for lead ${leadId} (attempt ${job.attemptsMade + 1})`);
+    const attemptNum = job.attemptsMade + 1;
+    const maxAttempts = job.opts.attempts || 3;
+
+    logger.info(`🔄 [Job ${job.id}] Attempt ${attemptNum}/${maxAttempts} for lead ${leadId}`);
 
     try {
+      // ⭐ Mark as in_progress
+      await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', 1);
+
       // Update job progress
       await job.updateProgress(10);
 
@@ -114,7 +120,7 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
           amocrm_lead_id: amocrmResult.leadId?.toString(),
           amocrm_contact_id: amocrmResult.contactId?.toString(),
           amocrm_sync_status: 'synced',
-          amocrm_sync_attempts: job.attemptsMade + 1,
+          amocrm_sync_attempts: attemptNum,
           amocrm_sync_last_error: null,
           amocrm_synced: true,
         })
@@ -122,7 +128,6 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
 
       if (dbError) {
         logger.error(`Database update error for lead ${leadId}:`, dbError);
-        // Don't fail the job if DB update fails - AmoCRM sync succeeded
       }
 
       await job.updateProgress(90);
@@ -131,13 +136,17 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
       await saveSyncResult(syncId, leadId, 'success', {
         contactId: amocrmResult.contactId,
         dealId: amocrmResult.leadId,
+        attempt: attemptNum,
       });
 
       await job.updateProgress(100);
 
-      // 4️⃣ Update progress counters in Redis
+      // ✅ SUCCESS: Update progress counters
       await redis.hincrby(`sync:${syncId}:progress`, 'processed', 1);
       await redis.hincrby(`sync:${syncId}:progress`, 'successful', 1);
+      await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', -1);
+
+      logger.info(`✅ [Job ${job.id}] SUCCESS on attempt ${attemptNum}`);
 
       return {
         leadId,
@@ -145,44 +154,56 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
         contactId: amocrmResult.contactId,
         dealId: amocrmResult.leadId,
         timestamp: new Date().toISOString(),
-        attemptsMade: job.attemptsMade + 1,
+        attemptsMade: attemptNum,
       };
     } catch (error: any) {
-      logger.error(`Job ${job.id} failed (attempt ${job.attemptsMade + 1}):`, error.message);
+      logger.error(`❌ [Job ${job.id}] Error on attempt ${attemptNum}/${maxAttempts}:`, error.message);
 
-      // Determine if we should retry
-      const willRetry = job.attemptsMade + 1 < (job.opts.attempts || 3);
-      const status = willRetry ? 'retrying' : 'failed';
+      if (attemptNum < maxAttempts) {
+        // ⭐ Will retry - don't update processed yet
+        await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', -1);
 
-      // Update database
-      const { error: dbError } = await landingSupabase
-        .from('landing_leads')
-        .update({
-          amocrm_sync_status: status,
-          amocrm_sync_attempts: job.attemptsMade + 1,
-          amocrm_sync_last_error: error.message,
-        })
-        .eq('id', leadId);
+        // Update database with retry status
+        await landingSupabase
+          .from('landing_leads')
+          .update({
+            amocrm_sync_status: 'retrying',
+            amocrm_sync_attempts: attemptNum,
+            amocrm_sync_last_error: error.message,
+          })
+          .eq('id', leadId);
 
-      if (dbError) {
-        logger.error(`Database update error for lead ${leadId}:`, dbError);
-      }
+        const backoffDelay = 2 ** (attemptNum - 1);
+        logger.info(`🔄 [Job ${job.id}] Will retry after ${backoffDelay}s`);
 
-      // Save sync result
-      await saveSyncResult(syncId, leadId, status, {
-        error: error.message,
-      });
+        throw error; // BullMQ handles retry
 
-      // Update progress counters
-      await redis.hincrby(`sync:${syncId}:progress`, 'processed', 1);
-      if (status === 'failed') {
-        await redis.hincrby(`sync:${syncId}:progress`, 'failed', 1);
       } else {
-        await redis.hincrby(`sync:${syncId}:progress`, 'retrying', 1);
-      }
+        // ⭐ Final failure - all attempts exhausted
+        await redis.hincrby(`sync:${syncId}:progress`, 'processed', 1);
+        await redis.hincrby(`sync:${syncId}:progress`, 'failed', 1);
+        await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', -1);
 
-      // Re-throw to trigger BullMQ retry
-      throw error;
+        // Update database with final failed status
+        await landingSupabase
+          .from('landing_leads')
+          .update({
+            amocrm_sync_status: 'failed',
+            amocrm_sync_attempts: attemptNum,
+            amocrm_sync_last_error: error.message,
+          })
+          .eq('id', leadId);
+
+        // Save sync result
+        await saveSyncResult(syncId, leadId, 'failed', {
+          error: error.message,
+          attempt: attemptNum,
+        });
+
+        logger.error(`💀 [Job ${job.id}] FINAL FAILURE after ${maxAttempts} attempts`);
+
+        throw error;
+      }
     }
   },
   {
@@ -222,7 +243,7 @@ async function saveSyncResult(
   syncId: string,
   leadId: string,
   status: string,
-  data: { contactId?: number; dealId?: number; error?: string }
+  data: { contactId?: number; dealId?: number; error?: string; attempt?: number }
 ): Promise<void> {
   try {
     const { error } = await landingSupabase.from('bulk_sync_results').insert({
@@ -232,6 +253,7 @@ async function saveSyncResult(
       contact_id: data.contactId,
       deal_id: data.dealId,
       error: data.error,
+      attempt: data.attempt || 1,
     });
 
     if (error) {

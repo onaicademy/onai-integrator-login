@@ -9,7 +9,8 @@ export interface SyncProgress {
   processed: number;
   successful: number;
   failed: number;
-  retrying: number;
+  in_progress: number;
+  queued: number;
   progress: number; // 0-100
   status: 'pending' | 'in_progress' | 'completed' | 'failed';
   startedAt: string;
