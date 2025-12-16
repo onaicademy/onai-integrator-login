@@ -1,23 +1,51 @@
 import { AMOCRM_CONFIG, getStageByPaymentMethod } from '../config/amocrm-config.js';
+import axios, { AxiosRequestConfig } from 'axios';
 
 const AMOCRM_DOMAIN = process.env.AMOCRM_DOMAIN || 'onaiagencykz';
 const AMOCRM_TOKEN = process.env.AMOCRM_ACCESS_TOKEN;
-const AMOCRM_TIMEOUT = 30000; // 30 секунд
+const AMOCRM_TIMEOUT = 60000; // 60 секунд (увеличено!)
 
-// Helper: fetch with timeout
+// Helper: axios with proper timeouts (более надежный чем fetch)
+const amocrmAxios = axios.create({
+  timeout: AMOCRM_TIMEOUT,
+  headers: {
+    'Authorization': `Bearer ${AMOCRM_TOKEN}`,
+    'Content-Type': 'application/json',
+  },
+});
+
+// Wrapper для совместимости с fetch API
 async function fetchWithTimeout(url: string, options: RequestInit = {}) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), AMOCRM_TIMEOUT);
-  
   try {
-    const response = await fetch(url, {
-      ...options,
-      signal: options.signal || controller.signal,
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
+    const config: AxiosRequestConfig = {
+      method: (options.method as any) || 'GET',
+      url,
+      data: options.body ? JSON.parse(options.body as string) : undefined,
+      headers: {
+        ...amocrmAxios.defaults.headers,
+        ...(options.headers as any),
+      },
+    };
+    
+    const response = await amocrmAxios.request(config);
+    
+    // Convert axios response to fetch-like response
+    return {
+      ok: response.status >= 200 && response.status < 300,
+      status: response.status,
+      json: async () => response.data,
+      headers: new Map(Object.entries(response.headers)),
+    } as Response;
+  } catch (error: any) {
+    if (error.response) {
+      // HTTP error response
+      return {
+        ok: false,
+        status: error.response.status,
+        json: async () => error.response.data,
+        headers: new Map(Object.entries(error.response.headers || {})),
+      } as Response;
+    }
     throw error;
   }
 }
@@ -118,9 +146,10 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       return null;
     }
 
-    // Step 2: Get contact's leads (filter by our pipeline, sort by update date DESC)
-    const leadsResponse = await fetchWithTimeout(
-      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads?filter[contacts][]=${contactId}&filter[pipeline_id]=${AMOCRM_CONFIG.PIPELINE_ID}&order[updated_at]=desc`,
+    // Step 2: Get contact WITH embedded leads (more reliable than filtering leads endpoint)
+    console.log(`🔍 Fetching contact ${contactId} with embedded leads...`);
+    const contactResponse = await fetchWithTimeout(
+      `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/contacts/${contactId}?with=leads`,
       {
         headers: {
           Authorization: `Bearer ${AMOCRM_TOKEN}`,
@@ -129,10 +158,21 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       }
     );
 
-    if (!leadsResponse.ok) return null;
+    if (!contactResponse.ok) {
+      console.log(`⚠️ AmoCRM contacts API returned status ${contactResponse.status} for contact ${contactId}`);
+      return null;
+    }
 
-    const leadsData: any = await leadsResponse.json();
-    const leads = leadsData._embedded?.leads || [];
+    const contactData: any = await contactResponse.json();
+    const allLeads = contactData._embedded?.leads || [];
+
+    console.log(`📊 Contact ${contactId} has ${allLeads.length} total leads`);
+
+    // Filter by our pipeline if we have multiple leads
+    const leadsInPipeline = allLeads.filter((lead: any) => lead.pipeline_id === AMOCRM_CONFIG.PIPELINE_ID);
+    const leads = leadsInPipeline.length > 0 ? leadsInPipeline : allLeads;
+
+    console.log(`📊 Found ${leads.length} leads in our pipeline ${AMOCRM_CONFIG.PIPELINE_ID}`);
 
     if (leads.length === 0) {
       console.log(`🔍 No leads found for contact ${contactId} in pipeline ${AMOCRM_CONFIG.PIPELINE_ID}`);
@@ -264,9 +304,56 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
   if (existingLead) {
     console.log(`🔄 Updating existing lead ${existingLead.id} → ${getStageName(targetStage)}`);
 
-    // Build UTM custom fields for update
+    // ✅ STEP 1: Get current lead data to check if UTM already exists
+    let hasExistingUTM = false;
+    try {
+      console.log(`🔍 [UTM CHECK] Fetching lead ${existingLead.id} details to check for existing UTM...`);
+      const leadDetailsResponse = await fetchWithTimeout(
+        `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads/${existingLead.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${AMOCRM_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log(`🔍 [UTM CHECK] Lead details response status: ${leadDetailsResponse.status}`);
+
+      if (leadDetailsResponse.ok) {
+        const leadDetails: any = await leadDetailsResponse.json();
+        const existingFields = leadDetails.custom_fields_values || [];
+        
+        console.log(`🔍 [UTM CHECK] Lead has ${existingFields.length} custom fields`);
+        
+        // Check if UTM_SOURCE field is already filled
+        hasExistingUTM = existingFields.some((field: any) => 
+          field.field_id === AMOCRM_CONFIG.CUSTOM_FIELDS.UTM_SOURCE && 
+          field.values?.[0]?.value
+        );
+
+        console.log(`🔍 [UTM CHECK] hasExistingUTM = ${hasExistingUTM}, UTM_SOURCE field_id = ${AMOCRM_CONFIG.CUSTOM_FIELDS.UTM_SOURCE}`);
+
+        if (hasExistingUTM) {
+          const existingUtmSource = existingFields.find((f: any) => f.field_id === AMOCRM_CONFIG.CUSTOM_FIELDS.UTM_SOURCE);
+          console.log(`🔒 Lead ${existingLead.id} already has UTM_SOURCE: ${existingUtmSource?.values?.[0]?.value} - keeping original UTM from proftest`);
+        } else {
+          console.log(`📝 Lead ${existingLead.id} has no UTM yet - will write new UTM if provided`);
+        }
+      } else {
+        console.log(`⚠️ [UTM CHECK] Lead details response NOT OK, status: ${leadDetailsResponse.status}`);
+      }
+    } catch (error) {
+      console.error('⚠️ Error fetching lead details for UTM check:', error);
+      // Continue with update even if GET fails (fallback to old behavior)
+    }
+
+    // ✅ STEP 2: Build UTM custom fields ONLY if UTM doesn't exist yet
     const customFieldsForUpdate: any[] = [];
-    if (data.utmParams && Object.keys(data.utmParams).length > 0) {
+    
+    if (!hasExistingUTM && data.utmParams && Object.keys(data.utmParams).length > 0) {
+      console.log(`✅ Writing NEW UTM to lead ${existingLead.id} from ${data.utmParams.utm_source || 'unknown source'}`);
+      
       const utmFieldMap: Record<string, keyof typeof AMOCRM_CONFIG.CUSTOM_FIELDS> = {
         utm_source: 'UTM_SOURCE',
         utm_medium: 'UTM_MEDIUM',
@@ -287,9 +374,11 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
           });
         }
       });
+    } else if (hasExistingUTM && data.utmParams && Object.keys(data.utmParams).length > 0) {
+      console.log(`🚫 Ignoring new UTM from ${data.utmParams.utm_source || 'unknown'} - preserving original UTM`);
     }
 
-    // Update lead stage and UTM fields
+    // ✅ STEP 3: Update lead stage (always) and UTM fields (only if no existing UTM)
     const updatePayload: any = {
       status_id: targetStage,
     };
