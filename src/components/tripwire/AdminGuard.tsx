@@ -28,7 +28,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       const { data: { session }, error } = await tripwireSupabase.auth.getSession();
 
       if (error || !session) {
-        console.log('❌ AdminGuard: Нет сессии');
+        console.log('❌ AdminGuard: Нет сессии - редирект на /integrator/login');
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -84,10 +84,16 @@ export function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
+  // Если нет сессии - редирект на логин
+  if (!isAuthorized && !userRole) {
+    console.log('❌ AdminGuard: Нет сессии. Редирект на /integrator/login');
+    return <Navigate to="/integrator/login" replace />;
+  }
+
   // Если не admin - редирект на access-denied
   if (!isAuthorized || userRole !== 'admin') {
-    console.log('❌ AdminGuard: Доступ запрещён. Редирект на /access-denied');
-    return <Navigate to="/access-denied" replace />;
+    console.log('❌ AdminGuard: Доступ запрещён. Редирект на /integrator/access-denied');
+    return <Navigate to="/integrator/access-denied" replace />;
   }
 
   // Admin доступ разрешён

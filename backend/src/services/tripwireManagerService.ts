@@ -86,7 +86,19 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     try {
       console.log(`📝 [SUPABASE] Создаём записи в таблицах...`);
 
-      // 1. tripwire_users
+      // 1. public.users (КРИТИЧНО! Нужно для foreign keys)
+      const { error: usersError } = await tripwireAdminSupabase
+        .from('users')
+        .insert({
+          id: userId,
+          email,
+          full_name,
+          role: 'student'
+        });
+      if (usersError) throw new Error(`users: ${usersError.message}`);
+      console.log('   ✅ users');
+
+      // 2. tripwire_users
       const { error: twError } = await tripwireAdminSupabase
         .from('tripwire_users')
         .insert({
@@ -102,7 +114,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       if (twError) throw new Error(`tripwire_users: ${twError.message}`);
       console.log('   ✅ tripwire_users');
 
-      // 2. tripwire_user_profile
+      // 3. tripwire_user_profile
       const { error: profileError } = await tripwireAdminSupabase
         .from('tripwire_user_profile')
         .insert({
@@ -114,7 +126,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       if (profileError) throw new Error(`tripwire_user_profile: ${profileError.message}`);
       console.log('   ✅ tripwire_user_profile');
 
-      // 3. module_unlocks (Module 16)
+      // 4. module_unlocks (Module 16)
       const { error: unlockError } = await tripwireAdminSupabase
         .from('module_unlocks')
         .insert({
@@ -125,7 +137,24 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       if (unlockError) throw new Error(`module_unlocks: ${unlockError.message}`);
       console.log('   ✅ module_unlocks');
 
-      // 4. sales_activity_log
+      // 🔥 5. CREATE tripwire_progress for Lesson 67 (КРИТИЧНО!)
+      // ВАЖНО: tripwire_progress.tripwire_user_id = userId (из auth.users), НЕ tripwire_users.id!
+      const { error: progressError } = await tripwireAdminSupabase
+        .from('tripwire_progress')
+        .insert({
+          tripwire_user_id: userId, // ✅ userId из auth.users (foreign key на users.id)
+          module_id: 16,
+          lesson_id: 67,
+          is_completed: false,
+          watch_time_seconds: 0,
+          video_progress_percent: 0,
+          last_position_seconds: 0,
+          video_qualified_for_completion: false
+        });
+      if (progressError) throw new Error(`tripwire_progress: ${progressError.message}`);
+      console.log('   ✅ tripwire_progress (Lesson 67)');
+
+      // 6. sales_activity_log
       const { error: activityError } = await tripwireAdminSupabase
         .from('sales_activity_log')
         .insert({

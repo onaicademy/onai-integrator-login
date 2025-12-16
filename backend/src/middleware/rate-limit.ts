@@ -22,8 +22,15 @@ function getAdaptiveLimits(req: Request, baseMax: number): number {
   
   let max = baseMax;
   
-  // ✅ Admin - в 10x больше лимит
-  if (user?.role === 'admin' || user?.user_metadata?.role === 'admin') {
+  // ✅ Admin & Sales Managers - в 10x больше лимит
+  if (
+    user?.role === 'admin' || 
+    user?.role === 'manager' || 
+    user?.role === 'sales' ||
+    user?.user_metadata?.role === 'admin' ||
+    user?.user_metadata?.role === 'manager' ||
+    user?.user_metadata?.role === 'sales'
+  ) {
     max = baseMax * 10;
   }
   
@@ -66,7 +73,7 @@ export const aiLimiter = rateLimit({
 // 🟡 MODERATE: Regular API endpoints
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: (req: Request) => getAdaptiveLimits(req, 100), // Base: 100/15min, Auth: 200/15min, Admin: 1000/15min
+  max: (req: Request) => getAdaptiveLimits(req, 2000), // ✅ МАКСИМУМ: Base: 2000/15min, Auth: 4000/15min
   keyGenerator: (req: Request) => {
     const user = (req as any).user;
     return user?.id || 'anonymous'; // Default IP handling
@@ -83,7 +90,21 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => req.method === 'OPTIONS',
+  skip: (req: Request) => {
+    // ✅ SKIP rate limiting для OPTIONS и для Sales Managers/Admins
+    if (req.method === 'OPTIONS') return true;
+    
+    const user = (req as any).user;
+    const isPrivileged = 
+      user?.role === 'admin' || 
+      user?.role === 'manager' || 
+      user?.role === 'sales' ||
+      user?.user_metadata?.role === 'admin' ||
+      user?.user_metadata?.role === 'manager' ||
+      user?.user_metadata?.role === 'sales';
+    
+    return isPrivileged; // Пропускаем без лимита
+  },
 });
 
 // 🟢 RELAXED: Auth endpoints (login should be accessible)

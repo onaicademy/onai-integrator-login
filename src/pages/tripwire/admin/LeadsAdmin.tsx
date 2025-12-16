@@ -447,91 +447,91 @@ export default function LeadsAdmin() {
         }} />
       </div>
 
-      {/* ✅ HEADER */}
-      <div className="relative z-10 px-8 py-8 border-b border-white/5">
+      {/* ✅ HEADER - Mobile Optimized */}
+      <div className="relative z-10 px-4 md:px-8 py-4 md:py-8 border-b border-white/5">
         <Link 
           to="/integrator/admin" 
-          className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#00FF94] transition-colors"
+          className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#00FF94] transition-colors text-sm md:text-base"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} className="md:w-5 md:h-5" />
           Назад в админку
         </Link>
       </div>
 
-      {/* ✅ CONTENT */}
-      <div className="relative z-10 px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="text-[#00FF94]" size={24} />
-              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Лидов</h3>
+      {/* ✅ CONTENT - Mobile Optimized */}
+      <div className="relative z-10 px-4 md:px-8 py-4 md:py-8">
+        {/* Stats Cards - Mobile Optimized: 2 cols on mobile, 3 on tablet, 6 on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <Users className="text-[#00FF94]" size={20} />
+              <h3 className="text-[#9CA3AF] text-[10px] md:text-xs uppercase tracking-wide">Лидов</h3>
             </div>
-            <p className="text-3xl font-bold text-white">{stats?.total || 0}</p>
+            <p className="text-2xl md:text-3xl font-bold text-white">{stats?.total || 0}</p>
           </div>
 
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Mail className="text-blue-400" size={24} />
-              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Email</h3>
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <Mail className="text-blue-400" size={20} />
+              <h3 className="text-[#9CA3AF] text-[10px] md:text-xs uppercase tracking-wide">Email</h3>
             </div>
-            <p className="text-3xl font-bold text-white">{stats?.emailsSent || 0}</p>
-            <p className="text-xs text-[#9CA3AF] mt-1">Отправлено</p>
+            <p className="text-2xl md:text-3xl font-bold text-white">{stats?.emailsSent || 0}</p>
+            <p className="text-[10px] md:text-xs text-[#9CA3AF] mt-0.5 md:mt-1">Отправлено</p>
           </div>
 
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Mail className="text-green-400" size={24} />
-              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Email CTR</h3>
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <Mail className="text-green-400" size={20} />
+              <h3 className="text-[#9CA3AF] text-[10px] md:text-xs uppercase tracking-wide">Email CTR</h3>
             </div>
-            <p className="text-3xl font-bold text-white">{stats?.emailClicks || 0}</p>
-            <p className="text-xs text-green-400 mt-1">
+            <p className="text-2xl md:text-3xl font-bold text-white">{stats?.emailClicks || 0}</p>
+            <p className="text-[10px] md:text-xs text-green-400 mt-0.5 md:mt-1">
               {stats?.emailClickRate ? Math.round(stats.emailClickRate) : 0}% кликнули
             </p>
           </div>
 
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Send className="text-purple-400" size={24} />
-              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">SMS</h3>
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <Send className="text-purple-400" size={20} />
+              <h3 className="text-[#9CA3AF] text-[10px] md:text-xs uppercase tracking-wide">SMS</h3>
             </div>
-            <p className="text-3xl font-bold text-white">{stats?.smsSent || 0}</p>
-            <p className="text-xs text-[#9CA3AF] mt-1">Отправлено</p>
+            <p className="text-2xl md:text-3xl font-bold text-white">{stats?.smsSent || 0}</p>
+            <p className="text-[10px] md:text-xs text-[#9CA3AF] mt-0.5 md:mt-1">Отправлено</p>
           </div>
 
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Send className="text-green-400" size={24} />
-              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">SMS CTR</h3>
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <Send className="text-green-400" size={20} />
+              <h3 className="text-[#9CA3AF] text-[10px] md:text-xs uppercase tracking-wide">SMS CTR</h3>
             </div>
-            <p className="text-3xl font-bold text-white">{stats?.smsClicks || 0}</p>
-            <p className="text-xs text-green-400 mt-1">
+            <p className="text-2xl md:text-3xl font-bold text-white">{stats?.smsClicks || 0}</p>
+            <p className="text-[10px] md:text-xs text-green-400 mt-0.5 md:mt-1">
               {stats?.smsClickRate ? Math.round(stats.smsClickRate) : 0}% кликнули
             </p>
           </div>
 
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="text-[#00FF94]" size={24} />
-              <h3 className="text-[#9CA3AF] text-xs uppercase tracking-wide">Источники</h3>
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <TrendingUp className="text-[#00FF94]" size={20} />
+              <h3 className="text-[#9CA3AF] text-[10px] md:text-xs uppercase tracking-wide">Источники</h3>
             </div>
-            <p className="text-3xl font-bold text-white">{Object.keys(stats?.bySource || {}).length}</p>
-            <p className="text-xs text-[#9CA3AF] mt-1">Уникальных</p>
+            <p className="text-2xl md:text-3xl font-bold text-white">{Object.keys(stats?.bySource || {}).length}</p>
+            <p className="text-[10px] md:text-xs text-[#9CA3AF] mt-0.5 md:mt-1">Уникальных</p>
           </div>
         </div>
 
 
-        {/* Header + Search */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Header + Search - Mobile Optimized */}
+        <div className="flex flex-col gap-4 mb-4 md:mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Landing заявки</h1>
-            <p className="text-[#9CA3AF]">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">Landing заявки</h1>
+            <p className="text-sm md:text-base text-[#9CA3AF]">
               {leadsLoading ? 'Загрузка...' : `Всего зарегистрировано: ${totalCount || 0}`}
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* 🔥 МАССОВАЯ СИНХРОНИЗАЦИЯ AmoCRM */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
+            {/* 🔥 МАССОВАЯ СИНХРОНИЗАЦИЯ AmoCRM - Mobile Full Width */}
             <button
               onClick={async () => {
                 if (!confirm(`Синхронизировать все несинхронизированные лиды с AmoCRM?\n\nСервер будет отправлять их по очереди с подтверждением от AmoCRM.`)) {
@@ -581,76 +581,79 @@ export default function LeadsAdmin() {
                 }
               }}
               disabled={syncing}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00FF94]/10 border border-[#00FF94]/20 text-[#00FF94] hover:bg-[#00FF94]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+              className="flex items-center justify-center gap-2 px-4 py-3 md:py-2.5 rounded-xl bg-[#00FF94]/10 border border-[#00FF94]/20 text-[#00FF94] hover:bg-[#00FF94]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold text-sm md:text-base touch-manipulation"
               title="Синхронизировать все несинхронизированные лиды с AmoCRM (последовательно с очередью)"
             >
               <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
-              {syncing ? 'СИНХРОНИЗАЦИЯ...' : 'СИНХРОНИЗАЦИЯ С AMOCRM 🚀'}
+              <span className="hidden sm:inline">{syncing ? 'СИНХРОНИЗАЦИЯ...' : 'СИНХРОНИЗАЦИЯ С AMOCRM 🚀'}</span>
+              <span className="sm:hidden">{syncing ? 'Синхронизация...' : 'AmoCRM Sync 🚀'}</span>
             </button>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={20} />
+            {/* Search - Mobile Full Width */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={18} />
               <input
                 type="text"
-                placeholder="Поиск по email, имени, телефону или источнику..."
+                placeholder="Поиск..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-[400px] pl-12 pr-4 py-3 bg-white/[0.02] border border-white/5 rounded-xl text-white placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#00FF94]/30 transition-colors"
+                className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 bg-white/[0.02] border border-white/5 rounded-xl text-white text-sm md:text-base placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#00FF94]/30 transition-colors"
               />
             </div>
           </div>
         </div>
 
-        {/* 🎯 ПРОСТОЙ фильтр - компактные кнопки */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {/* "Все" Button */}
-          <button
-            onClick={() => setSourceFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-              sourceFilter === 'all'
-                ? 'bg-[#00FF94]/20 border border-[#00FF94]/30 text-[#00FF94]'
-                : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white'
-            }`}
-          >
-            🌍 Все ({leads?.length || 0})
-          </button>
-          
-          {/* Dynamic source buttons - КОРОТКИЕ */}
-          {sortedSources.map(source => {
-            const display = getSourceDisplay(source);
-            const count = sourceStats![source].count;
+        {/* 🎯 ПРОСТОЙ фильтр - Horizontal Scroll on Mobile */}
+        <div className="mb-4 md:mb-6 -mx-4 md:mx-0 px-4 md:px-0">
+          <div className="flex md:flex-wrap gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+            {/* "Все" Button */}
+            <button
+              onClick={() => setSourceFilter('all')}
+              className={`flex-shrink-0 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold transition-colors touch-manipulation ${
+                sourceFilter === 'all'
+                  ? 'bg-[#00FF94]/20 border border-[#00FF94]/30 text-[#00FF94]'
+                  : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white active:scale-95'
+              }`}
+            >
+              🌍 Все ({leads?.length || 0})
+            </button>
             
-            const colorClasses: Record<string, string> = {
-              orange: 'bg-orange-500/20 border-orange-500/30 text-orange-400',
-              blue: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
-              purple: 'bg-purple-500/20 border-purple-500/30 text-purple-400',
-              cyan: 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400',
-              pink: 'bg-pink-500/20 border-pink-500/30 text-pink-400',
-              green: 'bg-green-500/20 border-green-500/30 text-green-400',
-              gray: 'bg-gray-500/20 border-gray-500/30 text-gray-400',
-            };
-            
-            return (
-              <button
-                key={source}
-                onClick={() => setSourceFilter(source)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
-                  sourceFilter === source
-                    ? `border ${colorClasses[display.color]}`
-                    : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white'
-                }`}
-              >
-                {display.emoji} {display.name} · {count}
-              </button>
-            );
-          })}
+            {/* Dynamic source buttons - Horizontal Scroll */}
+            {sortedSources.map(source => {
+              const display = getSourceDisplay(source);
+              const count = sourceStats![source].count;
+              
+              const colorClasses: Record<string, string> = {
+                orange: 'bg-orange-500/20 border-orange-500/30 text-orange-400',
+                blue: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
+                purple: 'bg-purple-500/20 border-purple-500/30 text-purple-400',
+                cyan: 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400',
+                pink: 'bg-pink-500/20 border-pink-500/30 text-pink-400',
+                green: 'bg-green-500/20 border-green-500/30 text-green-400',
+                gray: 'bg-gray-500/20 border-gray-500/30 text-gray-400',
+              };
+              
+              return (
+                <button
+                  key={source}
+                  onClick={() => setSourceFilter(source)}
+                  className={`flex-shrink-0 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold transition-all touch-manipulation whitespace-nowrap ${
+                    sourceFilter === source
+                      ? `border ${colorClasses[display.color]}`
+                      : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white active:scale-95'
+                  }`}
+                >
+                  <span className="text-base md:text-lg">{display.emoji}</span> {display.name} · {count}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* 🎯 ИНТЕРАКТИВНЫЙ ДАШБОРД с аккордеонами по источникам */}
+        {/* 🎯 ИНТЕРАКТИВНЫЙ ДАШБОРД с аккордеонами по источникам - Mobile Optimized */}
         {sourceFilter === 'all' ? (
           // Если "Все" - показываем аккордеоны для всех источников
-          <div className="mb-6 space-y-3">
+          <div className="mb-4 md:mb-6 space-y-2 md:space-y-3">
             {sortedSources.map(source => {
               const stats = sourceStats![source];
               const display = getSourceDisplay(source);
@@ -672,26 +675,26 @@ export default function LeadsAdmin() {
               
               return (
                 <div key={source} className={`border ${colors.border} rounded-xl overflow-hidden transition-all ${isExpanded ? colors.bg : 'bg-white/[0.02]'}`}>
-                  {/* Заголовок аккордеона */}
+                  {/* Заголовок аккордеона - Mobile Optimized (больший tap target) */}
                   <button
                     onClick={() => setExpandedSource(isExpanded ? null : source)}
-                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                    className="w-full px-3 md:px-4 py-4 md:py-3 flex items-center justify-between hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors touch-manipulation"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{display.emoji}</span>
-                      <div className="text-left">
-                        <h3 className={`font-bold ${colors.text}`}>{display.name}</h3>
-                        <p className="text-[#9CA3AF] text-xs">
-                          {stats.count} лидов · 
+                    <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                      <span className="text-xl md:text-2xl flex-shrink-0">{display.emoji}</span>
+                      <div className="text-left min-w-0 flex-1">
+                        <h3 className={`font-bold text-sm md:text-base ${colors.text} truncate`}>{display.name}</h3>
+                        <p className="text-[#9CA3AF] text-xs md:text-sm">
+                          {stats.count} лидов
                           <span className="text-green-400 ml-1">+{trend24h} за 24ч</span>
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                      {/* Быстрые метрики */}
+                    <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+                      {/* Быстрые метрики - hide on mobile if expanded */}
                       <div className="text-right hidden md:block">
-                        <div className="text-xs text-[#9CA3AF]">
+                        <div className="text-xs text-[#9CA3AF] whitespace-nowrap">
                           📧 {stats.emailClicks}/{stats.emailsSent} · 
                           💬 {stats.smsClicks}/{stats.smsSent}
                         </div>
@@ -701,37 +704,45 @@ export default function LeadsAdmin() {
                     </div>
                   </button>
                   
-                  {/* Развернутый контент */}
+                  {/* Развернутый контент - Mobile Optimized */}
                   {isExpanded && (
-                    <div className="px-4 pb-4 space-y-4 border-t border-white/5">
-                      {/* Основные метрики */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                        <div className="text-center">
-                          <div className="text-xs text-[#9CA3AF] mb-1">📧 Email отправлено</div>
-                          <div className="text-white font-bold text-xl">{stats.emailsSent}</div>
+                    <div className="px-3 md:px-4 pb-3 md:pb-4 space-y-3 md:space-y-4 border-t border-white/5">
+                      {/* Основные метрики - 2x2 на мобилке, 4 в ряд на десктопе */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-3 md:pt-4">
+                        <div className="text-center p-2 md:p-0">
+                          <div className="text-[10px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1">📧 Email</div>
+                          <div className="text-white font-bold text-lg md:text-xl">{stats.emailsSent}</div>
+                          <div className="text-[9px] md:text-xs text-[#9CA3AF]">отправлено</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-xs text-[#9CA3AF] mb-1">✅ Email клики</div>
-                          <div className={`font-bold text-xl ${colors.text}`}>
-                            {stats.emailClicks} ({stats.emailsSent > 0 ? Math.round((stats.emailClicks / stats.emailsSent) * 100) : 0}%)
+                        <div className="text-center p-2 md:p-0">
+                          <div className="text-[10px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1">✅ Email</div>
+                          <div className={`font-bold text-lg md:text-xl ${colors.text}`}>
+                            {stats.emailClicks}
+                          </div>
+                          <div className={`text-[9px] md:text-xs ${colors.text}`}>
+                            {stats.emailsSent > 0 ? Math.round((stats.emailClicks / stats.emailsSent) * 100) : 0}% CTR
                           </div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-xs text-[#9CA3AF] mb-1">💬 SMS отправлено</div>
-                          <div className="text-white font-bold text-xl">{stats.smsSent}</div>
+                        <div className="text-center p-2 md:p-0">
+                          <div className="text-[10px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1">💬 SMS</div>
+                          <div className="text-white font-bold text-lg md:text-xl">{stats.smsSent}</div>
+                          <div className="text-[9px] md:text-xs text-[#9CA3AF]">отправлено</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-xs text-[#9CA3AF] mb-1">✅ SMS клики</div>
-                          <div className={`font-bold text-xl ${colors.text}`}>
-                            {stats.smsClicks} ({stats.smsSent > 0 ? Math.round((stats.smsClicks / stats.smsSent) * 100) : 0}%)
+                        <div className="text-center p-2 md:p-0">
+                          <div className="text-[10px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1">✅ SMS</div>
+                          <div className={`font-bold text-lg md:text-xl ${colors.text}`}>
+                            {stats.smsClicks}
+                          </div>
+                          <div className={`text-[9px] md:text-xs ${colors.text}`}>
+                            {stats.smsSent > 0 ? Math.round((stats.smsClicks / stats.smsSent) * 100) : 0}% CTR
                           </div>
                         </div>
                       </div>
                       
-                      {/* График динамики */}
+                      {/* График динамики - Responsive height */}
                       <div>
-                        <h4 className="text-xs text-[#9CA3AF] mb-3 uppercase tracking-wide">📈 Динамика за неделю</h4>
-                        <ResponsiveContainer width="100%" height={150}>
+                        <h4 className="text-[10px] md:text-xs text-[#9CA3AF] mb-2 md:mb-3 uppercase tracking-wide">📈 Динамика за неделю</h4>
+                        <ResponsiveContainer width="100%" height={120}>
                           <AreaChart data={chartData}>
                             <defs>
                               <linearGradient id={`gradient-${source}`} x1="0" y1="0" x2="0" y2="1">
@@ -740,53 +751,55 @@ export default function LeadsAdmin() {
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                            <XAxis dataKey="date" stroke="#9CA3AF" style={{ fontSize: 10 }} />
-                            <YAxis stroke="#9CA3AF" style={{ fontSize: 10 }} />
+                            <XAxis dataKey="date" stroke="#9CA3AF" style={{ fontSize: 9 }} tick={{ fontSize: 9 }} />
+                            <YAxis stroke="#9CA3AF" style={{ fontSize: 9 }} tick={{ fontSize: 9 }} width={25} />
                             <Tooltip 
                               contentStyle={{ 
-                                backgroundColor: 'rgba(0,0,0,0.9)', 
+                                backgroundColor: 'rgba(0,0,0,0.95)', 
                                 border: '1px solid rgba(255,255,255,0.1)',
                                 borderRadius: '8px',
-                                fontSize: 12
+                                fontSize: 11,
+                                padding: '6px 8px'
                               }}
                             />
-                            <Area type="monotone" dataKey="leads" stroke={display.color === 'orange' ? '#fb923c' : display.color === 'blue' ? '#60a5fa' : '#a78bfa'} fill={`url(#gradient-${source})`} />
+                            <Area type="monotone" dataKey="leads" stroke={display.color === 'orange' ? '#fb923c' : display.color === 'blue' ? '#60a5fa' : '#a78bfa'} fill={`url(#gradient-${source})`} strokeWidth={2} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
                       
-                      {/* 💰 ROI Placeholders (для будущего) */}
-                      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
-                        <div className="text-center p-3 bg-white/[0.02] rounded-lg border border-white/5">
-                          <div className="text-xs text-[#9CA3AF] mb-1 flex items-center justify-center gap-1">
-                            <DollarSign size={12} />
-                            Расходы
+                      {/* 💰 ROI Placeholders - Более компактные на мобилке */}
+                      <div className="grid grid-cols-3 gap-2 md:gap-4 pt-3 md:pt-4 border-t border-white/5">
+                        <div className="text-center p-2 md:p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                          <div className="text-[9px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1 flex items-center justify-center gap-0.5 md:gap-1">
+                            <DollarSign size={10} className="md:w-3 md:h-3" />
+                            <span className="hidden sm:inline">Расходы</span>
+                            <span className="sm:hidden">₸</span>
                           </div>
-                          <div className="text-white font-bold text-lg">---</div>
-                          <div className="text-xs text-[#9CA3AF]">Coming soon</div>
+                          <div className="text-white font-bold text-base md:text-lg">---</div>
+                          <div className="text-[8px] md:text-xs text-[#9CA3AF] hidden md:block">Coming soon</div>
                         </div>
-                        <div className="text-center p-3 bg-white/[0.02] rounded-lg border border-white/5">
-                          <div className="text-xs text-[#9CA3AF] mb-1 flex items-center justify-center gap-1">
-                            <Target size={12} />
+                        <div className="text-center p-2 md:p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                          <div className="text-[9px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1 flex items-center justify-center gap-0.5 md:gap-1">
+                            <Target size={10} className="md:w-3 md:h-3" />
                             CPL
                           </div>
-                          <div className="text-white font-bold text-lg">---</div>
-                          <div className="text-xs text-[#9CA3AF]">Coming soon</div>
+                          <div className="text-white font-bold text-base md:text-lg">---</div>
+                          <div className="text-[8px] md:text-xs text-[#9CA3AF] hidden md:block">Coming soon</div>
                         </div>
-                        <div className="text-center p-3 bg-white/[0.02] rounded-lg border border-white/5">
-                          <div className="text-xs text-[#9CA3AF] mb-1 flex items-center justify-center gap-1">
-                            <TrendingUp size={12} />
+                        <div className="text-center p-2 md:p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                          <div className="text-[9px] md:text-xs text-[#9CA3AF] mb-0.5 md:mb-1 flex items-center justify-center gap-0.5 md:gap-1">
+                            <TrendingUp size={10} className="md:w-3 md:h-3" />
                             ROI
                           </div>
-                          <div className="text-white font-bold text-lg">---</div>
-                          <div className="text-xs text-[#9CA3AF]">Coming soon</div>
+                          <div className="text-white font-bold text-base md:text-lg">---</div>
+                          <div className="text-[8px] md:text-xs text-[#9CA3AF] hidden md:block">Coming soon</div>
                         </div>
                       </div>
                       
-                      {/* Кнопка фильтрации */}
+                      {/* Кнопка фильтрации - Bigger tap target */}
                       <button
                         onClick={() => setSourceFilter(source)}
-                        className={`w-full py-2 rounded-lg border ${colors.border} ${colors.text} hover:${colors.bg} transition-colors text-sm font-medium`}
+                        className={`w-full py-3 md:py-2 rounded-lg border ${colors.border} ${colors.text} hover:${colors.bg} active:scale-98 transition-all text-sm md:text-base font-medium touch-manipulation`}
                       >
                         Показать только {display.name}
                       </button>
@@ -809,9 +822,10 @@ export default function LeadsAdmin() {
           </div>
         )}
 
-        {/* Table */}
-        <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
-          <div className="overflow-x-auto">
+        {/* Table / Cards - Responsive: Cards on mobile, Table on desktop */}
+        <div className="bg-white/[0.02] border border-white/5 rounded-xl md:rounded-2xl overflow-hidden backdrop-blur-sm">
+          {/* DESKTOP: Table view */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full min-w-max">
             <thead>
               <tr className="border-b border-white/5">
@@ -1114,27 +1128,220 @@ export default function LeadsAdmin() {
           </table>
           </div>
 
-          {/* Pagination Controls */}
+          {/* MOBILE: Card view */}
+          <div className="md:hidden divide-y divide-white/5">
+            {leadsLoading ? (
+              <div className="px-4 py-8 text-center text-[#9CA3AF] text-sm">
+                Загрузка списка заявок...
+              </div>
+            ) : paginatedLeads && paginatedLeads.length > 0 ? (
+              paginatedLeads.map((lead) => {
+                const isExpressBySource = lead.source?.toLowerCase().includes('express') || lead.source?.startsWith('payment_');
+                const hasPaymentJourney = lead.journey_stages?.some(stage => 
+                  stage.stage?.startsWith('payment_') || 
+                  stage.stage?.toLowerCase().includes('express')
+                );
+                const isExpressCourse = isExpressBySource || hasPaymentJourney;
+                
+                return (
+                  <div key={lead.id} className="p-4 space-y-3">
+                    {/* Contact Header */}
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00FF94]/20 to-[#00FF94]/5 flex items-center justify-center border border-[#00FF94]/20 flex-shrink-0">
+                        <span className="text-[#00FF94] font-bold text-sm">
+                          {lead.name?.charAt(0).toUpperCase() || 'L'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium text-sm truncate">{lead.name}</p>
+                        <p className="text-xs text-[#9CA3AF] flex items-center gap-1 truncate">
+                          <Mail size={10} />
+                          {lead.email}
+                        </p>
+                        <p className="text-xs text-[#9CA3AF] flex items-center gap-1">
+                          <Phone size={10} />
+                          {lead.phone}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Journey Stages */}
+                    {lead.journey_stages && lead.journey_stages.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-[10px] text-[#9CA3AF] uppercase tracking-wide">🎉 Этапы</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {lead.journey_stages.map((stage, index) => {
+                            const stageInfo = getStageLabel(stage.stage);
+                            const colorClasses: Record<string, string> = {
+                              blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+                              purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
+                              green: 'bg-green-500/10 border-green-500/20 text-green-400',
+                              orange: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
+                              cyan: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400',
+                              pink: 'bg-pink-500/10 border-pink-500/20 text-pink-400',
+                              gray: 'bg-gray-500/10 border-gray-500/20 text-gray-400',
+                            };
+                            
+                            return (
+                              <div
+                                key={stage.id}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-md border text-[10px] font-medium ${colorClasses[stageInfo.color]}`}
+                              >
+                                <span className="text-xs">{index + 1}</span>
+                                <span className="truncate">{stageInfo.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Status Badges */}
+                    <div className="space-y-2">
+                      <div className="text-[10px] text-[#9CA3AF] uppercase tracking-wide">Статус</div>
+                      
+                      {isExpressCourse ? (
+                        <div className="space-y-1.5">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">
+                            <span className="text-xs font-bold text-blue-400">🎯 LID</span>
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-orange-500/10 border border-orange-500/20 ml-1.5">
+                            <span className="text-xs text-orange-400">📌 Экспресс-курс</span>
+                          </div>
+                          <div className="text-xs text-gray-400 italic mt-1">
+                            ℹ️ Только Telegram менеджеру
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
+                            <span className="text-xs font-bold text-purple-400">✅ PROFTEST</span>
+                          </div>
+                          
+                          {/* Email Status */}
+                          <div className="flex items-center gap-2 text-xs">
+                            <Mail size={12} className={
+                              lead.email_clicked ? 'text-[#00FF94]' : 
+                              lead.email_sent ? 'text-green-400' : 
+                              'text-gray-600'
+                            } />
+                            <span className={
+                              lead.email_clicked ? 'text-[#00FF94]' : 
+                              lead.email_sent ? 'text-green-400' : 
+                              'text-gray-600'
+                            }>
+                              Email: {lead.email_clicked ? '✓ Кликнул' : lead.email_sent ? '✓ Отправлен' : '○ Не отправлен'}
+                            </span>
+                          </div>
+                          
+                          {/* SMS Status */}
+                          <div className="flex items-center gap-2 text-xs">
+                            <Send size={12} className={
+                              lead.sms_clicked ? 'text-[#00FF94]' : 
+                              lead.sms_sent ? 'text-purple-400' : 
+                              'text-gray-600'
+                            } />
+                            <span className={
+                              lead.sms_clicked ? 'text-[#00FF94]' : 
+                              lead.sms_sent ? 'text-purple-400' : 
+                              'text-gray-600'
+                            }>
+                              SMS: {lead.sms_clicked ? '✓ Кликнул' : lead.sms_sent ? '✓ Отправлен' : '○ Не отправлен'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Date */}
+                    <div className="text-xs text-[#9CA3AF] flex items-center gap-1">
+                      <Calendar size={12} />
+                      {formatDate(lead.created_at)}
+                    </div>
+                    
+                    {/* Actions - Full width buttons */}
+                    <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
+                      {/* AmoCRM Sync */}
+                      <button
+                        onClick={() => {
+                          if (confirm(`Выгрузить ${lead.name} в AmoCRM?`)) {
+                            syncAmoCRMMutation.mutate(lead.id);
+                          }
+                        }}
+                        disabled={syncAmoCRMMutation.isPending || !!lead.amocrm_lead_id}
+                        className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 active:scale-98 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium touch-manipulation"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        {syncAmoCRMMutation.isPending ? 'Выгрузка...' : lead.amocrm_lead_id ? 'Уже в AmoCRM' : 'Выгрузить в AmoCRM'}
+                      </button>
+                      
+                      {/* Resend + Delete in row */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {(!lead.email_sent || !lead.sms_sent) && (
+                          <button
+                            onClick={() => {
+                              if (confirm(`Переотправить уведомления для ${lead.name}?`)) {
+                                resendMutation.mutate(lead.id);
+                              }
+                            }}
+                            disabled={resendMutation.isPending}
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#00FF94]/10 border border-[#00FF94]/20 text-[#00FF94] active:scale-98 transition-all disabled:opacity-50 text-xs font-medium touch-manipulation"
+                          >
+                            <RefreshCw size={12} className={resendMutation.isPending ? 'animate-spin' : ''} />
+                            {resendMutation.isPending ? 'Отправка...' : 'Переотправить'}
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => {
+                            if (confirm(`Удалить лид ${lead.name}?`)) {
+                              deleteMutation.mutate(lead.id);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 active:scale-98 transition-all disabled:opacity-50 text-xs font-medium touch-manipulation ${(!lead.email_sent || !lead.sms_sent) ? '' : 'col-span-2'}`}
+                        >
+                          <Trash2 size={12} />
+                          {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="px-4 py-8 text-center text-[#9CA3AF] text-sm">
+                {searchQuery ? 'Ничего не найдено' : 'Нет заявок'}
+              </div>
+            )}
+          </div>
+
+          {/* Pagination Controls - Mobile Optimized */}
           {filteredLeads && filteredLeads.length > ITEMS_PER_PAGE && (
-            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
-              <div className="text-sm text-[#9CA3AF]">
-                Показано {startIndex + 1}-{Math.min(endIndex, filteredLeads.length)} из {filteredLeads.length} участников
+            <div className="px-3 md:px-6 py-3 md:py-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-3">
+              <div className="text-xs md:text-sm text-[#9CA3AF] text-center md:text-left">
+                Показано {startIndex + 1}-{Math.min(endIndex, filteredLeads.length)} из {filteredLeads.length}
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2">
                 {/* Previous Button */}
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="px-3 md:px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm touch-manipulation"
                 >
-                  ← Назад
+                  <span className="hidden sm:inline">← Назад</span>
+                  <span className="sm:hidden">←</span>
                 </button>
 
-                {/* Page Numbers */}
+                {/* Page Numbers - Compact on mobile */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => {
-                    // Show first page, last page, current page, and pages around current
+                    // On mobile: show only current and adjacent pages
                     const showPage = 
                       pageNum === 1 || 
                       pageNum === totalPages || 
@@ -1146,7 +1353,7 @@ export default function LeadsAdmin() {
 
                     if (showEllipsis) {
                       return (
-                        <span key={pageNum} className="px-2 text-[#9CA3AF]">
+                        <span key={pageNum} className="px-1 md:px-2 text-[#9CA3AF] text-xs">
                           ...
                         </span>
                       );
@@ -1158,10 +1365,10 @@ export default function LeadsAdmin() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                        className={`w-8 h-8 md:w-10 md:h-10 rounded-lg text-xs md:text-sm font-medium transition-all touch-manipulation ${
                           currentPage === pageNum
                             ? 'bg-[#00FF94]/20 border border-[#00FF94]/30 text-[#00FF94]'
-                            : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white'
+                            : 'bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white active:scale-95'
                         }`}
                       >
                         {pageNum}
@@ -1174,9 +1381,10 @@ export default function LeadsAdmin() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="px-3 md:px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 text-[#9CA3AF] hover:bg-white/[0.05] hover:text-white active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm touch-manipulation"
                 >
-                  Вперёд →
+                  <span className="hidden sm:inline">Вперёд →</span>
+                  <span className="sm:hidden">→</span>
                 </button>
               </div>
             </div>

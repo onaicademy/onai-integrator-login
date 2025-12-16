@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧹 Принудительная очистка кэша</title>
+    <style>
+        body {
+            background: #030303;
+            color: #00FF88;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            text-align: center;
+            border: 2px solid #00FF88;
+            padding: 40px;
+            border-radius: 10px;
+            background: rgba(0, 255, 136, 0.05);
+        }
+        h1 { font-size: 2em; margin-bottom: 20px; }
+        .status { 
+            margin: 20px 0; 
+            padding: 15px; 
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            min-height: 100px;
+        }
+        button {
+            background: #00FF88;
+            color: #030303;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover { background: #00cc6a; }
+        .warning { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 ОЧИСТКА КЭША</h1>
+        <p>Принудительная очистка Service Worker и кэша приложения</p>
+        
+        <div class="status" id="status">
+            Нажмите кнопку для очистки...
+        </div>
+
+        <button onclick="clearEverything()">🚀 ОЧИСТИТЬ И ПЕРЕЗАГРУЗИТЬ</button>
+        <button onclick="openInIncognito()" style="background: #666;">🕶️ Открыть в режиме инкогнито</button>
+    </div>
+
+    <script>
+        const log = (msg, isError = false) => {
+            const status = document.getElementById('status');
+            const color = isError ? '#ff6b6b' : '#00FF88';
+            status.innerHTML += `<div style="color: ${color}; margin: 5px 0;">${msg}</div>`;
+        };
+
+        async function clearEverything() {
+            log('🔄 Начинаю очистку...');
+            
+            try {
+                // 1. Очистить localStorage
+                localStorage.clear();
+                log('✅ localStorage очищен');
+                
+                // 2. Очистить sessionStorage
+                sessionStorage.clear();
+                log('✅ sessionStorage очищен');
+                
+                // 3. Удалить все Service Workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        log('✅ Service Worker удалён: ' + registration.scope);
+                    }
+                }
+                
+                // 4. Очистить кэш
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (let cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        log('✅ Кэш удалён: ' + cacheName);
+                    }
+                }
+                
+                // 5. Очистить cookies для текущего домена
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                log('✅ Cookies очищены');
+                
+                log('');
+                log('🎉 ВСЁ ОЧИЩЕНО! Перезагружаю через 2 секунды...');
+                
+                setTimeout(() => {
+                    // Перезагрузить с обходом кэша
+                    window.location.href = 'https://onai.academy/integrator/modules?nocache=' + Date.now();
+                }, 2000);
+                
+            } catch (error) {
+                log('❌ Ошибка: ' + error.message, true);
+            }
+        }
+
+        function openInIncognito() {
+            log('📋 Скопируйте эту ссылку и откройте в режиме инкогнито:');
+            log('https://onai.academy/integrator/modules');
+            
+            // Попробовать скопировать в буфер
+            navigator.clipboard.writeText('https://onai.academy/integrator/modules').then(() => {
+                log('✅ Ссылка скопирована в буфер обмена!');
+            }).catch(() => {
+                log('⚠️ Скопируйте ссылку вручную', true);
+            });
+        }
+    </script>
+</body>
+</html>
+

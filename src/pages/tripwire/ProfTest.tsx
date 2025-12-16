@@ -432,13 +432,24 @@ export default function ProfTest() {
         answer: questions[questionIndex].options[answerIndex]
       }));
 
-      // 4. Submit to landing API (save to Supabase + AmoCRM + Conversion API on backend)
+      // 4. Determine source based on campaign
+      const campaignSlug = pixelConfig?.slug || 'unknown';
+      let sourceLabel: string;
+      
+      // Special mapping for specific campaigns
+      if (campaignSlug === 'traf4') {
+        sourceLabel = 'TF4';
+      } else {
+        sourceLabel = `proftest_${campaignSlug}`;
+      }
+      
+      // 5. Submit to landing API (save to Supabase + AmoCRM + Conversion API on backend)
       const response = await fetch(`${apiBaseUrl}/api/landing/proftest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          source: `proftest_${pixelConfig?.slug || 'unknown'}`,
+          source: sourceLabel,
           answers, // Старый формат для совместимости
           proftestAnswers, // Новый формат с полными текстами
           campaignSlug: pixelConfig?.slug,

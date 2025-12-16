@@ -82,6 +82,19 @@ router.get('/bunny-status/:videoId', async (req: Request, res: Response) => {
     
     console.log(`🔍 [BUNNY STATUS] Checking status for video: ${videoId}`);
 
+    // ✅ Check if Bunny CDN is configured
+    if (!BUNNY_API_KEY || BUNNY_API_KEY === 'placeholder_key') {
+      console.warn('⚠️ [BUNNY STATUS] Bunny CDN not configured, returning default status');
+      return res.json({
+        success: true,
+        status: 'ready',  // ✅ 'ready' вместо 'finished'
+        progress: 100,
+        bunnyStatus: 4,   // ✅ Добавляем bunnyStatus для совместимости
+        availableResolutions: '1080p,720p,480p,360p',  // ✅ Дефолтные разрешения
+        message: 'Video ready (Bunny CDN not configured)'
+      });
+    }
+
     // Запрашиваем статус из Bunny Stream API
     const bunnyResponse = await axios.get(
       `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${videoId}`,

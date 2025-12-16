@@ -7,6 +7,7 @@ import { api } from '@/utils/apiClient';
 interface SmartVideoPlayerProps {
   videoUrl: string;
   videoId: string;
+  posterUrl?: string; // 🖼️ URL превью/обложки видео
   onProgress?: (progress: number, currentTime: number, duration: number) => void;
   onPlay?: () => void;
   onPause?: () => void;
@@ -20,6 +21,7 @@ interface SmartVideoPlayerProps {
 export const SmartVideoPlayer = memo(function SmartVideoPlayer({
   videoUrl,
   videoId,
+  posterUrl, // 🖼️ Превью видео
   onProgress,
   onPlay,
   onPause,
@@ -205,6 +207,21 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
       console.log('✅ Plyr ready');
       setIsPlayerReady(true); // 🔥 Плеер готов!
       
+      // 🎬 ВОССТАНОВЛЕНИЕ ПРОГРЕССА из localStorage
+      try {
+        const savedProgress = localStorage.getItem(`video_progress_${videoId}`);
+        if (savedProgress) {
+          const savedTime = parseFloat(savedProgress);
+          // Восстанавливаем только если прошло < 95% видео (чтобы не стартовать с конца)
+          if (savedTime > 5 && player.duration && savedTime < player.duration * 0.95) {
+            player.currentTime = savedTime;
+            console.log(`🎬 Восстановлена позиция: ${savedTime.toFixed(1)}s`);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Ошибка восстановления прогресса:', error);
+      }
+      
       // ✅ Перехватываем клик по кнопке CC
       const ccButton = video.closest('.plyr')?.querySelector('[data-plyr="captions"]');
       if (ccButton) {
@@ -248,7 +265,18 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
     player.on('timeupdate', () => {
       if (onProgress && player.duration) {
         const progress = (player.currentTime / player.duration) * 100;
-        onProgress(progress, player.currentTime, player.duration);
+        const currentTime = player.currentTime;
+        
+        onProgress(progress, currentTime, player.duration);
+        
+        // 💾 СОХРАНЕНИЕ ПРОГРЕССА в localStorage (каждые 5 секунд)
+        if (Math.floor(currentTime) % 5 === 0) {
+          try {
+            localStorage.setItem(`video_progress_${videoId}`, currentTime.toString());
+          } catch (error) {
+            console.error('❌ Ошибка сохранения прогресса:', error);
+          }
+        }
       }
     });
 
@@ -557,6 +585,8 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
           className="plyr-video"
           crossOrigin="anonymous"  // ✅ КРИТИЧЕСКИ ВАЖНО!
           playsInline
+          poster={posterUrl || `https://vz-a0b0f15c-18f.b-cdn.net/${videoId}/thumbnail.jpg`} // 🖼️ Превью/обложка видео
+          preload="metadata" // 🚀 Предзагрузка метаданных (быстрее)
           style={{ opacity: transcodingStatus === 'processing' || transcodingStatus === 'failed' ? 0 : 1 }}
         />
         

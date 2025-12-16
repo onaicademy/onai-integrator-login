@@ -801,9 +801,10 @@ const TripwireLesson = () => {
                   />
                 )}
                 
-                <SmartVideoPlayer 
+                <SmartVideoPlayer
                   videoId={video.bunny_video_id}
                   videoUrl={`https://video.onai.academy/${video.bunny_video_id}/playlist.m3u8`}
+                  posterUrl={video.thumbnail_url || `https://video.onai.academy/${video.bunny_video_id}/thumbnail.jpg`}
                   enableAutoSubtitles={true}
                   onProgress={(progress, currentTime, duration) => {
                     // 🎯 Честный трекинг (не засчитывает перемотку!)
@@ -843,47 +844,17 @@ const TripwireLesson = () => {
               </div>
             )}
 
-            {/* ⚡ CYBER ACTION BUTTONS - Адаптивные */}
+            {/* 📚 ИНФОРМАЦИОННОЕ СООБЩЕНИЕ ДЛЯ СТУДЕНТОВ */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {/* ✅ Кнопка "ЗАВЕРШИТЬ УРОК" - показывается ДО завершения */}
               {!isCompleted && (
-                <>
-                  <motion.button
-                    onClick={handleComplete}
-                    disabled={!isQualifiedForCompletion}
-                    className={`flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-sans font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 not-italic ${
-                      !isQualifiedForCompletion
-                        ? "bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50 opacity-60"
-                        : "bg-[#00FF88] text-black border-2 border-[#00FF88] hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]"
-                    }`}
-                    style={{
-                      transform: 'skewX(-10deg)',
-                      boxShadow: !isQualifiedForCompletion ? 'none' : '0 0 30px rgba(0, 255, 136, 0.3)'
-                    }}
-                  >
-                    <span className="flex items-center justify-center gap-2 sm:gap-3 not-italic" style={{ transform: 'skewX(10deg)' }}>
-                      <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-                      <span className="hidden xs:inline">
-                        {!isQualifiedForCompletion ? "ПОСМОТРИТЕ ВИДЕО (80%)" : "ЗАВЕРШИТЬ УРОК"}
-                      </span>
-                      <span className="xs:hidden">
-                        {!isQualifiedForCompletion ? "80% ВИДЕО" : "ЗАВЕРШИТЬ"}
-                      </span>
-                    </span>
-                  </motion.button>
-                  
-                  {/* 📚 Информационное сообщение для студентов */}
-                  {isQualifiedForCompletion && moduleId === 16 && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="w-full text-center text-sm text-gray-400 font-['Manrope'] py-2"
-                    >
-                      📚 Модули 2 и 3 появятся скоро! Следите за объявлениями.
-                    </motion.div>
-                  )}
-                </>
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="w-full text-center text-base sm:text-lg text-gray-300 font-['Manrope'] py-4 px-6 bg-[#0A0A0A]/60 border border-[#00FF88]/20 rounded-xl"
+                >
+                  📚 Модули 2 и 3 появятся скоро! Следите за объявлениями.
+                </motion.div>
               )}
               
               {/* ✅ Кнопка "СЛЕДУЮЩИЙ МОДУЛЬ" - показывается ПОСЛЕ завершения (если не последний модуль) */}

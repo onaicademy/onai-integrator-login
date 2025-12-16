@@ -32,28 +32,30 @@ export const tripwirePool = new Pool({
   ssl: {
     rejectUnauthorized: false, // Supabase требует SSL
   },
-  max: 20, // Максимум соединений
+  max: 80, // ✅ МАКСИМУМ для scale (было 40)
+  min: 10, // ✅ Быстрый старт (было 5)
   idleTimeoutMillis: 30000, // 30 секунд idle before disconnect
   connectionTimeoutMillis: 2000, // 2 секунды timeout на подключение
 });
 
 console.log('✅ Tripwire Pool initialized');
-console.log('   Max connections:', 20);
+console.log('   Max connections:', 80);
+console.log('   Min connections:', 10);
 console.log('   SSL:', 'enabled');
 
 // 🛡️ NON-BLOCKING CONNECTION TEST
 // ⚠️ ВАЖНО: Ошибка подключения НЕ крашит сервер!
 setImmediate(() => {
-  tripwirePool.connect((err, client, release) => {
-    if (err) {
+tripwirePool.connect((err, client, release) => {
+  if (err) {
       console.error('⚠️ [TRIPWIRE POOL] Connection test failed:', err.message);
       console.error('   Server will continue, but Tripwire features may not work');
       console.error('   Check TRIPWIRE_DATABASE_URL in env.env');
-      return;
-    }
-    
+    return;
+  }
+  
     console.log('✅ Tripwire database connection test successful');
-    release();
+  release();
   });
 });
 

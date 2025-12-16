@@ -28,6 +28,13 @@ export const PIXEL_CONFIGS: Record<string, PixelConfig> = {
     conversionApiToken: 'EAAUxRozkwe4BQEPkILTCnNgvqdDPp7wPe15mJCBZALVExqt6U07XpyUsLb5P9qy9AJOUdd9fbo2fiU3ya7BW0wMzzYHbtG8JPosaAVWpDqXYFwMiZCfPyxxYgB25vKi4iV5dm8jgtUIqfVbAzxrK3szqlywL2Fcn6XdiXNJ1bb1gTfbRlX8gae168A09kX4gZDZD',
     slug: 'kenesary',
   },
+  traf4: {
+    id: 'traf4',
+    name: 'Traf4 Campaign',
+    pixelId: '1244019480344673',
+    conversionApiToken: 'EAAT6kCZBcCdoBQCYTD1nnsWBCTFBdUZC2PXEl9lBE3wnlGsXZBJAhYwI6c3Kb1LRHNvKO3iSKyidUG6qFahmOhRC2ZAcwT1Nv0JOZAdBUwz32JKxEUd66XWZCeviKvd2NLoLnj4F7vZBPf1OMPRu7dQyP597z6pveImuZCUaBhlhWUT1ZChyL3r5rMtbDKZCzB1he9mQZDZD',
+    slug: 'traf4',
+  },
 };
 
 export function getPixelConfig(slug: string): PixelConfig | null {

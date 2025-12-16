@@ -268,21 +268,21 @@ router.post('/complete', async (req, res) => {
         const AUTO_UNLOCK_ENABLED = false;
 
         if (AUTO_UNLOCK_ENABLED) {
-          // ✅ STEP 6a: Unlock next module (16→17, 17→18, 18→none)
-          const nextModuleId = module_id + 1;
-          const maxModuleId = 18; // Tripwire has modules 16, 17, 18
+        // ✅ STEP 6a: Unlock next module (16→17, 17→18, 18→none)
+        const nextModuleId = module_id + 1;
+        const maxModuleId = 18; // Tripwire has modules 16, 17, 18
 
-          if (nextModuleId <= maxModuleId) {
-            // Create module_unlock record for animation
-            // ❗ Use main_user_id (users.id), NOT tripwire_user_id
-            await client.query(`
-              INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
-              VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
-              ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
-            `, [main_user_id, nextModuleId]);
+        if (nextModuleId <= maxModuleId) {
+          // Create module_unlock record for animation
+          // ❗ Use main_user_id (users.id), NOT tripwire_user_id
+          await client.query(`
+            INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
+            VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
+            ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
+          `, [main_user_id, nextModuleId]);
 
-            unlockedModuleId = nextModuleId;
-            console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
+          unlockedModuleId = nextModuleId;
+          console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
           }
         } else {
           console.log(`⏸️ [STEP 6a SKIPPED] Auto-unlock disabled (waiting for module 2-3 content)`);

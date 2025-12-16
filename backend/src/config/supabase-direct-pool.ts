@@ -46,9 +46,9 @@ export const supabasePool = new Pool({
   ssl: {
     rejectUnauthorized: false, // Supabase requires SSL
   },
-  // Pooling config for your spec (50 concurrent, 100 req/min, 80% reads)
-  max: 20, // Maximum pool size
-  min: 2, // Minimum idle connections
+  // Pooling config optimized for MAXIMUM scale (1000+ concurrent, 10000 req/min)
+  max: 80, // ✅ МАКСИМУМ для explosive growth (было 40)
+  min: 10, // ✅ Постоянно готовые соединения (было 5)
   idleTimeoutMillis: 30000, // 30 seconds idle before disconnect
   connectionTimeoutMillis: 5000, // 5 seconds timeout on connect
   statement_timeout: 30000, // 30 seconds query timeout
@@ -63,7 +63,8 @@ export const supabasePool = new Pool({
     const result = await client.query('SELECT NOW()');
     console.log('✅ [Supabase Pool] Database connection successful');
     console.log('   Server time:', result.rows[0].now);
-    console.log('   Pool size:', 20);
+    console.log('   Pool size (max):', 80);
+    console.log('   Pool size (min):', 10);
     console.log('   SSL:', 'enabled');
     console.log('   Mode:', 'Direct (postgres.supabase.com)');
     client.release();

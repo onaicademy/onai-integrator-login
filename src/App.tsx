@@ -58,6 +58,7 @@ const TripwireLogin = lazy(() => import("./pages/tripwire/TripwireLogin"));
 const TripwireLanding = lazy(() => import("./pages/tripwire/TripwireLanding"));
 const TripwireLesson = lazy(() => import("./pages/tripwire/TripwireLesson"));
 const TripwireProfile = lazy(() => import("./pages/tripwire/TripwireProfile"));
+const ClearCache = lazy(() => import("./pages/ClearCache"));
 const ProfTest = lazy(() => import("./pages/tripwire/ProfTest"));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
@@ -211,7 +212,10 @@ const AppRoutes = () => {
       {/* ========================================
           INTEGRATOR ROUTES (NEW)
           ======================================== */}
-      
+
+      {/* Public: Clear Cache page */}
+      <Route path="/clear-cache" element={<ClearCache />} />
+
       {/* Public: Login page */}
       <Route path="/integrator/login" element={<TripwireLogin />} />
       
@@ -228,6 +232,7 @@ const AppRoutes = () => {
       {/* Public: Professional Test pages (no auth required) */}
       <Route path="/integrator/proftest" element={<ProfTest />} />
       <Route path="/integrator/proftest/:slug" element={<ProfTest />} />
+      <Route path="/proftest/:slug" element={<ProfTest />} />
       
       {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/integrator" element={
@@ -307,6 +312,9 @@ const AppRoutes = () => {
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
+      
+      {/* ❌ Access Denied for Tripwire */}
+      <Route path="/integrator/access-denied" element={<AccessDenied />} />
       
       {/* ========================================
           LEGACY TRIPWIRE REDIRECTS
