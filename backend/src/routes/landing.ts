@@ -259,7 +259,7 @@ async function createAmoCRMLead(lead: LandingLead, contactId?: number): Promise<
  */
 router.post('/submit', async (req: Request, res: Response) => {
   try {
-    const { email, name, phone, source = 'expresscourse', paymentMethod, campaignSlug, metadata = {} } = req.body;
+    const { email, name, phone, source = 'expresscourse', paymentMethod, campaignSlug, utmParams, metadata = {} } = req.body;
 
     // ✅ ВАЛИДАЦИЯ: Только имя и телефон обязательны (email опционален)
     if (!name || !name.trim()) {
@@ -318,6 +318,7 @@ router.post('/submit', async (req: Request, res: Response) => {
         p_source: source,
         p_metadata: {
           ...metadata,
+          utmParams: utmParams || metadata?.utmParams || {},
           paymentMethod,
           userAgent: req.headers['user-agent'],
           ip: req.ip,
@@ -338,6 +339,7 @@ router.post('/submit', async (req: Request, res: Response) => {
           source,
           metadata: {
             ...metadata,
+            utmParams: utmParams || metadata?.utmParams || {},
             paymentMethod,
             userAgent: req.headers['user-agent'],
             ip: req.ip,
@@ -443,7 +445,7 @@ router.post('/submit', async (req: Request, res: Response) => {
             name,
             email: email || undefined,
             phone,
-            utmParams: metadata?.utmParams || {},
+            utmParams: utmParams || metadata?.utmParams || {},
             campaignSlug,
             paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
           }),
