@@ -33,12 +33,11 @@ import { useHonestVideoTracking } from "@/hooks/useHonestVideoTracking";
 import { useProgressUpdate } from "@/hooks/useProgressUpdate";
 import { useAuth } from "@/contexts/AuthContext";
 import { VideoTelemetry } from "@/components/VideoPlayer/BunnyPlayer";
-import { TripwireAIChatDialog } from "@/components/tripwire/TripwireAIChatDialog";
-import { Bot } from "lucide-react";
 import confetti from "canvas-confetti";
 import AchievementModal from "./components/AchievementModal";
 import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
 import { VideoProcessingOverlay } from "@/components/tripwire/VideoProcessingOverlay";
+import { useVideoProcessingStatus } from "@/hooks/useVideoProcessingStatus"; // ✅ NEW: Real-time video processing tracking
 
 const TripwireLesson = () => {
   const { lessonId } = useParams(); // ✅ ТОЛЬКО lessonId из URL
@@ -74,16 +73,10 @@ const TripwireLesson = () => {
           setTripwireUserId(tripwireUser.id); // For API completion
           setMainUserId(tripwireUser.user_id); // For video_tracking
           
-          // ✅ CHECK ROLE from users table
-          const { data: userData } = await tripwireSupabase
-            .from('users')
-            .select('role')
-            .eq('id', tripwireUser.user_id)
-            .single();
-          
-          const userRole = userData?.role;
+          // ✅ CHECK ROLE: Получаем из auth.users metadata (всегда доступно)
+          const userRole = authUser.user_metadata?.role || 'student';
           console.log('🔒 TripwireLesson: User role:', userRole);
-          setIsAdmin(userRole === 'admin' || userRole === 'manager');
+          setIsAdmin(userRole === 'admin' || userRole === 'manager' || userRole === 'sales');
         } else {
           console.error('❌ TripwireLesson: No tripwire_users record found for:', authUser.email);
         }
@@ -106,12 +99,24 @@ const TripwireLesson = () => {
   const [isVideoProcessing, setIsVideoProcessing] = useState(false);
   const [processingVideoId, setProcessingVideoId] = useState<string | null>(null);
   
+  // 🎬 NEW: Real-time video processing status tracking
+  const {
+    statusData: videoStatusData,
+    statusLabel: videoStatusLabel,
+    isProcessing: isVideoCurrentlyProcessing,
+    isReady: isVideoReady,
+    isFailed: isVideoFailed,
+    error: videoProcessingError,
+    refetch: refetchVideoStatus,
+  } = useVideoProcessingStatus(processingVideoId, !!processingVideoId);
+  
   // 🎯 Честный Video Tracking (учитывает только реальный просмотр, НЕ перемотку!)
   const {
     progress: videoProgress,
     isCompleted: isVideoCompleted,
     isLoaded: isProgressLoaded,
     totalWatchedSeconds,
+    lastPosition, // ✅ NEW: Последняя позиция для восстановления в плеере
     // ✅ FIX #3: Используем флаг квалификации (остается даже при откате прогресса!)
     isQualifiedForCompletion,
     handleTimeUpdate: trackVideoTime,
@@ -156,10 +161,7 @@ const TripwireLesson = () => {
   
   // Transcription modal
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false);
-  
-  // ✅ AI Curator Chat
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
-  
+
   // 🏆 Achievement & Module Unlock
   const [newAchievement, setNewAchievement] = useState<any>(null);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
@@ -223,6 +225,7 @@ const TripwireLesson = () => {
     if (!moduleId) return;
     
     try {
+      // ✅ Загружаем уроки текущего модуля для навигации
       const response = await api.get(`/api/tripwire/lessons?module_id=${moduleId}`);
       if (response?.lessons) {
         const sortedLessons = [...response.lessons].sort((a, b) => {
@@ -236,6 +239,16 @@ const TripwireLesson = () => {
       console.error('❌ Ошибка загрузки уроков:', error);
     }
   };
+
+  // 🎯 Глобальная нумерация уроков (module_id → глобальный номер)
+  const getGlobalLessonNumber = () => {
+    if (!module?.id) return 1;
+    // module_id: 16=урок1, 17=урок2, 18=урок3
+    const MODULE_TO_LESSON = { 16: 1, 17: 2, 18: 3 };
+    return MODULE_TO_LESSON[module.id] || 1;
+  };
+
+  const TOTAL_LESSONS = 3;
 
   const loadLessonData = async () => {
     try {
@@ -316,13 +329,68 @@ const TripwireLesson = () => {
           setVideo(null);
         }
       } catch (error) {
-        console.log('ℹ️ Видео не найдено');
+        console.log('ℹ️ Видео не найдено в video_content');
+        
+        // 🔥 ВАЖНО: Проверяем есть ли bunny_video_id в самом уроке!
+        // Возможно видео ещё в обработке на BunnyCDN
+        if (loadedLesson?.bunny_video_id) {
+          const videoId = loadedLesson.bunny_video_id;
+          console.log('🎬 [LESSON] Found bunny_video_id in lesson data:', videoId);
+          console.log('⏳ [LESSON] Video might be processing, checking status...');
+          
+          // Проверяем статус на BunnyCDN
+          try {
+            const statusRes = await api.get(`/api/videos/bunny-status/${videoId}`);
+            const { status: videoStatus, bunnyStatus } = statusRes;
+            
+            console.log('🎥 [LESSON] Bunny status check:', { videoStatus, bunnyStatus });
+            
+            if (videoStatus === 'ready' || videoStatus === 'completed' || bunnyStatus === 4 || bunnyStatus === 5) {
+              // ✅ Видео готово!
+              console.log('✅ [LESSON] Video is ready! Loading player...');
+              setVideo({
+                bunny_video_id: videoId,
+                video_url: `https://video.onai.academy/${videoId}/playlist.m3u8`,
+                thumbnail_url: `https://video.onai.academy/${videoId}/thumbnail.jpg`
+              });
+              setIsVideoProcessing(false);
+            } else if (bunnyStatus === 1 || bunnyStatus === 2 || bunnyStatus === 3) {
+              // ⏳ Видео обрабатывается - ПОКАЗЫВАЕМ OVERLAY!
+              console.log('⏳ [LESSON] Video is processing! Showing overlay...');
+              setProcessingVideoId(videoId);
+              setIsVideoProcessing(true);
+              setVideo(null);
+            } else if (bunnyStatus === 6) {
+              // ❌ Ошибка обработки
+              console.error('❌ [LESSON] Video processing failed!');
+              setVideo(null);
+              setIsVideoProcessing(false);
+            } else {
+              // Неизвестный статус - показываем как processing
+              console.warn('⚠️ [LESSON] Unknown status, treating as processing:', bunnyStatus);
+              setProcessingVideoId(videoId);
+              setIsVideoProcessing(true);
+              setVideo(null);
+            }
+          } catch (statusError) {
+            console.error('❌ [LESSON] Could not check Bunny status:', statusError);
+            // Пытаемся показать видео (может быть готово)
+            setVideo({
+              bunny_video_id: videoId,
+              video_url: `https://video.onai.academy/${videoId}/playlist.m3u8`,
+              thumbnail_url: `https://video.onai.academy/${videoId}/thumbnail.jpg`
+            });
+          }
+        } else {
+          console.log('ℹ️ [LESSON] No bunny_video_id in lesson - video not uploaded yet');
+        }
       }
 
       // Загрузить материалы
       try {
         const materialsRes = await api.get(`/api/tripwire/lessons/${lessonId}/materials`);
-        setMaterials(materialsRes?.data || []);
+        console.log('📎 [Materials] Response:', materialsRes);
+        setMaterials(materialsRes?.materials || []);
       } catch (error) {
         console.log('ℹ️ Материалы не найдены');
       }
@@ -482,6 +550,11 @@ const TripwireLesson = () => {
       });
 
       console.log('✅ Backend response:', response.data);
+      console.log('🔍 [DEBUG] Response details:', {
+        moduleCompleted: response.data?.moduleCompleted,
+        unlockedModuleId: response.data?.unlockedModuleId,
+        success: response.data?.success
+      });
 
       // ✅ Optimistic UI update
       setIsCompleted(true);
@@ -531,6 +604,12 @@ const TripwireLesson = () => {
       setTimeout(() => {
         clearInterval(interval); // ✅ Очищаем interval перед редиректом
         
+        console.log('🔍 [REDIRECT] Checking redirect conditions:', {
+          moduleCompleted: response.data?.moduleCompleted,
+          unlockedModuleId: response.data?.unlockedModuleId,
+          willShowAnimation: !!(response.data?.moduleCompleted && response.data?.unlockedModuleId)
+        });
+
         if (response.data?.moduleCompleted && response.data?.unlockedModuleId) {
           console.log(`🔓 Module ${response.data.unlockedModuleId} unlocked!`);
           
@@ -541,10 +620,12 @@ const TripwireLesson = () => {
             console.log('🗑️ Cache invalidated - will reload fresh unlocks');
           }
           
+          const redirectUrl = `/integrator?unlockedModule=${response.data.unlockedModuleId}`;
+          console.log(`🚀 Redirecting to: ${redirectUrl}`);
           // ✅ Используем window.location для надежного редиректа с state в URL
-          window.location.href = `/integrator?unlockedModule=${response.data.unlockedModuleId}`;
+          window.location.href = redirectUrl;
         } else {
-          console.log('🏠 Редирект на главную страницу...');
+          console.log('🏠 Редирект на главную страницу (без анимации)...');
           window.location.href = '/integrator';
         }
       }, 2500);
@@ -652,8 +733,21 @@ const TripwireLesson = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#030303] flex items-center justify-center">
-        <div className="text-[#00FF88] font-mono text-xl uppercase tracking-wider animate-pulse">
-          Загрузка...
+        <div className="text-center space-y-4">
+          {/* Spinner */}
+          <div className="flex justify-center">
+            <div className="w-16 h-16 border-4 border-[#00FF88]/20 border-t-[#00FF88] rounded-full animate-spin"></div>
+          </div>
+          
+          {/* Текст */}
+          <div className="space-y-2">
+            <p className="text-white font-['JetBrains_Mono'] text-lg font-bold">
+              Загрузка урока...
+            </p>
+            <p className="text-gray-500 text-sm font-['JetBrains_Mono']">
+              Подождите несколько секунд
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -662,8 +756,64 @@ const TripwireLesson = () => {
   // ✅ Показываем ошибку ТОЛЬКО после завершения загрузки
   if (!loading && !lesson) {
     return (
-      <div className="min-h-screen bg-[#030303] flex items-center justify-center">
-        <div className="text-white font-['JetBrains_Mono'] text-xl">Урок не найден</div>
+      <div className="min-h-screen bg-[#030303] flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center space-y-6">
+          {/* Иконка ошибки */}
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center">
+              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
+          
+          {/* Сообщение */}
+          <div>
+            <h2 className="text-white font-['JetBrains_Mono'] text-2xl font-bold mb-2">
+              Урок не найден
+            </h2>
+            <p className="text-gray-400 text-sm mb-6">
+              Возможно, урок ещё загружается или произошла ошибка сети
+            </p>
+          </div>
+          
+          {/* Инструкции */}
+          <div className="bg-[#0a0a0f] border border-[#00FF88]/20 rounded-lg p-4 text-left space-y-2">
+            <p className="text-[#00FF88] font-['JetBrains_Mono'] text-xs font-bold mb-2">
+              ЧТО ДЕЛАТЬ:
+            </p>
+            <div className="space-y-2 text-gray-300 text-sm">
+              <p className="flex items-start gap-2">
+                <span className="text-[#00FF88] mt-1">1.</span>
+                <span>Обновите страницу (кнопка ниже или F5)</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-[#00FF88] mt-1">2.</span>
+                <span>Проверьте интернет-соединение</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-[#00FF88] mt-1">3.</span>
+                <span>Если проблема повторяется - напишите в поддержку</span>
+              </p>
+            </div>
+          </div>
+          
+          {/* Кнопки */}
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-[#00FF88] text-black font-['JetBrains_Mono'] font-bold rounded-lg hover:bg-[#00FF88]/90 transition-all"
+            >
+              🔄 ОБНОВИТЬ СТРАНИЦУ
+            </button>
+            <button
+              onClick={() => navigate('/integrator')}
+              className="px-6 py-3 bg-[#1a1a1f] text-white border border-[#00FF88]/30 font-['JetBrains_Mono'] rounded-lg hover:bg-[#2a2a2f] transition-all"
+            >
+              ← НАЗАД К МОДУЛЯМ
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -709,13 +859,13 @@ const TripwireLesson = () => {
         >
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
             <div className="flex-1">
-              <motion.p 
+              <motion.p
                 className="text-[#00FF88] text-xs mb-3 uppercase tracking-[0.3em] font-['Manrope'] font-bold"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 }}
               >
-                МОДУЛЬ {module?.order_index !== undefined ? module.order_index + 1 : moduleId} • УРОК {currentLessonIndex + 1} / {allLessons.length}
+                УРОК {getGlobalLessonNumber()} / {TOTAL_LESSONS}
               </motion.p>
               <motion.h1
                 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white font-sans uppercase mb-4 leading-tight tracking-wide line-clamp-2 px-2 sm:px-0"
@@ -788,23 +938,50 @@ const TripwireLesson = () => {
             {/* 🎥 SMART VIDEO PLAYER - DIRECT HLS STREAMING (Plyr + HLS.js) */}
             {video?.bunny_video_id ? (
               <div className="space-y-4 relative">
-                {/* 🎬 Processing Overlay */}
+                {/* 🎬 NEW: Real-time Processing Overlay with progress tracking */}
                 {isVideoProcessing && processingVideoId && (
-                  <VideoProcessingOverlay 
-                    videoId={processingVideoId} 
-                    onComplete={() => {
-                      console.log('✅ Video processing complete!');
-                      setIsVideoProcessing(false);
-                      setProcessingVideoId(null);
-                      loadLessonData(); // Reload data
+                  <VideoProcessingOverlay
+                    videoId={processingVideoId}
+                    statusLabel={videoStatusLabel}
+                    progress={videoStatusData?.progress || 0}
+                    isLoading={!videoStatusData}
+                    error={videoProcessingError}
+                    isFailed={isVideoFailed}
+                    onRefresh={() => {
+                      console.log('🔄 Refreshing video status...');
+                      refetchVideoStatus();
+                      loadLessonData(); // Reload lesson data
                     }}
                   />
+                )}
+                
+                {/* ✅ Auto-reload when video is ready + Auto-generate content */}
+                {isVideoReady && isVideoProcessing && (
+                  <>
+                    {console.log('✅ Video ready! Triggering auto-generation...')}
+                    {setTimeout(async () => {
+                      // 1️⃣ Запускаем автоматическую генерацию транскрипции + AI-контента
+                      try {
+                        console.log('🚀 [Auto-Generate] Triggering content generation...');
+                        await api.post(`/api/tripwire/lessons/${lessonId}/auto-generate-content`);
+                        console.log('✅ [Auto-Generate] Content generation started');
+                      } catch (err) {
+                        console.error('❌ [Auto-Generate] Failed to trigger:', err);
+                      }
+                      
+                      // 2️⃣ Перезагружаем данные урока
+                      setIsVideoProcessing(false);
+                      setProcessingVideoId(null);
+                      loadLessonData();
+                    }, 1000)}
+                  </>
                 )}
                 
                 <SmartVideoPlayer
                   videoId={video.bunny_video_id}
                   videoUrl={`https://video.onai.academy/${video.bunny_video_id}/playlist.m3u8`}
                   posterUrl={video.thumbnail_url || `https://video.onai.academy/${video.bunny_video_id}/thumbnail.jpg`}
+                  startPosition={lastPosition} // ✅ NEW: Восстанавливаем позицию из БД
                   enableAutoSubtitles={true}
                   onProgress={(progress, currentTime, duration) => {
                     // 🎯 Честный трекинг (не засчитывает перемотку!)
@@ -820,18 +997,44 @@ const TripwireLesson = () => {
               </div>
             ) : (
               <div className="relative rounded-2xl overflow-hidden border border-[#00FF88]/20">
-                {/* 🎬 Processing Overlay */}
+                {/* 🎬 NEW: Real-time Processing Overlay with progress tracking */}
                 {isVideoProcessing && processingVideoId ? (
                   <div className="aspect-video bg-[#0a0a0f] relative">
-                    <VideoProcessingOverlay 
-                      videoId={processingVideoId} 
-                      onComplete={() => {
-                        console.log('✅ Video processing complete!');
-                        setIsVideoProcessing(false);
-                        setProcessingVideoId(null);
-                        loadLessonData(); // Reload data
+                    <VideoProcessingOverlay
+                      videoId={processingVideoId}
+                      statusLabel={videoStatusLabel}
+                      progress={videoStatusData?.progress || 0}
+                      isLoading={!videoStatusData}
+                      error={videoProcessingError}
+                      isFailed={isVideoFailed}
+                      onRefresh={() => {
+                        console.log('🔄 Refreshing video status...');
+                        refetchVideoStatus();
+                        loadLessonData(); // Reload lesson data
                       }}
                     />
+                    
+                    {/* ✅ Auto-reload when video is ready + Auto-generate content */}
+                    {isVideoReady && (
+                      <>
+                        {console.log('✅ Video ready! Triggering auto-generation...')}
+                        {setTimeout(async () => {
+                          // 1️⃣ Запускаем автоматическую генерацию транскрипции + AI-контента
+                          try {
+                            console.log('🚀 [Auto-Generate] Triggering content generation...');
+                            await api.post(`/api/tripwire/lessons/${lessonId}/auto-generate-content`);
+                            console.log('✅ [Auto-Generate] Content generation started');
+                          } catch (err) {
+                            console.error('❌ [Auto-Generate] Failed to trigger:', err);
+                          }
+                          
+                          // 2️⃣ Перезагружаем данные урока
+                          setIsVideoProcessing(false);
+                          setProcessingVideoId(null);
+                          loadLessonData();
+                        }, 1000)}
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="aspect-video bg-[#0a0a0f] flex items-center justify-center">
@@ -844,16 +1047,45 @@ const TripwireLesson = () => {
               </div>
             )}
 
-            {/* 📚 ИНФОРМАЦИОННОЕ СООБЩЕНИЕ ДЛЯ СТУДЕНТОВ */}
+            {/* 🎯 КНОПКИ УПРАВЛЕНИЯ */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {!isCompleted && (
+              {/* ✅ Кнопка "ЗАВЕРШИТЬ МОДУЛЬ" - показывается при просмотре >= 80% */}
+              {!isCompleted && isQualifiedForCompletion && (
+                <motion.button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+                  style={{
+                    background: isCompleting 
+                      ? 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)'
+                      : '#00FF88',
+                    color: '#000',
+                    border: '2px solid #00FF88',
+                    boxShadow: '0 0 30px rgba(0, 255, 136, 0.3)',
+                    fontFamily: 'Manrope, sans-serif',
+                    fontStyle: 'normal'
+                  }}
+                >
+                  <span className="flex items-center justify-center gap-2 sm:gap-3">
+                    <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                    {isCompleting ? 'Завершение...' : 'ЗАВЕРШИТЬ МОДУЛЬ'}
+                  </span>
+                </motion.button>
+              )}
+
+              {/* 📚 Подсказка когда прогресс < 80% */}
+              {!isCompleted && !isQualifiedForCompletion && (
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                   className="w-full text-center text-base sm:text-lg text-gray-300 font-['Manrope'] py-4 px-6 bg-[#0A0A0A]/60 border border-[#00FF88]/20 rounded-xl"
                 >
-                  📚 Модули 2 и 3 появятся скоро! Следите за объявлениями.
+                  ⏳ Просмотрите видео до 80% чтобы завершить модуль
                 </motion.div>
               )}
               
@@ -985,7 +1217,7 @@ const TripwireLesson = () => {
             )}
 
             {/* 💡 GLASS PANEL: AI Tips - с пульсирующей лампочкой */}
-            {lesson?.ai_tips && (
+            {lesson?.tip && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1019,68 +1251,46 @@ const TripwireLesson = () => {
                   Советы по уроку
                 </h3>
                 <div className="text-xs sm:text-sm text-gray-300 leading-relaxed font-['Manrope'] space-y-3">
-                  {lesson.ai_tips.split('\n').map((tip, index) => {
-                    // Парсим markdown: **Совет 1:** → жирный текст
-                    const parts = tip.split(/(\*\*.*?\*\*)/g);
+                  {lesson.tip.split('\n').map((line, index) => {
+                    // Пропускаем заголовок "**СОВЕТ:**"
+                    if (line.includes('**СОВЕТ:**')) {
+                      return null;
+                    }
+                    
+                    // Парсим строки вида "**Совет 1:** текст" или "Совет 1: текст"
+                    if (line.trim().match(/Совет \d+:/)) {
+                      const parts = line.split(/(\*\*.*?\*\*)/g);
+                      return (
+                        <p key={index} className="leading-relaxed">
+                          {parts.map((part, i) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                              // Удаляем ** и делаем жирным зеленым
+                              return (
+                                <span key={i} className="font-bold text-[#00FF88]">
+                                  {part.slice(2, -2)}
+                                </span>
+                              );
+                            }
+                            return <span key={i}>{part}</span>;
+                          })}
+                        </p>
+                      );
+                    }
+                    
+                    // Пустые строки пропускаем
+                    if (!line.trim()) {
+                      return null;
+                    }
+                    
+                    // Любой другой текст
                     return (
                       <p key={index} className="leading-relaxed">
-                        {parts.map((part, i) => {
-                          if (part.startsWith('**') && part.endsWith('**')) {
-                            // Удаляем ** и делаем жирным
-                            return (
-                              <span key={i} className="font-bold text-[#00FF88]">
-                                {part.slice(2, -2)}
-                              </span>
-                            );
-                          }
-                          return <span key={i}>{part}</span>;
-                        })}
+                        {line}
                       </p>
                     );
-                  })}
+                  }).filter(Boolean)}
                 </div>
               </motion.div>
-            )}
-
-            {/* 🤖 GLASS PANEL: AI Curator - ТОЛЬКО ДЛЯ АДМИНОВ */}
-            {isAdmin && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-                className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
-                style={{
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                }}
-              >
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-[#00FF88]" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-sm sm:text-base truncate">AI-Куратор</h3>
-                  <p className="text-[10px] sm:text-xs text-gray-500 font-['Manrope'] uppercase tracking-wider">Онлайн 24/7</p>
-                </div>
-              </div>
-              
-              <p className="text-sm text-gray-400 font-['Manrope'] mb-4 leading-relaxed">
-                Задавайте вопросы, отправляйте голосовые сообщения и файлы
-              </p>
-              
-              <motion.button
-                onClick={() => setIsAIChatOpen(true)}
-                className="w-full group relative px-4 sm:px-6 py-3 font-sans font-bold uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 overflow-hidden bg-[#00FF88] text-black hover:shadow-[0_0_40px_rgba(0,255,136,0.6)] cursor-pointer"
-                style={{
-                  transform: 'skewX(-10deg)',
-                  boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)'
-                }}
-              >
-                <span className="flex items-center justify-center gap-2 not-italic" style={{ transform: 'skewX(10deg)' }}>
-                  <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Написать куратору
-                </span>
-              </motion.button>
-            </motion.div>
             )}
 
             {/* 📊 GLASS PANEL: Progress - ТРЕТИЙ */}
@@ -1120,9 +1330,6 @@ const TripwireLesson = () => {
           </aside>
         </div>
       </div>
-      
-      {/* AI Chat Dialog */}
-      <TripwireAIChatDialog open={isAIChatOpen} onOpenChange={setIsAIChatOpen} />
       
       {/* Edit Dialog */}
       {lesson && (
