@@ -165,6 +165,10 @@ const TripwireLesson = () => {
   const [isHomeworkDialogOpen, setIsHomeworkDialogOpen] = useState(false);
   const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false); // ✅ Чекпойнт: ДЗ сдано
   
+  // ✅ Google Forms для 1-го модуля (урок 68)
+  const HOMEWORK_GOOGLE_FORM_URL = 'https://forms.gle/ccSGqEHeNZWgbkTJ8';
+  const isFirstModule = lessonId === '68'; // Первый модуль - урок 68
+  
   // Transcription modal
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false);
 
@@ -730,6 +734,32 @@ const TripwireLesson = () => {
     }
   };
 
+  // ✅ Обработка клика на кнопку "Сдать домашнее задание"
+  const handleHomeworkClick = async () => {
+    if (isFirstModule) {
+      // ✅ Первый модуль (урок 68): открываем Google Forms
+      console.log('📝 [Homework] Открываем Google Forms для первого модуля');
+      window.open(HOMEWORK_GOOGLE_FORM_URL, '_blank');
+      
+      // ✅ Отмечаем ДЗ как принятое (только один раз)
+      if (!isHomeworkSubmitted && mainUserId) {
+        try {
+          await api.post(`/api/tripwire/homework/${lessonId}`, {
+            user_id: mainUserId,
+            homework_text: 'Google Forms заполнена (автоматически)',
+          });
+          setIsHomeworkSubmitted(true);
+          console.log('✅ [Homework] ДЗ автоматически принято');
+        } catch (error) {
+          console.error('❌ [Homework] Ошибка отметки ДЗ:', error);
+        }
+      }
+    } else {
+      // ✅ Модули 2-3: открываем модалку с текстовым полем
+      setIsHomeworkDialogOpen(true);
+    }
+  };
+
   // ✅ Save progress every 10 seconds
   useEffect(() => {
     if (!playing || !lessonId) return;
@@ -1223,20 +1253,25 @@ const TripwireLesson = () => {
               </div>
 
               <Button
-                onClick={() => setIsHomeworkDialogOpen(true)}
-                disabled={isHomeworkSubmitted || !isVideoCompleted}
+                onClick={handleHomeworkClick}
+                disabled={isFirstModule ? !isVideoCompleted : (isHomeworkSubmitted || !isVideoCompleted)}
                 className={`w-full font-['Manrope'] font-semibold text-sm sm:text-base py-3 sm:py-4 transition-all duration-300 ${
-                  isHomeworkSubmitted
-                    ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed border border-gray-600/50'
-                    : isVideoCompleted
-                      ? 'bg-[#00FF88] hover:bg-[#00cc88] text-black shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]'
-                      : 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50'
+                  isHomeworkSubmitted && isFirstModule
+                    ? 'bg-green-600/80 hover:bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_rgba(34,197,94,0.6)]'
+                    : isHomeworkSubmitted
+                      ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed border border-gray-600/50'
+                      : isVideoCompleted
+                        ? 'bg-[#00FF88] hover:bg-[#00cc88] text-black shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]'
+                        : 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50'
                 }`}
-                style={isVideoCompleted && !isHomeworkSubmitted ? { transform: 'skewX(-5deg)' } : {}}
+                style={(isVideoCompleted && !isHomeworkSubmitted) || (isFirstModule && isHomeworkSubmitted) ? { transform: 'skewX(-5deg)' } : {}}
               >
-                <span className="flex items-center justify-center gap-2" style={isVideoCompleted && !isHomeworkSubmitted ? { transform: 'skewX(5deg)' } : {}}>
+                <span className="flex items-center justify-center gap-2" style={(isVideoCompleted && !isHomeworkSubmitted) || (isFirstModule && isHomeworkSubmitted) ? { transform: 'skewX(5deg)' } : {}}>
                   {isHomeworkSubmitted ? <CheckCircle2 className="w-4 h-4" /> : <Send className="w-4 h-4" />}
-                  {isHomeworkSubmitted ? 'Домашнее задание сдано' : 'Сдать домашнее задание'}
+                  {isHomeworkSubmitted 
+                    ? (isFirstModule ? 'Открыть форму еще раз' : 'Домашнее задание сдано')
+                    : 'Сдать домашнее задание'
+                  }
                 </span>
               </Button>
             </motion.div>
