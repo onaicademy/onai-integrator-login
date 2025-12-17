@@ -171,5 +171,64 @@ router.get('/bunny-status/:videoId', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * 🎯 POST /api/videos/update-duration/:videoId
+ * Обновляет video_duration в таблице lessons из BunnyCDN
+ */
+router.post('/update-duration/:videoId', async (req: Request, res: Response) => {
+  try {
+    const { videoId } = req.params;
+    const lessonId = req.query.lesson_id as string;
+
+    if (!lessonId) {
+      return res.status(400).json({ error: 'lesson_id is required' });
+    }
+
+    console.log(`🔄 [UPDATE DURATION] Updating duration for video ${videoId}, lesson ${lessonId}`);
+
+    // Получаем данные видео из BunnyCDN
+    const response = await axios.get(
+      `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${videoId}`,
+      {
+        headers: {
+          'AccessKey': BUNNY_API_KEY
+        }
+      }
+    );
+
+    const videoData = response.data;
+    const duration = videoData.length || 0; // Duration in seconds
+
+    console.log(`📊 [UPDATE DURATION] Video duration: ${duration}s (${Math.round(duration / 60)} min)`);
+
+    // Обновляем таблицу lessons в Tripwire DB
+    const { error: updateError } = await adminSupabase
+      .from('lessons')
+      .update({ video_duration: duration })
+      .eq('id', parseInt(lessonId));
+
+    if (updateError) {
+      console.error('❌ [UPDATE DURATION] Failed to update lessons table:', updateError);
+      throw updateError;
+    }
+
+    console.log(`✅ [UPDATE DURATION] Successfully updated lesson ${lessonId} with duration ${duration}s`);
+
+    return res.json({
+      success: true,
+      duration,
+      durationMinutes: Math.round(duration / 60)
+    });
+
+  } catch (error: any) {
+    console.error('❌ [UPDATE DURATION] Error:', error.response?.data || error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update video duration',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
 export default router;
 
