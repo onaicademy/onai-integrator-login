@@ -748,10 +748,13 @@ const TripwireLesson = () => {
 
   // ✅ Обработка клика на кнопку "Сдать домашнее задание"
   const handleHomeworkClick = async () => {
+    console.log('🔍 [DEBUG] handleHomeworkClick fired!', { lessonId, isFirstModule });
+    
     if (isFirstModule) {
       // ✅ Первый модуль (урок 68): открываем Google Forms
-      console.log('📝 [Homework] Открываем Google Forms для первого модуля');
-      window.open(HOMEWORK_GOOGLE_FORM_URL, '_blank');
+      console.log('📝 [Homework] Открываем Google Forms для первого модуля:', HOMEWORK_GOOGLE_FORM_URL);
+      const opened = window.open(HOMEWORK_GOOGLE_FORM_URL, '_blank');
+      console.log('🔍 [DEBUG] window.open result:', opened);
       
       // ✅ Отмечаем ДЗ как принятое (только один раз)
       if (!isHomeworkSubmitted && mainUserId) {
@@ -1500,6 +1503,12 @@ const TripwireLesson = () => {
           }}
         />
       )}
+      
+      {/* 🎉 Module 3 Complete Modal - Сертификат */}
+      <Module3CompleteModal 
+        open={showModule3Modal} 
+        onOpenChange={setShowModule3Modal} 
+      />
       
       {/* 🏆 Achievement Modal */}
       {showAchievementModal && newAchievement && (
