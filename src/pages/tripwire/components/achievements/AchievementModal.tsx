@@ -233,19 +233,21 @@ function AchievementModal({ achievement, onClose }: AchievementModalProps) {
 
               {/* STATUS & ACTION BUTTON */}
               <div className="border-t border-white/10 pt-6 space-y-6">
-                {achievement.unlocked && achievement.unlockedAt ? (
+                {achievement.unlocked ? (
                   <>
                     <div className="text-center space-y-2">
                       <p className="text-sm text-gray-400 uppercase tracking-wider">
                         Разблокировано
                       </p>
-                      <p className="text-xl text-white font-['JetBrains_Mono']">
-                        {new Date(achievement.unlockedAt).toLocaleDateString('ru-RU', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                      </p>
+                      {achievement.unlockedAt && (
+                        <p className="text-xl text-white font-['JetBrains_Mono']">
+                          {new Date(achievement.unlockedAt).toLocaleDateString('ru-RU', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      )}
                     </div>
                     
                     {/* EPIC BUTTON */}

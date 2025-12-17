@@ -756,8 +756,8 @@ const TripwireLesson = () => {
     console.log('🔍 [DEBUG] handleHomeworkClick fired!', { lessonId, isFirstModule });
     
     if (isFirstModule) {
-      // ✅ Первый модуль (урок 68): открываем Google Forms
-      console.log('📝 [Homework] Открываем Google Forms для первого модуля:', HOMEWORK_GOOGLE_FORM_URL);
+      // ✅ ПЕРВЫЙ МОДУЛЬ (урок 67): открываем Google Forms
+      console.log('📝 [Homework] УРОК 67 - Открываем Google Forms:', HOMEWORK_GOOGLE_FORM_URL);
       const opened = window.open(HOMEWORK_GOOGLE_FORM_URL, '_blank');
       console.log('🔍 [DEBUG] window.open result:', opened);
       
@@ -775,7 +775,8 @@ const TripwireLesson = () => {
         }
       }
     } else {
-      // ✅ Модули 2-3: открываем модалку с текстовым полем
+      // ✅ ВТОРОЙ И ТРЕТИЙ МОДУЛИ (урок 68, 69): открываем модалку с текстовым полем
+      console.log('📝 [Homework] УРОК 68/69 - Открываем модалку с текстом');
       setIsHomeworkDialogOpen(true);
     }
   };
