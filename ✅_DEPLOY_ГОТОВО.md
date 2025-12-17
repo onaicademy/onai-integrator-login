@@ -276,3 +276,4 @@ curl https://api.onai.academy/ping
 - ✅ `✅_DEPLOY_ГОТОВО.md` - Этот файл
 
 
+
