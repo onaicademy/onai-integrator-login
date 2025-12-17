@@ -69,6 +69,7 @@ import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
 import TripwireStudents from "./pages/tripwire/admin/Students";
 import TripwireCosts from "./pages/tripwire/admin/Costs";
 import LeadsAdmin from "./pages/tripwire/admin/LeadsAdmin";
+import DebugDashboard from "./pages/admin/DebugDashboard";
 
 // 🛡️ Initialize Sentry FIRST - до создания компонентов
 initSentry();
@@ -312,7 +313,11 @@ const AppRoutes = () => {
           </TripwireLayout>
         </TripwireAdminGuard>
       } />
-      
+
+      {/* 🛡️ DEBUG: System monitoring dashboard */}
+      <Route path="/debug/report" element={<DebugDashboard />} />
+      <Route path="/admin/debug/report" element={<DebugDashboard />} />
+
       {/* ❌ Access Denied for Tripwire */}
       <Route path="/integrator/access-denied" element={<AccessDenied />} />
       
