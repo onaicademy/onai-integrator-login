@@ -50,10 +50,10 @@ export default function TripwireAdminDashboard() {
             {!isLoading && stats && (
             <div className="flex flex-wrap items-center gap-4 lg:gap-8">
                 <div className="flex items-center gap-2">
-                  <Users size={18} className="text-[#00FF00]" />
+                  <DollarSign size={18} className="text-[#00FF00]" />
                   <span className="text-sm">
                     <span className="text-white font-bold text-lg">{stats.total_students}</span>
-                    <span className="text-gray-400 ml-1">студентов</span>
+                    <span className="text-gray-400 ml-1">продаж</span>
                   </span>
                 </div>
                 
