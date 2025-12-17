@@ -29,6 +29,7 @@ import {
 import { TripwireLessonEditDialog } from "@/components/tripwire/TripwireLessonEditDialog";
 import { MaterialPreviewDialog } from "@/components/MaterialPreviewDialog";
 import { HomeworkDialog } from "@/components/tripwire/HomeworkDialog";
+import { Module3CompleteModal } from "@/components/tripwire/Module3CompleteModal";
 import { SmartVideoPlayer } from "@/components/SmartVideoPlayer";
 import TranscriptionModal from "@/components/admin/TranscriptionModal";
 import { useHonestVideoTracking } from "@/hooks/useHonestVideoTracking";
@@ -171,6 +172,9 @@ const TripwireLesson = () => {
   
   // Transcription modal
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false);
+  
+  // 🎉 Module 3 Complete Modal
+  const [showModule3Modal, setShowModule3Modal] = useState(false);
 
   // 🏆 Achievement & Module Unlock
   const [newAchievement, setNewAchievement] = useState<any>(null);
@@ -632,10 +636,18 @@ const TripwireLesson = () => {
         clearInterval(interval); // ✅ Очищаем interval перед редиректом
         
         console.log('🔍 [REDIRECT] Checking redirect conditions:', {
+          lessonId,
           moduleCompleted: response.data?.moduleCompleted,
           unlockedModuleId: response.data?.unlockedModuleId,
           willShowAnimation: !!(response.data?.moduleCompleted && response.data?.unlockedModuleId)
         });
+
+        // 🎉 МОДУЛЬ 3 ЗАВЕРШЕН - Показываем модалку с сертификатом!
+        if (lessonId === '69' && response.data?.moduleCompleted) {
+          console.log('🎉 [MODULE 3 COMPLETE] Показываем модалку с сертификатом!');
+          setShowModule3Modal(true);
+          return; // Не редиректим, модалка сама редиректит
+        }
 
         if (response.data?.moduleCompleted && response.data?.unlockedModuleId) {
           console.log(`🔓 Module ${response.data.unlockedModuleId} unlocked!`);
