@@ -163,6 +163,7 @@ const TripwireLesson = () => {
   
   // Homework dialog
   const [isHomeworkDialogOpen, setIsHomeworkDialogOpen] = useState(false);
+  const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false); // ✅ Чекпойнт: ДЗ сдано
   
   // Transcription modal
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false);
@@ -398,6 +399,23 @@ const TripwireLesson = () => {
         setMaterials(materialsRes?.data || []);
       } catch (error) {
         console.log('ℹ️ Материалы не найдены');
+      }
+
+      // ✅ Загрузить статус домашнего задания
+      if (mainUserId) {
+        try {
+          const homeworkRes = await api.get(`/api/tripwire/homework/${lessonId}?user_id=${mainUserId}`);
+          if (homeworkRes?.homework) {
+            console.log('✅ [Homework] ДЗ уже сдано:', homeworkRes.homework.id);
+            setIsHomeworkSubmitted(true);
+          } else {
+            console.log('ℹ️ [Homework] ДЗ еще не сдано');
+            setIsHomeworkSubmitted(false);
+          }
+        } catch (error) {
+          console.log('ℹ️ [Homework] Не удалось загрузить статус ДЗ');
+          setIsHomeworkSubmitted(false);
+        }
       }
 
     } catch (error: any) {
@@ -1165,13 +1183,71 @@ const TripwireLesson = () => {
               </div>
             </motion.div>
 
+            {/* 📝 GLASS PANEL: Homework - ВТОРОЙ (под информацией) */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className={`rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-xl ${
+                isHomeworkSubmitted
+                  ? 'bg-gradient-to-br from-green-900/20 to-transparent border border-green-500/30'
+                  : 'bg-gradient-to-br from-[#00FF88]/5 to-transparent border border-[#00FF88]/20'
+              }`}
+              style={{
+                boxShadow: isHomeworkSubmitted 
+                  ? '0 8px 32px rgba(34, 197, 94, 0.1), inset 0 1px 0 rgba(34, 197, 94, 0.1)'
+                  : '0 8px 32px rgba(0, 255, 136, 0.1), inset 0 1px 0 rgba(0, 255, 136, 0.1)'
+              }}
+            >
+              <h3 className={`font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-2 text-sm sm:text-base flex items-center gap-2 ${
+                isHomeworkSubmitted ? 'text-green-400' : 'text-[#00FF88]'
+              }`}>
+                {isHomeworkSubmitted ? <CheckCircle2 className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                Домашнее задание
+              </h3>
+              
+              {/* Уведомление зависит от статуса */}
+              <div className={`text-[10px] sm:text-xs mb-3 font-['Manrope'] px-2 py-1.5 rounded ${
+                isHomeworkSubmitted
+                  ? 'text-green-300 bg-green-900/20'
+                  : isVideoCompleted 
+                    ? 'text-gray-400 bg-transparent' 
+                    : 'text-gray-500 bg-gray-900/30'
+              }`}>
+                {isHomeworkSubmitted 
+                  ? '✅ Ваше домашнее задание принято'
+                  : isVideoCompleted 
+                    ? 'Чтобы открыть новый модуль обязательно сдайте домашнее задание'
+                    : '⏳ Кнопка будет доступна когда вы посмотрите 80% видео'
+                }
+              </div>
+
+              <Button
+                onClick={() => setIsHomeworkDialogOpen(true)}
+                disabled={isHomeworkSubmitted || !isVideoCompleted}
+                className={`w-full font-['Manrope'] font-semibold text-sm sm:text-base py-3 sm:py-4 transition-all duration-300 ${
+                  isHomeworkSubmitted
+                    ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed border border-gray-600/50'
+                    : isVideoCompleted
+                      ? 'bg-[#00FF88] hover:bg-[#00cc88] text-black shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]'
+                      : 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50'
+                }`}
+                style={isVideoCompleted && !isHomeworkSubmitted ? { transform: 'skewX(-5deg)' } : {}}
+              >
+                <span className="flex items-center justify-center gap-2" style={isVideoCompleted && !isHomeworkSubmitted ? { transform: 'skewX(5deg)' } : {}}>
+                  {isHomeworkSubmitted ? <CheckCircle2 className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                  {isHomeworkSubmitted ? 'Домашнее задание сдано' : 'Сдать домашнее задание'}
+                </span>
+              </Button>
+            </motion.div>
+
             {/* ⚡ GLASS PANEL: Materials */}
             {/* 📎 МАТЕРИАЛЫ: Показываем только если есть материалы */}
             {materials.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.5 }}
                 className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
                 style={{
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
@@ -1221,12 +1297,12 @@ const TripwireLesson = () => {
               </motion.div>
             )}
 
-            {/* 💡 GLASS PANEL: AI Tips - с пульсирующей лампочкой */}
+            {/* 💡 GLASS PANEL: AI Tips - ПОСЛЕДНИЙ */}
             {(lesson?.tip || lesson?.ai_tips) && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.7 }}
                 className="bg-gradient-to-br from-[#00FF88]/10 to-[#00cc88]/5 border border-[#00FF88]/30 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-xl"
                 style={{
                   boxShadow: '0 8px 32px rgba(0, 255, 136, 0.1), inset 0 1px 0 rgba(0, 255, 136, 0.1)'
@@ -1298,55 +1374,11 @@ const TripwireLesson = () => {
               </motion.div>
             )}
 
-            {/* 📝 GLASS PANEL: Homework - ТРЕТИЙ */}
+            {/* 📊 GLASS PANEL: Progress - ТРЕТИЙ */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-gradient-to-br from-[#00FF88]/5 to-transparent border border-[#00FF88]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-xl"
-              style={{
-                boxShadow: '0 8px 32px rgba(0, 255, 136, 0.1), inset 0 1px 0 rgba(0, 255, 136, 0.1)'
-              }}
-            >
-              <h3 className="text-[#00FF88] font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-2 text-sm sm:text-base flex items-center gap-2">
-                <Send className="w-4 h-4" />
-                Домашнее задание
-              </h3>
-              
-              {/* Невзрачное уведомление - всегда показываем */}
-              <div className={`text-[10px] sm:text-xs mb-3 font-['Manrope'] px-2 py-1.5 rounded ${
-                isVideoCompleted 
-                  ? 'text-gray-400 bg-transparent' 
-                  : 'text-gray-500 bg-gray-900/30'
-              }`}>
-                {isVideoCompleted 
-                  ? 'Чтобы открыть новый модуль обязательно сдайте домашнее задание'
-                  : '⏳ Кнопка будет доступна когда вы посмотрите 80% видео'
-                }
-              </div>
-
-              <Button
-                onClick={() => setIsHomeworkDialogOpen(true)}
-                disabled={!isVideoCompleted}
-                className={`w-full font-['Manrope'] font-semibold text-sm sm:text-base py-3 sm:py-4 transition-all duration-300 ${
-                  isVideoCompleted
-                    ? 'bg-[#00FF88] hover:bg-[#00cc88] text-black shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]'
-                    : 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50'
-                }`}
-                style={isVideoCompleted ? { transform: 'skewX(-5deg)' } : {}}
-              >
-                <span className="flex items-center justify-center gap-2" style={isVideoCompleted ? { transform: 'skewX(5deg)' } : {}}>
-                  <Send className="w-4 h-4" />
-                  Сдать домашнее задание
-                </span>
-              </Button>
-            </motion.div>
-
-            {/* 📊 GLASS PANEL: Progress - ЧЕТВЕРТЫЙ */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
               className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
               style={{
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
@@ -1412,6 +1444,7 @@ const TripwireLesson = () => {
           lessonId={lessonId}
           userId={mainUserId}
           onSubmitSuccess={() => {
+            setIsHomeworkSubmitted(true); // ✅ Устанавливаем чекпойнт
             toast({
               title: '✅ Домашнее задание сдано!',
               description: 'Отличная работа!',
