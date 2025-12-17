@@ -1174,7 +1174,7 @@ const TripwireLesson = () => {
               >
                 <h3 className="text-white font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF88]" />
-                  Материалы
+                  Материалы урока
                 </h3>
                 
                 <div className="space-y-2">

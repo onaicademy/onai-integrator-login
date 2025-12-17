@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink, X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { useState } from "react";
 
 interface MaterialPreviewDialogProps {
@@ -102,24 +102,14 @@ export function MaterialPreviewDialog({ open, onClose, material }: MaterialPrevi
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
+        <div className="px-6 py-4 border-t border-gray-800">
           <Button
             asChild
-            className="flex-1 bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold"
+            className="w-full bg-[#00FF88] hover:bg-[#00cc88] text-black font-semibold"
           >
             <a href={fileUrl} download={fileName}>
               <Download className="w-4 h-4 mr-2" />
               Скачать файл
-            </a>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="flex-1 border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white"
-          >
-            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Открыть в новой вкладке
             </a>
           </Button>
         </div>
