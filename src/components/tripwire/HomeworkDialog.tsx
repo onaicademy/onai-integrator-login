@@ -166,6 +166,20 @@ export function HomeworkDialog({
               </DialogHeader>
 
               <div className="px-6 py-6 space-y-4">
+                {/* ✅ Описание домашнего задания */}
+                {(lessonId === '68' || lessonId === '69') && (
+                  <div className="bg-[#00FF88]/5 border border-[#00FF88]/20 rounded-lg p-4 mb-4">
+                    <p className="text-base text-gray-200">
+                      <strong className="text-[#00FF88] font-bold">Домашнее задание:</strong>
+                      {' '}
+                      {lessonId === '68' 
+                        ? 'Написать структуру промпта для любого бизнеса в сфере услуг (не товарка)'
+                        : 'написать сценарий для своего будущего видео'
+                      }
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Ваш ответ
