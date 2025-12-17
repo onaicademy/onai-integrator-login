@@ -196,6 +196,14 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
     }
   };
 
+  // ✅ Блокируем отправку формы по Enter (без выбора способа оплаты)
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // ❌ НЕ ДЕЛАЕМ НИЧЕГО! Форма может отправляться ТОЛЬКО через кнопки способа оплаты
+    alert('⚠️ Пожалуйста, выберите способ оплаты');
+    return false;
+  };
+
   const handleSubmit = async (e: React.FormEvent, paymentMethod: string) => {
     e.preventDefault();
     
@@ -383,7 +391,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
                 </div>
 
                 {/* Form */}
-                <form className="space-y-5">
+                <form className="space-y-5" onSubmit={handleFormSubmit}>
                   
                   {/* Name Input */}
                   <div>
