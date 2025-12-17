@@ -156,23 +156,30 @@ export async function sendLeadNotification(
     // Определяем тип заявки по source
     const isProftest = leadData.source?.toLowerCase().includes('proftest');
     const leadType = isProftest ? '📝 ПРОФТЕСТ' : '🎓 ЭКСПРЕСС КУРС';
-    
+
     // Форматируем способ оплаты
-    const paymentMethodText = leadData.paymentMethod 
-      ? leadData.paymentMethod === 'kaspi' 
-        ? '💳 Kaspi банк'
-        : leadData.paymentMethod === 'card' 
-        ? '💰 Банковская карта'
-        : '💬 Чат с менеджером'
-      : '❓ Не выбран';
+    // ✅ ЛОГИКА: Показываем ТОЛЬКО если способ оплаты выбран (передан в leadData)
+    // ❌ НЕ показываем если paymentMethod undefined/null (форма без выбора оплаты)
+    let paymentMethodLine = '';
+    if (leadData.paymentMethod) {
+      // ✅ Способ оплаты ВЫБРАН - показываем
+      const paymentMethodText = 
+        leadData.paymentMethod === 'kaspi'
+          ? '💳 Kaspi банк'
+          : leadData.paymentMethod === 'card'
+          ? '💰 Банковская карта'
+          : '💬 Чат с менеджером';
+      paymentMethodLine = `💳 <b>Способ оплаты:</b> ${paymentMethodText}\n`;
+    }
+    // ❌ paymentMethod не передан → строка НЕ показывается (ProfTest, TF4, и т.д.)
 
     // Создаем красивое сообщение (HTML формат - более надежный чем Markdown!)
-    const message = 
+    const message =
       `🎯 <b>НОВАЯ ЗАЯВКА - ${leadType}</b>\n\n` +
       `👤 <b>Имя:</b> ${leadData.name}\n` +
       `📱 <b>Телефон:</b> ${leadData.phone}\n` +
       `${leadData.email ? `📧 <b>Email:</b> ${leadData.email}\n` : ''}` +
-      `💳 <b>Способ оплаты:</b> ${paymentMethodText}\n` + // ✅ ВСЕГДА показываем!
+      paymentMethodLine + // ✅ Показываем ТОЛЬКО для ExpressCourse!
       `📍 <b>Источник:</b> ${leadData.source || 'expresscourse'}\n\n` +
       `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
 
