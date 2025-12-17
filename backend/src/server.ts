@@ -91,6 +91,7 @@ import videosRouter from './routes/videos'; // ✅ Videos API (NEW - для по
 import materialsRouter from './routes/materials';
 import tripwireRouter from './routes/tripwire';
 import tripwireLessonsRouter from './routes/tripwire-lessons';
+import tripwireHomeworkRouter from './routes/tripwire-homework'; // ✅ Homework Submissions
 import tripwireManagerRouter from './routes/tripwire-manager'; // ✅ Sales Manager Dashboard
 import tripwireAdminRouter from './routes/tripwire/admin'; // ✅ Tripwire Admin Dashboard
 import tripwireTranscriptionsOldRouter from './routes/tripwire/transcriptions'; // ✅ Tripwire Transcriptions (OLD - admin only)
@@ -357,6 +358,7 @@ app.use('/api/telegram-leads', telegramLeadsRouter); // 🤖 Telegram Leads Bot 
 app.use('/api/debug', debugRouter); // 🔍 DEBUG: Check env variables
 app.use('/api/tripwire', tripwireRouter);
 app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints
+app.use('/api/tripwire', tripwireHomeworkRouter); // ✅ Homework submissions
 app.use('/api/admin/tripwire', tripwireManagerRouter); // ✅ Sales Manager Dashboard (admin & sales roles only)
 app.use('/api/tripwire/admin', tripwireAdminRouter); // ✅ Tripwire Admin Dashboard (admin only)
 app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsOldRouter); // ✅ Tripwire Transcriptions (Admin)
