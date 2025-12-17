@@ -7,7 +7,6 @@ import { Clock, BookOpen, Lock, Zap, Code, Briefcase, Rocket, Brain, Bot, Clappe
 import { ModuleUnlockAnimation } from "@/components/tripwire/ModuleUnlockAnimation";
 import { api } from "@/utils/apiClient";
 import LiveStreamModule from "./components/LiveStreamModule";
-import { TripwireAIChatDialog } from "@/components/tripwire/TripwireAIChatDialog";
 import { tripwireSupabase } from "@/lib/supabase-tripwire";
 import { showLocked } from "@/lib/notifications"; // ✅ Import notification helper
 
@@ -48,14 +47,13 @@ const tripwireModules = [
     moduleNumber: 2,
     title: "МОДУЛЬ 2: Создание GPT-бота",
     subtitle: "Instagram, WhatsApp интеграции",
-    description: "ОБНОВЛЕНИЕ СКОРО. Практический модуль по созданию умных ассистентов. Подключение к соцсетям и автоматизация общения.",
+    description: "Практический модуль по созданию умных GPT-консультантов. Подключение к соцсетям и автоматизация общения.",
     duration: "0 мин",
     lessons: 1,
     icon: MessageSquare,
     status: "locked",
     gradient: "from-[#00FF88]/10 via-[#00FF88]/5 to-transparent",
     lessonId: 68,
-    lockMessage: "Открытие модуля 17.12.25",
   },
   {
     id: 18, // ✅ Модуль 3: AI в бизнесе в БД
@@ -69,7 +67,6 @@ const tripwireModules = [
     status: "locked",
     gradient: "from-[#00FF88]/10 via-[#00FF88]/5 to-transparent",
     lessonId: 69,
-    lockMessage: "Открытие модуля 17.12.25",
   },
 ];
 
@@ -84,7 +81,6 @@ export default function TripwireProductPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [hoveredModule, setHoveredModule] = useState<number | null>(null);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false); // ✅ AI Curator State
 
   // 🔥 ВАЖНО: Используем tripwireSupabase для Tripwire студентов, НЕ useAuth()!
   const [tripwireUser, setTripwireUser] = useState<any>(null);
@@ -221,40 +217,39 @@ export default function TripwireProductPage() {
     loadUnlocks();
   }, [tripwireUser?.id]);
 
-  // 🔥 Load lesson durations from Bunny Stream video metadata
+  // 🔥 Load lesson durations from database (video_duration in seconds)
   useEffect(() => {
     const loadDurations = async () => {
       try {
-        // Load all 3 lessons and extract duration from video metadata
+        console.log('⏱️ [TripwireProductPage] Loading lesson durations...');
+        // Load all 3 lessons and extract duration from DB
         const lessonIds = [67, 68, 69];
         const lessons = await Promise.all(
           lessonIds.map(async (id) => {
             try {
               const response = await api.get(`/api/tripwire/lessons/${id}`);
+              const durationSeconds = response.lesson?.video_duration || 0;
+              console.log(`⏱️ Lesson ${id}: ${durationSeconds}s`);
               return {
                 id,
-                duration_minutes: response.lesson?.duration_minutes || 0
+                duration_seconds: durationSeconds
               };
             } catch (err) {
               console.warn(`Failed to load lesson ${id}:`, err);
-              return { id, duration_minutes: 0 };
+              return { id, duration_seconds: 0 };
             }
           })
         );
         
         const updatedModules = tripwireModules.map(module => {
           const lesson = lessons.find(l => l.id === module.lessonId);
-          if (lesson && lesson.duration_minutes) {
-            const hours = Math.floor(lesson.duration_minutes / 60);
-            const minutes = lesson.duration_minutes % 60;
-            let durationStr = '';
-            if (hours > 0) {
-              durationStr = hours + ' ч' + (minutes > 0 ? ' ' + minutes + ' мин' : '');
-            } else {
-              durationStr = minutes + ' мин';
-            }
+          if (lesson && lesson.duration_seconds > 0) {
+            const minutes = Math.round(lesson.duration_seconds / 60);
+            const durationStr = `${minutes} мин`;
+            console.log(`✅ Module ${module.id} (lesson ${module.lessonId}): ${durationStr}`);
             return { ...module, duration: durationStr };
           }
+          console.log(`⚠️ Module ${module.id} (lesson ${module.lessonId}): No duration`);
           return module;
         });
         setModulesWithDuration(updatedModules);
@@ -319,32 +314,16 @@ export default function TripwireProductPage() {
       return { ...module, status: 'active' };
     }
     
-    // 🔒 ВРЕМЕННАЯ БЛОКИРОВКА МОДУЛЕЙ 2 И 3 (ОБНОВЛЕНИЕ СКОРО)
-    // Модуль 16 (Вводный) остается открытым
-    // Модули 17 (ГПТ) и 18 (Reels) заблокированы
-    if (module.id === 16) {
-      console.log(`✅ Module 16 (Вводный): ВСЕГДА ОТКРЫТ`);
-      return { ...module, status: 'active' };
-    }
+    // 🎯 ПРОГРЕССИВНАЯ РАЗБЛОКИРОВКА
+    // Модуль 16 (Вводный) открыт по умолчанию
+    // Модули 17-18 открываются через userUnlockedModuleIds (после завершения предыдущих)
+    const isUnlocked = module.id === 16 || userUnlockedModuleIds.includes(module.id);
+    console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
     
-    if (module.id === 17 || module.id === 18) {
-      console.log(`🔒 Module ${module.id}: ВРЕМЕННО ЗАБЛОКИРОВАН (открытие 17.12.25)`);
       return {
         ...module,
-        status: 'locked',
-        lockMessage: 'Открытие модуля 17.12.25' // ✅ Custom lock message with date
-      };
-    }
-    
-    // 🔥 Остальные модули открываются через userUnlockedModuleIds (ЗАКОММЕНТИРОВАНО)
-    // const isUnlocked = userUnlockedModuleIds.includes(module.id);
-    // console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
-    // return {
-    //   ...module,
-    //   status: isUnlocked ? 'active' : 'locked'
-    // };
-    
-    return { ...module, status: 'locked' };
+      status: isUnlocked ? 'active' : 'locked'
+    };
   });
 
   const activeModules = modulesWithDynamicStatus.filter(m => m.status === 'active');
@@ -473,51 +452,6 @@ export default function TripwireProductPage() {
                 Начните свой путь от нуля до первых $1000.
               </p>
             </div>
-
-            {/* 🟢 AI CURATOR BUTTON - ТОЛЬКО ДЛЯ АДМИНОВ */}
-            {isAdmin && (
-              <motion.button
-                whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(0,255,136,0.3)' }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsAIChatOpen(true)}
-                className="group relative px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2.5 overflow-hidden rounded-md sm:rounded-lg flex items-center gap-2 sm:gap-2.5 border border-[#00FF88]/40 hover:border-[#00FF88] cursor-pointer transition-all duration-300 flex-shrink-0 md:w-auto"
-                style={{
-                  background: `linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 100%)`,
-                  backdropFilter: 'blur(20px)',
-                }}
-              >
-                {/* Shimmer Effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                  initial={{ x: '-200%' }}
-                  animate={{ x: '200%' }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                    ease: "easeInOut"
-                  }}
-                />
-                
-                {/* Icon Container */}
-                <div className="relative z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-sm sm:rounded-md bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/30 group-hover:bg-[#00FF88]/20 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
-                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-5 lg:h-5 text-[#00FF88]" />
-                </div>
-
-                {/* Text */}
-                <div className="relative z-10 text-left flex-1 min-w-0">
-                  <p className="font-bold font-mono text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs leading-none mb-0.5 transition-colors text-white group-hover:text-[#00FF88]">
-                    AI Куратор
-                  </p>
-                  <p className="text-[7px] sm:text-[8px] md:text-[8px] lg:text-[9px] text-white/60 font-mono tracking-wide leading-none truncate">
-                    Онлайн 24/7
-                  </p>
-                </div>
-
-                {/* Glow Effect */}
-                <div className="absolute inset-0 bg-[#00FF88]/5 group-hover:bg-[#00FF88]/10 transition-colors duration-500 pointer-events-none" />
-              </motion.button>
-            )}
           </div>
         </motion.header>
 
@@ -568,7 +502,7 @@ export default function TripwireProductPage() {
                   className={`absolute inset-0 bg-gradient-to-br ${module.gradient} ${isLocked ? 'opacity-20' : 'opacity-30'}`}
                 />
 
-                  <div className="relative z-10 flex items-start gap-3">
+                  <div className="relative z-10 h-full flex items-start gap-3">
                     {/* Icon with Badge */}
                     <div className="relative flex-shrink-0">
                       <div 
@@ -605,67 +539,73 @@ export default function TripwireProductPage() {
                     </div>
 
                     {/* Text */}
-                    <div className="flex-1 min-w-0 flex flex-col">
+                    <div className="flex-1 min-w-0 flex flex-col h-full">
                       <h3 
-                        className="text-base sm:text-lg font-bold uppercase mb-1 line-clamp-1"
+                        className="text-base sm:text-lg font-bold uppercase mb-2 line-clamp-1"
                         style={{ 
                           color: isLocked ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
-                          fontFamily: BRAND.fonts.main
+                          fontFamily: BRAND.fonts.main,
+                          letterSpacing: '0.02em'
                         }}
                       >
                         {module.title}
                       </h3>
                       <p 
-                        className="text-[10px] sm:text-xs mb-1.5 line-clamp-1"
+                        className="text-[10px] sm:text-xs mb-2.5 line-clamp-1"
                         style={{ 
-                          color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
+                          color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green,
                           fontFamily: BRAND.fonts.body,
-                          opacity: isLocked ? 0.5 : 0.8
+                          opacity: isLocked ? 0.5 : 0.9,
+                          fontWeight: 600,
+                          letterSpacing: '0.03em'
                         }}
                       >
                         {module.subtitle}
                       </p>
                       <p 
-                        className="text-[10px] sm:text-xs mb-3"
+                        className="text-xs sm:text-sm mb-4 line-clamp-2"
                         style={{ 
                           color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
                           fontFamily: BRAND.fonts.body,
-                          opacity: isLocked ? 0.4 : 0.6
+                          opacity: isLocked ? 0.4 : 0.7,
+                          lineHeight: '1.6'
                         }}
                       >
                         {module.description}
                       </p>
 
                       {/* Stats & Button - прижаты к низу */}
-                      <div className="mt-auto space-y-2">
+                      <div className="mt-auto space-y-3">
                         {/* Stats */}
-                        <div className="flex items-center gap-3 text-[10px] sm:text-xs">
+                        <div className="flex items-center gap-4 text-xs">
                           <div className="flex items-center gap-1.5">
                             <Clock 
-                              className="w-3 h-3 sm:w-4 sm:h-4" 
+                              className="w-3.5 h-3.5 sm:w-4 sm:h-4" 
                               style={{ 
                                 color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
-                                opacity: 0.7 
+                                opacity: 0.8
                               }}
                             />
                             <span style={{ 
                               color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
-                              opacity: 0.7 
+                              opacity: 0.9,
+                              fontWeight: 600
                             }}>
                               {module.duration}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <BookOpen 
-                              className="w-3 h-3 sm:w-4 sm:h-4" 
+                              className="w-3.5 h-3.5 sm:w-4 sm:h-4" 
                               style={{ 
                                 color: isLocked ? 'rgba(156, 163, 175, 0.3)' : BRAND.colors.neon_green, 
-                                opacity: 0.7 
+                                opacity: 0.8
                               }}
                             />
                             <span style={{ 
                               color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.neon_green, 
-                              opacity: 0.7 
+                              opacity: 0.9,
+                              fontWeight: 600
                             }}>
                               {module.lessons} урок
                             </span>
@@ -808,7 +748,7 @@ export default function TripwireProductPage() {
                     </div>
 
                     {/* Text */}
-                    <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col h-full">
                       <h3 
                         className="text-lg lg:text-xl font-bold uppercase mb-1"
                         style={{ 
@@ -829,7 +769,7 @@ export default function TripwireProductPage() {
                         {module.subtitle}
                       </p>
                       <p 
-                        className="text-xs mb-4"
+                        className="text-xs mb-2"
                         style={{ 
                           color: isLocked ? 'rgba(156, 163, 175, 0.4)' : BRAND.colors.text_dim,
                           fontFamily: BRAND.fonts.body,
@@ -962,12 +902,6 @@ export default function TripwireProductPage() {
           }}
         />
       )}
-
-      {/* 🟢 AI CURATOR DIALOG */}
-      <TripwireAIChatDialog 
-        open={isAIChatOpen} 
-        onOpenChange={setIsAIChatOpen} 
-      />
     </div>
   );
 }
