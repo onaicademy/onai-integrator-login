@@ -176,10 +176,34 @@ router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
  */
 router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
   try {
-    // ✅ ШАГ 1: Получить всех студентов Tripwire из tripwire_user_profile
-    const { data: tripwireProfiles, error: profileError } = await supabase
+    // 🚫 EXCLUDED EMAILS (admin + sales managers)
+    const EXCLUDED_EMAILS = [
+      'smmmcwin@gmail.com',       // Admin (Alexander CEO)
+      'rakhat@onaiacademy.kz',    // Sales Manager 1
+      'amina@onaiacademy.kz',     // Sales Manager 2
+      'aselya@onaiacademy.kz',    // Sales Manager 3
+    ];
+
+    // ✅ ШАГ 0: Получить user_id для исключенных пользователей
+    const { data: excludedUsersData } = await supabase
+      .from('tripwire_users')
+      .select('user_id')
+      .in('email', EXCLUDED_EMAILS)
+      .not('user_id', 'is', null);
+
+    const excludedUserIds = excludedUsersData?.map(u => u.user_id) || [];
+
+    // ✅ ШАГ 1: Получить всех студентов Tripwire из tripwire_user_profile (ИСКЛЮЧАЯ админов и sales)
+    let profileQuery = supabase
       .from('tripwire_user_profile')
       .select('user_id, modules_completed, total_modules, completion_percentage, created_at, updated_at');
+
+    // 🔒 Исключаем админов и sales
+    if (excludedUserIds.length > 0) {
+      profileQuery = profileQuery.not('user_id', 'in', `(${excludedUserIds.join(',')})`);
+    }
+
+    const { data: tripwireProfiles, error: profileError } = await profileQuery;
 
     if (profileError) throw profileError;
 
