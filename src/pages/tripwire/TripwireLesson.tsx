@@ -1308,20 +1308,30 @@ const TripwireLesson = () => {
                 boxShadow: '0 8px 32px rgba(0, 255, 136, 0.1), inset 0 1px 0 rgba(0, 255, 136, 0.1)'
               }}
             >
-              <h3 className="text-[#00FF88] font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-3 text-sm sm:text-base flex items-center gap-2">
+              <h3 className="text-[#00FF88] font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-2 text-sm sm:text-base flex items-center gap-2">
                 <Send className="w-4 h-4" />
                 Домашнее задание
               </h3>
-              <p className="text-xs text-gray-400 mb-4 font-['Manrope'] leading-relaxed">
-                Чтобы открыть новый модуль обязательно сдайте домашнее задание
-              </p>
+              
+              {/* Невзрачное уведомление - всегда показываем */}
+              <div className={`text-[10px] sm:text-xs mb-3 font-['Manrope'] px-2 py-1.5 rounded ${
+                isVideoCompleted 
+                  ? 'text-gray-400 bg-transparent' 
+                  : 'text-gray-500 bg-gray-900/30'
+              }`}>
+                {isVideoCompleted 
+                  ? 'Чтобы открыть новый модуль обязательно сдайте домашнее задание'
+                  : '⏳ Кнопка будет доступна когда вы посмотрите 80% видео'
+                }
+              </div>
+
               <Button
                 onClick={() => setIsHomeworkDialogOpen(true)}
                 disabled={!isVideoCompleted}
                 className={`w-full font-['Manrope'] font-semibold text-sm sm:text-base py-3 sm:py-4 transition-all duration-300 ${
                   isVideoCompleted
                     ? 'bg-[#00FF88] hover:bg-[#00cc88] text-black shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]'
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50'
                 }`}
                 style={isVideoCompleted ? { transform: 'skewX(-5deg)' } : {}}
               >
@@ -1330,11 +1340,6 @@ const TripwireLesson = () => {
                   Сдать домашнее задание
                 </span>
               </Button>
-              {!isVideoCompleted && (
-                <p className="text-xs text-gray-500 mt-2 text-center font-['Manrope']">
-                  Доступно после просмотра 80% видео
-                </p>
-              )}
             </motion.div>
 
             {/* 📊 GLASS PANEL: Progress - ЧЕТВЕРТЫЙ */}
