@@ -179,7 +179,7 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
     // ✅ ШАГ 1: Получить всех студентов Tripwire из tripwire_user_profile
     const { data: tripwireProfiles, error: profileError } = await supabase
       .from('tripwire_user_profile')
-      .select('user_id, modules_completed, total_modules, completion_percentage, created_at');
+      .select('user_id, modules_completed, total_modules, completion_percentage, created_at, updated_at');
 
     if (profileError) throw profileError;
 
@@ -198,16 +198,35 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
 
     if (usersError) throw usersError;
 
-    // ✅ ШАГ 3: Объединить данные
+    // ✅ ШАГ 3: Получить последнюю активность из tripwire_progress (более точно)
+    const { data: progressActivities, error: progressError } = await supabase
+      .from('tripwire_progress')
+      .select('tripwire_user_id, updated_at')
+      .in('tripwire_user_id', userIds)
+      .order('updated_at', { ascending: false });
+
+    if (progressError) throw progressError;
+
+    // Группируем по user_id и берем самую последнюю активность
+    const lastActivityMap = new Map<string, string>();
+    progressActivities?.forEach(p => {
+      if (!lastActivityMap.has(p.tripwire_user_id)) {
+        lastActivityMap.set(p.tripwire_user_id, p.updated_at);
+      }
+    });
+
+    // ✅ ШАГ 4: Объединить данные
     const studentsWithProgress = users?.map(user => {
       const profile = tripwireProfiles.find(p => p.user_id === user.id);
+      const lastActivity = lastActivityMap.get(user.id) || profile?.updated_at || null;
       
       return {
         ...user,
         total_modules: profile?.total_modules || 0,
         completed_modules: profile?.modules_completed || 0,
         progress_percent: Math.round(profile?.completion_percentage || 0),
-        enrolled_at: profile?.created_at
+        enrolled_at: profile?.created_at,
+        last_sign_in_at: lastActivity // ✅ Используем последнюю активность из tripwire_progress
       };
     }) || [];
 
