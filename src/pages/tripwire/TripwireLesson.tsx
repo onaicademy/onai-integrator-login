@@ -1217,7 +1217,7 @@ const TripwireLesson = () => {
             )}
 
             {/* 💡 GLASS PANEL: AI Tips - с пульсирующей лампочкой */}
-            {(lesson?.ai_tips || lesson?.tip) && (
+            {(lesson?.tip || lesson?.ai_tips) && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1251,7 +1251,7 @@ const TripwireLesson = () => {
                   Советы по уроку
                 </h3>
                 <div className="text-xs sm:text-sm text-gray-300 leading-relaxed font-['Manrope'] space-y-3">
-                  {(lesson.ai_tips || lesson.tip || '').split('\n').map((line, index) => {
+                  {(lesson.tip || lesson.ai_tips || '').split('\n').map((line, index) => {
                     // Пропускаем заголовок "**СОВЕТ:**"
                     if (line.includes('**СОВЕТ:**')) {
                       return null;
