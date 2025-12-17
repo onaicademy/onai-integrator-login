@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { List } from "@phosphor-icons/react";
 import { Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TripwireAIChatDialog } from "./TripwireAIChatDialog";
 import { Footer } from "@/components/Footer";
 
 interface TripwireLayoutProps {
@@ -24,7 +23,6 @@ interface TripwireLayoutProps {
 export function TripwireLayout({ children }: TripwireLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const isMobile = useIsMobile();
 
   return (
@@ -108,12 +106,6 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
         {/* Footer */}
         <Footer />
       </main>
-
-      {/* AI Chat Dialog */}
-      <TripwireAIChatDialog 
-        open={isAIChatOpen} 
-        onOpenChange={setIsAIChatOpen} 
-      />
     </div>
   );
 }
