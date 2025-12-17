@@ -166,9 +166,9 @@ const TripwireLesson = () => {
   const [isHomeworkDialogOpen, setIsHomeworkDialogOpen] = useState(false);
   const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false); // ✅ Чекпойнт: ДЗ сдано
   
-  // ✅ Google Forms для 1-го модуля (урок 68)
+  // ✅ Google Forms для 1-го модуля (урок 67)
   const HOMEWORK_GOOGLE_FORM_URL = 'https://forms.gle/8poeqWvJ5tsz9XgN7';
-  const isFirstModule = lessonId === '68'; // Первый модуль - урок 68
+  const isFirstModule = lessonId === '67'; // ✅ ПЕРВЫЙ МОДУЛЬ - урок 67
   
   // Transcription modal
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false);
