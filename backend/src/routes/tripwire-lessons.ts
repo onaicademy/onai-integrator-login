@@ -6,9 +6,17 @@ import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // ✅ Trip
 import crypto from 'crypto';
 import { amoCrmService } from '../services/amoCrmService';
 import { CompleteLessonSchema, UpdateProgressSchema, validateRequest } from '../types/validation';
+import { generateTranscription } from '../services/transcriptionService';
+import OpenAI from 'openai';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ✅ GROQ для генерации описаний и советов (БЫСТРЕЕ И ДЕШЕВЛЕ!)
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY || '',
+  baseURL: 'https://api.groq.com/openai/v1'
+});
 
 // 🚫 BUNNY STORAGE УДАЛЁН
 // Видео теперь загружаются через Bunny Stream API в /api/stream/upload
@@ -98,6 +106,222 @@ router.get('/videos/:lessonId', async (req, res) => {
   }
 });
 
+// 🔥 POST /api/tripwire/lessons/:lessonId/generate-content-sync
+// СИНХРОННАЯ генерация транскрипции + описания + советов (для отладки)
+router.post('/lessons/:lessonId/generate-content-sync', async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    console.log(`🔥 [SYNC Generate] Starting for lesson ${lessonId}...`);
+
+    // 1️⃣ Получить урок
+    const { data: lesson, error: lessonError } = await tripwireAdminSupabase
+      .from('lessons')
+      .select('id, title, bunny_video_id, description, tip')
+      .eq('id', lessonId)
+      .single();
+
+    if (lessonError || !lesson || !lesson.bunny_video_id) {
+      console.error('❌ [SYNC Generate] Lesson not found or has no video');
+      return res.status(404).json({ error: 'Lesson not found or has no video' });
+    }
+
+    console.log(`📹 [SYNC Generate] Video ID: ${lesson.bunny_video_id}`);
+    const videoUrl = `https://${process.env.BUNNY_STREAM_CDN_HOSTNAME || 'video.onai.academy'}/${lesson.bunny_video_id}/playlist.m3u8`;
+    console.log(`🔗 [SYNC Generate] Video URL: ${videoUrl}`);
+
+    // 2️⃣ Генерируем транскрипцию СИНХРОННО
+    console.log(`🎙️ [SYNC Generate] Starting transcription...`);
+    let transcriptionResult;
+    try {
+      transcriptionResult = await generateTranscription(lesson.bunny_video_id, videoUrl);
+      console.log(`✅ [SYNC Generate] Transcription completed! Length: ${transcriptionResult.transcript_text?.length || 0} chars`);
+    } catch (err: any) {
+      console.error(`❌ [SYNC Generate] Transcription FAILED:`, err.message);
+      console.error(`❌ [SYNC Generate] Stack:`, err.stack);
+      return res.status(500).json({
+        error: 'Transcription failed',
+        details: err.message,
+        stack: err.stack
+      });
+    }
+
+    // 3️⃣ Генерируем описание и советы
+    console.log(`📝 [SYNC Generate] Generating description and tips...`);
+    try {
+      await generateDescriptionAndTips(lessonId, lesson.title, transcriptionResult.transcript_text);
+      console.log(`✅ [SYNC Generate] Description and tips completed!`);
+    } catch (err: any) {
+      console.error(`❌ [SYNC Generate] AI generation FAILED:`, err.message);
+      return res.status(500).json({
+        error: 'AI generation failed',
+        details: err.message
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'ALL content generated successfully!',
+      lesson_id: lessonId,
+      video_id: lesson.bunny_video_id,
+      transcription_length: transcriptionResult.transcript_text?.length || 0
+    });
+  } catch (error: any) {
+    console.error('❌ [SYNC Generate] Unexpected error:', error);
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+});
+
+// 🚀 POST /api/tripwire/lessons/:lessonId/auto-generate-content
+// Автоматическая генерация транскрипции + описания + советов для Tripwire урока
+router.post('/lessons/:lessonId/auto-generate-content', async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    console.log(`🚀 [Auto-Generate] Starting for lesson ${lessonId}...`);
+
+    // 1️⃣ Получить урок
+    const { data: lesson, error: lessonError } = await tripwireAdminSupabase
+      .from('lessons')
+      .select('id, title, bunny_video_id, description, tip')
+      .eq('id', lessonId)
+      .single();
+
+    if (lessonError || !lesson || !lesson.bunny_video_id) {
+      console.error('❌ [Auto-Generate] Lesson not found or has no video');
+      return res.status(404).json({ error: 'Lesson not found or has no video' });
+    }
+
+    // 2️⃣ Проверить, есть ли уже транскрипция
+    const { data: existingTranscription } = await tripwireAdminSupabase
+      .from('video_transcriptions')
+      .select('transcript_text, status')
+      .eq('video_id', lesson.bunny_video_id)
+      .eq('status', 'completed')
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    let transcriptText = existingTranscription?.transcript_text;
+
+    // 3️⃣ Если транскрипции нет - генерируем
+    if (!transcriptText) {
+      console.log(`🎙️ [Auto-Generate] Generating transcription for ${lesson.bunny_video_id}...`);
+      const videoUrl = `https://${process.env.BUNNY_STREAM_CDN_HOSTNAME || 'video.onai.academy'}/${lesson.bunny_video_id}/playlist.m3u8`;
+      
+      // Запускаем транскрипцию АСИНХРОННО (не блокируем ответ)
+      generateTranscription(lesson.bunny_video_id, videoUrl)
+        .then(async (transcriptionResult) => {
+          console.log(`✅ [Auto-Generate] Transcription completed for lesson ${lessonId}`);
+          
+          // 4️⃣ После транскрипции - генерируем описание и советы
+          await generateDescriptionAndTips(lessonId, lesson.title, transcriptionResult.transcript_text);
+        })
+        .catch((err) => {
+          console.error(`❌ [Auto-Generate] Transcription failed for lesson ${lessonId}:`, err);
+        });
+
+      return res.json({
+        success: true,
+        message: 'Content generation started (transcription + AI)',
+        lesson_id: lessonId,
+        video_id: lesson.bunny_video_id,
+        status: 'processing'
+      });
+    }
+
+    // 4️⃣ Если транскрипция уже есть - генерируем описание и советы
+    // ✅ FORCE: Параметр ?force=true принудительно перегенерирует даже если есть
+    const forceRegenerate = req.query.force === 'true';
+    
+    if (!lesson.description || !lesson.tip || forceRegenerate) {
+      console.log(`📝 [Auto-Generate] Generating description and tips for lesson ${lessonId}... (force: ${forceRegenerate})`);
+      await generateDescriptionAndTips(lessonId, lesson.title, transcriptText);
+    }
+
+    res.json({
+      success: true,
+      message: 'Content generation completed',
+      lesson_id: lessonId,
+      status: 'completed'
+    });
+  } catch (error: any) {
+    console.error('❌ [Auto-Generate] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🤖 Функция генерации описания и советов на основе транскрипции
+async function generateDescriptionAndTips(lessonId: string, lessonTitle: string, transcriptText: string) {
+  try {
+    console.log(`🤖 [AI-Generate] Creating description and tips for lesson ${lessonId}...`);
+
+    // ✅ Используем Groq (llama-3.3-70b) - МГНОВЕННАЯ генерация!
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: `Ты - эксперт по созданию образовательного контента для онлайн-курса "Integrator".
+Твоя задача - на основе транскрипции видео-урока создать:
+1. **Описание урока** (2-3 предложения, что студент узнает)
+2. **ТОП-3 СОВЕТА для студента** (каждый совет - 1-2 предложения)
+
+ВАЖНО: Советы должны быть в формате:
+**СОВЕТ:**
+**Совет 1:** [текст совета, 1-2 предложения]
+**Совет 2:** [текст совета, 1-2 предложения]
+**Совет 3:** [текст совета, 1-2 предложения]
+
+ОБРАТИ ВНИМАНИЕ: "Совет 1:", "Совет 2:", "Совет 3:" должны быть в двойных звездочках **
+
+Формат ответа СТРОГО JSON:
+{
+  "description": "текст описания",
+  "tip": "**СОВЕТ:**\\n**Совет 1:** ...\\n**Совет 2:** ...\\n**Совет 3:** ..."
+}`
+        },
+        {
+          role: 'user',
+          content: `Название урока: ${lessonTitle}
+
+Транскрипция видео:
+${transcriptText.slice(0, 8000)} 
+
+Создай описание и ТОП-3 совета для этого урока.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 800,
+      response_format: { type: 'json_object' }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content || '{}');
+    const description = result.description || '';
+    const tip = result.tip || '';
+
+    console.log(`✅ [AI-Generate] Generated content:`, { description: description.slice(0, 50), tip: tip.slice(0, 50) });
+
+    // ✅ Обновляем урок в БД
+    const { error: updateError } = await tripwireAdminSupabase
+      .from('lessons')
+      .update({
+        description,
+        tip,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', lessonId);
+
+    if (updateError) {
+      console.error('❌ [AI-Generate] Failed to update lesson:', updateError);
+      throw updateError;
+    }
+
+    console.log(`✅ [AI-Generate] Lesson ${lessonId} updated with AI-generated content`);
+  } catch (error: any) {
+    console.error(`❌ [AI-Generate] Error generating content:`, error);
+    throw error;
+  }
+}
+
 // GET /api/tripwire/materials/:lessonId - Get materials for lesson
 router.get('/materials/:lessonId', async (req, res) => {
   try {
@@ -121,7 +345,7 @@ router.get('/materials/:lessonId', async (req, res) => {
 
     // Generate public URLs for each material
     const materialsWithUrls = materials.map((material: any) => {
-      const { data } = adminSupabase.storage
+      const { data } = tripwireAdminSupabase.storage
         .from(material.bucket_name)
         .getPublicUrl(material.storage_path);
 
@@ -170,12 +394,8 @@ router.get('/progress/:lessonId', async (req, res) => {
 });
 
 // POST /api/tripwire/complete - Mark lesson as complete
-// ✅ PERPLEXITY BEST PRACTICE: ACID Transaction + Security Checks + Detailed Logging
+// ✅ SUPABASE API VERSION: No pool, direct Supabase queries
 router.post('/complete', async (req, res) => {
-  const { tripwirePool } = await import('../config/tripwire-pool');
-  const client = await tripwirePool.connect();
-  let transactionStarted = false;
-
   try {
     // ✅ LOG: Raw body перед validation (для debugging)
     console.log('[COMPLETE] Raw request body:', JSON.stringify(req.body));
@@ -188,149 +408,156 @@ router.post('/complete', async (req, res) => {
 
     console.log(`🎯 [Complete] User ${tripwire_user_id} completing lesson ${lesson_id} (module ${module_id})`);
 
-    // ============================================
-    // ACID TRANSACTION BEGINS
-    // ============================================
-    console.log(`[COMPLETE] Starting transaction...`);
-    await client.query('BEGIN');
-    transactionStarted = true;
-
     // 🔥 CRITICAL: Get users.id for module_unlocks and achievements
-    const userIdResult = await client.query(`
-      SELECT user_id FROM tripwire_users WHERE id = $1::uuid
-    `, [tripwire_user_id]);
+    const { data: tripwireUser, error: userError } = await tripwireAdminSupabase
+      .from('tripwire_users')
+      .select('user_id')
+      .eq('id', tripwire_user_id)
+      .single();
     
-    const main_user_id = userIdResult.rows[0]?.user_id;
-    if (!main_user_id) {
-      throw new Error(`Cannot find users.id for tripwire_user_id: ${tripwire_user_id}`);
+    if (userError || !tripwireUser?.user_id) {
+      console.error('❌ Cannot find users.id for tripwire_user_id:', tripwire_user_id, userError);
+      return res.status(404).json({ error: 'User not found' });
     }
+    
+    const main_user_id = tripwireUser.user_id;
     console.log(`✅ Resolved IDs: tripwire_user_id=${tripwire_user_id}, main_user_id=${main_user_id}`);
 
-    try {
-      // ✅ STEP 1: SECURITY - Check if user actually watched 80% of video
-      // ❗ SKIP FOR NOW - tripwire_progress doesn't have reliable percentage tracking
-      // Video tracking is handled by frontend useHonestVideoTracking
-      console.log(`[STEP 1] Skipping 80% check (frontend already validated)`);
-      const watchedPercentage = 100; // Trust frontend validation for now
-      console.log(`✅ [STEP 1 SUCCESS] Security check skipped (trusting frontend): ${watchedPercentage}% assumed`);
+    // ✅ STEP 1: SECURITY - Check if user actually watched 80% of video
+    // ❗ SKIP FOR NOW - tripwire_progress doesn't have reliable percentage tracking
+    // Video tracking is handled by frontend useHonestVideoTracking
+    console.log(`[STEP 1] Skipping 80% check (frontend already validated)`);
+    const watchedPercentage = 100; // Trust frontend validation for now
+    console.log(`✅ [STEP 1 SUCCESS] Security check skipped (trusting frontend): ${watchedPercentage}% assumed`);
 
-      // ✅ STEP 2: Mark lesson as completed
-      // ❗ IDEMPOTENCY: ON CONFLICT ensures no duplicates, but we ALWAYS check module completion
-      // ❗ CRITICAL: tripwire_progress.tripwire_user_id → FOREIGN KEY → users.id (NOT tripwire_users.id!)
-      console.log(`[STEP 2] Marking lesson as completed...`);
-      const progressResult = await client.query(`
-        INSERT INTO tripwire_progress (
-          tripwire_user_id, module_id, lesson_id, is_completed, completed_at, updated_at
-        )
-        VALUES ($1::uuid, $2::integer, $3::integer, TRUE, NOW(), NOW())
-        ON CONFLICT (tripwire_user_id, lesson_id)
-        DO UPDATE SET
-          is_completed = TRUE,
-          module_id = EXCLUDED.module_id,
-          completed_at = NOW(),
-          updated_at = NOW()
-        RETURNING *
-      `, [main_user_id, module_id, lesson_id]);
+    // ✅ STEP 2: Mark lesson as completed
+    console.log(`[STEP 2] Marking lesson as completed...`);
+    const { data: progress, error: progressError } = await tripwireAdminSupabase
+      .from('tripwire_progress')
+      .upsert({
+        tripwire_user_id: main_user_id,
+        module_id,
+        lesson_id,
+        is_completed: true,
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'tripwire_user_id,lesson_id'
+      })
+      .select()
+      .single();
 
-      const progress = progressResult.rows[0];
-      console.log(`✅ [STEP 2 SUCCESS] Lesson marked as completed, progress ID:`, progress?.id);
+    if (progressError && progressError.code !== '23505') { // Ignore duplicate errors
+      console.error('❌ Error marking lesson complete:', progressError);
+      return res.status(500).json({ error: 'Failed to mark lesson complete' });
+    }
+    console.log(`✅ [STEP 2 SUCCESS] Lesson marked as completed, progress ID:`, progress?.id);
 
-      // ✅ STEP 3: Get lessons from centralized config
-      const { getModuleLessons } = await import('../config/tripwire-mappings');
-      const allLessonIds = getModuleLessons(module_id);
-      console.log(`[STEP 3] Module ${module_id} has ${allLessonIds.length} lesson(s): [${allLessonIds.join(', ')}]`);
+    // ✅ STEP 3: Get lessons from centralized config
+    const { getModuleLessons } = await import('../config/tripwire-mappings');
+    const allLessonIds = getModuleLessons(module_id);
+    console.log(`[STEP 3] Module ${module_id} has ${allLessonIds.length} lesson(s): [${allLessonIds.join(', ')}]`);
 
-      // ✅ STEP 4: Get completed lessons for this user in current module
-      console.log(`[STEP 4] Fetching user's completed lessons...`);
-      const completedLessonsResult = await client.query(`
-        SELECT DISTINCT lesson_id FROM tripwire_progress
-        WHERE tripwire_user_id = $1::uuid
-        AND module_id = $2::integer
-        AND is_completed = TRUE
-      `, [main_user_id, module_id]);
+    // ✅ STEP 4: Get completed lessons for this user in current module
+    console.log(`[STEP 4] Fetching user's completed lessons...`);
+    const { data: completedLessons, error: completedError } = await tripwireAdminSupabase
+      .from('tripwire_progress')
+      .select('lesson_id')
+      .eq('tripwire_user_id', main_user_id)
+      .eq('module_id', module_id)
+      .eq('is_completed', true);
 
-      const completedLessonIds = completedLessonsResult.rows.map((row: any) => row.lesson_id);
-      console.log(`[STEP 4 RESULT] User completed ${completedLessonIds.length}/${allLessonIds.length} lessons in module ${module_id}`);
+    if (completedError) {
+      console.error('❌ Error fetching completed lessons:', completedError);
+      return res.status(500).json({ error: 'Failed to fetch progress' });
+    }
 
-      // ✅ STEP 5: Check if ALL lessons are completed
-      console.log(`[STEP 5] Checking if module is complete...`);
-      const moduleCompleted = allLessonIds.every(id => completedLessonIds.includes(id));
-      console.log(`[STEP 5 RESULT] Module completed: ${moduleCompleted}`);
+    const completedLessonIds = (completedLessons || []).map((row: any) => row.lesson_id);
+    console.log(`[STEP 4 RESULT] User completed ${completedLessonIds.length}/${allLessonIds.length} lessons in module ${module_id}`);
 
-      let unlockedModuleId: number | null = null;
-      let achievement: any = null;
+    // ✅ STEP 5: Check if ALL lessons are completed
+    console.log(`[STEP 5] Checking if module is complete...`);
+    const moduleCompleted = allLessonIds.every(id => completedLessonIds.includes(id));
+    console.log(`[STEP 5 RESULT] Module completed: ${moduleCompleted}`);
 
-      if (moduleCompleted) {
-        console.log(`[STEP 6] ✅ Module ${module_id} COMPLETED! (Auto-unlock check...)`);
+    let unlockedModuleId: number | null = null;
+    let achievement: any = null;
 
-        // 🚫 TEMPORARY: Disable auto-unlock until modules 2-3 content is ready
-        // TODO: Set to true when ready to enable auto-unlock progression
-        const AUTO_UNLOCK_ENABLED = false;
+    if (moduleCompleted) {
+      console.log(`[STEP 6] ✅ Module ${module_id} COMPLETED! (Auto-unlock check...)`);
 
-        if (AUTO_UNLOCK_ENABLED) {
+      // ✅ ENABLED: Auto-unlock progression for sequential module access
+      const AUTO_UNLOCK_ENABLED = true;
+
+      if (AUTO_UNLOCK_ENABLED) {
         // ✅ STEP 6a: Unlock next module (16→17, 17→18, 18→none)
         const nextModuleId = module_id + 1;
         const maxModuleId = 18; // Tripwire has modules 16, 17, 18
 
         if (nextModuleId <= maxModuleId) {
           // Create module_unlock record for animation
-          // ❗ Use main_user_id (users.id), NOT tripwire_user_id
-          await client.query(`
-            INSERT INTO module_unlocks (id, user_id, module_id, unlocked_at)
-            VALUES (gen_random_uuid(), $1::uuid, $2::integer, NOW())
-            ON CONFLICT (user_id, module_id) DO UPDATE SET unlocked_at = NOW()
-          `, [main_user_id, nextModuleId]);
+          const { error: unlockError } = await tripwireAdminSupabase
+            .from('module_unlocks')
+            .upsert({
+              user_id: main_user_id,
+              module_id: nextModuleId,
+              unlocked_at: new Date().toISOString()
+            }, {
+              onConflict: 'user_id,module_id'
+            });
 
-          unlockedModuleId = nextModuleId;
-          console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
+          if (unlockError) {
+            console.error('⚠️ Error unlocking module:', unlockError);
+          } else {
+            unlockedModuleId = nextModuleId;
+            console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
           }
-        } else {
-          console.log(`⏸️ [STEP 6a SKIPPED] Auto-unlock disabled (waiting for module 2-3 content)`);
         }
-
-        // ✅ STEP 6b: Create achievement (always runs, independent of unlock)
-        // ❗ Use main_user_id (users.id), NOT tripwire_user_id
-        const achievementId = module_id === 16 ? 'first_module_complete' 
-                            : module_id === 17 ? 'second_module_complete'
-                            : 'third_module_complete';
-        
-        const achievementResult = await client.query(`
-          INSERT INTO user_achievements (user_id, achievement_id, current_value, is_completed, completed_at)
-          VALUES ($1::uuid, $2::text, 1, true, NOW())
-          ON CONFLICT (user_id, achievement_id) 
-          DO UPDATE SET is_completed = true, completed_at = NOW(), current_value = 1
-          RETURNING *
-        `, [main_user_id, achievementId]);
-
-        if (achievementResult.rows.length > 0) {
-          achievement = achievementResult.rows[0];
-          console.log(`✅ [STEP 6b SUCCESS] Achievement created: ${achievementId}`);
-        } else {
-          console.log(`[STEP 6b INFO] Achievement already exists or conflict occurred`);
-        }
+      } else {
+        console.log(`⏸️ [STEP 6a SKIPPED] Auto-unlock disabled`);
       }
 
-      // ============================================
-      // COMMIT TRANSACTION
-      // ============================================
-      console.log(`[COMMIT] Committing transaction...`);
-      await client.query('COMMIT');
-      transactionStarted = false;
-      console.log(`✅ [SUCCESS] Lesson completion successful!`);
+      // ✅ STEP 6b: Create achievement
+      const achievementId = module_id === 16 ? 'first_module_complete' 
+                          : module_id === 17 ? 'second_module_complete'
+                          : 'third_module_complete';
+      
+      const { data: achievementData, error: achievementError } = await tripwireAdminSupabase
+        .from('user_achievements')
+        .upsert({
+          user_id: main_user_id,
+          achievement_id: achievementId,
+          current_value: 1,
+          is_completed: true,
+          completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,achievement_id'
+        })
+        .select()
+        .single();
 
-      // ============================================
-      // 🔥 AMOCRM INTEGRATION - Update deal stage
-      // ============================================
-      // Получаем email пользователя для поиска сделки в amoCRM
-      try {
-        const userEmailResult = await client.query(`
-          SELECT u.email 
-          FROM users u
-          INNER JOIN tripwire_users tu ON tu.user_id = u.id
-          WHERE tu.id = $1::uuid
-        `, [tripwire_user_id]);
+      if (!achievementError && achievementData) {
+        achievement = achievementData;
+        console.log(`✅ [STEP 6b SUCCESS] Achievement created: ${achievementId}`);
+      } else {
+        console.log(`[STEP 6b INFO] Achievement already exists or error:`, achievementError?.message);
+      }
+    }
 
-        const userEmail = userEmailResult.rows[0]?.email;
+    console.log(`✅ [SUCCESS] Lesson completion successful!`);
+
+    // ============================================
+    // 🔥 AMOCRM INTEGRATION - Update deal stage (ЛОГИКА НЕ ИЗМЕНЕНА!)
+    // ============================================
+    // Получаем email пользователя для поиска сделки в amoCRM
+    try {
+      const { data: userData, error: emailError } = await tripwireAdminSupabase
+        .from('tripwire_users')
+        .select('email')
+        .eq('id', tripwire_user_id)
+        .single();
+
+      const userEmail = userData?.email;
 
         if (userEmail) {
           // ✅ FIX: Use centralized mapping
@@ -355,28 +582,15 @@ router.post('/complete', async (req, res) => {
         console.error('[AMOCRM] Ошибка при обновлении сделки:', amoCrmError.message);
       }
 
-      // Return success response
-      res.json({
-        success: true,
-        message: 'Lesson completed successfully',
-        progress,
-        moduleCompleted,
-        unlockedModuleId,
-        achievement,
-      });
-
-    } catch (transactionError: any) {
-      // Rollback on any error
-      console.error(`[TRANSACTION ERROR] Rolling back...`, {
-        message: transactionError.message,
-        code: transactionError.code,
-        detail: transactionError.detail,
-        hint: transactionError.hint,
-      });
-      await client.query('ROLLBACK');
-      transactionStarted = false;
-      throw transactionError;
-    }
+    // Return success response
+    res.json({
+      success: true,
+      message: 'Lesson completed successfully',
+      progress,
+      moduleCompleted,
+      unlockedModuleId,
+      achievement,
+    });
 
   } catch (error: any) {
     // ✅ IMPROVED: Детальная обработка разных типов ошибок
@@ -391,37 +605,19 @@ router.post('/complete', async (req, res) => {
       });
     }
     
-    // 2. Database/Transaction errors - логируем и rollback
+    // 2. Database errors - логируем
     console.error('❌ [ERROR] Exception occurred:', {
       message: error.message,
       code: error.code,
       detail: error.detail,
       hint: error.hint,
-      context: error.context,
       stack: error.stack?.split('\n')[0],
     });
-
-    // Rollback if transaction is still open
-    if (transactionStarted) {
-      try {
-        console.log(`[ROLLBACK] Reverting transaction...`);
-        await client.query('ROLLBACK');
-      } catch (rollbackError: any) {
-        console.error(`[ROLLBACK ERROR]`, rollbackError.message);
-      }
-    }
 
     res.status(500).json({
       error: 'Failed to complete lesson',
       details: error.message,
-      code: error.code,
-      hint: error.hint,
     });
-
-  } finally {
-    // Always release connection
-    client.release();
-    console.log(`[CLEANUP] Connection released`);
   }
 });
 
@@ -767,11 +963,11 @@ router.post('/materials/upload', upload.single('file'), async (req, res) => {
 
     console.log('📚 Uploading material for Tripwire lesson:', lessonId);
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage (TRIPWIRE!)
     const fileExtension = req.file.originalname.split('.').pop() || 'pdf';
     const uniqueFilename = `tripwire-lesson-${lessonId}-${crypto.randomBytes(8).toString('hex')}.${fileExtension}`;
 
-    const { error: uploadError } = await adminSupabase.storage
+    const { error: uploadError } = await tripwireAdminSupabase.storage
       .from('lesson-materials')
       .upload(uniqueFilename, req.file.buffer, {
         contentType: req.file.mimetype,
@@ -783,16 +979,16 @@ router.post('/materials/upload', upload.single('file'), async (req, res) => {
       return res.status(500).json({ error: uploadError.message });
     }
 
-    // Get public URL
-    const { data: publicUrlData } = adminSupabase.storage
+    // Get public URL (TRIPWIRE!)
+    const { data: publicUrlData } = tripwireAdminSupabase.storage
       .from('lesson-materials')
       .getPublicUrl(uniqueFilename);
 
     const publicUrl = publicUrlData.publicUrl;
     console.log('✅ Material uploaded to Supabase Storage:', publicUrl);
 
-    // Insert material record
-    const { data: material, error } = await adminSupabase
+    // Insert material record (TRIPWIRE!)
+    const { data: material, error } = await tripwireAdminSupabase
       .from('lesson_materials')
       .insert({
         lesson_id: parseInt(lessonId),
@@ -827,24 +1023,24 @@ router.delete('/materials/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Get material record
-    const { data: material } = await adminSupabase
+    // Get material record (TRIPWIRE!)
+    const { data: material } = await tripwireAdminSupabase
       .from('lesson_materials')
       .select('storage_path, bucket_name')
       .eq('id', id)
       .single();
 
     if (material?.storage_path) {
-      // Delete from Supabase Storage
-      await adminSupabase.storage
+      // Delete from Supabase Storage (TRIPWIRE!)
+      await tripwireAdminSupabase.storage
         .from(material.bucket_name || 'lesson-materials')
         .remove([material.storage_path]);
 
       console.log('✅ Material deleted from Supabase Storage:', material.storage_path);
     }
 
-    // Delete from DB
-    await adminSupabase
+    // Delete from DB (TRIPWIRE!)
+    await tripwireAdminSupabase
       .from('lesson_materials')
       .delete()
       .eq('id', id);
