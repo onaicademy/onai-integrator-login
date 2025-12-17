@@ -101,8 +101,8 @@ export const useHonestVideoTracking = (
         
         // Определяем какие поля загружать
         const selectFields = tableName === 'tripwire_progress'
-          ? 'watched_segments, total_watched_seconds, video_duration, video_progress_percent, is_completed, video_qualified_for_completion'
-          : 'watched_segments, total_watched_seconds, video_duration_seconds, watch_percentage, is_qualified_for_completion';
+          ? 'watched_segments, total_watched_seconds, video_duration, video_progress_percent, is_completed, video_qualified_for_completion, last_position_seconds'
+          : 'watched_segments, total_watched_seconds, video_duration_seconds, watch_percentage, is_qualified_for_completion, last_position_seconds';
         
         const { data, error } = await supabase
           .from(tableName)
@@ -147,6 +147,10 @@ export const useHonestVideoTracking = (
             ? (record.video_qualified_for_completion || false)
             : (record.is_qualified_for_completion || false);
           
+          // ✅ NEW: Загружаем последнюю позицию для восстановления плеера
+          const savedLastPosition = record.last_position_seconds || 0;
+          lastTimeRef.current = savedLastPosition;
+          
           setProgress(Number(progressPercent) || 0);
           setTotalWatchedSeconds(record.total_watched_seconds || 0);
           setIsCompleted(completed || false);
@@ -159,7 +163,8 @@ export const useHonestVideoTracking = (
           console.log('✅ [HonestTracking] Loaded:', {
             progress: progressPercent,
             segments: segmentsRef.current.length,
-            totalWatched: record.total_watched_seconds
+            totalWatched: record.total_watched_seconds,
+            lastPosition: savedLastPosition // ✅ NEW: Логируем позицию
           });
         } else {
           console.log('ℹ️ [HonestTracking] No previous progress found');
@@ -405,6 +410,7 @@ export const useHonestVideoTracking = (
     isLoaded,
     totalWatchedSeconds,
     videoDuration: videoDurationRef.current,
+    lastPosition: lastTimeRef.current, // ✅ NEW: Возвращаем последнюю позицию для восстановления
     // ✅ FIX #3: Возвращаем флаг квалификации
     isQualifiedForCompletion,
     handleTimeUpdate,

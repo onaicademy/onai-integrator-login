@@ -423,15 +423,15 @@ router.post('/complete', async (req, res) => {
     const main_user_id = tripwireUser.user_id;
     console.log(`✅ Resolved IDs: tripwire_user_id=${tripwire_user_id}, main_user_id=${main_user_id}`);
 
-    // ✅ STEP 1: SECURITY - Check if user actually watched 80% of video
-    // ❗ SKIP FOR NOW - tripwire_progress doesn't have reliable percentage tracking
-    // Video tracking is handled by frontend useHonestVideoTracking
-    console.log(`[STEP 1] Skipping 80% check (frontend already validated)`);
-    const watchedPercentage = 100; // Trust frontend validation for now
-    console.log(`✅ [STEP 1 SUCCESS] Security check skipped (trusting frontend): ${watchedPercentage}% assumed`);
+      // ✅ STEP 1: SECURITY - Check if user actually watched 80% of video
+      // ❗ SKIP FOR NOW - tripwire_progress doesn't have reliable percentage tracking
+      // Video tracking is handled by frontend useHonestVideoTracking
+      console.log(`[STEP 1] Skipping 80% check (frontend already validated)`);
+      const watchedPercentage = 100; // Trust frontend validation for now
+      console.log(`✅ [STEP 1 SUCCESS] Security check skipped (trusting frontend): ${watchedPercentage}% assumed`);
 
-    // ✅ STEP 2: Mark lesson as completed
-    console.log(`[STEP 2] Marking lesson as completed...`);
+      // ✅ STEP 2: Mark lesson as completed
+      console.log(`[STEP 2] Marking lesson as completed...`);
     const { data: progress, error: progressError } = await tripwireAdminSupabase
       .from('tripwire_progress')
       .upsert({
@@ -451,15 +451,15 @@ router.post('/complete', async (req, res) => {
       console.error('❌ Error marking lesson complete:', progressError);
       return res.status(500).json({ error: 'Failed to mark lesson complete' });
     }
-    console.log(`✅ [STEP 2 SUCCESS] Lesson marked as completed, progress ID:`, progress?.id);
+      console.log(`✅ [STEP 2 SUCCESS] Lesson marked as completed, progress ID:`, progress?.id);
 
-    // ✅ STEP 3: Get lessons from centralized config
-    const { getModuleLessons } = await import('../config/tripwire-mappings');
-    const allLessonIds = getModuleLessons(module_id);
-    console.log(`[STEP 3] Module ${module_id} has ${allLessonIds.length} lesson(s): [${allLessonIds.join(', ')}]`);
+      // ✅ STEP 3: Get lessons from centralized config
+      const { getModuleLessons } = await import('../config/tripwire-mappings');
+      const allLessonIds = getModuleLessons(module_id);
+      console.log(`[STEP 3] Module ${module_id} has ${allLessonIds.length} lesson(s): [${allLessonIds.join(', ')}]`);
 
-    // ✅ STEP 4: Get completed lessons for this user in current module
-    console.log(`[STEP 4] Fetching user's completed lessons...`);
+      // ✅ STEP 4: Get completed lessons for this user in current module
+      console.log(`[STEP 4] Fetching user's completed lessons...`);
     const { data: completedLessons, error: completedError } = await tripwireAdminSupabase
       .from('tripwire_progress')
       .select('lesson_id')
@@ -473,17 +473,17 @@ router.post('/complete', async (req, res) => {
     }
 
     const completedLessonIds = (completedLessons || []).map((row: any) => row.lesson_id);
-    console.log(`[STEP 4 RESULT] User completed ${completedLessonIds.length}/${allLessonIds.length} lessons in module ${module_id}`);
+      console.log(`[STEP 4 RESULT] User completed ${completedLessonIds.length}/${allLessonIds.length} lessons in module ${module_id}`);
 
-    // ✅ STEP 5: Check if ALL lessons are completed
-    console.log(`[STEP 5] Checking if module is complete...`);
-    const moduleCompleted = allLessonIds.every(id => completedLessonIds.includes(id));
-    console.log(`[STEP 5 RESULT] Module completed: ${moduleCompleted}`);
+      // ✅ STEP 5: Check if ALL lessons are completed
+      console.log(`[STEP 5] Checking if module is complete...`);
+      const moduleCompleted = allLessonIds.every(id => completedLessonIds.includes(id));
+      console.log(`[STEP 5 RESULT] Module completed: ${moduleCompleted}`);
 
-    let unlockedModuleId: number | null = null;
-    let achievement: any = null;
+      let unlockedModuleId: number | null = null;
+      let achievement: any = null;
 
-    if (moduleCompleted) {
+      if (moduleCompleted) {
       console.log(`[STEP 6] ✅ Module ${module_id} COMPLETED! (Auto-unlock check...)`);
 
       // ✅ ENABLED: Auto-unlock progression for sequential module access
@@ -509,19 +509,19 @@ router.post('/complete', async (req, res) => {
           if (unlockError) {
             console.error('⚠️ Error unlocking module:', unlockError);
           } else {
-            unlockedModuleId = nextModuleId;
-            console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
+          unlockedModuleId = nextModuleId;
+          console.log(`✅ [STEP 6a SUCCESS] Module ${nextModuleId} unlocked for user_id=${main_user_id}`);
           }
         }
       } else {
         console.log(`⏸️ [STEP 6a SKIPPED] Auto-unlock disabled`);
-      }
+        }
 
-      // ✅ STEP 6b: Create achievement
-      const achievementId = module_id === 16 ? 'first_module_complete' 
-                          : module_id === 17 ? 'second_module_complete'
-                          : 'third_module_complete';
-      
+        // ✅ STEP 6b: Create achievement
+        const achievementId = module_id === 16 ? 'first_module_complete' 
+                            : module_id === 17 ? 'second_module_complete'
+                            : 'third_module_complete';
+        
       const { data: achievementData, error: achievementError } = await tripwireAdminSupabase
         .from('user_achievements')
         .upsert({
@@ -538,19 +538,19 @@ router.post('/complete', async (req, res) => {
 
       if (!achievementError && achievementData) {
         achievement = achievementData;
-        console.log(`✅ [STEP 6b SUCCESS] Achievement created: ${achievementId}`);
-      } else {
+          console.log(`✅ [STEP 6b SUCCESS] Achievement created: ${achievementId}`);
+        } else {
         console.log(`[STEP 6b INFO] Achievement already exists or error:`, achievementError?.message);
+        }
       }
-    }
 
-    console.log(`✅ [SUCCESS] Lesson completion successful!`);
+      console.log(`✅ [SUCCESS] Lesson completion successful!`);
 
-    // ============================================
+      // ============================================
     // 🔥 AMOCRM INTEGRATION - Update deal stage (ЛОГИКА НЕ ИЗМЕНЕНА!)
-    // ============================================
-    // Получаем email пользователя для поиска сделки в amoCRM
-    try {
+      // ============================================
+      // Получаем email пользователя для поиска сделки в amoCRM
+      try {
       const { data: userData, error: emailError } = await tripwireAdminSupabase
         .from('tripwire_users')
         .select('email')
@@ -582,15 +582,15 @@ router.post('/complete', async (req, res) => {
         console.error('[AMOCRM] Ошибка при обновлении сделки:', amoCrmError.message);
       }
 
-    // Return success response
-    res.json({
-      success: true,
-      message: 'Lesson completed successfully',
-      progress,
-      moduleCompleted,
-      unlockedModuleId,
-      achievement,
-    });
+      // Return success response
+      res.json({
+        success: true,
+        message: 'Lesson completed successfully',
+        progress,
+        moduleCompleted,
+        unlockedModuleId,
+        achievement,
+      });
 
   } catch (error: any) {
     // ✅ IMPROVED: Детальная обработка разных типов ошибок

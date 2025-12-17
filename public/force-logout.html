@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Принудительный выход</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #030303;
+      color: #00FF88;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      color: #00FF88;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+    
+    .log {
+      margin: 20px 0;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      text-align: left;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .log-line {
+      margin: 8px 0;
+      padding: 4px 8px;
+      border-left: 3px solid #00FF88;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    .log-line.success {
+      border-left-color: #00FF88;
+      color: #00FF88;
+    }
+    
+    .log-line.warning {
+      border-left-color: #FFA500;
+      color: #FFA500;
+    }
+    
+    .log-line.error {
+      border-left-color: #FF0000;
+      color: #FF0000;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .redirect-message {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .countdown {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #00FF88;
+      text-shadow: 0 0 30px rgba(0, 255, 136, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Принудительный выход</h1>
+    <div class="log" id="log"></div>
+    <div class="redirect-message" id="redirect" style="display: none;">
+      <p>✅ Готово! Перенаправление через:</p>
+      <div class="countdown" id="countdown">3</div>
+    </div>
+  </div>
+
+  <script>
+    const log = document.getElementById('log');
+    const redirect = document.getElementById('redirect');
+    const countdownEl = document.getElementById('countdown');
+    
+    function addLog(message, type = 'success') {
+      const line = document.createElement('div');
+      line.className = `log-line ${type}`;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    }
+    
+    async function forceLogout() {
+      addLog('🔄 Начинаем полную очистку...', 'warning');
+      
+      // 1. Clear localStorage
+      try {
+        const keys = Object.keys(localStorage);
+        addLog(`📦 localStorage: найдено ${keys.length} ключей`, 'success');
+        keys.forEach(key => {
+          addLog(`   - Удаляем: ${key}`, 'success');
+          localStorage.removeItem(key);
+        });
+        addLog('✅ localStorage очищен', 'success');
+      } catch (e) {
+        addLog(`⚠️ localStorage: ${e.message}`, 'warning');
+      }
+      
+      // 2. Clear sessionStorage
+      try {
+        const keys = Object.keys(sessionStorage);
+        addLog(`📦 sessionStorage: найдено ${keys.length} ключей`, 'success');
+        sessionStorage.clear();
+        addLog('✅ sessionStorage очищен', 'success');
+      } catch (e) {
+        addLog(`⚠️ sessionStorage: ${e.message}`, 'warning');
+      }
+      
+      // 3. Clear Service Workers
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          addLog(`🔧 Service Workers: найдено ${registrations.length}`, 'success');
+          for (const registration of registrations) {
+            await registration.unregister();
+            addLog(`   - Удален: ${registration.scope}`, 'success');
+          }
+          addLog('✅ Service Workers удалены', 'success');
+        } catch (e) {
+          addLog(`⚠️ Service Workers: ${e.message}`, 'warning');
+        }
+      }
+      
+      // 4. Clear Cache Storage
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          addLog(`💾 Cache Storage: найдено ${cacheNames.length} кэшей`, 'success');
+          for (const name of cacheNames) {
+            await caches.delete(name);
+            addLog(`   - Удален: ${name}`, 'success');
+          }
+          addLog('✅ Cache Storage очищен', 'success');
+        } catch (e) {
+          addLog(`⚠️ Cache Storage: ${e.message}`, 'warning');
+        }
+      }
+      
+      // 5. Clear Cookies
+      try {
+        const cookies = document.cookie.split(';');
+        addLog(`🍪 Cookies: найдено ${cookies.length}`, 'success');
+        cookies.forEach(cookie => {
+          const name = cookie.split('=')[0].trim();
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+          addLog(`   - Удален: ${name}`, 'success');
+        });
+        addLog('✅ Cookies удалены', 'success');
+      } catch (e) {
+        addLog(`⚠️ Cookies: ${e.message}`, 'warning');
+      }
+      
+      // 6. Clear IndexedDB
+      if ('indexedDB' in window) {
+        try {
+          const databases = await indexedDB.databases();
+          addLog(`🗄️ IndexedDB: найдено ${databases.length} баз`, 'success');
+          for (const db of databases) {
+            if (db.name) {
+              indexedDB.deleteDatabase(db.name);
+              addLog(`   - Удалена: ${db.name}`, 'success');
+            }
+          }
+          addLog('✅ IndexedDB очищен', 'success');
+        } catch (e) {
+          addLog(`⚠️ IndexedDB: ${e.message}`, 'warning');
+        }
+      }
+      
+      addLog('', 'success');
+      addLog('🎉 ПОЛНАЯ ОЧИСТКА ЗАВЕРШЕНА!', 'success');
+      addLog('✅ Все данные сессии удалены', 'success');
+      addLog('🔄 Перенаправление на страницу входа...', 'warning');
+      
+      // Show redirect message
+      redirect.style.display = 'block';
+      
+      // Countdown
+      let seconds = 3;
+      const countdownInterval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        
+        if (seconds === 0) {
+          clearInterval(countdownInterval);
+          window.location.href = '/integrator/login?force_refresh=' + Date.now();
+        }
+      }, 1000);
+    }
+    
+    // Start immediately
+    forceLogout();
+  </script>
+</body>
+</html>
+
+

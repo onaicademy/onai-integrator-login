@@ -17,7 +17,7 @@ import Achievements from './components/Achievements';
 import CertificateSection from './components/CertificateSection';
 import AccountSettings from './components/AccountSettings';
 import DigitalFireworks from './components/DigitalFireworks';
-import AchievementModal from './components/AchievementModal';
+import AchievementModal from './components/achievements/AchievementModal';
 import { MatrixRain } from '@/components/MatrixRain';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,6 +39,10 @@ export default function TripwireProfile() {
   const [showFireworks, setShowFireworks] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
   const [newAchievement, setNewAchievement] = useState<any>(null);
+  
+  // 🎮 EPIC ACHIEVEMENT UNLOCK QUEUE
+  const [achievementQueue, setAchievementQueue] = useState<TripwireAchievement[]>([]);
+  const [currentAchIndex, setCurrentAchIndex] = useState(0);
 
   // Загрузка данных
   useEffect(() => {
@@ -196,6 +200,35 @@ export default function TripwireProfile() {
 
       if (achievementsData) {
         setAchievements(achievementsData as any);
+        
+        // 🎮 Проверяем новые достижения для epic анимации
+        const previousShownIds = JSON.parse(
+          localStorage.getItem('shown_achievements_epic') || '[]'
+        );
+        
+        const newUnlocked = (achievementsData as any[]).filter(
+          (ach) => ach.is_completed && !previousShownIds.includes(ach.achievement_id)
+        );
+        
+        if (newUnlocked.length > 0) {
+          console.log('🎉 [Achievements] Новые достижения для epic анимации:', newUnlocked.map((a: any) => a.achievement_id));
+          setAchievementQueue(newUnlocked);
+          setCurrentAchIndex(0);
+          
+          // Конвертируем первое достижение для модального окна
+          const firstAch = newUnlocked[0];
+          setNewAchievement({
+            id: firstAch.achievement_id,
+            title: getAchievementTitle(firstAch.achievement_id),
+            description: getAchievementDescription(firstAch.achievement_id),
+            unlocked: true,
+            unlockedAt: firstAch.completed_at,
+            rarity: getAchievementRarity(firstAch.achievement_id),
+            icon: 'trophy',
+            iconify: getAchievementIcon(firstAch.achievement_id)
+          });
+          setShowAchievementModal(true);
+        }
       }
 
       // 3. Сертификаты (используем Tripwire Supabase!)
@@ -249,6 +282,75 @@ export default function TripwireProfile() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 🎯 Хелперы для конвертации достижений
+  const getAchievementTitle = (id: string) => {
+    const titles: Record<string, string> = {
+      'first_module_complete': 'ПУТЬ НАЙДЕН',
+      'second_module_complete': 'AI ИНТЕГРАТОР',
+      'third_module_complete': 'CREATOR'
+    };
+    return titles[id] || 'ДОСТИЖЕНИЕ';
+  };
+
+  const getAchievementDescription = (id: string) => {
+    const descriptions: Record<string, string> = {
+      'first_module_complete': 'Определено направление в AI',
+      'second_module_complete': 'Создан первый GPT-бот',
+      'third_module_complete': 'Освоено создание вирусных Reels'
+    };
+    return descriptions[id] || 'Разблокировано новое достижение';
+  };
+
+  const getAchievementRarity = (id: string): 'epic' | 'legendary' => {
+    return id === 'third_module_complete' ? 'legendary' : 'epic';
+  };
+
+  const getAchievementIcon = (id: string) => {
+    const icons: Record<string, string> = {
+      'first_module_complete': 'fluent:target-arrow-24-filled',
+      'second_module_complete': 'fluent:brain-circuit-24-filled',
+      'third_module_complete': 'fluent:video-clip-24-filled'
+    };
+    return icons[id] || 'fluent:trophy-24-filled';
+  };
+
+  // 🎮 Обработка закрытия модального окна достижения
+  const handleAchievementModalClose = () => {
+    const currentAch = achievementQueue[currentAchIndex];
+    if (currentAch) {
+      // Сохраняем что показали это достижение
+      const previousShown = JSON.parse(localStorage.getItem('shown_achievements_epic') || '[]');
+      const updated = [...previousShown, currentAch.achievement_id];
+      localStorage.setItem('shown_achievements_epic', JSON.stringify(updated));
+    }
+    
+    // Переходим к следующему достижению или закрываем
+    if (currentAchIndex < achievementQueue.length - 1) {
+      const nextIndex = currentAchIndex + 1;
+      setCurrentAchIndex(nextIndex);
+      
+      // Конвертируем следующее достижение
+      const nextAch = achievementQueue[nextIndex];
+      setNewAchievement({
+        id: nextAch.achievement_id,
+        title: getAchievementTitle(nextAch.achievement_id),
+        description: getAchievementDescription(nextAch.achievement_id),
+        unlocked: true,
+        unlockedAt: nextAch.completed_at,
+        rarity: getAchievementRarity(nextAch.achievement_id),
+        icon: 'trophy',
+        iconify: getAchievementIcon(nextAch.achievement_id)
+      });
+      // Модальное окно остается открытым
+    } else {
+      // Закрываем модальное окно
+      setShowAchievementModal(false);
+      setNewAchievement(null);
+      setAchievementQueue([]);
+      setCurrentAchIndex(0);
     }
   };
 
@@ -380,8 +482,7 @@ export default function TripwireProfile() {
       {showAchievementModal && (
         <AchievementModal
           achievement={newAchievement}
-          open={showAchievementModal}
-          onClose={() => setShowAchievementModal(false)}
+          onClose={handleAchievementModalClose}
         />
       )}
 

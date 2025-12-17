@@ -159,3 +159,7 @@ https://onai.academy/integrator/expresscourse?email={email}&utm_source=email&utm
 **Дата исправления**: 14 декабря 2025  
 **Статус**: ✅ РАБОТАЕТ  
 **Resend API Key**: Обновлен на продакшн
+
+
+
+

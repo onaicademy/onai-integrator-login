@@ -311,3 +311,7 @@ curl https://api.onai.academy/api/tripwire/lessons/67
 **Автор:** AI Диагност (Cursor)  
 **Commit:** 20ce5ba  
 **GitHub:** https://github.com/onaicademy/onai-integrator-login/commit/20ce5ba
+
+
+
+

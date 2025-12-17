@@ -49,6 +49,7 @@ async function hasCompletedAllModules(userId: string): Promise<boolean> {
     // Модули Tripwire: 16, 17, 18
     const tripwireModules = [16, 17, 18];
     
+    // 🔥 ВАЖНО: userId это auth.users.id, и tripwire_progress.tripwire_user_id тоже ссылается на auth.users.id!
     // Считаем сколько уникальных модулей завершено пользователем
     const { data: progress, error: progressError } = await supabase
       .from('tripwire_progress')
@@ -100,12 +101,12 @@ export async function issueCertificate(userId: string, fullName?: string): Promi
     }
     
     // 2. Проверяем, завершил ли пользователь все модули
-    // ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТИРОВАНИЯ
-    // const hasCompleted = await hasCompletedAllModules(userId);
-    // if (!hasCompleted) {
-    //   throw new Error('User has not completed all modules');
-    // }
-    console.log('⚠️ [Certificate] Skipping module completion check (TEMPORARY)');
+    const hasCompleted = await hasCompletedAllModules(userId);
+    if (!hasCompleted) {
+      console.log('⚠️ [Certificate] User has not completed all modules yet');
+      throw new Error('User has not completed all modules');
+    }
+    console.log('✅ [Certificate] User has completed all modules!');
     
     // 3. Получаем имя пользователя
     let studentName = fullName || 'Tripwire Student';

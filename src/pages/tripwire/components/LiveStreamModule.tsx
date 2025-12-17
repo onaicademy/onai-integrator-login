@@ -140,10 +140,10 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
 
         {/* Описание */}
         <div className="space-y-2 mb-4 sm:mb-6">
-          <p className={`text-sm sm:text-base md:text-lg font-bold font-['JetBrains_Mono'] 
-                        tracking-tight sm:tracking-normal md:tracking-wide break-words leading-snug
+          <p className={`text-sm sm:text-base md:text-lg font-bold font-['Manrope'] 
+                        tracking-tight leading-snug
                         ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
-            Как создать платформу стоимостью 20 000$
+            Как создать платформу стоимостью<br />20 000$
           </p>
           <p className={`text-[10px] sm:text-xs md:text-sm font-['Manrope'] uppercase 
                         tracking-wide sm:tracking-wider break-words 

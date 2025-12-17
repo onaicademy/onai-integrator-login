@@ -19,3 +19,7 @@ Stack: Node.js 20, PostgreSQL 17.6 (Supabase), React 18, TypeScript, Express. Н
 
 
 
+
+
+
+

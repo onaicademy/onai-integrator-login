@@ -468,7 +468,7 @@ export default function TripwireLanding() {
 
                   <div className="relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
-                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/2%20module.gif" 
+                      src="https://pjmvxecykysfrzppdcto.supabase.co/storage/v1/object/public/logo/GIF%202%20UROK.gif" 
                       alt="GPT Bot Preview" 
                       loading="lazy"
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
@@ -499,7 +499,7 @@ export default function TripwireLanding() {
                   
                   <div className="relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
-                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/1%20module.gif" 
+                      src="https://pjmvxecykysfrzppdcto.supabase.co/storage/v1/object/public/logo/Video%203.gif" 
                       alt="Viral Reels Preview" 
                       loading="lazy"
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"

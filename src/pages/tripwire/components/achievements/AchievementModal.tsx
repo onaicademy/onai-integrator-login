@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Zap, Target, Flame, Award, Star, X } from 'lucide-react';
+import { Trophy, Zap, Target, Flame, Award, Star, X, Sparkles } from 'lucide-react';
 import { Icon } from '@iconify/react';
 import { cn } from '@/lib/utils';
 import { Achievement } from './achievements.types';
+import confetti from 'canvas-confetti';
+import React from 'react';
 
 interface AchievementModalProps {
   achievement: Achievement | null;
@@ -51,11 +53,57 @@ const rarityStyles = {
   },
 };
 
-export function AchievementModal({ achievement, onClose }: AchievementModalProps) {
+function AchievementModal({ achievement, onClose }: AchievementModalProps) {
   if (!achievement) return null;
 
   const LucideIcon = achievement.icon ? iconMap[achievement.icon] : Trophy;
   const style = rarityStyles[achievement.rarity];
+
+  // 🎉 EPIC CONFETTI на открытии
+  React.useEffect(() => {
+    if (achievement.unlocked) {
+      // Задержка перед конфетти для синхронизации с анимацией
+      setTimeout(() => {
+        const duration = 3000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+        const randomInRange = (min: number, max: number) => {
+          return Math.random() * (max - min) + min;
+        };
+
+        const interval = setInterval(() => {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 50 * (timeLeft / duration);
+          
+          // Золотое конфетти для легендарных, зеленое для остальных
+          const colors = achievement.rarity === 'legendary' 
+            ? ['#FFD700', '#FFA500', '#FFFF00', '#FF8C00']
+            : ['#00FF88', '#00cc88', '#FFFFFF', '#00FFAA'];
+
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            colors
+          });
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            colors
+          });
+        }, 250);
+
+        return () => clearInterval(interval);
+      }, 300);
+    }
+  }, [achievement.unlocked, achievement.rarity]);
 
   return (
     <AnimatePresence>
@@ -71,16 +119,57 @@ export function AchievementModal({ achievement, onClose }: AchievementModalProps
           >
             {/* MODAL */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.5, opacity: 0, y: 50, rotate: -10 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1, 
+                y: 0, 
+                rotate: 0,
+                boxShadow: achievement.unlocked 
+                  ? '0 0 80px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2)'
+                  : '0 0 20px rgba(255, 255, 255, 0.1)'
+              }}
+              exit={{ scale: 0.5, opacity: 0, y: 50, rotate: 10 }}
+              transition={{ 
+                type: 'spring',
+                stiffness: 200,
+                damping: 20,
+                duration: 0.6
+              }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg bg-gradient-to-br from-gray-900 to-black border-2 border-white/10 rounded-3xl p-8 shadow-2xl"
+              className="relative w-full max-w-lg bg-gradient-to-br from-gray-900 to-black border-2 border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden"
             >
+              {/* ANIMATED PARTICLES BACKGROUND */}
+              {achievement.unlocked && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  {[...Array(20)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 bg-[#00FF88] rounded-full"
+                      initial={{ 
+                        x: Math.random() * 100 + '%', 
+                        y: -20,
+                        opacity: 0 
+                      }}
+                      animate={{ 
+                        y: '100vh',
+                        opacity: [0, 1, 0],
+                        scale: [0, 1, 0]
+                      }}
+                      transition={{
+                        duration: Math.random() * 2 + 2,
+                        repeat: Infinity,
+                        delay: Math.random() * 2
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* CLOSE BUTTON */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors z-10"
               >
                 <X className="w-5 h-5 text-white/60" />
               </button>
@@ -142,21 +231,41 @@ export function AchievementModal({ achievement, onClose }: AchievementModalProps
                 {achievement.description}
               </p>
 
-              {/* STATUS */}
-              <div className="border-t border-white/10 pt-6">
+              {/* STATUS & ACTION BUTTON */}
+              <div className="border-t border-white/10 pt-6 space-y-6">
                 {achievement.unlocked && achievement.unlockedAt ? (
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-gray-400 uppercase tracking-wider">
-                      Разблокировано
-                    </p>
-                    <p className="text-xl text-white font-['JetBrains_Mono']">
-                      {new Date(achievement.unlockedAt).toLocaleDateString('ru-RU', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
-                  </div>
+                  <>
+                    <div className="text-center space-y-2">
+                      <p className="text-sm text-gray-400 uppercase tracking-wider">
+                        Разблокировано
+                      </p>
+                      <p className="text-xl text-white font-['JetBrains_Mono']">
+                        {new Date(achievement.unlockedAt).toLocaleDateString('ru-RU', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    
+                    {/* EPIC BUTTON */}
+                    <motion.button
+                      onClick={onClose}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full py-4 px-6 rounded-xl font-bold uppercase tracking-wider text-lg
+                                 bg-gradient-to-r from-[#00FF88] to-[#00CC6A] text-black
+                                 shadow-[0_0_30px_rgba(0,255,136,0.3)]
+                                 hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]
+                                 transition-all duration-300
+                                 flex items-center justify-center gap-3
+                                 font-['Manrope']"
+                    >
+                      <Sparkles className="w-6 h-6" />
+                      КРУТО!
+                      <Sparkles className="w-6 h-6" />
+                    </motion.button>
+                  </>
                 ) : (
                   <div className="text-center">
                     <p className="text-gray-500 uppercase tracking-wider text-sm">
@@ -193,5 +302,5 @@ export function AchievementModal({ achievement, onClose }: AchievementModalProps
   );
 }
 
-
-
+// Default export
+export default AchievementModal;

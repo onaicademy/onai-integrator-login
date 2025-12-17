@@ -59,10 +59,28 @@ const ACHIEVEMENT_CONFIG: AchievementConfig[] = [
 function convertToAchievements(
   dbAchievements: TripwireAchievement[]
 ): Achievement[] {
+  // 🔍 DEBUG: Логируем что приходит из БД
+  console.log('🔍 [Achievements] DB data:', dbAchievements);
+  
   return ACHIEVEMENT_CONFIG.map((config) => {
     const dbAchievement = dbAchievements.find(
       (a) => a.achievement_id === config.id
     );
+
+    // 🔍 DEBUG: Логируем каждое достижение
+    console.log(`🔍 [Achievement] ${config.id}:`, {
+      found: !!dbAchievement,
+      is_completed: dbAchievement?.is_completed,
+      unlocked: dbAchievement?.unlocked,
+      unlocked_at: dbAchievement?.unlocked_at
+    });
+
+    // ✅ FALLBACK: Если достижение в БД и либо is_completed=true, либо unlocked=true
+    const isUnlocked = dbAchievement 
+      ? (dbAchievement.is_completed || dbAchievement.unlocked || false)
+      : false;
+
+    console.log(`✅ [Achievement] ${config.id} final unlocked:`, isUnlocked);
 
     return {
       id: config.id,
@@ -72,7 +90,7 @@ function convertToAchievements(
       iconify: config.icon,
       rarity: config.rarity,
       category: config.category,
-      unlocked: dbAchievement?.is_completed || false,
+      unlocked: isUnlocked,
       unlockedAt: dbAchievement?.unlocked_at || null,
       color: config.color,
       shadowColor: config.shadowColor,

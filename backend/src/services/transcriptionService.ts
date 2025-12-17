@@ -70,23 +70,90 @@ export async function generateTranscription(videoId: string, videoUrl: string): 
     
     console.log(`✅ [Transcription] Audio extracted: ${tempAudioPath}`);
     
-    // ШАГ 3: Отправить в Groq Whisper
-    console.log(`🤖 [Transcription] Sending to Groq Whisper API...`);
+    // ШАГ 2.5: Проверить размер файла
+    const audioStats = fs.statSync(tempAudioPath);
+    const audioSizeMB = audioStats.size / (1024 * 1024);
+    console.log(`📊 [Transcription] Audio size: ${audioSizeMB.toFixed(2)} MB`);
     
-    const transcription = await groq.audio.transcriptions.create({
-      file: fs.createReadStream(tempAudioPath),
-      model: 'whisper-large-v3',
-      language: 'ru',
-      response_format: 'verbose_json',
-      temperature: 0.0
-    }) as any; // Groq возвращает extended format с segments
+    let allSegments: any[] = [];
+    let fullText = '';
     
-    console.log(`✅ [Transcription] Received from Groq`);
+    // ✅ FIX: Если файл > 20MB - разбиваем на чанки по 10 минут
+    if (audioSizeMB > 20) {
+      console.log(`✂️ [Transcription] File too large, splitting into chunks...`);
+      
+      // Получить длительность аудио
+      const durationCmd = await execPromise(
+        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${tempAudioPath}"`
+      );
+      const totalDuration = parseFloat(durationCmd.stdout.trim());
+      console.log(`⏱️ [Transcription] Total duration: ${totalDuration.toFixed(0)}s`);
+      
+      // Разбить на 10-минутные чанки
+      const chunkDuration = 600; // 10 минут
+      const numChunks = Math.ceil(totalDuration / chunkDuration);
+      console.log(`🔢 [Transcription] Splitting into ${numChunks} chunks...`);
+      
+      for (let i = 0; i < numChunks; i++) {
+        const startTime = i * chunkDuration;
+        const chunkPath = `/tmp/${videoId}_chunk_${i}.mp3`;
+        
+        console.log(`✂️ [Transcription] Processing chunk ${i + 1}/${numChunks} (${startTime}s)...`);
+        
+        // Извлечь чанк
+        await execPromise(
+          `ffmpeg -i "${tempAudioPath}" -ss ${startTime} -t ${chunkDuration} -acodec copy "${chunkPath}" -y -loglevel error`
+        );
+        
+        // Транскрибировать чанк
+        const chunkTranscription = await groq.audio.transcriptions.create({
+          file: fs.createReadStream(chunkPath),
+          model: 'whisper-large-v3',
+          language: 'ru',
+          response_format: 'verbose_json',
+          temperature: 0.0
+        }) as any;
+        
+        // Добавить сегменты с корректировкой времени
+        if (chunkTranscription.segments) {
+          chunkTranscription.segments.forEach((seg: any) => {
+            allSegments.push({
+              ...seg,
+              start: seg.start + startTime,
+              end: seg.end + startTime
+            });
+          });
+        }
+        
+        fullText += (chunkTranscription.text || '') + ' ';
+        console.log(`✅ [Transcription] Chunk ${i + 1} completed (${(chunkTranscription.text || '').length} chars)`);
+        
+        // Удалить чанк
+        fs.unlinkSync(chunkPath);
+      }
+      
+      console.log(`✅ [Transcription] All chunks merged! Total: ${fullText.length} chars`);
+    } else {
+      // ШАГ 3: Маленький файл - отправляем целиком
+      console.log(`🤖 [Transcription] Sending to Groq Whisper API...`);
+      
+      const transcription = await groq.audio.transcriptions.create({
+        file: fs.createReadStream(tempAudioPath),
+        model: 'whisper-large-v3',
+        language: 'ru',
+        response_format: 'verbose_json',
+        temperature: 0.0
+      }) as any;
+      
+      allSegments = transcription.segments || [];
+      fullText = transcription.text || '';
+      
+      console.log(`✅ [Transcription] Received from Groq`);
+    }
     
     // ШАГ 4: Конвертировать форматы
-    const plainText = transcription.text || '';
-    const segments = transcription.segments || [];
-    const srtContent = convertToSRT(segments);
+    const plainText = fullText.trim();
+    const srtContent = convertToSRT(allSegments);
     const vttContent = convertSRTtoVTT(srtContent);
     
     // ШАГ 5: Сохранить в БД
@@ -105,8 +172,12 @@ export async function generateTranscription(videoId: string, videoUrl: string): 
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error(`❌ [Transcription] DB Save error:`, error);
+      throw error;
+    }
     
+    console.log(`✅ [Transcription] Saved to DB! Text length: ${plainText.length} chars`);
     console.log(`✅ [Transcription] Completed for ${videoId}`);
     
     // ✅ ЗАПИСЬ ЗАТРАТ НА ТРАНСКРИБАЦИЮ (для всех видео, не только Tripwire)
@@ -120,7 +191,8 @@ export async function generateTranscription(videoId: string, videoUrl: string): 
       
       if (lesson) {
         const courseId = (lesson as any).modules?.course_id;
-        const audioDuration = transcription.duration || 0; // секунды
+        // ✅ FIX: Для чанков записываем 0 (не критично для учёта затрат)
+        const audioDuration = 0; // Groq Whisper бесплатен
         const isTripwire = courseId === 13;
         
         // Groq Whisper бесплатен, но записываем для трекинга

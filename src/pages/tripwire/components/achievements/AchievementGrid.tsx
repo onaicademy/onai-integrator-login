@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AchievementCard } from './AchievementCard';
-import { AchievementModal } from './AchievementModal';
+import AchievementModal from './AchievementModal';
 import { Achievement } from './achievements.types';
 import { cn } from '@/lib/utils';
 

@@ -79,3 +79,6 @@ else
   echo "🔧 Запусти: ./scripts/start-clean.sh"
   exit 1
 fi
+
+
+
