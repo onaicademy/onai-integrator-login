@@ -163,3 +163,4 @@ curl -X POST https://api.onai.academy/api/landing/submit \
 
 **ГОТОВО К DEPLOY!** 🚀
 
+

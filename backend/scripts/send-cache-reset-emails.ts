@@ -19,6 +19,7 @@ const EXCLUDED_EMAILS = [
   'smmmcwin@gmail.com',       // Admin (Alexander CEO)
   'rakhat@onaiacademy.kz',    // Sales Manager 1
   'amina@onaiacademy.kz',     // Sales Manager 2
+  'aselya@onaiacademy.kz',    // Sales Manager 3
 ];
 
 async function sendCacheResetEmails() {
