@@ -42,8 +42,21 @@ export async function getLessonMaterials(lessonId: number): Promise<LessonMateri
       throw new Error(`Failed to fetch materials: ${error.message}`);
     }
 
-    console.log(`✅ [Tripwire MaterialsService] Найдено материалов: ${data?.length || 0}`);
-    return (data || []) as LessonMaterial[];
+    // ✅ Генерируем публичные URL для каждого материала
+    const materialsWithUrls = (data || []).map((material: any) => {
+      const { data: urlData } = supabase.storage
+        .from(material.bucket_name || 'lesson-materials')
+        .getPublicUrl(material.storage_path);
+
+      return {
+        ...material,
+        file_url: urlData.publicUrl,
+        public_url: urlData.publicUrl // ✅ Поддержка обоих полей
+      };
+    });
+
+    console.log(`✅ [Tripwire MaterialsService] Найдено материалов: ${materialsWithUrls.length}`);
+    return materialsWithUrls as LessonMaterial[];
   } catch (error: any) {
     console.error('❌ [Tripwire MaterialsService] Ошибка:', error);
     throw error;
