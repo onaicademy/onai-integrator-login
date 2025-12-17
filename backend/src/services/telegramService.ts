@@ -172,7 +172,7 @@ export async function sendLeadNotification(
       `👤 <b>Имя:</b> ${leadData.name}\n` +
       `📱 <b>Телефон:</b> ${leadData.phone}\n` +
       `${leadData.email ? `📧 <b>Email:</b> ${leadData.email}\n` : ''}` +
-      `${leadData.paymentMethod ? `💳 <b>Способ оплаты:</b> ${paymentMethodText}\n` : ''}` +
+      `💳 <b>Способ оплаты:</b> ${paymentMethodText}\n` + // ✅ ВСЕГДА показываем!
       `📍 <b>Источник:</b> ${leadData.source || 'expresscourse'}\n\n` +
       `⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}`;
 

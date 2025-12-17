@@ -724,7 +724,7 @@ async function retryWithBackoff<T>(
 // ============================================
 router.post('/proftest', async (req: Request, res: Response) => {
   try {
-    const { name, email, phone, source, answers, proftestAnswers, campaignSlug, utmParams, metadata } = req.body;
+    const { name, email, phone, source, answers, proftestAnswers, campaignSlug, utmParams, metadata, paymentMethod } = req.body;
 
     // ✅ УСИЛЕННАЯ ВАЛИДАЦИЯ: Все поля обязательны
     if (!name?.trim() || !email?.trim() || !phone?.trim()) {
@@ -856,6 +856,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
             name,
             phone,
             email: email || undefined,
+            paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined, // ✅ Добавлен способ оплаты
             source: source || `proftest_${campaignSlug || 'unknown'}`,
           });
           console.log(telegramSent ? '✅ Telegram notification sent' : '⚠️ Telegram notification failed');
