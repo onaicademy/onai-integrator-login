@@ -8,6 +8,7 @@ interface SmartVideoPlayerProps {
   videoUrl: string;
   videoId: string;
   posterUrl?: string; // 🖼️ URL превью/обложки видео
+  startPosition?: number; // ✅ NEW: Начальная позиция из БД (секунды)
   onProgress?: (progress: number, currentTime: number, duration: number) => void;
   onPlay?: () => void;
   onPause?: () => void;
@@ -22,6 +23,7 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
   videoUrl,
   videoId,
   posterUrl, // 🖼️ Превью видео
+  startPosition, // ✅ NEW: Начальная позиция из БД
   onProgress,
   onPlay,
   onPause,
@@ -207,16 +209,30 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
       console.log('✅ Plyr ready');
       setIsPlayerReady(true); // 🔥 Плеер готов!
       
-      // 🎬 ВОССТАНОВЛЕНИЕ ПРОГРЕССА из localStorage
+      // 🎬 ВОССТАНОВЛЕНИЕ ПРОГРЕССА из БД (приоритет) или localStorage
       try {
-        const savedProgress = localStorage.getItem(`video_progress_${videoId}`);
-        if (savedProgress) {
-          const savedTime = parseFloat(savedProgress);
-          // Восстанавливаем только если прошло < 95% видео (чтобы не стартовать с конца)
-          if (savedTime > 5 && player.duration && savedTime < player.duration * 0.95) {
-            player.currentTime = savedTime;
-            console.log(`🎬 Восстановлена позиция: ${savedTime.toFixed(1)}s`);
+        let positionToRestore: number | null = null;
+        
+        // 1️⃣ Пробуем восстановить из startPosition (из БД)
+        if (startPosition && startPosition > 5 && player.duration && startPosition < player.duration * 0.95) {
+          positionToRestore = startPosition;
+          console.log(`🎬 [DB] Восстановлена позиция из БД: ${startPosition.toFixed(1)}s`);
+        }
+        // 2️⃣ Если нет в БД - пробуем localStorage (fallback)
+        else {
+          const savedProgress = localStorage.getItem(`video_progress_${videoId}`);
+          if (savedProgress) {
+            const savedTime = parseFloat(savedProgress);
+            if (savedTime > 5 && player.duration && savedTime < player.duration * 0.95) {
+              positionToRestore = savedTime;
+              console.log(`🎬 [LocalStorage] Восстановлена позиция: ${savedTime.toFixed(1)}s`);
+            }
           }
+        }
+        
+        // Применяем восстановленную позицию
+        if (positionToRestore) {
+          player.currentTime = positionToRestore;
         }
       } catch (error) {
         console.error('❌ Ошибка восстановления прогресса:', error);
@@ -585,7 +601,6 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
           className="plyr-video"
           crossOrigin="anonymous"  // ✅ КРИТИЧЕСКИ ВАЖНО!
           playsInline
-          poster={posterUrl || `https://vz-a0b0f15c-18f.b-cdn.net/${videoId}/thumbnail.jpg`} // 🖼️ Превью/обложка видео
           preload="metadata" // 🚀 Предзагрузка метаданных (быстрее)
           style={{ opacity: transcodingStatus === 'processing' || transcodingStatus === 'failed' ? 0 : 1 }}
         />
