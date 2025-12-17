@@ -37,6 +37,10 @@ async function createSalesAccount() {
       email: newSalesManager.email,
       password: newSalesManager.password,
       email_confirm: true, // Автоматическое подтверждение email
+      user_metadata: {
+        role: 'sales', // 🔑 КРИТИЧНО: Устанавливаем роль для StudentGuard
+        full_name: newSalesManager.full_name,
+      },
     });
 
     if (authError) {
