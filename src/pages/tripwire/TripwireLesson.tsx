@@ -390,7 +390,7 @@ const TripwireLesson = () => {
       try {
         const materialsRes = await api.get(`/api/tripwire/lessons/${lessonId}/materials`);
         console.log('📎 [Materials] Response:', materialsRes);
-        setMaterials(materialsRes?.materials || []);
+        setMaterials(materialsRes?.data || []);
       } catch (error) {
         console.log('ℹ️ Материалы не найдены');
       }
