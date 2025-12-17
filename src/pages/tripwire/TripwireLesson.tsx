@@ -23,10 +23,12 @@ import {
   Edit,
   Star,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Send
 } from "lucide-react";
 import { TripwireLessonEditDialog } from "@/components/tripwire/TripwireLessonEditDialog";
 import { MaterialPreviewDialog } from "@/components/MaterialPreviewDialog";
+import { HomeworkDialog } from "@/components/tripwire/HomeworkDialog";
 import { SmartVideoPlayer } from "@/components/SmartVideoPlayer";
 import TranscriptionModal from "@/components/admin/TranscriptionModal";
 import { useHonestVideoTracking } from "@/hooks/useHonestVideoTracking";
@@ -158,6 +160,9 @@ const TripwireLesson = () => {
   
   // Material preview dialog
   const [previewMaterial, setPreviewMaterial] = useState<any>(null);
+  
+  // Homework dialog
+  const [isHomeworkDialogOpen, setIsHomeworkDialogOpen] = useState(false);
   
   // Transcription modal
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false);
@@ -1293,11 +1298,50 @@ const TripwireLesson = () => {
               </motion.div>
             )}
 
-            {/* 📊 GLASS PANEL: Progress - ТРЕТИЙ */}
+            {/* 📝 GLASS PANEL: Homework - ТРЕТИЙ */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.65 }}
+              transition={{ delay: 0.6 }}
+              className="bg-gradient-to-br from-[#00FF88]/5 to-transparent border border-[#00FF88]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-xl"
+              style={{
+                boxShadow: '0 8px 32px rgba(0, 255, 136, 0.1), inset 0 1px 0 rgba(0, 255, 136, 0.1)'
+              }}
+            >
+              <h3 className="text-[#00FF88] font-['JetBrains_Mono'] font-bold uppercase tracking-wider mb-3 text-sm sm:text-base flex items-center gap-2">
+                <Send className="w-4 h-4" />
+                Домашнее задание
+              </h3>
+              <p className="text-xs text-gray-400 mb-4 font-['Manrope'] leading-relaxed">
+                Чтобы открыть новый модуль обязательно сдайте домашнее задание
+              </p>
+              <Button
+                onClick={() => setIsHomeworkDialogOpen(true)}
+                disabled={!isVideoCompleted}
+                className={`w-full font-['Manrope'] font-semibold text-sm sm:text-base py-3 sm:py-4 transition-all duration-300 ${
+                  isVideoCompleted
+                    ? 'bg-[#00FF88] hover:bg-[#00cc88] text-black shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]'
+                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                }`}
+                style={isVideoCompleted ? { transform: 'skewX(-5deg)' } : {}}
+              >
+                <span className="flex items-center justify-center gap-2" style={isVideoCompleted ? { transform: 'skewX(5deg)' } : {}}>
+                  <Send className="w-4 h-4" />
+                  Сдать домашнее задание
+                </span>
+              </Button>
+              {!isVideoCompleted && (
+                <p className="text-xs text-gray-500 mt-2 text-center font-['Manrope']">
+                  Доступно после просмотра 80% видео
+                </p>
+              )}
+            </motion.div>
+
+            {/* 📊 GLASS PANEL: Progress - ЧЕТВЕРТЫЙ */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
               className="bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl"
               style={{
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
@@ -1354,6 +1398,23 @@ const TripwireLesson = () => {
         onClose={() => setPreviewMaterial(null)}
         material={previewMaterial}
       />
+      
+      {/* Homework Dialog */}
+      {mainUserId && lessonId && (
+        <HomeworkDialog
+          open={isHomeworkDialogOpen}
+          onClose={() => setIsHomeworkDialogOpen(false)}
+          lessonId={lessonId}
+          userId={mainUserId}
+          onSubmitSuccess={() => {
+            toast({
+              title: '✅ Домашнее задание сдано!',
+              description: 'Отличная работа!',
+              variant: 'default',
+            });
+          }}
+        />
+      )}
       
       {/* 🏆 Achievement Modal */}
       {showAchievementModal && newAchievement && (
