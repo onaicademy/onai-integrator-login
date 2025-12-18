@@ -1,116 +1,183 @@
-# ⚡ ПРИМЕНИТЬ МИГРАЦИЮ СЕЙЧАС
+# 🚨 СРОЧНО: ПРИМЕНИТЬ МИГРАЦИЮ!
 
-## Шаг 1: Открой Supabase SQL Editor
+**Проблема**: `Could not find the table 'public.traffic_targetologist_settings' in the schema cache`
 
-🔗 **Прямая ссылка:** https://supabase.com/dashboard/project/xikaiavwqinamgolmtcy/sql/new
+**Решение**: Применить SQL миграцию прямо сейчас! (2 минуты)
 
-Или:
-1. Зайди на https://supabase.com/dashboard
-2. Выбери проект **xikaiavwqinamgolmtcy** (Landing DB)
-3. Слева выбери **SQL Editor**
-4. Нажми **New Query**
+---
 
-## Шаг 2: Скопируй SQL
+## 🚀 БЫСТРАЯ ИНСТРУКЦИЯ (2 МИН)
+
+### Шаг 1: Открой Supabase Dashboard (30 сек)
+
+1. Открой: https://supabase.com/dashboard
+2. Выбери проект: **Tripwire** (`pjmvxecykysfrzppdcto`)
+3. Слева выбери: **SQL Editor**
+
+---
+
+### Шаг 2: Скопируй SQL (10 сек)
 
 Открой файл:
 ```
-backend/supabase/migrations/create_telegram_groups.sql
+/Users/miso/onai-integrator-login/supabase/migrations/20251219_create_targetologist_settings.sql
 ```
 
-**Или скопируй этот SQL:**
+Скопируй **ВЕСЬ** файл (Cmd+A → Cmd+C)
+
+---
+
+### Шаг 3: Вставь и выполни (30 сек)
+
+1. В **SQL Editor** → **New Query**
+2. Вставь скопированный SQL (Cmd+V)
+3. Нажми **Run** (или Cmd+Enter)
+4. ✅ Должно выполниться без ошибок
+
+---
+
+### Шаг 4: Проверка (30 сек)
+
+Выполни в SQL Editor:
+```sql
+SELECT * FROM traffic_targetologist_settings;
+```
+
+Должно вернуть пустой результат (это норм, таблица создана но пуста).
+
+---
+
+## 📋 ПОЛНЫЙ SQL (ДЛЯ КОПИПАСТЫ)
 
 ```sql
--- ============================================
--- 📱 TELEGRAM GROUPS TABLE
--- Хранит активные группы для отправки уведомлений
--- ============================================
+-- 🎯 TRAFFIC TARGETOLOGIST SETTINGS
+-- Настройки таргетологов: FB кабинеты, кампании, UTM метки
 
-CREATE TABLE IF NOT EXISTS public.telegram_groups (
+-- Таблица настроек таргетолога
+CREATE TABLE IF NOT EXISTS traffic_targetologist_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chat_id TEXT NOT NULL UNIQUE,
-  chat_title TEXT,
-  group_type TEXT NOT NULL DEFAULT 'leads', -- 'leads', 'admin', 'notifications'
-  is_active BOOLEAN DEFAULT true,
-  activated_by TEXT, -- Telegram username кто активировал
-  activated_at TIMESTAMPTZ DEFAULT now(),
-  metadata JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+  user_id UUID NOT NULL REFERENCES traffic_users(id) ON DELETE CASCADE,
+  
+  -- Facebook настройки
+  fb_ad_accounts JSONB DEFAULT '[]'::jsonb,
+  fb_access_token TEXT,
+  
+  -- Отслеживаемые кампании
+  tracked_campaigns JSONB DEFAULT '[]'::jsonb,
+  
+  -- UTM настройки
+  utm_source TEXT DEFAULT 'facebook',
+  utm_medium TEXT DEFAULT 'cpc',
+  utm_templates JSONB DEFAULT '{}'::jsonb,
+  
+  -- Настройки отчетности
+  notification_email TEXT,
+  notification_telegram BIGINT,
+  report_frequency TEXT DEFAULT 'daily' CHECK (report_frequency IN ('daily', 'weekly', 'monthly')),
+  
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  -- Уникальность по пользователю
+  UNIQUE(user_id)
 );
 
--- Индексы для быстрого поиска
-CREATE INDEX IF NOT EXISTS idx_telegram_groups_chat_id ON public.telegram_groups(chat_id);
-CREATE INDEX IF NOT EXISTS idx_telegram_groups_type_active ON public.telegram_groups(group_type, is_active) WHERE is_active = true;
+-- Индексы
+CREATE INDEX IF NOT EXISTS idx_targetologist_settings_user_id ON traffic_targetologist_settings(user_id);
 
--- Комментарии
-COMMENT ON TABLE public.telegram_groups IS 'Хранит активные Telegram группы для уведомлений';
-COMMENT ON COLUMN public.telegram_groups.group_type IS 'Тип группы: leads (лиды), admin (админ), notifications (уведомления)';
-COMMENT ON COLUMN public.telegram_groups.is_active IS 'Активна ли группа для отправки сообщений';
-
--- Функция для обновления updated_at
-CREATE OR REPLACE FUNCTION update_telegram_groups_updated_at()
+-- Функция для автообновления updated_at
+CREATE OR REPLACE FUNCTION update_targetologist_settings_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = now();
+  NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Триггер для автообновления updated_at
-DROP TRIGGER IF EXISTS trigger_telegram_groups_updated_at ON public.telegram_groups;
-CREATE TRIGGER trigger_telegram_groups_updated_at
-  BEFORE UPDATE ON public.telegram_groups
+-- Триггер
+DROP TRIGGER IF EXISTS trigger_update_targetologist_settings_updated_at ON traffic_targetologist_settings;
+CREATE TRIGGER trigger_update_targetologist_settings_updated_at
+  BEFORE UPDATE ON traffic_targetologist_settings
   FOR EACH ROW
-  EXECUTE FUNCTION update_telegram_groups_updated_at();
+  EXECUTE FUNCTION update_targetologist_settings_updated_at();
 
--- RLS политики (отключены для service role)
-ALTER TABLE public.telegram_groups ENABLE ROW LEVEL SECURITY;
+-- View для удобного просмотра настроек с информацией о юзере
+CREATE OR REPLACE VIEW traffic_targetologist_settings_view AS
+SELECT
+  s.*,
+  u.email,
+  u.full_name,
+  u.team_name,
+  jsonb_array_length(s.fb_ad_accounts) as ad_accounts_count,
+  jsonb_array_length(s.tracked_campaigns) as campaigns_count
+FROM traffic_targetologist_settings s
+JOIN traffic_users u ON u.id = s.user_id
+ORDER BY s.updated_at DESC;
 
--- Service role имеет полный доступ
-CREATE POLICY "Service role has full access to telegram_groups"
-  ON public.telegram_groups
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- Grant permissions
-GRANT ALL ON public.telegram_groups TO service_role;
-GRANT USAGE ON SCHEMA public TO service_role;
+-- Комментарии
+COMMENT ON TABLE traffic_targetologist_settings IS 'Настройки таргетологов: FB кабинеты, кампании, UTM';
+COMMENT ON COLUMN traffic_targetologist_settings.user_id IS 'ID таргетолога из traffic_users';
+COMMENT ON COLUMN traffic_targetologist_settings.fb_ad_accounts IS 'Массив подключенных FB рекламных кабинетов';
+COMMENT ON COLUMN traffic_targetologist_settings.tracked_campaigns IS 'Массив отслеживаемых кампаний';
+COMMENT ON COLUMN traffic_targetologist_settings.utm_templates IS 'Шаблоны UTM меток с динамическими переменными';
+COMMENT ON COLUMN traffic_targetologist_settings.fb_access_token IS 'Персональный FB токен (если есть)';
 ```
-
-## Шаг 3: Выполни SQL
-
-1. Вставь SQL в редактор
-2. Нажми **Run** (или Ctrl+Enter / Cmd+Enter)
-3. Дождись выполнения
-
-## Шаг 4: Проверь что таблица создалась
-
-Выполни этот запрос:
-```sql
-SELECT * FROM telegram_groups LIMIT 10;
-```
-
-Должна вернуться пустая таблица (это норм, записей еще нет).
-
-## Шаг 5: Перезапусти backend
-
-```bash
-cd backend
-npm run dev
-```
-
-## Шаг 6: Активируй группу в Telegram
-
-1. Добавь бота в группу (сделай администратором)
-2. Отправь в группу: `2134`
-3. Бот ответит подтверждением
-
-**Готово! 🎉**
-
-Теперь все заявки с лендингов будут приходить в твою Telegram группу!
 
 ---
 
-**Проблемы?** Смотри `TELEGRAM_LEADS_BOT_SETUP.md` для подробной инструкции.
+## ✅ ПОСЛЕ ПРИМЕНЕНИЯ
+
+### 1. Обнови страницу (F5)
+```
+http://localhost:8080/traffic/settings
+```
+
+### 2. Должно работать!
+- ✅ Нет ошибок 500
+- ✅ Страница загружается
+- ✅ Можно нажать "Загрузить доступные"
+
+---
+
+## 🔥 АЛЬТЕРНАТИВА: ЧЕРЕЗ psql (ДЛЯ ПРО)
+
+Если есть доступ к psql:
+
+```bash
+# Подключись к БД
+psql "postgresql://postgres:[password]@db.pjmvxecykysfrzppdcto.supabase.co:5432/postgres"
+
+# Выполни миграцию
+\i /Users/miso/onai-integrator-login/supabase/migrations/20251219_create_targetologist_settings.sql
+
+# Проверь
+SELECT * FROM traffic_targetologist_settings;
+```
+
+---
+
+## ❓ ЕСЛИ ОШИБКИ
+
+### "relation traffic_users does not exist"
+→ Нужно сначала создать таблицу `traffic_users`
+
+### "permission denied"
+→ Используй admin credentials в Supabase Dashboard
+
+### "syntax error"
+→ Проверь что скопировал весь файл целиком
+
+---
+
+**ДЕЛАЙ ПРЯМО СЕЙЧАС, 2 МИНУТЫ!** 🚀
+
+1. Supabase Dashboard → SQL Editor
+2. Скопируй SQL выше
+3. Вставь → Run
+4. ✅ Готово!
+
+---
+
+**Дата**: 19 декабря 2025, 07:45 AM  
+**Статус**: ⏳ WAITING FOR MIGRATION
