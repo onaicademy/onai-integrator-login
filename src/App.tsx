@@ -63,6 +63,7 @@ const TripwireLesson = lazy(() => retryChunkLoad(() => import("./pages/tripwire/
 const TripwireProfile = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TripwireProfile")));
 const ClearCache = lazy(() => retryChunkLoad(() => import("./pages/ClearCache")));
 const ProfTest = lazy(() => retryChunkLoad(() => import("./pages/tripwire/ProfTest")));
+const TrafficCommandDashboard = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TrafficCommandDashboard")));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
@@ -237,6 +238,9 @@ const AppRoutes = () => {
       <Route path="/integrator/proftest" element={<ProfTest />} />
       <Route path="/integrator/proftest/:slug" element={<ProfTest />} />
       <Route path="/proftest/:slug" element={<ProfTest />} />
+      
+      {/* Public: Traffic Command Dashboard (no auth required) */}
+      <Route path="/integrator/traficcommand" element={<TrafficCommandDashboard />} />
       
       {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/integrator" element={

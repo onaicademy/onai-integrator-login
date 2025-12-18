@@ -462,3 +462,5 @@ npm run build
 Создано: 18 декабря 2025  
 AI Assistant: Claude Sonnet 4.5 via Cursor  
 Проверено: Build successful ✅
+
+

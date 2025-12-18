@@ -1,5 +1,5 @@
 /**
- * 👤 СОЗДАНИЕ SALES АККАУНТА: Aselya
+ * 👤 СОЗДАНИЕ SALES АККАУНТА: Ayaulym
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -21,9 +21,9 @@ async function createSalesAccount() {
   console.log('\n👤 СОЗДАНИЕ SALES АККАУНТА\n');
 
   const newSalesManager = {
-    email: 'aselya@onaiacademy.kz',
-    password: 'Aselya2134',
-    full_name: 'Aselya Sales Manager'
+    email: 'ayaulym@onaiacademy.kz',
+    password: 'Ayaulym2134',
+    full_name: 'Ayaulym Sales Manager'
   };
 
   console.log(`📧 Email: ${newSalesManager.email}`);

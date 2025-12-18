@@ -119,12 +119,15 @@ import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Tele
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
 import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
 import shortLinksRouter from './routes/short-links'; // 🔗 URL Shortener for SMS Links
+import trafficStatsRouter from './routes/traffic-stats'; // 📊 Traffic Command Stats (AmoCRM sales)
+import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API Integration
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
 import { startNotificationScheduler } from './services/notificationScheduler.js';
 import { recoverPendingNotifications } from './services/scheduledNotifications.js';
 import { startAIAnalyticsScheduler } from './services/aiAnalyticsScheduler';
+import { startRecommendationsScheduler } from './services/recommendationsScheduler.js';
 
 // ⭐ Import isolated services
 import { initAmoCRMRedis, getAmoCRMRedisStatus, closeAmoCRMRedis } from './config/redis-amocrm';
@@ -398,6 +401,8 @@ app.use('/api/unified-tracking', unifiedTrackingRouter); // 🎯 Unified Trackin
 app.use('/api', facebookConversionRouter); // 📊 Facebook Conversion API
 app.use('/api/short-links', shortLinksRouter); // 🔗 URL Shortener for SMS Links (создание и статистика)
 app.use('/l', shortLinksRouter); // 🔗 Short link redirect handler (прямой редирект без /api)
+app.use('/api/traffic', trafficStatsRouter); // 📊 Traffic Command Stats (AmoCRM sales - public)
+app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
 
 // 404 обработка
 app.use((req, res) => {
@@ -498,6 +503,7 @@ const server = app.listen(PORT, () => {
       startReminderScheduler();
       startAIMentorScheduler();
       startAIAnalyticsScheduler();
+      startRecommendationsScheduler(); // 🤖 AI Recommendations (daily at 00:10)
 
       console.log('✅ All background services initialized');
 

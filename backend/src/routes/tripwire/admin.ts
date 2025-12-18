@@ -20,6 +20,7 @@ router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
       'rakhat@onaiacademy.kz',    // Sales Manager 1
       'amina@onaiacademy.kz',     // Sales Manager 2
       'aselya@onaiacademy.kz',    // Sales Manager 3
+      'ayaulym@onaiacademy.kz',   // Sales Manager 4
     ];
 
     // ✅ ШАГ 0: Получить user_id для исключенных пользователей
@@ -182,6 +183,7 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
       'rakhat@onaiacademy.kz',    // Sales Manager 1
       'amina@onaiacademy.kz',     // Sales Manager 2
       'aselya@onaiacademy.kz',    // Sales Manager 3
+      'ayaulym@onaiacademy.kz',   // Sales Manager 4
     ];
 
     // ✅ ШАГ 0: Получить user_id для исключенных пользователей
