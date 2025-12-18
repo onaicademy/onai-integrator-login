@@ -64,6 +64,7 @@ const TripwireProfile = lazy(() => retryChunkLoad(() => import("./pages/tripwire
 const ClearCache = lazy(() => retryChunkLoad(() => import("./pages/ClearCache")));
 const ProfTest = lazy(() => retryChunkLoad(() => import("./pages/tripwire/ProfTest")));
 const TrafficCommandDashboard = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TrafficCommandDashboard")));
+const MassBroadcast = lazy(() => retryChunkLoad(() => import("./pages/tripwire/admin/MassBroadcast")));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
@@ -317,6 +318,15 @@ const AppRoutes = () => {
         <TripwireAdminGuard>
           <TripwireLayout>
             <ShortLinksStats />
+          </TripwireLayout>
+        </TripwireAdminGuard>
+      } />
+
+      {/* 📧📱 NEW: Массовые рассылки (EMAIL + SMS) */}
+      <Route path="/integrator/admin/mass-broadcast" element={
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <MassBroadcast />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />

@@ -11,7 +11,8 @@ import {
   Lock,
   ChartBar,
   Lightning,
-  X
+  X,
+  PaperPlaneTilt
 } from '@phosphor-icons/react';
 import { type Icon } from '@phosphor-icons/react';
 import {
@@ -41,6 +42,7 @@ const menuItems: MenuItem[] = [
   { title: "Достижения", url: "/achievements", icon: Trophy, locked: true },
   { title: "onAIgram", url: "/messages", icon: GridNine, locked: true },
   { title: "Админ панель", url: "/integrator/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
+  { title: "Массовые рассылки", url: "/integrator/admin/mass-broadcast", icon: PaperPlaneTilt, locked: false, adminOnly: true }, // ✅ Только admin
   // ❌ Sales Manager НЕ должен быть в Tripwire сайдбаре! Только в основной админ-панели
 ];
 

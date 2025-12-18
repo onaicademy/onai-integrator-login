@@ -98,6 +98,7 @@ import tripwireTranscriptionsOldRouter from './routes/tripwire/transcriptions'; 
 import tripwireTranscriptionsRouter from './routes/tripwire/transcriptions'; // ✅ NEW Tripwire Transcriptions API
 import tripwireProfileRouter from './routes/tripwire/profile'; // ✅ Tripwire Profile (Isolated DB)
 import tripwireAnalyticsRouter from './routes/tripwire/analytics'; // ✅ Tripwire Analytics (Isolated DB)
+import tripwireMassBroadcastRouter from './routes/tripwire/mass-broadcast'; // ✅ Mass Broadcast (EMAIL + SMS)
 import tripwireMaterialsRouter from './routes/tripwire/materials'; // ✅ Tripwire Materials (Phase 2)
 import tripwireCertificatesRouter from './routes/tripwire/certificates'; // ✅ Tripwire Certificates (Phase 2)
 import tripwireAiRouter from './routes/tripwire/ai'; // ✅ Tripwire AI Curator (Phase 2)
@@ -364,6 +365,7 @@ app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints
 app.use('/api/tripwire', tripwireHomeworkRouter); // ✅ Homework submissions
 app.use('/api/admin/tripwire', tripwireManagerRouter); // ✅ Sales Manager Dashboard (admin & sales roles only)
 app.use('/api/tripwire/admin', tripwireAdminRouter); // ✅ Tripwire Admin Dashboard (admin only)
+app.use('/api/tripwire/admin/mass-broadcast', tripwireMassBroadcastRouter); // ✅ Mass Broadcast (EMAIL + SMS)
 app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsOldRouter); // ✅ Tripwire Transcriptions (Admin)
 app.use('/api/tripwire/transcriptions', tripwireTranscriptionsRouter); // ✅ NEW: Public transcriptions API
 app.use('/api/tripwire/users', tripwireProfileRouter); // ✅ Tripwire Profile (Isolated DB)
