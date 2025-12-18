@@ -211,18 +211,30 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
       return res.json({ students: [] });
     }
 
-    // ✅ ШАГ 2: Получить информацию о пользователях из tripwire_users (там есть phone!)
+    // ✅ ШАГ 2: Получить информацию о пользователях из tripwire_users
     const userIds = tripwireProfiles.map(p => p.user_id);
 
     const { data: tripwireUsers, error: tripwireUsersError } = await supabase
       .from('tripwire_users')
-      .select('user_id, email, full_name, phone, created_at')
+      .select('user_id, email, full_name, created_at')
       .in('user_id', userIds);
 
     if (tripwireUsersError) {
       console.error('❌ Error fetching tripwire_users:', tripwireUsersError);
       throw tripwireUsersError;
     }
+
+    // ✅ ШАГ 2.5: Получить телефоны из основной БД users (если есть)
+    const { data: usersWithPhone, error: phoneError } = await supabase
+      .from('users')
+      .select('id, phone')
+      .in('id', userIds);
+
+    // Создаем Map для быстрого доступа к телефонам
+    const phoneMap = new Map<string, string | null>();
+    usersWithPhone?.forEach(u => {
+      phoneMap.set(u.id, u.phone);
+    });
 
     if (!tripwireUsers || tripwireUsers.length === 0) {
       console.log('⚠️  No tripwire_users found for userIds:', userIds.length);
@@ -250,12 +262,13 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
     const studentsWithProgress = tripwireUsers.map(user => {
       const profile = tripwireProfiles.find(p => p.user_id === user.user_id);
       const lastActivity = lastActivityMap.get(user.user_id) || profile?.updated_at || null;
+      const phone = phoneMap.get(user.user_id) || null;
       
       return {
         id: user.user_id,
         email: user.email || 'N/A',
         full_name: user.full_name || null,
-        phone_number: user.phone || null, // ✅ Добавляем телефон
+        phone_number: phone, // ✅ Телефон из основной БД users
         created_at: user.created_at || new Date().toISOString(),
         total_modules: profile?.total_modules || 0,
         completed_modules: profile?.modules_completed || 0,
