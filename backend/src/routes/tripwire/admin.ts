@@ -219,7 +219,15 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
       .select('user_id, email, full_name, phone, created_at')
       .in('user_id', userIds);
 
-    if (tripwireUsersError) throw tripwireUsersError;
+    if (tripwireUsersError) {
+      console.error('❌ Error fetching tripwire_users:', tripwireUsersError);
+      throw tripwireUsersError;
+    }
+
+    if (!tripwireUsers || tripwireUsers.length === 0) {
+      console.log('⚠️  No tripwire_users found for userIds:', userIds.length);
+      return res.json({ students: [] });
+    }
 
     // ✅ ШАГ 3: Получить последнюю активность из tripwire_progress (более точно)
     const { data: progressActivities, error: progressError } = await supabase
@@ -239,33 +247,37 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
     });
 
     // ✅ ШАГ 4: Объединить данные
-    const studentsWithProgress = tripwireUsers?.map(user => {
+    const studentsWithProgress = tripwireUsers.map(user => {
       const profile = tripwireProfiles.find(p => p.user_id === user.user_id);
       const lastActivity = lastActivityMap.get(user.user_id) || profile?.updated_at || null;
       
       return {
         id: user.user_id,
-        email: user.email,
-        full_name: user.full_name,
-        phone_number: user.phone, // ✅ Добавляем телефон
-        created_at: user.created_at,
+        email: user.email || 'N/A',
+        full_name: user.full_name || null,
+        phone_number: user.phone || null, // ✅ Добавляем телефон
+        created_at: user.created_at || new Date().toISOString(),
         total_modules: profile?.total_modules || 0,
         completed_modules: profile?.modules_completed || 0,
         progress_percent: Math.round(profile?.completion_percentage || 0),
-        enrolled_at: profile?.created_at,
+        enrolled_at: profile?.created_at || null,
         last_sign_in_at: lastActivity // ✅ Используем последнюю активность из tripwire_progress
       };
-    }) || [];
+    });
 
     // ✅ Сортируем по дате регистрации (сначала новые)
-    studentsWithProgress.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+    studentsWithProgress.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return dateB - dateA;
+    });
 
+    console.log(`✅ Returning ${studentsWithProgress.length} students`);
     res.json({ students: studentsWithProgress });
   } catch (error: any) {
     console.error('❌ Error fetching students:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error stack:', error.stack);
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
 
