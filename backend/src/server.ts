@@ -122,6 +122,7 @@ import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TE
 import shortLinksRouter from './routes/short-links'; // 🔗 URL Shortener for SMS Links
 import trafficStatsRouter from './routes/traffic-stats'; // 📊 Traffic Command Stats (AmoCRM sales)
 import trafficReportsRouter from './routes/traffic-reports'; // 📊 Traffic Reports (Суп history & ROI analysis)
+import amocrmSalesWebhookRouter from './routes/amocrm-sales-webhook'; // 🎉 AmoCRM Sales Webhook (real-time продажи)
 import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API Integration
 import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
 import { errorHandler } from './middleware/errorHandler';
@@ -407,6 +408,7 @@ app.use('/api/short-links', shortLinksRouter); // 🔗 URL Shortener for SMS Lin
 app.use('/l', shortLinksRouter); // 🔗 Short link redirect handler (прямой редирект без /api)
 app.use('/api/traffic', trafficStatsRouter); // 📊 Traffic Command Stats (AmoCRM sales - public)
 app.use('/api/traffic/reports', trafficReportsRouter); // 📊 Traffic Reports History (сохранение и анализ окупаемости)
+app.use('/api/amocrm', amocrmSalesWebhookRouter); // 🎉 AmoCRM Sales Webhook (real-time уведомления о продажах)
 app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
 app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (мануальная отправка отчетов)
 
