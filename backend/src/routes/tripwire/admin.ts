@@ -211,16 +211,15 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
       return res.json({ students: [] });
     }
 
-    // ✅ ШАГ 2: Получить информацию о пользователях
+    // ✅ ШАГ 2: Получить информацию о пользователях из tripwire_users (там есть phone!)
     const userIds = tripwireProfiles.map(p => p.user_id);
 
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('id, email, full_name, created_at')
-      .in('id', userIds)
-      .order('created_at', { ascending: false });
+    const { data: tripwireUsers, error: tripwireUsersError } = await supabase
+      .from('tripwire_users')
+      .select('user_id, email, full_name, phone, created_at')
+      .in('user_id', userIds);
 
-    if (usersError) throw usersError;
+    if (tripwireUsersError) throw tripwireUsersError;
 
     // ✅ ШАГ 3: Получить последнюю активность из tripwire_progress (более точно)
     const { data: progressActivities, error: progressError } = await supabase
@@ -240,12 +239,16 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
     });
 
     // ✅ ШАГ 4: Объединить данные
-    const studentsWithProgress = users?.map(user => {
-      const profile = tripwireProfiles.find(p => p.user_id === user.id);
-      const lastActivity = lastActivityMap.get(user.id) || profile?.updated_at || null;
+    const studentsWithProgress = tripwireUsers?.map(user => {
+      const profile = tripwireProfiles.find(p => p.user_id === user.user_id);
+      const lastActivity = lastActivityMap.get(user.user_id) || profile?.updated_at || null;
       
       return {
-        ...user,
+        id: user.user_id,
+        email: user.email,
+        full_name: user.full_name,
+        phone_number: user.phone, // ✅ Добавляем телефон
+        created_at: user.created_at,
         total_modules: profile?.total_modules || 0,
         completed_modules: profile?.modules_completed || 0,
         progress_percent: Math.round(profile?.completion_percentage || 0),
@@ -253,6 +256,11 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
         last_sign_in_at: lastActivity // ✅ Используем последнюю активность из tripwire_progress
       };
     }) || [];
+
+    // ✅ Сортируем по дате регистрации (сначала новые)
+    studentsWithProgress.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     res.json({ students: studentsWithProgress });
   } catch (error: any) {

@@ -155,3 +155,4 @@ npx tsx scripts/verify-production-live.ts
 **Дата проверки:** 17 декабря 2025, 21:26 UTC+3  
 **Версия:** 8ceeb25 (Security fix)  
 **Статус:** 🟢 **PRODUCTION STABLE**
+
