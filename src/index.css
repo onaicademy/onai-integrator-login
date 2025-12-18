@@ -10,6 +10,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🗡️ ПРЕМИАЛЬНАЯ анимация "Лезвие" для рейтинга команд */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
 /* 🗡️ PREMIUM BLADE SHIMMER - плавное "лезвие" слева направо */
 @keyframes shimmer {
   0% {
