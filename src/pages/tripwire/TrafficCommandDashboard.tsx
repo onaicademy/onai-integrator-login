@@ -850,14 +850,18 @@ export default function TrafficCommandDashboard() {
 
                       {/* AI кнопка внизу */}
                       <button
-                        onClick={() => {
-                          setSelectedTeamForAI(team.team);
-                          setShowRecommendationModal(true);
-                        }}
-                        className="w-full mt-4 px-3 py-2 bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-lg flex items-center justify-center gap-2 hover:bg-[#00FF88]/20 transition-all"
+                        onClick={() => generateRecommendations(team.team)}
+                        disabled={loadingRecs === team.team}
+                        className="w-full mt-4 px-3 py-2 bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-lg flex items-center justify-center gap-2 hover:bg-[#00FF88]/20 transition-all disabled:opacity-50"
                       >
-                        <Sparkles className="w-3 h-3 text-[#00FF88]" />
-                        <span className="text-xs font-medium text-[#00FF88]">AI Рекомендации</span>
+                        {loadingRecs === team.team ? (
+                          <Loader2 className="w-3 h-3 text-[#00FF88] animate-spin" />
+                        ) : (
+                          <Sparkles className="w-3 h-3 text-[#00FF88]" />
+                        )}
+                        <span className="text-xs font-medium text-[#00FF88]">
+                          {loadingRecs === team.team ? 'Генерация...' : 'AI Рекомендации'}
+                        </span>
                       </button>
                     </div>
                   );
