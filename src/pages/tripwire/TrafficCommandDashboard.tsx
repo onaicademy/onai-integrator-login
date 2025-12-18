@@ -262,6 +262,7 @@ const TEAM_COLORS: Record<string, { primary: string; gradient: string; emoji: st
 
 export default function TrafficCommandDashboard() {
   const [dateRange, setDateRange] = useState<'7d' | '14d' | '30d'>('7d');
+  const [customDate, setCustomDate] = useState<string | null>(null); // YYYY-MM-DD
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [showTeamDropdown, setShowTeamDropdown] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState<string | null>(null);
@@ -315,12 +316,15 @@ export default function TrafficCommandDashboard() {
 
   // Fetch combined analytics (FB Ads + AmoCRM)
   const { data: analytics, isLoading, refetch, isFetching } = useQuery<CombinedAnalytics>({
-    queryKey: ['combined-analytics', dateRange],
+    queryKey: ['combined-analytics', dateRange, customDate],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/traffic/combined-analytics?preset=${dateRange}`);
+      const url = customDate 
+        ? `${API_URL}/api/traffic/combined-analytics?date=${customDate}`
+        : `${API_URL}/api/traffic/combined-analytics?preset=${dateRange}`;
+      const response = await axios.get(url);
       return response.data;
     },
-    refetchInterval: 60000,
+    refetchInterval: customDate ? false : 60000, // Отключаем авто-обновление для custom date
     retry: 2,
   });
 
@@ -445,9 +449,12 @@ export default function TrafficCommandDashboard() {
                   {(['7d', '14d', '30d'] as const).map(range => (
                     <button
                       key={range}
-                      onClick={() => setDateRange(range)}
+                      onClick={() => {
+                        setDateRange(range);
+                        setCustomDate(null); // Сброс custom date
+                      }}
                       className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                        dateRange === range
+                        dateRange === range && !customDate
                           ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
                           : 'text-[#00FF88]/60 hover:text-[#00FF88]'
                       }`}
@@ -455,6 +462,32 @@ export default function TrafficCommandDashboard() {
                       {range === '7d' ? '7 дней' : range === '14d' ? '14 дней' : '30 дней'}
                     </button>
                   ))}
+                </div>
+
+                {/* 📅 Календарь выбора даты */}
+                <div className="flex items-center gap-2 bg-[#00FF88]/5 rounded-xl px-4 py-2 border border-[#00FF88]/20">
+                  <Calendar className="w-4 h-4 text-[#00FF88]" />
+                  <input
+                    type="date"
+                    value={customDate || ''}
+                    onChange={(e) => {
+                      setCustomDate(e.target.value);
+                    }}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="bg-transparent text-white text-sm border-none outline-none cursor-pointer font-medium"
+                    style={{
+                      colorScheme: 'dark',
+                    }}
+                  />
+                  {customDate && (
+                    <button
+                      onClick={() => setCustomDate(null)}
+                      className="ml-2 p-1 hover:bg-[#00FF88]/10 rounded transition-all"
+                      title="Сбросить"
+                    >
+                      <X className="w-3 h-3 text-[#00FF88]" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Фильтр команд */}

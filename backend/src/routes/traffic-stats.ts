@@ -497,13 +497,32 @@ router.get('/pipeline', async (req: Request, res: Response) => {
 router.get('/combined-analytics', async (req: Request, res: Response) => {
   try {
     const preset = (req.query.preset as string) || '30d';
-    
+    const customDate = req.query.date as string; // YYYY-MM-DD format
+
     // Get date range
-    const now = Date.now();
-    const daysBack = preset === '7d' ? 7 : preset === '14d' ? 14 : 30;
-    const cutoff = now - (daysBack * 24 * 60 * 60 * 1000);
-    const since = new Date(cutoff).toISOString().split('T')[0];
-    const until = new Date().toISOString().split('T')[0];
+    let cutoff: number;
+    let since: string;
+    let until: string;
+
+    if (customDate) {
+      // Custom single date - показываем данные за эти сутки
+      const selectedDate = new Date(customDate);
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      since = selectedDate.toISOString().split('T')[0];
+      until = selectedDate.toISOString().split('T')[0];
+      cutoff = selectedDate.getTime();
+      
+      console.log(`📅 Custom date selected: ${since} (single day)`);
+    } else {
+      // Preset range
+      const now = Date.now();
+      const daysBack = preset === '7d' ? 7 : preset === '14d' ? 14 : 30;
+      cutoff = now - (daysBack * 24 * 60 * 60 * 1000);
+      since = new Date(cutoff).toISOString().split('T')[0];
+      until = new Date().toISOString().split('T')[0];
+    }
     
     console.log(`📊 Fetching combined analytics (TRIPWIRE ONLY): ${since} to ${until}`);
     
@@ -780,8 +799,16 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     
     for (const lead of processedLeads) {
       const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
-      if (closedTime < cutoff) continue;
       
+      // Для custom date - проверяем что сделка закрыта именно в этот день
+      if (customDate) {
+        const leadDate = new Date(closedTime).toISOString().split('T')[0];
+        if (leadDate !== customDate) continue;
+      } else {
+        // Для preset - проверяем что сделка в диапазоне
+        if (closedTime < cutoff) continue;
+      }
+
       const team = lead.traffic_team;
       if (!amocrmStats[team]) {
         amocrmStats[team] = { sales: 0, revenue: 0 };
@@ -861,7 +888,15 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     const utmSalesMap: Record<string, { campaign: string; sales: number; revenue: number; team: string }> = {};
     for (const lead of processedLeads) {
       const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
-      if (closedTime < cutoff) continue;
+      
+      // Для custom date - проверяем что сделка закрыта именно в этот день
+      if (customDate) {
+        const leadDate = new Date(closedTime).toISOString().split('T')[0];
+        if (leadDate !== customDate) continue;
+      } else {
+        // Для preset - проверяем что сделка в диапазоне
+        if (closedTime < cutoff) continue;
+      }
       
       const campaign = lead.utm_campaign || lead.utm_content || 'unknown';
       if (campaign === 'unknown') continue;
