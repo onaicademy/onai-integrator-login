@@ -9,7 +9,7 @@ import {
   Lightbulb, CheckCircle2, AlertTriangle, X, Info, HelpCircle
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
 
 // 📚 Описания метрик для подсказок
 const METRIC_DESCRIPTIONS: Record<string, { title: string; description: string }> = {

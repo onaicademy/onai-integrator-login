@@ -64,7 +64,7 @@ export default function LeadTracking() {
   const [error, setError] = useState<string | null>(null);
   const [showSyncModal, setShowSyncModal] = useState(false);
 
-  const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
 
   const fetchLeads = async () => {
     try {
