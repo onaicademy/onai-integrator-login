@@ -1,0 +1,6 @@
+# FORCE REDEPLOY - $(date)
+
+This file triggers a complete rebuild on Vercel.
+All latest changes should be deployed.
+
+Last update: $(date)
