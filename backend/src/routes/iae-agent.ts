@@ -1,15 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { tripwireAdminSupabase as tripwireSupabase } from '../config/supabase-tripwire.js';
 import { runIAEAgent } from '../services/iaeAgentService.js';
 import { sendIAEReport } from '../services/iaeAgentBot.js';
 
 const router = Router();
-
-// Supabase Tripwire client
-const tripwireSupabase = createClient(
-  process.env.TRIPWIRE_SUPABASE_URL || 'https://pjmvxecykysfrzppdcto.supabase.co',
-  process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.TRIPWIRE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXZ4ZWN5a3lzZnJ6cHBkY3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzY4NTIsImV4cCI6MjA1MDIxMjg1Mn0.vD7PxK0WYyT-xeD9cJQMcb1tCL5hpBqQzLf3VgWyk'
-);
 
 /**
  * POST /api/iae-agent/trigger
