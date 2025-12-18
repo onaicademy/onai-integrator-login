@@ -850,7 +850,7 @@ export default function TrafficCommandDashboard() {
 
                       {/* AI кнопка внизу */}
                       <button
-                        onClick={() => generateRecommendations(team.team)}
+                        onClick={() => fetchRecommendations(team.team)}
                         disabled={loadingRecs === team.team}
                         className="w-full mt-4 px-3 py-2 bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-lg flex items-center justify-center gap-2 hover:bg-[#00FF88]/20 transition-all disabled:opacity-50"
                       >
