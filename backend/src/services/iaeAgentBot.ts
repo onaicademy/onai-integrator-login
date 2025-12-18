@@ -96,155 +96,92 @@ function deactivateChat(chatId: number): boolean {
   return false;
 }
 
-// Команда /start
-iaeBot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
-  const welcomeMessage = `🤖 *Привет! Я IAE Agent*
+// Инициализация обработчиков бота
+export function initIAEBot() {
+  console.log('🤖 [IAE Bot] Инициализация обработчиков...');
+  
+  // Команда /start
+  iaeBot.onText(/\/start/, async (msg) => {
+    const chatId = msg.chat.id;
+    const welcomeMessage = `👋 Привет! Я бот IAE Agent.
 
-Intelligence Analytics Engine - система мониторинга и проверки аналитики трафика.
+🤖 Intelligence Analytics Engine - система мониторинга трафика.
 
-*Что я умею:*
-• ✅ Проверяю состояние систем (AmoCRM, Facebook Ads)
-• 📊 Анализирую качество данных
-• 🚨 Обнаруживаю аномалии и проблемы
-• 💡 Даю AI рекомендации от Groq
-• 📅 Отправляю отчеты по расписанию
-
-*Расписание отчетов:*
-• ⏰ 10:00 - Отчет за вчера
-• ⏰ 16:00 - Текущий статус
+📊 Я отправляю автоматические отчеты:
+• 🌅 10:00 - Отчет за вчера
+• 📊 16:00 - Текущий статус
 • 📅 1-го числа - Месячный отчет
-• 🔍 Каждый час - Health check (только при проблемах)
-
-*Для активации отправь код:* \`2134\`
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Powered by Groq AI • v1.0`;
-
-  try {
-    await iaeBot.sendMessage(chatId, welcomeMessage, {
-      parse_mode: 'Markdown'
-    });
-    console.log(`📨 [IAE Bot] Sent welcome to chat ${chatId}`);
-  } catch (error) {
-    console.error(`❌ [IAE Bot] Error sending welcome:`, error);
-  }
-});
-
-// Команда /help
-iaeBot.onText(/\/help/, async (msg) => {
-  const chatId = msg.chat.id;
-  const helpMessage = `📖 *IAE Agent - Помощь*
-
-*Команды:*
-/start - Приветствие и инструкция
-/help - Эта справка
-/status - Проверить статус активации
-/deactivate - Отключить отчеты
-
-*Активация:*
-Отправь код \`2134\` для активации отчетов
-
-*Расписание:*
-• ⏰ 10:00 - Отчет за вчера
-• ⏰ 16:00 - Текущий статус  
-• 📅 1-го числа - Месячный отчет
-• 🔍 Каждый час - Health check
-
-*Метрики в отчетах:*
-• Health Score (0-100)
-• Статус систем (AmoCRM, FB Ads, DB)
-• Траты, доход, продажи, ROAS, CTR
-• Обнаруженные проблемы и аномалии
-• AI рекомендации и риски
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Powered by Groq AI`;
-
-  try {
-    await iaeBot.sendMessage(chatId, helpMessage, {
-      parse_mode: 'Markdown'
-    });
-  } catch (error) {
-    console.error(`❌ [IAE Bot] Error sending help:`, error);
-  }
-});
-
-// Команда /status
-iaeBot.onText(/\/status/, async (msg) => {
-  const chatId = msg.chat.id;
-  const chats = loadActiveChats();
-  const isActive = chats.some(c => c.chatId === chatId);
-  
-  const statusMessage = isActive
-    ? `✅ *Чат активирован*\n\nБуду присылать отчеты IAE Agent по расписанию.`
-    : `❌ *Чат не активирован*\n\nДля активации отправь код: \`2134\``;
-  
-  try {
-    await iaeBot.sendMessage(chatId, statusMessage, {
-      parse_mode: 'Markdown'
-    });
-  } catch (error) {
-    console.error(`❌ [IAE Bot] Error sending status:`, error);
-  }
-});
-
-// Команда /deactivate
-iaeBot.onText(/\/deactivate/, async (msg) => {
-  const chatId = msg.chat.id;
-  const deactivated = deactivateChat(chatId);
-  
-  const message = deactivated
-    ? `🗑️ *Чат деактивирован*\n\nОтчеты больше не будут приходить.\n\nДля повторной активации отправь код: \`2134\``
-    : `❌ *Чат не был активирован*`;
-  
-  try {
-    await iaeBot.sendMessage(chatId, message, {
-      parse_mode: 'Markdown'
-    });
-  } catch (error) {
-    console.error(`❌ [IAE Bot] Error sending deactivate:`, error);
-  }
-});
-
-// Обработка кода активации
-iaeBot.on('message', async (msg) => {
-  // Игнорируем команды
-  if (msg.text?.startsWith('/')) return;
-  
-  const chatId = msg.chat.id;
-  const userId = msg.from?.id || 0;
-  const chatTitle = msg.chat.title || msg.chat.first_name;
-  
-  if (msg.text === ACTIVATION_CODE) {
-    const activated = activateChat(chatId, userId, chatTitle);
-    
-    const message = activated
-      ? `✅ *Чат активирован!*
-
-Буду присылать отчеты IAE Agent:
-• ⏰ 10:00 - За вчера
-• ⏰ 16:00 - Текущий статус
-• 📅 1-го числа - За месяц
 • 🔍 Каждый час - Health check (при проблемах)
 
-*Первый отчет придет по расписанию.*
+🔐 Для активации отправь код активации.`;
 
-Используй /help для справки.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-🤖 IAE Agent готов к работе!`
-      : `⚠️ *Чат уже активирован*\n\nОтчеты уже настроены.`;
-    
     try {
-      await iaeBot.sendMessage(chatId, message, {
-        parse_mode: 'Markdown'
-      });
+      await iaeBot.sendMessage(chatId, welcomeMessage);
+      console.log(`📨 [IAE Bot] Sent welcome to chat ${chatId}`);
     } catch (error) {
-      console.error(`❌ [IAE Bot] Error sending activation:`, error);
+      console.error(`❌ [IAE Bot] Error sending welcome:`, error);
     }
-  }
-});
+  });
+
+  // Команда /status
+  iaeBot.onText(/\/status/, async (msg) => {
+    const chatId = msg.chat.id;
+    const chats = loadActiveChats();
+    const isActive = chats.some(c => c.chatId === chatId);
+    const chat = chats.find(c => c.chatId === chatId);
+    
+    if (isActive) {
+      await iaeBot.sendMessage(chatId,
+        `✅ *ЧАТ АКТИВЕН*\n\n` +
+        `📋 Чат: ${chat?.chatTitle || 'Неизвестно'}\n` +
+        `🕐 Активирован: ${chat?.activatedAt ? new Date(chat.activatedAt).toLocaleString('ru-RU') : 'Н/Д'}\n\n` +
+        `📊 Отчеты IAE Agent приходят автоматически.`,
+        { parse_mode: 'Markdown' }
+      );
+    } else {
+      await iaeBot.sendMessage(chatId,
+        '❌ *ЧАТ НЕ АКТИВЕН*\n\n' +
+        '🔐 Отправь код активации: `2134`',
+        { parse_mode: 'Markdown' }
+      );
+    }
+  });
+
+  // Обработка кода активации (как у основного бота!)
+  iaeBot.on('message', async (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text?.trim();
+    const userId = msg.from?.id;
+    
+    if (!text || !userId) return;
+    
+    // Проверка кода активации
+    if (text === ACTIVATION_CODE) {
+      const chatTitle = msg.chat.title || `Chat ${chatId}`;
+      const activated = activateChat(chatId, userId, chatTitle);
+      
+      if (activated) {
+        await iaeBot.sendMessage(chatId,
+          '✅ *АКТИВАЦИЯ УСПЕШНА!*\n\n' +
+          '🎯 Теперь этот чат будет получать отчеты IAE Agent:\n\n' +
+          '🌅 *10:00* - Отчет за вчера\n' +
+          '📊 *16:00* - Текущий статус\n' +
+          '📅 *1-го числа* - Месячный отчет\n' +
+          '🔍 *Каждый час* - Health check\n\n' +
+          '🤖 Powered by Groq AI',
+          { parse_mode: 'Markdown' }
+        );
+        console.log(`✅ [IAE Bot] Чат ${chatId} (${chatTitle}) активирован пользователем ${userId}`);
+      } else {
+        await iaeBot.sendMessage(chatId,
+          '⚠️ Чат уже активирован ранее.\n\n' +
+          'Используй /status для проверки статуса.'
+        );
+        console.log(`ℹ️ [IAE Bot] Чат ${chatId} уже был активирован`);
+      }
+    }
+  });
+}
 
 // Отправка отчета во все активные чаты
 export async function sendIAEReport(report: string, reportId?: string): Promise<number> {
@@ -282,11 +219,4 @@ iaeBot.on('polling_error', (error) => {
   console.error('❌ [IAE Bot] Polling error:', error.message);
 });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('🛑 [IAE Bot] Stopping...');
-  iaeBot.stopPolling();
-  process.exit(0);
-});
-
-console.log('✅ [IAE Bot] Started successfully');
+console.log('✅ [IAE Bot] Bot initialized, call initIAEBot() to start handlers');

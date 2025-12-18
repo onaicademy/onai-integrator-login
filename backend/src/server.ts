@@ -542,13 +542,17 @@ const server = app.listen(PORT, () => {
       startAIAnalyticsScheduler();
       startRecommendationsScheduler(); // 🤖 AI Recommendations (daily at 00:10)
 
-      // 5. Start IAE Agent schedulers
+      // 5. Start IAE Agent schedulers and bot
       try {
+        const { initIAEBot } = await import('./services/iaeAgentBot.js');
         const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
-        startIAESchedulers(); // 🤖 IAE Agent: 10:00 (daily), 16:00 (current), 1st (monthly), hourly (health)
-        console.log('✅ IAE Agent schedulers initialized');
+        
+        initIAEBot(); // Initialize bot handlers
+        startIAESchedulers(); // Start cron jobs
+        
+        console.log('✅ IAE Agent bot and schedulers initialized');
       } catch (error) {
-        console.error('❌ Ошибка инициализации IAE Agent schedulers:', error);
+        console.error('❌ Ошибка инициализации IAE Agent:', error);
       }
 
       console.log('✅ All background services initialized');
