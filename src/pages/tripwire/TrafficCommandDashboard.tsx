@@ -527,12 +527,21 @@ export default function TrafficCommandDashboard() {
                 </div>
 
                 {/* Refresh */}
+                {/* 🔄 Кнопка синхронизации - УЛУЧШЕННАЯ */}
                 <button
                   onClick={() => refetch()}
                   disabled={isFetching}
-                  className="p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all disabled:opacity-50"
+                  className={`px-4 py-2 bg-black/50 border rounded-xl flex items-center gap-2 font-medium transition-all ${
+                    isFetching 
+                      ? 'border-[#00FF88]/50 text-[#00FF88] cursor-wait' 
+                      : 'border-[#00FF88]/20 text-white hover:bg-[#00FF88]/10 hover:border-[#00FF88]/40 hover:shadow-lg hover:shadow-[#00FF88]/20'
+                  }`}
+                  title="Обновить данные вручную"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#00FF88]' : 'text-[#00FF88]'}`} />
+                  <span className="text-sm">
+                    {isFetching ? 'Обновление...' : 'Обновить'}
+                  </span>
                 </button>
               </div>
             </div>
