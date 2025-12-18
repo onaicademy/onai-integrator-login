@@ -324,7 +324,7 @@ export default function TrafficCommandDashboard() {
       const response = await axios.get(url);
       return response.data;
     },
-    refetchInterval: customDate ? false : 60000, // Отключаем авто-обновление для custom date
+    refetchInterval: customDate ? false : 600000, // Авто-обновление каждые 10 минут (отключено для custom date)
     retry: 2,
   });
 
