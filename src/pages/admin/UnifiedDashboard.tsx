@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useState } from 'react';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onai.academy';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
 
 function getEmailStatusDisplay(lead: any) {
   if (lead.email_failed || lead.email_error) {

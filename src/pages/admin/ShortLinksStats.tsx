@@ -66,7 +66,8 @@ export default function ShortLinksStats() {
       setLoading(true);
 
       // Получаем все короткие ссылки из Supabase
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/supabase/query`, {
+      const backendUrl = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+      const response = await fetch(`${backendUrl}/api/supabase/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
