@@ -397,158 +397,156 @@ export default function TrafficCommandDashboard() {
       <div className="relative z-10">
         {/* 🎯 TRIPWIRE Заголовок */}
         <header className="border-b border-[#00FF88]/10 bg-black/80 backdrop-blur-xl sticky top-0 z-50 shadow-lg shadow-[#00FF88]/5">
-          <div className="max-w-[1600px] mx-auto px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/20 shadow-lg shadow-[#00FF88]/20">
-                  <BarChart3 className="w-6 h-6 text-[#00FF88]" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight text-white">
-                    Командная Панель Трафика
-                  </h1>
-                  <p className="text-sm text-[#00FF88]/60">Facebook Ads + AmoCRM в реальном времени</p>
-                </div>
+          <div className="max-w-[1600px] mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5">
+            {/* Заголовок - всегда сверху */}
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 md:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/20 shadow-lg shadow-[#00FF88]/20 flex-shrink-0">
+                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-[#00FF88]" />
               </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-white truncate">
+                  Командная Панель Трафика
+                </h1>
+                <p className="text-xs sm:text-sm text-[#00FF88]/60 truncate">Facebook Ads + AmoCRM</p>
+              </div>
+            </div>
 
-              <div className="flex items-center gap-3">
-                {/* 💱 Переключатель валют USD/KZT */}
-                <div className="flex items-center gap-1 bg-black/50 rounded-xl p-1 border border-[#00FF88]/20">
-                  <button
-                    onClick={() => setCurrency('USD')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      currency === 'USD'
-                        ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
-                        : 'text-[#00FF88]/60 hover:text-[#00FF88]'
-                    }`}
-                  >
-                    $ USD
-                  </button>
-                  <button
-                    onClick={() => setCurrency('KZT')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      currency === 'KZT'
-                        ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
-                        : 'text-[#00FF88]/60 hover:text-[#00FF88]'
-                    }`}
-                  >
-                    ₸ KZT
-                  </button>
-                </div>
-                
-                {/* Курс валюты */}
+            {/* Контролы - адаптивная сетка */}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3">
+              {/* 💱 Переключатель валют USD/KZT */}
+              <div className="flex items-center gap-1 bg-black/50 rounded-xl p-1 border border-[#00FF88]/20 w-full sm:w-auto">
+                <button
+                  onClick={() => setCurrency('USD')}
+                  className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                    currency === 'USD'
+                      ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
+                      : 'text-[#00FF88]/60 hover:text-[#00FF88]'
+                  }`}
+                >
+                  $ USD
+                </button>
+                <button
+                  onClick={() => setCurrency('KZT')}
+                  className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                    currency === 'KZT'
+                      ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
+                      : 'text-[#00FF88]/60 hover:text-[#00FF88]'
+                  }`}
+                >
+                  ₸ KZT
+                </button>
+                {/* Курс валюты - inline на мобилке */}
                 {analytics?.exchangeRate && (
-                  <div className="text-xs text-gray-400 flex flex-col items-end">
+                  <div className="hidden md:flex text-xs text-gray-400 flex-col items-end ml-2">
                     <span className="text-[#00FF88]/80">1 USD = {analytics.exchangeRate.usdToKzt.toFixed(0)} ₸</span>
                     <span className="text-gray-500">CB {new Date(analytics.exchangeRate.updatedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 )}
+              </div>
 
-                {/* Переключатель периодов */}
-                <div className="flex bg-[#00FF88]/5 rounded-xl p-1 border border-[#00FF88]/20">
-                  {(['7d', '14d', '30d'] as const).map(range => (
-                    <button
-                      key={range}
-                      onClick={() => {
-                        setDateRange(range);
-                        setCustomDate(null); // Сброс custom date
-                      }}
-                      className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                        dateRange === range && !customDate
-                          ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
-                          : 'text-[#00FF88]/60 hover:text-[#00FF88]'
-                      }`}
-                    >
-                      {range === '7d' ? '7 дней' : range === '14d' ? '14 дней' : '30 дней'}
-                    </button>
-                  ))}
-                </div>
-
-                {/* 📅 Календарь выбора даты */}
-                <div className="flex items-center gap-2 bg-[#00FF88]/5 rounded-xl px-4 py-2 border border-[#00FF88]/20">
-                  <Calendar className="w-4 h-4 text-[#00FF88]" />
-                  <input
-                    type="date"
-                    value={customDate || ''}
-                    onChange={(e) => {
-                      setCustomDate(e.target.value);
-                    }}
-                    max={new Date().toISOString().split('T')[0]}
-                    className="bg-transparent text-white text-sm border-none outline-none cursor-pointer font-medium"
-                    style={{
-                      colorScheme: 'dark',
-                    }}
-                  />
-                  {customDate && (
-                    <button
-                      onClick={() => setCustomDate(null)}
-                      className="ml-2 p-1 hover:bg-[#00FF88]/10 rounded transition-all"
-                      title="Сбросить"
-                    >
-                      <X className="w-3 h-3 text-[#00FF88]" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Фильтр команд */}
-                <div className="relative">
+              {/* Переключатель периодов */}
+              <div className="flex bg-[#00FF88]/5 rounded-xl p-1 border border-[#00FF88]/20 w-full sm:w-auto">
+                {(['7d', '14d', '30d'] as const).map(range => (
                   <button
-                    onClick={() => setShowTeamDropdown(!showTeamDropdown)}
-                    className="flex items-center gap-2 px-5 py-2 bg-[#00FF88]/5 border border-[#00FF88]/20 rounded-xl text-sm hover:bg-[#00FF88]/10 transition-all"
+                    key={range}
+                    onClick={() => {
+                      setDateRange(range);
+                      setCustomDate(null);
+                    }}
+                    className={`flex-1 sm:flex-none px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                      dateRange === range && !customDate
+                        ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
+                        : 'text-[#00FF88]/60 hover:text-[#00FF88]'
+                    }`}
                   >
-                    <Filter className="w-4 h-4 text-[#00FF88]" />
-                    <span className="text-white">{selectedTeam || 'Все команды'}</span>
-                    <ChevronDown className="w-4 h-4 text-[#00FF88]" />
+                    {range === '7d' ? '7д' : range === '14d' ? '14д' : '30д'}
                   </button>
-                  
-                  {showTeamDropdown && (
-                    <div className="absolute top-full mt-2 right-0 w-52 bg-black/95 border border-[#00FF88]/20 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl">
+                ))}
+              </div>
+
+              {/* 📅 Календарь выбора даты */}
+              <div className="flex items-center gap-2 bg-[#00FF88]/5 rounded-xl px-3 sm:px-4 py-2 border border-[#00FF88]/20 w-full sm:w-auto">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88] flex-shrink-0" />
+                <input
+                  type="date"
+                  value={customDate || ''}
+                  onChange={(e) => {
+                    setCustomDate(e.target.value);
+                  }}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="bg-transparent text-white text-xs sm:text-sm border-none outline-none cursor-pointer font-medium flex-1 min-w-0"
+                  style={{
+                    colorScheme: 'dark',
+                  }}
+                />
+                {customDate && (
+                  <button
+                    onClick={() => setCustomDate(null)}
+                    className="p-1 hover:bg-[#00FF88]/10 rounded transition-all flex-shrink-0"
+                    title="Сбросить"
+                  >
+                    <X className="w-3 h-3 text-[#00FF88]" />
+                  </button>
+                )}
+              </div>
+
+              {/* Фильтр команд */}
+              <div className="relative w-full sm:w-auto">
+                <button
+                  onClick={() => setShowTeamDropdown(!showTeamDropdown)}
+                  className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2 bg-[#00FF88]/5 border border-[#00FF88]/20 rounded-xl text-xs sm:text-sm hover:bg-[#00FF88]/10 transition-all w-full sm:w-auto"
+                >
+                  <Filter className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88] flex-shrink-0" />
+                  <span className="text-white flex-1 sm:flex-none truncate">{selectedTeam || 'Все команды'}</span>
+                  <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88] flex-shrink-0" />
+                </button>
+                
+                {showTeamDropdown && (
+                  <div className="absolute top-full mt-2 left-0 right-0 sm:left-auto sm:right-0 sm:w-52 bg-black/95 border border-[#00FF88]/20 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl">
+                    <button
+                      onClick={() => { setSelectedTeam(null); setShowTeamDropdown(false); }}
+                      className="w-full px-4 py-3 text-left text-xs sm:text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-[#00FF88]" />
+                      Все команды
+                    </button>
+                    {analytics?.teams.map(team => (
                       <button
-                        onClick={() => { setSelectedTeam(null); setShowTeamDropdown(false); }}
-                        className="w-full px-4 py-3 text-left text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
+                        key={team.team}
+                        onClick={() => { setSelectedTeam(team.team); setShowTeamDropdown(false); }}
+                        className="w-full px-4 py-3 text-left text-xs sm:text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
                       >
                         <div className="w-2 h-2 rounded-full bg-[#00FF88]" />
-                        Все команды
+                        <span className="flex items-center gap-1.5">
+                          {TEAM_COLORS[team.team]?.emoji} {team.team}
+                        </span>
                       </button>
-                      {analytics?.teams.map(team => (
-                        <button
-                          key={team.team}
-                          onClick={() => { setSelectedTeam(team.team); setShowTeamDropdown(false); }}
-                          className="w-full px-4 py-3 text-left text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
-                        >
-                          <div className="w-2 h-2 rounded-full bg-[#00FF88]" />
-                          <span className="flex items-center gap-1.5">
-                            {TEAM_COLORS[team.team]?.emoji} {team.team}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Refresh */}
-                {/* 🔄 Кнопка синхронизации - УЛУЧШЕННАЯ */}
-                <button
-                  onClick={() => refetch()}
-                  disabled={isFetching}
-                  className={`px-4 py-2 bg-black/50 border rounded-xl flex items-center gap-2 font-medium transition-all ${
-                    isFetching 
-                      ? 'border-[#00FF88]/50 text-[#00FF88] cursor-wait' 
-                      : 'border-[#00FF88]/20 text-white hover:bg-[#00FF88]/10 hover:border-[#00FF88]/40 hover:shadow-lg hover:shadow-[#00FF88]/20'
-                  }`}
-                  title="Обновить данные вручную"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#00FF88]' : 'text-[#00FF88]'}`} />
-                  <span className="text-sm">
-                    {isFetching ? 'Обновление...' : 'Обновить'}
-                  </span>
-                </button>
+                    ))}
+                  </div>
+                )}
               </div>
+
+              {/* 🔄 Кнопка синхронизации */}
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className={`px-3 sm:px-4 py-2 bg-black/50 border rounded-xl flex items-center justify-center gap-2 font-medium transition-all w-full sm:w-auto ${
+                  isFetching 
+                    ? 'border-[#00FF88]/50 text-[#00FF88] cursor-wait' 
+                    : 'border-[#00FF88]/20 text-white hover:bg-[#00FF88]/10 hover:border-[#00FF88]/40 hover:shadow-lg hover:shadow-[#00FF88]/20'
+                }`}
+                title="Обновить данные вручную"
+              >
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${isFetching ? 'animate-spin text-[#00FF88]' : 'text-[#00FF88]'}`} />
+                <span className="text-xs sm:text-sm">
+                  {isFetching ? 'Обновление...' : 'Обновить'}
+                </span>
+              </button>
             </div>
           </div>
         </header>
 
-        <main className="max-w-[1600px] mx-auto px-6 py-8">
+        <main className="max-w-[1600px] mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-96">
               <div className="text-center">
@@ -559,111 +557,111 @@ export default function TrafficCommandDashboard() {
           ) : (
             <>
               {/* 📊 KPI Карточки */}
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
                 {/* Доход */}
-                <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/10 to-[#00FF88]/5 border border-[#00FF88]/20 rounded-2xl p-5 hover:shadow-lg hover:shadow-[#00FF88]/10 transition-all">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#00FF88]/20 flex items-center justify-center">
-                      <DollarSign className="w-4 h-4 text-[#00FF88]" />
+                <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/10 to-[#00FF88]/5 border border-[#00FF88]/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:shadow-lg hover:shadow-[#00FF88]/10 transition-all">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#00FF88]/20 flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]" />
                     </div>
-                    <span className="text-xs font-medium text-[#00FF88] uppercase tracking-wider flex items-center">
+                    <span className="text-[10px] sm:text-xs font-medium text-[#00FF88] uppercase tracking-wider flex items-center">
                       Доход
                       <MetricTooltip metricKey="revenue" />
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatMoney(analytics?.totals?.revenue || 0, 'revenue')}</p>
-                  <p className="text-xs text-[#00FF88]/60 mt-1">{analytics?.totals?.sales || 0} продаж</p>
+                  <p className="text-base sm:text-xl md:text-2xl font-bold text-white truncate">{formatMoney(analytics?.totals?.revenue || 0, 'revenue')}</p>
+                  <p className="text-[10px] sm:text-xs text-[#00FF88]/60 mt-0.5 sm:mt-1">{analytics?.totals?.sales || 0} продаж</p>
                 </div>
 
                 {/* Затраты */}
-                <div className="col-span-1 bg-gradient-to-br from-gray-500/10 to-gray-600/5 border border-gray-500/20 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-500/20 flex items-center justify-center">
-                      <TrendingDown className="w-4 h-4 text-gray-300" />
+                <div className="col-span-1 bg-gradient-to-br from-gray-500/10 to-gray-600/5 border border-gray-500/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gray-500/20 flex items-center justify-center flex-shrink-0">
+                      <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300" />
                     </div>
-                    <span className="text-xs font-medium text-gray-300 uppercase tracking-wider flex items-center">
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-300 uppercase tracking-wider flex items-center">
                       Затраты
                       <MetricTooltip metricKey="spend" />
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatMoney(analytics?.totals?.spend || 0, 'spend')}</p>
+                  <p className="text-base sm:text-xl md:text-2xl font-bold text-white truncate">{formatMoney(analytics?.totals?.spend || 0, 'spend')}</p>
                   <p className="text-xs text-gray-400 mt-1">Facebook Ads</p>
                 </div>
 
                 {/* ROAS */}
-                <div className={`col-span-1 bg-gradient-to-br ${getRoasColor(analytics?.totals?.roas || 0).bg} border ${getRoasColor(analytics?.totals?.roas || 0).border} rounded-2xl p-5 hover:shadow-lg hover:${getRoasColor(analytics?.totals?.roas || 0).glow} transition-all`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-8 h-8 rounded-lg ${getRoasColor(analytics?.totals?.roas || 0).bg} flex items-center justify-center`}>
-                      <TrendingUp className={`w-4 h-4 ${getRoasColor(analytics?.totals?.roas || 0).text}`} />
+                <div className={`col-span-1 bg-gradient-to-br ${getRoasColor(analytics?.totals?.roas || 0).bg} border ${getRoasColor(analytics?.totals?.roas || 0).border} rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:shadow-lg hover:${getRoasColor(analytics?.totals?.roas || 0).glow} transition-all`}>
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg ${getRoasColor(analytics?.totals?.roas || 0).bg} flex items-center justify-center flex-shrink-0`}>
+                      <TrendingUp className={`w-3 h-3 sm:w-4 sm:h-4 ${getRoasColor(analytics?.totals?.roas || 0).text}`} />
                     </div>
-                    <span className={`text-xs font-medium ${getRoasColor(analytics?.totals?.roas || 0).text} uppercase tracking-wider flex items-center`}>
+                    <span className={`text-[10px] sm:text-xs font-medium ${getRoasColor(analytics?.totals?.roas || 0).text} uppercase tracking-wider flex items-center`}>
                       ROAS
                       <MetricTooltip metricKey="roas" />
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{(analytics?.totals?.roas || 0).toFixed(1)}x</p>
-                  <p className={`text-xs ${getRoasColor(analytics?.totals?.roas || 0).text} opacity-70 mt-1`}>
+                  <p className="text-base sm:text-xl md:text-2xl font-bold text-white">{(analytics?.totals?.roas || 0).toFixed(1)}x</p>
+                  <p className={`text-[10px] sm:text-xs ${getRoasColor(analytics?.totals?.roas || 0).text} opacity-70 mt-0.5 sm:mt-1`}>
                     {getRoasStatus(analytics?.totals?.roas || 0)}
                   </p>
                 </div>
 
                 {/* CPA */}
-                <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/5 to-transparent border border-[#00FF88]/10 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#00FF88]/10 flex items-center justify-center">
-                      <Target className="w-4 h-4 text-[#00FF88]/80" />
+                <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/5 to-transparent border border-[#00FF88]/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#00FF88]/10 flex items-center justify-center flex-shrink-0">
+                      <Target className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]/80" />
                     </div>
-                    <span className="text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider flex items-center">
+                    <span className="text-[10px] sm:text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider flex items-center">
                       CPA
                       <MetricTooltip metricKey="cpa" />
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatMoney(analytics?.totals?.cpa || 0, 'spend')}</p>
-                  <p className="text-xs text-[#00FF88]/50 mt-1">Цена за продажу</p>
+                  <p className="text-base sm:text-xl md:text-2xl font-bold text-white truncate">{formatMoney(analytics?.totals?.cpa || 0, 'spend')}</p>
+                  <p className="text-[10px] sm:text-xs text-[#00FF88]/50 mt-0.5 sm:mt-1">За продажу</p>
                 </div>
 
                 {/* Клики */}
-                <div className="col-span-1 bg-white/[0.02] border border-white/10 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-[#00FF88]/60" />
+                <div className="col-span-1 bg-white/[0.02] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                      <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]/60" />
                     </div>
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
                       Клики
                       <MetricTooltip metricKey="clicks" />
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatNumber(analytics?.totals?.clicks || 0)}</p>
-                  <p className="text-xs text-gray-500 mt-1 flex items-center">
+                  <p className="text-base sm:text-xl md:text-2xl font-bold text-white">{formatNumber(analytics?.totals?.clicks || 0)}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 flex items-center gap-1">
                     CTR: {formatPercent(analytics?.totals?.ctr || 0)}
                     <MetricTooltip metricKey="ctr" />
                   </p>
                 </div>
 
                 {/* Показы */}
-                <div className="col-span-1 bg-white/[0.02] border border-white/10 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                      <Activity className="w-4 h-4 text-[#00FF88]/60" />
+                <div className="col-span-1 bg-white/[0.02] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                      <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]/60" />
                     </div>
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
                       Показы
                       <MetricTooltip metricKey="impressions" />
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatNumber(analytics?.totals?.impressions || 0)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Охват рекламы</p>
+                  <p className="text-base sm:text-xl md:text-2xl font-bold text-white">{formatNumber(analytics?.totals?.impressions || 0)}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Охват</p>
                 </div>
               </div>
 
-              {/* Таблица команд */}
-              <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden mb-8 backdrop-blur-sm">
-                <div className="px-6 py-4 border-b border-[#00FF88]/10 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <PieChart className="w-5 h-5 text-[#00FF88]" />
-                    <h2 className="text-lg font-semibold text-white">Результаты Команд</h2>
+              {/* Таблица команд - Desktop only (lg+) */}
+              <div className="hidden lg:block bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden mb-4 sm:mb-6 md:mb-8 backdrop-blur-sm">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[#00FF88]/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF88]" />
+                    <h2 className="text-base sm:text-lg font-semibold text-white">Результаты Команд</h2>
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 hidden md:block">
                     {analytics?.period?.since} → {analytics?.period?.until}
                   </span>
                 </div>
@@ -793,8 +791,81 @@ export default function TrafficCommandDashboard() {
                 </div>
               </div>
 
-              {/* 🎯 Карточки команд - ПРЕМИАЛЬНЫЙ "ЛЕЗВИЕ" ЭФФЕКТ */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+              {/* 🎯 Карточки команд - Mobile/Tablet (до lg) */}
+              <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 sm:mb-6">
+                {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map(team => {
+                  const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
+                  const roasColor = getRoasColor(team.roas);
+                  const rankInfo = team.rankInfo;
+
+                  return (
+                    <div 
+                      key={team.team}
+                      className={`bg-gradient-to-br ${colors.gradient} border ${roasColor.border} rounded-xl p-4 relative overflow-hidden`}
+                      style={{
+                        background: rankInfo.gradientStyle,
+                      }}
+                    >
+                      {/* Медаль в углу */}
+                      <div className="absolute top-2 right-2 flex flex-col items-center gap-0.5">
+                        <span className="text-xl">{rankInfo.medal}</span>
+                        <span className="text-[8px] font-bold" style={{ color: rankInfo.color }}>
+                          #{team.rank}
+                        </span>
+                      </div>
+
+                      {/* Заголовок команды */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-2xl">{colors.emoji}</span>
+                        <h3 className="text-lg font-bold text-white">{team.team}</h3>
+                      </div>
+
+                      {/* Метрики сеткой 2x3 */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">Доход</p>
+                          <p className="text-sm font-bold text-[#00FF88]">{formatMoney(team.revenue, 'revenue')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">Затраты</p>
+                          <p className="text-sm font-bold text-gray-300">{formatMoney(team.spend, 'spend')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">ROAS</p>
+                          <p className={`text-sm font-bold ${roasColor.text}`}>{team.roas.toFixed(1)}x</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">Продаж</p>
+                          <p className="text-sm font-bold text-white">{team.sales}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">CPA</p>
+                          <p className="text-sm font-bold text-gray-300">{formatMoney(team.cpa, 'spend')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">CTR</p>
+                          <p className="text-sm font-bold text-white">{formatPercent(team.ctr)}</p>
+                        </div>
+                      </div>
+
+                      {/* AI кнопка внизу */}
+                      <button
+                        onClick={() => {
+                          setSelectedTeamForAI(team.team);
+                          setShowRecommendationModal(true);
+                        }}
+                        className="w-full mt-4 px-3 py-2 bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-lg flex items-center justify-center gap-2 hover:bg-[#00FF88]/20 transition-all"
+                      >
+                        <Sparkles className="w-3 h-3 text-[#00FF88]" />
+                        <span className="text-xs font-medium text-[#00FF88]">AI Рекомендации</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 🎯 Карточки команд - Desktop (lg+) */}
+              <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
                 {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map(team => {
                   const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
                   const roasColor = getRoasColor(team.roas);
@@ -902,12 +973,12 @@ export default function TrafficCommandDashboard() {
               </div>
 
               {/* 🏷️ ТОП UTM МЕТОК - 3 секции */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
                 
                 {/* 💰 ТОП по ПРОДАЖАМ */}
                 {analytics?.topUtmBySales && analytics.topUtmBySales.length > 0 && (
-                  <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden backdrop-blur-sm">
-                    <div className="px-4 py-3 border-b border-[#00FF88]/10 flex items-center gap-2">
+                  <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-sm">
+                    <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-[#00FF88]/10 flex items-center gap-2">
                       <span className="text-lg">💰</span>
                       <div>
                         <h3 className="text-sm font-semibold text-white">ТОП UTM по продажам</h3>
