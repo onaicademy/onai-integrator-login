@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient } from '@/lib/api-client';
+import { apiRequest } from '@/utils/apiClient';
 
 /**
  * 📧📱 МАССОВЫЕ РАССЫЛКИ (EMAIL + SMS)
@@ -74,12 +74,12 @@ const MassBroadcast = () => {
   const loadStats = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get('/api/tripwire/admin/mass-broadcast/stats');
-      setStats(response.data);
+      const data = await apiRequest('/api/tripwire/admin/mass-broadcast/stats');
+      setStats(data);
     } catch (error: any) {
       toast({
         title: '❌ Ошибка',
-        description: error.response?.data?.error || 'Не удалось загрузить статистику',
+        description: error?.message || 'Не удалось загрузить статистику',
         variant: 'destructive',
       });
     } finally {
@@ -131,24 +131,27 @@ const MassBroadcast = () => {
     setIsSending(true);
 
     try {
-      const response = await apiClient.post('/api/tripwire/admin/mass-broadcast/send', {
-        email: {
-          subject: emailSubject,
-          message: emailMessage,
-        },
-        sms: smsMessage.trim() ? {
-          message: smsMessage,
-          shortLink: shortLink,
-        } : null,
+      const response = await apiRequest('/api/tripwire/admin/mass-broadcast/send', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: {
+            subject: emailSubject,
+            message: emailMessage,
+          },
+          sms: smsMessage.trim() ? {
+            message: smsMessage,
+            shortLink: shortLink,
+          } : null,
+        }),
       });
 
       toast({
         title: '🎉 Рассылка завершена!',
         description: (
           <div className="space-y-1">
-            <p>📧 Email: {response.data.emailSuccess} отправлено</p>
-            {response.data.smsSuccess > 0 && (
-              <p>📱 SMS: {response.data.smsSuccess} отправлено</p>
+            <p>📧 Email: {response.emailSuccess} отправлено</p>
+            {response.smsSuccess > 0 && (
+              <p>📱 SMS: {response.smsSuccess} отправлено</p>
             )}
           </div>
         ),
@@ -162,7 +165,7 @@ const MassBroadcast = () => {
     } catch (error: any) {
       toast({
         title: '❌ Ошибка отправки',
-        description: error.response?.data?.error || 'Не удалось отправить рассылку',
+        description: error?.message || 'Не удалось отправить рассылку',
         variant: 'destructive',
       });
     } finally {
