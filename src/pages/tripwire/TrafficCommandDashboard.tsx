@@ -131,7 +131,40 @@ interface CombinedAnalytics {
     usdToKzt: number;
     updatedAt: string;
   };
+  // 🏷️ ТОП UTM МЕТОК
+  topUtmBySales?: TopUtmSales[];
+  topCampaignsByCtr?: TopCampaignCtr[];
+  topCampaignsByVideo?: TopCampaignVideo[];
   updatedAt: string;
+}
+
+// 🏷️ Типы для ТОП UTM меток
+interface TopUtmSales {
+  rank: number;
+  campaign: string;
+  sales: number;
+  revenue: number;
+  team: string;
+}
+
+interface TopCampaignCtr {
+  rank: number;
+  name: string;
+  team: string;
+  ctr: number;
+  clicks: number;
+  impressions: number;
+  spend: number;
+}
+
+interface TopCampaignVideo {
+  rank: number;
+  name: string;
+  team: string;
+  plays: number;
+  completions: number;
+  completionRate: number;
+  spend: number;
 }
 
 // Format helpers
@@ -824,6 +857,124 @@ export default function TrafficCommandDashboard() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* 🏷️ ТОП UTM МЕТОК - 3 секции */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                
+                {/* 💰 ТОП по ПРОДАЖАМ */}
+                {analytics?.topUtmBySales && analytics.topUtmBySales.length > 0 && (
+                  <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+                    <div className="px-4 py-3 border-b border-[#00FF88]/10 flex items-center gap-2">
+                      <span className="text-lg">💰</span>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">ТОП UTM по продажам</h3>
+                        <p className="text-[10px] text-gray-500">Данные из AmoCRM</p>
+                      </div>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {analytics.topUtmBySales.slice(0, 5).map((item, idx) => (
+                        <div 
+                          key={item.campaign}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#00FF88]/5 transition-all"
+                        >
+                          <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${
+                            idx === 0 ? 'bg-[#00FF88]/20 text-[#00FF88]' :
+                            idx === 1 ? 'bg-[#00FF88]/15 text-[#00FF88]/80' :
+                            idx === 2 ? 'bg-[#00FF88]/10 text-[#00FF88]/60' :
+                            'bg-gray-800 text-gray-500'
+                          }`}>
+                            {idx + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-white truncate font-medium">{item.campaign}</p>
+                            <p className="text-[10px] text-gray-500">{item.team}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-[#00FF88]">{item.sales}</p>
+                            <p className="text-[10px] text-gray-500">продаж</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 📈 ТОП по CTR */}
+                {analytics?.topCampaignsByCtr && analytics.topCampaignsByCtr.length > 0 && (
+                  <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+                    <div className="px-4 py-3 border-b border-[#00FF88]/10 flex items-center gap-2">
+                      <span className="text-lg">📈</span>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">ТОП кампаний по CTR</h3>
+                        <p className="text-[10px] text-gray-500">Кликабельность рекламы</p>
+                      </div>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {analytics.topCampaignsByCtr.slice(0, 5).map((item, idx) => (
+                        <div 
+                          key={item.name}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#00FF88]/5 transition-all"
+                        >
+                          <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${
+                            idx === 0 ? 'bg-[#00FF88]/20 text-[#00FF88]' :
+                            idx === 1 ? 'bg-[#00FF88]/15 text-[#00FF88]/80' :
+                            idx === 2 ? 'bg-[#00FF88]/10 text-[#00FF88]/60' :
+                            'bg-gray-800 text-gray-500'
+                          }`}>
+                            {idx + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-white truncate font-medium">{item.name}</p>
+                            <p className="text-[10px] text-gray-500">{item.team} • {formatNumber(item.clicks)} кликов</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-[#00FF88]">{item.ctr}%</p>
+                            <p className="text-[10px] text-gray-500">CTR</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 🎬 ТОП по ВИДЕО */}
+                {analytics?.topCampaignsByVideo && analytics.topCampaignsByVideo.length > 0 && (
+                  <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+                    <div className="px-4 py-3 border-b border-[#00FF88]/10 flex items-center gap-2">
+                      <span className="text-lg">🎬</span>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">ТОП по видео-вовлечённости</h3>
+                        <p className="text-[10px] text-gray-500">Просмотры и досмотры</p>
+                      </div>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {analytics.topCampaignsByVideo.slice(0, 5).map((item, idx) => (
+                        <div 
+                          key={item.name}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#00FF88]/5 transition-all"
+                        >
+                          <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${
+                            idx === 0 ? 'bg-[#00FF88]/20 text-[#00FF88]' :
+                            idx === 1 ? 'bg-[#00FF88]/15 text-[#00FF88]/80' :
+                            idx === 2 ? 'bg-[#00FF88]/10 text-[#00FF88]/60' :
+                            'bg-gray-800 text-gray-500'
+                          }`}>
+                            {idx + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-white truncate font-medium">{item.name}</p>
+                            <p className="text-[10px] text-gray-500">{item.team} • {formatNumber(item.plays)} просмотров</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-[#00FF88]">{item.completionRate}%</p>
+                            <p className="text-[10px] text-gray-500">досмотр</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 🎬 ТОП ВИДЕО ПО ВОВЛЕЧЕННОСТИ */}

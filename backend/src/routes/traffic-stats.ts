@@ -857,6 +857,91 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     const totalCpa = totals.sales > 0 ? totals.spend / totals.sales : 0;
     const totalCtr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
     
+    // 🏷️ ТОП UTM МЕТОК ПО ПРОДАЖАМ (из AmoCRM)
+    const utmSalesMap: Record<string, { campaign: string; sales: number; revenue: number; team: string }> = {};
+    for (const lead of processedLeads) {
+      const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
+      if (closedTime < cutoff) continue;
+      
+      const campaign = lead.utm_campaign || lead.utm_content || 'unknown';
+      if (campaign === 'unknown') continue;
+      
+      if (!utmSalesMap[campaign]) {
+        utmSalesMap[campaign] = {
+          campaign,
+          sales: 0,
+          revenue: 0,
+          team: lead.traffic_team,
+        };
+      }
+      utmSalesMap[campaign].sales++;
+      utmSalesMap[campaign].revenue += 5000;
+    }
+    
+    const topUtmBySales = Object.values(utmSalesMap)
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 10)
+      .map((item, idx) => ({
+        rank: idx + 1,
+        ...item,
+      }));
+    
+    // 📈 ТОП КАМПАНИЙ ПО CTR (из Facebook Ads)
+    const allCampaigns: { name: string; team: string; ctr: number; clicks: number; impressions: number; spend: number }[] = [];
+    for (const fb of fbResults) {
+      if (fb.campaigns && Array.isArray(fb.campaigns)) {
+        for (const camp of fb.campaigns) {
+          if (camp.impressions > 100) { // Минимум 100 показов
+            allCampaigns.push({
+              name: camp.name,
+              team: fb.team,
+              ctr: camp.impressions > 0 ? (camp.clicks / camp.impressions) * 100 : 0,
+              clicks: camp.clicks,
+              impressions: camp.impressions,
+              spend: camp.spend,
+            });
+          }
+        }
+      }
+    }
+    
+    const topCampaignsByCtr = allCampaigns
+      .sort((a, b) => b.ctr - a.ctr)
+      .slice(0, 10)
+      .map((item, idx) => ({
+        rank: idx + 1,
+        ...item,
+        ctr: Number(item.ctr.toFixed(2)),
+      }));
+    
+    // 🎬 ТОП КАМПАНИЙ ПО ВОВЛЕЧЁННОСТИ ВИДЕО
+    const videoCampaigns: { name: string; team: string; plays: number; completions: number; completionRate: number; spend: number }[] = [];
+    for (const fb of fbResults) {
+      if (fb.campaigns && Array.isArray(fb.campaigns)) {
+        for (const camp of fb.campaigns) {
+          if (camp.videoPlays > 0) {
+            videoCampaigns.push({
+              name: camp.name,
+              team: fb.team,
+              plays: camp.videoPlays || 0,
+              completions: camp.videoCompletions || 0,
+              completionRate: camp.videoPlays > 0 ? (camp.videoCompletions / camp.videoPlays) * 100 : 0,
+              spend: camp.spend,
+            });
+          }
+        }
+      }
+    }
+    
+    const topCampaignsByVideo = videoCampaigns
+      .sort((a, b) => b.plays - a.plays)
+      .slice(0, 10)
+      .map((item, idx) => ({
+        rank: idx + 1,
+        ...item,
+        completionRate: Number(item.completionRate.toFixed(1)),
+      }));
+    
     res.json({
       success: true,
       period: { since, until, preset },
@@ -867,6 +952,10 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
         cpa: totalCpa,
         ctr: totalCtr,
       },
+      // 🏷️ ТОП UTM МЕТОК
+      topUtmBySales,        // Топ по продажам (AmoCRM)
+      topCampaignsByCtr,    // Топ по CTR (Facebook Ads)
+      topCampaignsByVideo,  // Топ по видео (Facebook Ads)
       exchangeRate: {
         usdToKzt: usdToKztRate,
         updatedAt: cachedExchangeRate?.timestamp ? new Date(cachedExchangeRate.timestamp).toISOString() : new Date().toISOString(),
