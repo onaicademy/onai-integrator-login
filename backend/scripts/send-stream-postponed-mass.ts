@@ -11,6 +11,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { tripwireStreamPostponedEmail } from '../src/templates/tripwireStreamPostponedEmail';
+import { tripwireStreamPostponedSMS } from '../src/templates/tripwireStreamPostponedSMS';
+import { sendSMS } from '../src/services/mobizon-simple';
 
 // Загружаем env переменные
 dotenv.config({ path: path.join(__dirname, '../env.env') });
@@ -66,34 +68,36 @@ const sendMassEmail = async () => {
     console.log(`✅ Найдено студентов: ${students.length}`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    // 2️⃣ Отправляем письма
-    console.log('📤 Начинаем массовую рассылку...\n');
+    // 2️⃣ Отправляем EMAIL (SMS не отправляем, т.к. нет телефонов в БД)
+    console.log('📤 Начинаем массовую EMAIL рассылку...\n');
+    console.log('⚠️  SMS рассылка пропущена: телефоны не найдены в БД tripwire_users\n');
 
-    let successCount = 0;
-    let failCount = 0;
-    const errors: Array<{ email: string; error: string }> = [];
+    let emailSuccessCount = 0;
+    let emailFailCount = 0;
+    const errors: Array<{ contact: string; type: string; error: string }> = [];
 
     for (const student of students) {
       try {
+        // 📧 Отправка EMAIL
         const emailHtml = tripwireStreamPostponedEmail({
           recipientName: student.full_name || 'Студент',
           recipientEmail: student.email,
         });
 
-        const { data, error } = await resend.emails.send({
+        const { data: emailData, error: emailError } = await resend.emails.send({
           from: FROM_EMAIL,
           to: student.email,
           subject: '⚡ Важно: эфир переносится на субботу',
           html: emailHtml,
         });
 
-        if (error) {
-          console.error(`  ❌ ${student.email}: ${error.message}`);
-          failCount++;
-          errors.push({ email: student.email, error: error.message });
+        if (emailError) {
+          console.error(`  ❌ ${student.email}: ${emailError.message}`);
+          emailFailCount++;
+          errors.push({ contact: student.email, type: 'email', error: emailError.message });
         } else {
-          console.log(`  ✅ ${student.email} (ID: ${data?.id})`);
-          successCount++;
+          console.log(`  ✅ ${student.email} (ID: ${emailData?.id})`);
+          emailSuccessCount++;
         }
 
         // ⏱️ Задержка 100ms между отправками (чтобы не превысить rate limit)
@@ -101,8 +105,8 @@ const sendMassEmail = async () => {
 
       } catch (err: any) {
         console.error(`  ❌ ${student.email}: ${err.message}`);
-        failCount++;
-        errors.push({ email: student.email, error: err.message });
+        emailFailCount++;
+        errors.push({ contact: student.email, type: 'email', error: err.message });
       }
     }
 
@@ -110,23 +114,26 @@ const sendMassEmail = async () => {
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('📊 ИТОГОВАЯ СТАТИСТИКА:');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log(`✅ Успешно отправлено: ${successCount}`);
-    console.log(`❌ Ошибок: ${failCount}`);
-    console.log(`📧 Всего попыток: ${students.length}`);
+    console.log(`✅ EMAIL успешно: ${emailSuccessCount}`);
+    console.log(`❌ EMAIL ошибок: ${emailFailCount}`);
+    console.log(`👥 Всего студентов: ${students.length}`);
+    console.log(`📱 SMS: пропущено (нет телефонов в БД)`);
 
     if (errors.length > 0) {
       console.log('\n⚠️  СПИСОК ОШИБОК:');
-      errors.forEach(({ email, error }) => {
-        console.log(`  • ${email}: ${error}`);
+      errors.forEach(({ contact, type, error }) => {
+        console.log(`  • [${type.toUpperCase()}] ${contact}: ${error}`);
       });
     }
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    if (successCount === students.length) {
-      console.log('🎉 ВСЕ ПИСЬМА УСПЕШНО ОТПРАВЛЕНЫ!');
+    if (emailSuccessCount === students.length) {
+      console.log('🎉 ВСЕ EMAIL УСПЕШНО ОТПРАВЛЕНЫ!');
+    } else if (emailSuccessCount > 0) {
+      console.log('⚠️  Некоторые email не были отправлены. Проверь ошибки выше.');
     } else {
-      console.log('⚠️  Некоторые письма не были отправлены. Проверь ошибки выше.');
+      console.log('❌ Критическая ошибка: ничего не было отправлено.');
     }
 
   } catch (error) {
