@@ -5,7 +5,8 @@ import axios from 'axios';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
-  Zap, Activity, PieChart, Calendar, Filter
+  Zap, Activity, PieChart, Calendar, Filter, Bot, Loader2,
+  Lightbulb, CheckCircle2, AlertTriangle, X
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -66,6 +67,47 @@ export default function TrafficCommandDashboard() {
   const [dateRange, setDateRange] = useState<'7d' | '14d' | '30d'>('7d');
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [showTeamDropdown, setShowTeamDropdown] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<Record<string, string>>({});
+  const [loadingRecs, setLoadingRecs] = useState<string | null>(null);
+
+  // Fetch AI recommendations for a team
+  const fetchRecommendations = async (team: string) => {
+    if (recommendations[team]) {
+      setShowRecommendations(team);
+      return;
+    }
+    
+    setLoadingRecs(team);
+    try {
+      const response = await axios.get(`${API_URL}/api/facebook-ads/recommendations/${team}`);
+      if (response.data.recommendations) {
+        setRecommendations(prev => ({ ...prev, [team]: response.data.recommendations }));
+        setShowRecommendations(team);
+      } else {
+        // Generate new recommendations
+        const teamData = analytics?.teams.find(t => t.team === team);
+        if (teamData) {
+          const genResponse = await axios.post(`${API_URL}/api/facebook-ads/recommendations/generate`, {
+            team: teamData.team,
+            spend: teamData.spend,
+            revenue: teamData.revenue,
+            roas: teamData.roas,
+            ctr: teamData.ctr,
+            cpa: teamData.cpa,
+          });
+          if (genResponse.data.recommendations) {
+            setRecommendations(prev => ({ ...prev, [team]: genResponse.data.recommendations }));
+            setShowRecommendations(team);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    } finally {
+      setLoadingRecs(null);
+    }
+  };
 
   // Fetch combined analytics (FB Ads + AmoCRM)
   const { data: analytics, isLoading, refetch, isFetching } = useQuery<CombinedAnalytics>({
@@ -301,6 +343,7 @@ export default function TrafficCommandDashboard() {
                         <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">CPA</th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Clicks</th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">CTR</th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">AI</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -346,6 +389,20 @@ export default function TrafficCommandDashboard() {
                             </td>
                             <td className="px-6 py-5 text-right font-mono text-sm text-gray-400">
                               {formatPercent(team.ctr)}
+                            </td>
+                            <td className="px-6 py-5 text-center">
+                              <button
+                                onClick={() => fetchRecommendations(team.team)}
+                                disabled={loadingRecs === team.team}
+                                className="p-2 hover:bg-violet-500/20 rounded-lg transition-all group"
+                                title="Получить AI-рекомендации"
+                              >
+                                {loadingRecs === team.team ? (
+                                  <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                                ) : (
+                                  <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-violet-400 transition-colors" />
+                                )}
+                              </button>
                             </td>
                           </tr>
                         );
@@ -416,6 +473,19 @@ export default function TrafficCommandDashboard() {
                           />
                         </div>
                       </div>
+
+                      {/* AI Recommendations Button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); fetchRecommendations(team.team); }}
+                        disabled={loadingRecs === team.team}
+                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-500/20 to-blue-500/20 hover:from-violet-500/30 hover:to-blue-500/30 border border-violet-500/30 rounded-xl text-sm font-medium text-violet-300 transition-all disabled:opacity-50"
+                      >
+                        {loadingRecs === team.team ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                        ) : (
+                          <><Sparkles className="w-4 h-4" /> AI Recommendations</>
+                        )}
+                      </button>
                     </div>
                   );
                 })}
@@ -427,13 +497,108 @@ export default function TrafficCommandDashboard() {
                   Data updates every 60 seconds • Last updated: {analytics?.updatedAt ? new Date(analytics.updatedAt).toLocaleString('ru-RU') : '—'}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">
-                  Powered by Facebook Ads API + AmoCRM
+                  Powered by Facebook Ads API + AmoCRM + Groq AI
                 </p>
               </div>
             </>
           )}
         </main>
       </div>
+
+      {/* AI Recommendations Modal */}
+      {showRecommendations && recommendations[showRecommendations] && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowRecommendations(null)}
+          />
+          
+          {/* Modal */}
+          <div className="relative w-full max-w-2xl bg-[#12121a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-gradient-to-r from-violet-500/10 to-blue-500/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Рекомендации для {showRecommendations}</h3>
+                  <p className="text-xs text-gray-400">AI-анализ на основе текущих метрик</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRecommendations(null)}
+                className="p-2 hover:bg-white/5 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-6 max-h-[60vh] overflow-y-auto">
+              <div className="prose prose-invert prose-sm max-w-none">
+                <div className="space-y-4">
+                  {recommendations[showRecommendations].split('\n').map((line, idx) => {
+                    if (!line.trim()) return null;
+                    
+                    // Check if it's a numbered item
+                    const isNumbered = /^\d+\./.test(line.trim());
+                    const isBullet = /^[-•\*]/.test(line.trim());
+                    const isHeader = line.includes('**') || line.startsWith('#');
+                    
+                    if (isNumbered || isBullet) {
+                      return (
+                        <div key={idx} className="flex gap-3 items-start">
+                          <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Lightbulb className="w-3.5 h-3.5 text-violet-400" />
+                          </div>
+                          <p className="text-gray-300 leading-relaxed">
+                            {line.replace(/^[\d\.\ \-•\*]+/, '').trim()}
+                          </p>
+                        </div>
+                      );
+                    }
+                    
+                    if (isHeader) {
+                      return (
+                        <h4 key={idx} className="text-white font-semibold mt-4">
+                          {line.replace(/[\*#]/g, '').trim()}
+                        </h4>
+                      );
+                    }
+                    
+                    return (
+                      <p key={idx} className="text-gray-400 leading-relaxed">
+                        {line.trim()}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Sparkles className="w-4 h-4" />
+                <span>Powered by Groq AI (Llama 3.3 70B)</span>
+              </div>
+              <button
+                onClick={() => {
+                  delete recommendations[showRecommendations];
+                  setRecommendations({ ...recommendations });
+                  fetchRecommendations(showRecommendations);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm transition-all"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Обновить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

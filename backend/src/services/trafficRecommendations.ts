@@ -10,11 +10,12 @@ interface TeamMetrics {
   spend: number;
   revenue: number;
   roas: number;
-  purchases: number;
+  purchases?: number;
+  sales?: number;
   cpa: number;
   ctr: number;
-  impressions: number;
-  clicks: number;
+  impressions?: number;
+  clicks?: number;
 }
 
 /**
@@ -22,19 +23,24 @@ interface TeamMetrics {
  */
 export async function generateTeamRecommendations(metrics: TeamMetrics): Promise<string> {
   try {
+    // Handle both purchases and sales naming
+    const purchases = metrics.purchases || metrics.sales || 0;
+    const impressions = metrics.impressions || 0;
+    const clicks = metrics.clicks || 0;
+    
     const prompt = `Ты - профессиональный performance-маркетолог с опытом работы в Facebook Ads.
 
 Проанализируй метрики рекламной кампании команды "${metrics.team}":
 
 📊 МЕТРИКИ:
 - Расход: $${metrics.spend.toFixed(2)}
-- Выручка: $${metrics.revenue.toFixed(2)}
+- Выручка: ₸${metrics.revenue.toFixed(0)}
 - ROAS: ${metrics.roas.toFixed(2)}x
-- Покупки: ${metrics.purchases}
+- Продажи: ${purchases}
 - CPA (стоимость покупки): $${metrics.cpa.toFixed(2)}
-- Показы: ${metrics.impressions.toLocaleString()}
-- Клики: ${metrics.clicks.toLocaleString()}
 - CTR: ${metrics.ctr.toFixed(2)}%
+${impressions > 0 ? `- Показы: ${impressions.toLocaleString()}
+- Клики: ${clicks.toLocaleString()}` : ''}
 
 🎯 ЗАДАЧА:
 Дай 3-4 конкретных профессиональных совета, как улучшить результаты этой команды.

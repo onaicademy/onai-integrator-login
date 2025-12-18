@@ -27,10 +27,10 @@ const EXCLUDED_EMAILS = [
  */
 router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
   try {
-    // Получить всех студентов
+    // 1️⃣ Получить всех студентов из tripwire_users
     const { data: allStudents, error: allError } = await supabase
       .from('tripwire_users')
-      .select('email, phone, full_name');
+      .select('user_id, email, full_name');
 
     if (allError) {
       console.error('❌ Error fetching all students:', allError);
@@ -43,8 +43,15 @@ router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
     const filteredStudents = allStudents?.filter(s => !EXCLUDED_EMAILS.includes(s.email)) || [];
     const excludedCount = totalStudents - filteredStudents.length;
     
+    // 2️⃣ Получить телефоны из основной БД users
+    const userIds = filteredStudents.map(s => s.user_id);
+    const { data: usersWithPhone } = await supabase
+      .from('users')
+      .select('id, phone')
+      .in('id', userIds);
+
     // Подсчитать получателей SMS (у кого есть телефон)
-    const smsRecipients = filteredStudents.filter(s => s.phone && s.phone.trim()).length;
+    const smsRecipients = usersWithPhone?.filter(u => u.phone && u.phone.trim()).length || 0;
 
     res.json({
       totalStudents,
@@ -77,11 +84,11 @@ router.post('/send', authenticateJWT, requireAdmin, async (req, res) => {
 
     const resend = new Resend(RESEND_API_KEY);
 
-    // 1️⃣ Получить всех студентов
+    // 1️⃣ Получить всех студентов из tripwire_users
     console.log('📊 Получаем список студентов...');
     const { data: allStudents, error: studentsError } = await supabase
       .from('tripwire_users')
-      .select('email, phone, full_name')
+      .select('user_id, email, full_name')
       .not('email', 'in', `(${EXCLUDED_EMAILS.map(e => `"${e}"`).join(',')})`);
 
     if (studentsError) {
@@ -94,6 +101,23 @@ router.post('/send', authenticateJWT, requireAdmin, async (req, res) => {
     }
 
     console.log(`✅ Найдено студентов: ${allStudents.length}`);
+
+    // 2️⃣ Получить телефоны из основной БД users
+    const userIds = allStudents.map(s => s.user_id);
+    const { data: usersWithPhone } = await supabase
+      .from('users')
+      .select('id, phone')
+      .in('id', userIds);
+
+    // Создать Map для быстрого доступа к телефонам
+    const phoneMap = new Map<string, string | null>();
+    usersWithPhone?.forEach(u => {
+      if (u.phone && u.phone.trim()) {
+        phoneMap.set(u.id, u.phone);
+      }
+    });
+
+    console.log(`✅ Найдено телефонов: ${phoneMap.size}`);
 
     let emailSuccess = 0;
     let emailFail = 0;
@@ -144,22 +168,25 @@ router.post('/send', authenticateJWT, requireAdmin, async (req, res) => {
       const smsText = smsData.message.replace(/{SHORT_LINK}/g, smsData.shortLink || 'onai.academy/integrator');
 
       for (const student of allStudents) {
-        if (!student.phone || !student.phone.trim()) {
+        // Получить телефон из phoneMap
+        const phone = phoneMap.get(student.user_id);
+        
+        if (!phone) {
           console.log(`  ⚠️  SMS пропущен: нет телефона для ${student.email}`);
           continue;
         }
 
         try {
           const success = await sendSMS({
-            recipient: student.phone,
+            recipient: phone,
             text: smsText,
           });
 
           if (success) {
-            console.log(`  ✅ SMS ${student.phone}`);
+            console.log(`  ✅ SMS ${phone}`);
             smsSuccess++;
           } else {
-            console.error(`  ❌ SMS ${student.phone}: Failed to send`);
+            console.error(`  ❌ SMS ${phone}: Failed to send`);
             smsFail++;
           }
 
@@ -167,7 +194,7 @@ router.post('/send', authenticateJWT, requireAdmin, async (req, res) => {
           await new Promise(resolve => setTimeout(resolve, 1000));
 
         } catch (err: any) {
-          console.error(`  ❌ SMS ${student.phone}:`, err.message);
+          console.error(`  ❌ SMS ${phone}:`, err.message);
           smsFail++;
         }
       }
