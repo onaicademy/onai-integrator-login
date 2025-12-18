@@ -175,43 +175,47 @@ const getRoasStatus = (roas: number) => {
   return '🔴 Убыточно';
 };
 
-// 🏆 Рейтинговая система (игровой стиль)
+// 🏆 ПРЕМИАЛЬНАЯ Рейтинговая система - "Лезвие" эффект
 const RANK_SYSTEM = {
   1: {
     title: 'ЛЕГЕНДАРНО',
     medal: '🏆',
-    color: '#FFD700', // Золото
-    gradient: 'from-yellow-500/30 to-yellow-600/10',
-    glow: 'shadow-[0_0_30px_rgba(255,215,0,0.5)]',
-    border: 'border-yellow-500/50',
-    bgPulse: '', // УБРАЛИ пульсацию
+    color: '#00FF88',
+    // Яркий зелёный градиент слева направо
+    gradientStyle: 'linear-gradient(90deg, rgba(0,255,136,0.25) 0%, rgba(0,255,136,0.08) 50%, rgba(50,50,50,0.3) 100%)',
+    borderStyle: '2px solid rgba(0,255,136,0.4)',
+    shimmerOpacity: 0.6,
+    shimmerSpeed: '2s',
   },
   2: {
     title: 'ЭПИЧНО',
     medal: '🥈',
-    color: '#C0C0C0', // Серебро
-    gradient: 'from-gray-400/30 to-gray-500/10',
-    glow: 'shadow-[0_0_20px_rgba(192,192,192,0.4)]',
-    border: 'border-gray-400/50',
-    bgPulse: '',
+    color: '#00FF88',
+    // Средняя яркость
+    gradientStyle: 'linear-gradient(90deg, rgba(0,255,136,0.15) 0%, rgba(0,255,136,0.05) 50%, rgba(40,40,40,0.3) 100%)',
+    borderStyle: '1px solid rgba(0,255,136,0.25)',
+    shimmerOpacity: 0.4,
+    shimmerSpeed: '2.5s',
   },
   3: {
-    title: 'ОТЛИЧНО',
+    title: 'ХОРОШО',
     medal: '🥉',
-    color: '#CD7F32', // Бронза
-    gradient: 'from-orange-600/30 to-orange-700/10',
-    glow: 'shadow-[0_0_15px_rgba(205,127,50,0.3)]',
-    border: 'border-orange-600/50',
-    bgPulse: '',
+    color: '#00FF88',
+    // Слабая яркость
+    gradientStyle: 'linear-gradient(90deg, rgba(0,255,136,0.08) 0%, rgba(0,255,136,0.02) 50%, rgba(35,35,35,0.3) 100%)',
+    borderStyle: '1px solid rgba(0,255,136,0.15)',
+    shimmerOpacity: 0.25,
+    shimmerSpeed: '3s',
   },
   4: {
     title: 'ТРЕБУЕТ ДОРАБОТОК',
     medal: '⭐',
-    color: '#00FF88', // Зеленый
-    gradient: 'from-[#00FF88]/20 to-[#00FF88]/5',
-    glow: 'shadow-[0_0_10px_rgba(0,255,136,0.2)]',
-    border: 'border-[#00FF88]/30',
-    bgPulse: '',
+    color: '#666666',
+    // Минимальный эффект
+    gradientStyle: 'linear-gradient(90deg, rgba(100,100,100,0.1) 0%, rgba(50,50,50,0.05) 50%, rgba(30,30,30,0.2) 100%)',
+    borderStyle: '1px solid rgba(100,100,100,0.2)',
+    shimmerOpacity: 0.1,
+    shimmerSpeed: '4s',
   },
 };
 
@@ -646,7 +650,13 @@ export default function TrafficCommandDashboard() {
                         const rankInfo = team.rankInfo;
                         
                         return (
-                          <tr key={team.team} className={`hover:bg-[#00FF88]/[0.02] transition-all ${rankInfo.glow} ${rankInfo.bgPulse}`}>
+                          <tr 
+                            key={team.team} 
+                            className="hover:bg-[#00FF88]/[0.02] transition-all relative overflow-hidden"
+                            style={{
+                              background: rankInfo.gradientStyle,
+                            }}
+                          >
                             <td className="px-6 py-5">
                               <div className="flex items-center gap-3">
                                 {/* 🏆 Медаль + Ранг */}
@@ -708,7 +718,7 @@ export default function TrafficCommandDashboard() {
                 </div>
               </div>
 
-              {/* 🎯 Карточки команд - МОБИЛЬНАЯ АДАПТАЦИЯ */}
+              {/* 🎯 Карточки команд - ПРЕМИАЛЬНЫЙ "ЛЕЗВИЕ" ЭФФЕКТ */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                 {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map(team => {
                   const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
@@ -718,10 +728,24 @@ export default function TrafficCommandDashboard() {
                   return (
                     <div 
                       key={team.team}
-                      className={`relative bg-gradient-to-br ${rankInfo.gradient} border-2 ${rankInfo.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-opacity-80 ${rankInfo.glow} ${rankInfo.bgPulse} transition-all cursor-pointer`}
+                      className="relative rounded-xl sm:rounded-2xl p-4 sm:p-6 cursor-pointer overflow-hidden group transition-all hover:scale-[1.02]"
+                      style={{
+                        background: rankInfo.gradientStyle,
+                        border: rankInfo.borderStyle,
+                      }}
                     >
-                      {/* 🏆 Медаль слева вверху - МОБИЛЬНАЯ */}
-                      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex items-center gap-1 sm:gap-1.5">
+                      {/* 🗡️ Анимированное "лезвие" - свет слева направо */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `linear-gradient(90deg, transparent 0%, rgba(0,255,136,${rankInfo.shimmerOpacity}) 50%, transparent 100%)`,
+                          animation: `shimmer ${rankInfo.shimmerSpeed} ease-in-out infinite`,
+                          transform: 'translateX(-100%)',
+                        }}
+                      />
+                      
+                      {/* 🏆 Медаль слева вверху */}
+                      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex items-center gap-1 sm:gap-1.5 z-10">
                         <span className="text-xl sm:text-2xl drop-shadow-lg">{rankInfo.medal}</span>
                         <span 
                           className="text-[10px] sm:text-xs font-bold"
@@ -731,10 +755,10 @@ export default function TrafficCommandDashboard() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
                         <div className="flex items-center gap-2 sm:gap-3">
                           <div 
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-black/30 border"
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-black/40 border"
                             style={{ borderColor: rankInfo.color + '40' }}
                           >
                             {colors.emoji}
@@ -752,7 +776,7 @@ export default function TrafficCommandDashboard() {
                         </div>
                       </div>
 
-                      <div className="space-y-2 sm:space-y-3">
+                      <div className="space-y-2 sm:space-y-3 relative z-10">
                         <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-gray-400">Затраты</span>
                           <span className="font-mono text-gray-300">{formatMoney(team.spend, 'spend')}</span>
@@ -772,7 +796,7 @@ export default function TrafficCommandDashboard() {
                       </div>
 
                       {/* Progress bar для ROAS */}
-                      <div className="mt-4 pt-4 border-t border-[#00FF88]/10">
+                      <div className="mt-4 pt-4 border-t border-[#00FF88]/10 relative z-10">
                         <div className="flex items-center justify-between text-xs mb-2">
                           <span className="text-gray-400">Цель ROAS: 2.0x</span>
                           <span className={roasColor.text}>{team.roas >= 2 ? '✓ Достигнуто' : 'В работе'}</span>
@@ -789,7 +813,7 @@ export default function TrafficCommandDashboard() {
                       <button
                         onClick={(e) => { e.stopPropagation(); fetchRecommendations(team.team); }}
                         disabled={loadingRecs === team.team}
-                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-xl text-sm font-medium text-[#00FF88] transition-all disabled:opacity-50 hover:shadow-lg hover:shadow-[#00FF88]/20"
+                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-xl text-sm font-medium text-[#00FF88] transition-all disabled:opacity-50 hover:shadow-lg hover:shadow-[#00FF88]/20 relative z-10"
                       >
                         {loadingRecs === team.team ? (
                           <><Loader2 className="w-4 h-4 animate-spin" /> Анализ...</>

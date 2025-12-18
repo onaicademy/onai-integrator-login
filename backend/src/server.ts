@@ -122,6 +122,7 @@ import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TE
 import shortLinksRouter from './routes/short-links'; // 🔗 URL Shortener for SMS Links
 import trafficStatsRouter from './routes/traffic-stats'; // 📊 Traffic Command Stats (AmoCRM sales)
 import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API Integration
+import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -405,6 +406,7 @@ app.use('/api/short-links', shortLinksRouter); // 🔗 URL Shortener for SMS Lin
 app.use('/l', shortLinksRouter); // 🔗 Short link redirect handler (прямой редирект без /api)
 app.use('/api/traffic', trafficStatsRouter); // 📊 Traffic Command Stats (AmoCRM sales - public)
 app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
+app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (мануальная отправка отчетов)
 
 // 404 обработка
 app.use((req, res) => {
@@ -496,6 +498,19 @@ const server = app.listen(PORT, () => {
 
       // 2. Initialize Telegram (independent from Redis)
       await initTelegramService();
+
+      // 2.1 🤖 Initialize Traffic Telegram Bot
+      try {
+        const { initTelegramBot } = await import('./services/telegramBot.js');
+        const { initScheduler } = await import('./services/telegramScheduler.js');
+        
+        initTelegramBot();
+        initScheduler();
+        
+        console.log('✅ Traffic Telegram Bot и расписание инициализированы');
+      } catch (error) {
+        console.error('❌ Ошибка инициализации Traffic Telegram Bot:', error);
+      }
 
       // 3. Recover notifications (background task)
       await recoverPendingNotifications();

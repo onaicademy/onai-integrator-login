@@ -10,14 +10,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Shimmer animation for admin cards */
+/* 🗡️ PREMIUM BLADE SHIMMER - плавное "лезвие" слева направо */
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
 }
 
 .animate-shimmer {
-  animation: shimmer 2s infinite;
+  animation: shimmer 2.5s infinite;
 }
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
@@ -222,14 +234,7 @@ All colors MUST be HSL.
     animation: glow 2s ease-in-out infinite;
   }
 
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
+  /* 🗡️ BLADE SHIMMER - уже определено выше */
 
   @keyframes ripple {
     0% {
