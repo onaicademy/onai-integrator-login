@@ -542,7 +542,16 @@ const server = app.listen(PORT, () => {
       startAIAnalyticsScheduler();
       startRecommendationsScheduler(); // 🤖 AI Recommendations (daily at 00:10)
 
-      // 5. Start IAE Agent schedulers and bot
+      // 5. Start Facebook Token Auto-Refresh
+      try {
+        const { startFacebookTokenScheduler } = await import('./services/facebookTokenScheduler.js');
+        startFacebookTokenScheduler(); // Daily at 03:00 AM
+        console.log('✅ Facebook Token auto-refresh initialized');
+      } catch (error) {
+        console.error('❌ Ошибка инициализации FB Token refresh:', error);
+      }
+
+      // 6. Start IAE Agent schedulers and bot
       try {
         const { initIAEBot } = await import('./services/iaeAgentBot.js');
         const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
