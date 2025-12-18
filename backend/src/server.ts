@@ -301,9 +301,23 @@ app.use((req, res, next) => {
 // 🛡️ SENTRY: Track API performance
 app.use(trackAPIPerformance);
 
-// Health check endpoint
+// Health check endpoints (both /health and /api/health)
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    service: 'onAI Backend API'
+  });
+});
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    service: 'onAI Backend API'
+  });
 });
 
 // ============================================
