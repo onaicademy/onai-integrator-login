@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
+import { safeJSONParse, safeJSONStringify, safeSessionStorage } from '@/utils/error-recovery';
 
 // 🔒 Security: Логи ТОЛЬКО в development
 const isDev = import.meta.env.DEV;
@@ -70,15 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // ⚡ Проверяем кэш (если не принудительное обновление)
       if (!forceRefresh) {
-        const cached = sessionStorage.getItem(cacheKey);
-        const cacheTime = sessionStorage.getItem(cacheTimeKey);
+        const cached = safeSessionStorage.getItem(cacheKey);
+        const cacheTimeStr = safeSessionStorage.getItem(cacheTimeKey);
         
-        if (cached && cacheTime) {
-          const age = Date.now() - parseInt(cacheTime);
+        if (cached && cacheTimeStr) {
+          const cacheTime = parseInt(cacheTimeStr, 10);
+          const age = Date.now() - cacheTime;
+          
           if (age < CACHE_TTL) {
-            const profile = JSON.parse(cached);
-            console.log(`⚡ Профиль из кэша (${Math.round(age / 1000)}s):`, profile.full_name);
-            return profile;
+            const profile = safeJSONParse(cached, null);
+            if (profile) {
+              console.log(`⚡ Профиль из кэша (${Math.round(age / 1000)}s):`, profile.full_name);
+              return profile;
+            }
           } else {
             console.log('🔄 Кэш устарел, обновляем...');
           }
@@ -97,9 +102,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      // ⚡ Сохраняем в кэш с временной меткой
-      sessionStorage.setItem(cacheKey, JSON.stringify(profile));
-      sessionStorage.setItem(cacheTimeKey, Date.now().toString());
+      // ⚡ Сохраняем в кэш с временной меткой (безопасно)
+      const profileJson = safeJSONStringify(profile);
+      safeSessionStorage.setItem(cacheKey, profileJson);
+      safeSessionStorage.setItem(cacheTimeKey, Date.now().toString());
       console.log('✅ Профиль загружен и закэширован:', profile.full_name);
       return profile;
     } catch (error) {
@@ -110,8 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 🗑️ Очистить кэш профиля (для обновлений)
   const clearProfileCache = (userId: string) => {
-    sessionStorage.removeItem(`profile_${userId}`);
-    sessionStorage.removeItem(`profile_${userId}_time`);
+    safeSessionStorage.removeItem(`profile_${userId}`);
+    safeSessionStorage.removeItem(`profile_${userId}_time`);
     console.log('🗑️ Кэш профиля очищен');
   };
 
@@ -129,11 +135,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return (session.user as any).app_metadata.role;
     }
     
-    // Приоритет 3: Парсим JWT токен
+    // Приоритет 3: Парсим JWT токен (безопасно)
     try {
-      const payload = JSON.parse(atob(session.access_token.split('.')[1]));
-      if (payload.user_role) {
-        return payload.user_role;
+      const tokenParts = session.access_token.split('.');
+      if (tokenParts.length === 3) {
+        const payloadBase64 = tokenParts[1];
+        const payloadJson = atob(payloadBase64);
+        const payload = safeJSONParse(payloadJson, {});
+        
+        if (payload.user_role) {
+          return payload.user_role;
+        }
       }
     } catch (e) {
       console.warn('⚠️ Не удалось распарсить JWT:', e);
@@ -188,8 +200,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setUserRole(null);
       
-      // 🔑 Удаляем JWT токен при выходе
-      localStorage.removeItem('supabase_token');
+      // 🔑 Удаляем JWT токен при выходе (безопасно)
+      try {
+        localStorage.removeItem('supabase_token');
+      } catch (e) {
+        console.warn('⚠️ Failed to remove token from localStorage');
+      }
     }
     
     // 🔥 ИСПРАВЛЕНИЕ: ВСЕГДА устанавливаем флаги в updateAuthState
@@ -207,7 +223,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log('🔐 AuthContext: Инициализация...');
-    console.log('📦 localStorage keys:', Object.keys(localStorage).filter(k => k.startsWith('sb-')));
+    
+    // Безопасное чтение localStorage keys
+    try {
+      console.log('📦 localStorage keys:', Object.keys(localStorage).filter(k => k.startsWith('sb-')));
+    } catch (e) {
+      console.warn('⚠️ localStorage недоступен');
+    }
     
     let isMounted = true;
     
@@ -269,19 +291,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.message === 'getSession timeout') {
           console.warn('⏱️ ТАЙМАУТ getSession()! Используем fallback...');
           
-          // Пробуем прочитать сессию из localStorage напрямую
-          const storedSession = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
-          if (storedSession) {
-            console.log('📦 Найдена сессия в localStorage, парсим...');
-            try {
-              const parsedSession = JSON.parse(storedSession);
+          // Пробуем прочитать сессию из localStorage напрямую (безопасно)
+          try {
+            const storedSession = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
+            if (storedSession) {
+              console.log('📦 Найдена сессия в localStorage, парсим...');
+              const parsedSession = safeJSONParse(storedSession, null);
               if (parsedSession && parsedSession.access_token) {
                 console.log('✅ Сессия восстановлена из localStorage');
                 // НЕ используем её напрямую, просто показываем форму логина
               }
-            } catch (e) {
-              console.warn('⚠️ Не удалось распарсить сессию из localStorage');
             }
+          } catch (e) {
+            console.warn('⚠️ Не удалось прочитать сессию из localStorage');
           }
         }
         

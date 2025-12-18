@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { TripwireLoginRequest, TripwireLoginResponse, TripwireErrorResponse } from '@/types/tripwire';
+import { safeLocalStorage, safeJSONStringify } from '@/utils/error-recovery';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -22,17 +23,17 @@ export async function tripwireLogin(data: TripwireLoginRequest): Promise<Tripwir
       password: data.password,
     });
     
-    // Save token if remember is checked
+    // Save token if remember is checked (безопасно)
     if (data.remember) {
-      localStorage.setItem('tripwire_remember_email', data.email);
+      safeLocalStorage.setItem('tripwire_remember_email', data.email);
     } else {
-      localStorage.removeItem('tripwire_remember_email');
+      safeLocalStorage.removeItem('tripwire_remember_email');
     }
     
-    // Save auth data
-    localStorage.setItem('tripwire_token', response.data.token);
-    localStorage.setItem('tripwire_user_id', response.data.user_id);
-    localStorage.setItem('tripwire_user', JSON.stringify(response.data.user));
+    // Save auth data (безопасно)
+    safeLocalStorage.setItem('tripwire_token', response.data.token);
+    safeLocalStorage.setItem('tripwire_user_id', response.data.user_id);
+    safeLocalStorage.setItem('tripwire_user', safeJSONStringify(response.data.user));
     
     return response.data;
   } catch (error) {
@@ -84,26 +85,26 @@ export async function requestPasswordReset(email: string): Promise<{ success: bo
 }
 
 /**
- * Get remembered email from localStorage
+ * Get remembered email from localStorage (безопасно)
  */
 export function getRememberedEmail(): string | null {
-  return localStorage.getItem('tripwire_remember_email');
+  return safeLocalStorage.getItem('tripwire_remember_email');
 }
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated (безопасно)
  */
 export function isAuthenticated(): boolean {
-  const token = localStorage.getItem('tripwire_token');
+  const token = safeLocalStorage.getItem('tripwire_token');
   return !!token;
 }
 
 /**
- * Logout user
+ * Logout user (безопасно)
  */
 export function logout(): void {
-  localStorage.removeItem('tripwire_token');
-  localStorage.removeItem('tripwire_user_id');
-  localStorage.removeItem('tripwire_user');
+  safeLocalStorage.removeItem('tripwire_token');
+  safeLocalStorage.removeItem('tripwire_user_id');
+  safeLocalStorage.removeItem('tripwire_user');
 }
 

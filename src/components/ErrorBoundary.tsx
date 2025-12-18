@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Zap } from 'lucide-react';
+import { isChunkLoadError } from '@/utils/error-recovery';
 
 interface Props {
   children: React.ReactNode;
@@ -11,29 +12,77 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
+  isChunkError: boolean;
+  retryCount: number;
 }
 
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { 
+      hasError: false, 
+      error: null, 
+      errorInfo: null,
+      isChunkError: false,
+      retryCount: 0,
+    };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    const isChunk = isChunkLoadError(error);
+    
+    return { 
+      hasError: true, 
+      error, 
+      errorInfo: null,
+      isChunkError: isChunk,
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    this.setState({ errorInfo });
+    const isChunk = isChunkLoadError(error);
     
-    // Можно отправить ошибку в Sentry или другой сервис мониторинга
-    // Sentry.captureException(error, { contexts: { react: errorInfo } });
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    this.setState({ 
+      errorInfo,
+      isChunkError: isChunk,
+    });
+    
+    // 🛡️ ChunkLoadError - автоматический retry с reload
+    if (isChunk && this.state.retryCount < 2) {
+      console.log(`🔄 ChunkLoadError detected. Auto-retry ${this.state.retryCount + 1}/2...`);
+      
+      this.setState(prevState => ({
+        retryCount: prevState.retryCount + 1
+      }));
+      
+      // Небольшая задержка перед reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false, error: null, errorInfo: null, retryCount: 0 });
     window.location.href = '/';
+  };
+
+  handleReload = () => {
+    // Очищаем кэш и перезагружаем
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => {
+          caches.delete(name);
+        });
+      });
+    }
+    window.location.reload();
+  };
+
+  handleHardReload = () => {
+    // Hard reload с очисткой кэша (Ctrl+Shift+R)
+    window.location.reload();
   };
 
   render() {
@@ -42,6 +91,62 @@ export class ErrorBoundary extends React.Component<Props, State> {
         return this.props.fallback;
       }
 
+      // 🎯 Специальная обработка ChunkLoadError
+      if (this.state.isChunkError) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
+            <div className="max-w-xl w-full bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur border border-yellow-500/30 rounded-2xl p-8 text-center shadow-2xl">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 blur-3xl bg-yellow-500/20 rounded-full"></div>
+                <Zap className="w-20 h-20 text-yellow-400 mx-auto relative animate-pulse" />
+              </div>
+              
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Обновление платформы
+              </h1>
+              
+              <p className="text-gray-300 mb-4 text-lg">
+                Была установлена новая версия платформы с улучшениями и исправлениями.
+              </p>
+              
+              <p className="text-gray-400 mb-8">
+                Пожалуйста, нажмите кнопку ниже, чтобы обновить страницу и продолжить обучение.
+              </p>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={this.handleReload}
+                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-black hover:from-yellow-600 hover:to-orange-600 font-bold py-6 text-lg shadow-lg"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  Обновить страницу
+                </Button>
+                
+                <Button
+                  onClick={this.handleReset}
+                  variant="outline"
+                  className="w-full border-gray-600 text-white hover:bg-gray-800/50"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  На главную
+                </Button>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-700">
+                <p className="text-sm text-gray-500 mb-3">
+                  Если проблема не решается, попробуйте очистить кэш браузера:
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2 text-xs text-gray-600">
+                  <span className="bg-gray-800/50 px-3 py-2 rounded">Windows: Ctrl + Shift + R</span>
+                  <span className="bg-gray-800/50 px-3 py-2 rounded">Mac: Cmd + Shift + R</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 🔴 Обычная ошибка
       return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4">
           <div className="max-w-2xl w-full bg-[#1a1a24] border border-red-500/30 rounded-2xl p-8 text-center">
@@ -75,6 +180,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 onClick={this.handleReset}
                 className="bg-[#00FF88] text-black hover:bg-[#00cc88]"
               >
+                <Home className="w-4 h-4 mr-2" />
                 Вернуться на главную
               </Button>
               <Button
@@ -82,6 +188,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 variant="outline"
                 className="border-gray-600 text-white hover:bg-gray-800"
               >
+                <RefreshCw className="w-4 h-4 mr-2" />
                 Обновить страницу
               </Button>
             </div>

@@ -1,21 +1,24 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
+import { safeJSONParse, safeLocalStorage } from '@/utils/error-recovery';
 
 export function TokenDiagnostics() {
   const { session, accessToken, refreshToken, user, userRole, isInitialized } = useAuth();
 
-  // Проверка localStorage
+  // Проверка localStorage (безопасно)
   const checkLocalStorage = () => {
-    const keys = Object.keys(localStorage);
-    const authKey = keys.find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
-    
-    if (!authKey) return { found: false };
-    
-    const stored = localStorage.getItem(authKey);
-    if (!stored) return { found: false };
-    
     try {
-      const data = JSON.parse(stored);
+      const keys = Object.keys(localStorage);
+      const authKey = keys.find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+      
+      if (!authKey) return { found: false };
+      
+      const stored = safeLocalStorage.getItem(authKey);
+      if (!stored) return { found: false };
+      
+      const data = safeJSONParse(stored, null);
+      if (!data) return { found: false };
+      
       return {
         found: true,
         key: authKey,
@@ -24,7 +27,8 @@ export function TokenDiagnostics() {
         expiresAt: data.expires_at,
         expiresIn: data.expires_at ? Math.floor((data.expires_at * 1000 - Date.now()) / 1000) : null
       };
-    } catch {
+    } catch (error) {
+      console.warn('⚠️ TokenDiagnostics: Failed to check localStorage', error);
       return { found: false };
     }
   };

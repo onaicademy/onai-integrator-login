@@ -11,6 +11,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { devLog } from './env-utils'
+import { setupSupabaseReconnection } from '@/utils/error-recovery'
 
 const tripwireUrl = import.meta.env.VITE_TRIPWIRE_SUPABASE_URL
 const tripwireKey = import.meta.env.VITE_TRIPWIRE_SUPABASE_ANON_KEY
@@ -57,21 +58,47 @@ export const tripwireSupabase = createClient(tripwireUrl, tripwireKey, {
   }
 })
 
+// 🛡️ Setup reconnection handler для защиты от разрыва соединения
+const cleanupTripwireReconnection = setupSupabaseReconnection(tripwireSupabase, {
+  pingInterval: 60000, // Ping каждую минуту
+  maxReconnectAttempts: 5,
+  onReconnect: () => {
+    console.log('✅ [Tripwire Supabase] Соединение восстановлено');
+  },
+  onReconnectFailed: () => {
+    console.error('❌ [Tripwire Supabase] Не удалось восстановить соединение');
+    // Перенаправляем на логин Integrator
+    window.location.href = '/integrator/login';
+  }
+});
+
+// Экспортируем cleanup функцию
+export const cleanupTripwireConnection = cleanupTripwireReconnection;
+
 // Event listener для логирования
 tripwireSupabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     devLog('✅ Tripwire: Пользователь вошёл в систему', session.user.email)
     
-    // Сохраняем JWT токен для API запросов (с префиксом tripwire)
+    // Сохраняем JWT токен для API запросов (с префиксом tripwire) (безопасно)
     if (session.access_token) {
-      localStorage.setItem('tripwire_supabase_token', session.access_token)
-      devLog('🔑 Tripwire JWT токен сохранён')
+      try {
+        localStorage.setItem('tripwire_supabase_token', session.access_token)
+        devLog('🔑 Tripwire JWT токен сохранён')
+      } catch (e) {
+        console.warn('⚠️ Failed to save Tripwire token to localStorage');
+      }
     }
   }
 
   if (event === 'SIGNED_OUT') {
     devLog('👋 Tripwire: Пользователь вышел из системы')
-    localStorage.removeItem('tripwire_supabase_token')
+    
+    try {
+      localStorage.removeItem('tripwire_supabase_token')
+    } catch (e) {
+      console.warn('⚠️ Failed to remove Tripwire token from localStorage');
+    }
   }
 })
 

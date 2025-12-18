@@ -18,6 +18,9 @@ import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Integrator)
 import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGuard"; // ✅ Admin Guard (Integrator)
 
+// 🛡️ ERROR RECOVERY: Import retry utilities
+import { retryChunkLoad } from "@/utils/error-recovery";
+
 // 🚀 ОПТИМИЗАЦИЯ: Синхронные импорты только для критичных страниц
 import Login from "./pages/Login";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -25,41 +28,41 @@ import NotFound from "./pages/NotFound";
 import AccessDenied from "./pages/AccessDenied";
 import { Loader2 } from "lucide-react";
 
-// 🚀 ОПТИМИЗАЦИЯ: Lazy loading страниц (уменьшает начальный бандл)
-const Profile = lazy(() => import("./pages/Profile"));
-const NeuroHub = lazy(() => import("./pages/NeuroHub"));
-const Achievements = lazy(() => import("./pages/Achievements"));
-const Welcome = lazy(() => import("./pages/Welcome"));
-const Courses = lazy(() => import("./pages/Courses"));
-const Course = lazy(() => import("./pages/Course"));
-const Module = lazy(() => import("./pages/Module"));
-const Lesson = lazy(() => import("./pages/Lesson"));
-const Activity = lazy(() => import("./pages/admin/Activity"));
-const AICuratorChats = lazy(() => import("./pages/admin/AICuratorChats"));
-const TokenUsage = lazy(() => import("./pages/admin/TokenUsage"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const StudentsActivity = lazy(() => import("./pages/admin/StudentsActivity"));
-const AIAnalytics = lazy(() => import("./pages/admin/AIAnalytics"));
-const TripwireManager = lazy(() => import("./pages/admin/TripwireManager"));
-const Messages = lazy(() => import("./pages/Messages"));
-const Analytics = lazy(() => import("./pages/admin/Analytics"));
-const Students = lazy(() => import("./pages/admin/Students"));
-const Costs = lazy(() => import("./pages/admin/Costs"));
-const Transcriptions = lazy(() => import("./pages/admin/TripwireTranscriptions"));
-const MainPlatformTranscriptions = lazy(() => import("./pages/admin/MainPlatformTranscriptions"));
-const LeadTracking = lazy(() => import("./pages/admin/LeadTracking"));
-const UnifiedDashboard = lazy(() => import("./pages/admin/UnifiedDashboard"));
-const ShortLinksStats = lazy(() => import("./pages/admin/ShortLinksStats"));
-const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
+// 🚀 ОПТИМИЗАЦИЯ + 🛡️ ЗАЩИТА: Lazy loading с автоматическим retry при ChunkLoadError
+const Profile = lazy(() => retryChunkLoad(() => import("./pages/Profile")));
+const NeuroHub = lazy(() => retryChunkLoad(() => import("./pages/NeuroHub")));
+const Achievements = lazy(() => retryChunkLoad(() => import("./pages/Achievements")));
+const Welcome = lazy(() => retryChunkLoad(() => import("./pages/Welcome")));
+const Courses = lazy(() => retryChunkLoad(() => import("./pages/Courses")));
+const Course = lazy(() => retryChunkLoad(() => import("./pages/Course")));
+const Module = lazy(() => retryChunkLoad(() => import("./pages/Module")));
+const Lesson = lazy(() => retryChunkLoad(() => import("./pages/Lesson")));
+const Activity = lazy(() => retryChunkLoad(() => import("./pages/admin/Activity")));
+const AICuratorChats = lazy(() => retryChunkLoad(() => import("./pages/admin/AICuratorChats")));
+const TokenUsage = lazy(() => retryChunkLoad(() => import("./pages/admin/TokenUsage")));
+const AdminDashboard = lazy(() => retryChunkLoad(() => import("./pages/admin/AdminDashboard")));
+const StudentsActivity = lazy(() => retryChunkLoad(() => import("./pages/admin/StudentsActivity")));
+const AIAnalytics = lazy(() => retryChunkLoad(() => import("./pages/admin/AIAnalytics")));
+const TripwireManager = lazy(() => retryChunkLoad(() => import("./pages/admin/TripwireManager")));
+const Messages = lazy(() => retryChunkLoad(() => import("./pages/Messages")));
+const Analytics = lazy(() => retryChunkLoad(() => import("./pages/admin/Analytics")));
+const Students = lazy(() => retryChunkLoad(() => import("./pages/admin/Students")));
+const Costs = lazy(() => retryChunkLoad(() => import("./pages/admin/Costs")));
+const Transcriptions = lazy(() => retryChunkLoad(() => import("./pages/admin/TripwireTranscriptions")));
+const MainPlatformTranscriptions = lazy(() => retryChunkLoad(() => import("./pages/admin/MainPlatformTranscriptions")));
+const LeadTracking = lazy(() => retryChunkLoad(() => import("./pages/admin/LeadTracking")));
+const UnifiedDashboard = lazy(() => retryChunkLoad(() => import("./pages/admin/UnifiedDashboard")));
+const ShortLinksStats = lazy(() => retryChunkLoad(() => import("./pages/admin/ShortLinksStats")));
+const ShortLinkRedirect = lazy(() => retryChunkLoad(() => import("./pages/ShortLinkRedirect")));
 
-// 🚀 ОПТИМИЗАЦИЯ: Lazy loading Integrator страниц
-const TripwireProductPage = lazy(() => import("./pages/tripwire/TripwireProductPage"));
-const TripwireLogin = lazy(() => import("./pages/tripwire/TripwireLogin"));
-const TripwireLanding = lazy(() => import("./pages/tripwire/TripwireLanding"));
-const TripwireLesson = lazy(() => import("./pages/tripwire/TripwireLesson"));
-const TripwireProfile = lazy(() => import("./pages/tripwire/TripwireProfile"));
-const ClearCache = lazy(() => import("./pages/ClearCache"));
-const ProfTest = lazy(() => import("./pages/tripwire/ProfTest"));
+// 🚀 ОПТИМИЗАЦИЯ + 🛡️ ЗАЩИТА: Lazy loading Integrator страниц с retry
+const TripwireProductPage = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TripwireProductPage")));
+const TripwireLogin = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TripwireLogin")));
+const TripwireLanding = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TripwireLanding")));
+const TripwireLesson = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TripwireLesson")));
+const TripwireProfile = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TripwireProfile")));
+const ClearCache = lazy(() => retryChunkLoad(() => import("./pages/ClearCache")));
+const ProfTest = lazy(() => retryChunkLoad(() => import("./pages/tripwire/ProfTest")));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";

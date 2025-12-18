@@ -197,13 +197,11 @@ const SimpleIframePlayer = ({
       try {
         let data = event.data;
         
-        // Parse JSON if it's a string
+        // Parse JSON if it's a string (безопасно)
         if (typeof data === 'string') {
-          try {
-            data = JSON.parse(data);
-          } catch {
-            return;
-          }
+          const { safeJSONParse } = await import('@/utils/error-recovery');
+          data = safeJSONParse(data, null);
+          if (!data) return; // Invalid JSON
         }
         
         // Handle Bunny player events
