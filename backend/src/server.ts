@@ -125,6 +125,7 @@ import trafficReportsRouter from './routes/traffic-reports'; // 📊 Traffic Rep
 import amocrmSalesWebhookRouter from './routes/amocrm-sales-webhook'; // 🎉 AmoCRM Sales Webhook (real-time продажи)
 import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API Integration
 import iaeAgentRouter from './routes/iae-agent.js'; // 🤖 IAE Agent (Intelligence Analytics Engine)
+import tokenManagerRouter from './routes/token-manager.js'; // 🔑 Token Auto-Refresh Manager
 import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
@@ -425,6 +426,7 @@ app.use('/api/traffic', trafficStatsRouter); // 📊 Traffic Command Stats (AmoC
 app.use('/api/traffic/reports', trafficReportsRouter); // 📊 Traffic Reports History (сохранение и анализ окупаемости)
 app.use('/api/amocrm', amocrmSalesWebhookRouter); // 🎉 AmoCRM Sales Webhook (real-time уведомления о продажах)
 app.use('/api/iae-agent', iaeAgentRouter); // 🤖 IAE Agent (Intelligence Analytics Engine - система проверки аналитики)
+app.use('/api/tokens', tokenManagerRouter); // 🔑 Token Auto-Refresh Manager (FB Ads + AmoCRM)
 app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
 app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (мануальная отправка отчетов)
 
@@ -542,13 +544,13 @@ const server = app.listen(PORT, () => {
       startAIAnalyticsScheduler();
       startRecommendationsScheduler(); // 🤖 AI Recommendations (daily at 00:10)
 
-      // 5. Start Facebook Token Auto-Refresh
+      // 5. Start Token Auto-Refresh (Facebook + AmoCRM)
       try {
-        const { startFacebookTokenScheduler } = await import('./services/facebookTokenScheduler.js');
-        startFacebookTokenScheduler(); // Daily at 03:00 AM
-        console.log('✅ Facebook Token auto-refresh initialized');
+        const { startTokenAutoRefresh } = await import('./services/tokenAutoRefresh.js');
+        await startTokenAutoRefresh(); // Every 2 hours check
+        console.log('✅ Token auto-refresh (FB + AmoCRM) initialized');
       } catch (error) {
-        console.error('❌ Ошибка инициализации FB Token refresh:', error);
+        console.error('❌ Ошибка инициализации Token auto-refresh:', error);
       }
 
       // 6. Start IAE Agent schedulers and bot

@@ -97,14 +97,14 @@ export async function collectData(dateRange: DateRange) {
 }
 
 async function fetchAmoCRMData(dateRange: DateRange) {
-  if (!AMOCRM_TOKEN) {
-    throw new Error('AMOCRM_TOKEN not configured');
-  }
-  
   try {
+    // 🔄 Get valid token (with auto-refresh)
+    const { getValidAmoCRMToken } = await import('./amocrmTokenManager.js');
+    const token = await getValidAmoCRMToken();
+    
     const response = await axios.get(`https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/leads`, {
       headers: {
-        'Authorization': `Bearer ${AMOCRM_TOKEN}`
+        'Authorization': `Bearer ${token}`
       },
       params: {
         limit: 250,
@@ -119,23 +119,35 @@ async function fetchAmoCRMData(dateRange: DateRange) {
       token_valid: true,
       deals: response.data._embedded?.leads || [],
       count: response.data._embedded?.leads?.length || 0,
-      last_sync: new Date().toISOString()
+      last_sync: new Date().toISOString(),
+      token_info: {
+        source: 'auto-refreshed',
+        timestamp: new Date().toISOString()
+      }
     };
   } catch (error: any) {
     console.error('❌ [IAE] AmoCRM fetch error:', error.message);
     
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.message.includes('invalid') || error.message.includes('expired')) {
       return {
         healthy: false,
         token_valid: false,
         deals: [],
         count: 0,
-        error: 'Invalid token',
+        error: error.message,
         last_sync: new Date().toISOString()
       };
     }
     
-    throw error;
+    // Other errors
+    return {
+      healthy: false,
+      token_valid: false,
+      deals: [],
+      count: 0,
+      error: error.message,
+      last_sync: new Date().toISOString()
+    };
   }
 }
 
