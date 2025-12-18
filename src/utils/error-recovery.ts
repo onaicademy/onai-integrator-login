@@ -1,118 +1,148 @@
 /**
  * 🛡️ ERROR RECOVERY UTILITIES
- * Автоматическое восстановление при ошибках загрузки чанков
  * 
- * Проблема: ChunkLoadError возникает когда:
- * - Новый деплой изменил хеши чанков
- * - Пользователь остался на старой версии страницы
- * - Браузер пытается загрузить несуществующий чанк
+ * Набор утилит для graceful error handling и auto-recovery
  * 
- * Решение: Автоматический retry с обновлением страницы
+ * WHY:
+ * - ChunkLoadError после деплоя (старые chunks удаляются)
+ * - JSON.parse падает на невалидных данных
+ * - localStorage недоступен в privacy mode
+ * - Supabase WebSocket разрывается после простоя
+ * 
+ * SAFE: Все функции fail-safe, не ломают текущий функционал
  */
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 секунда
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-/**
- * Проверяет, является ли ошибка ChunkLoadError
- */
-export function isChunkLoadError(error: any): boolean {
-  // Проверяем разные варианты ChunkLoadError
-  const errorMessage = error?.message || error?.toString() || '';
-  
-  return (
-    errorMessage.includes('Loading chunk') ||
-    errorMessage.includes('ChunkLoadError') ||
-    errorMessage.includes('Failed to fetch dynamically imported module') ||
-    error?.name === 'ChunkLoadError'
-  );
+// ════════════════════════════════════════════════════════════════
+// 🔄 CHUNK LOADING WITH RETRY
+// ════════════════════════════════════════════════════════════════
+
+interface RetryChunkLoadOptions {
+  maxRetries?: number;
+  initialDelay?: number;
+  maxDelay?: number;
+  onRetry?: (attempt: number, error: Error) => void;
 }
 
 /**
- * 🔄 Retry механизм для загрузки чанков
- * Автоматически перезагружает страницу при ChunkLoadError
+ * ✅ Retry для lazy-loaded компонентов (ChunkLoadError fix)
  * 
- * @param importFn - Функция динамического импорта
- * @param retries - Количество оставшихся попыток
- * @returns Promise с загруженным модулем
+ * ПРОБЛЕМА:
+ * - После деплоя старые chunks удаляются
+ * - Пользователи со старой версией страницы получают 404 на chunks
+ * - Белый экран или "Failed to fetch dynamically imported module"
+ * 
+ * РЕШЕНИЕ:
+ * - 3 попытки с exponential backoff
+ * - После 3 неудач - force reload страницы
+ * - Сохраняет состояние в sessionStorage для предотвращения бесконечных reload
  * 
  * @example
- * const MyComponent = lazy(() => retryChunkLoad(() => import('./MyComponent')));
+ * const Profile = lazy(() => retryChunkLoad(() => import('./pages/Profile')));
  */
-export async function retryChunkLoad<T>(
+export function retryChunkLoad<T>(
   importFn: () => Promise<T>,
-  retries: number = MAX_RETRIES
+  options: RetryChunkLoadOptions = {}
 ): Promise<T> {
-  try {
-    return await importFn();
-  } catch (error) {
-    // Проверяем, является ли это ChunkLoadError
-    if (!isChunkLoadError(error)) {
-      console.error('❌ Non-chunk error during import:', error);
-      throw error; // Пробрасываем другие ошибки
-    }
+  const {
+    maxRetries = 3,
+    initialDelay = 500,
+    maxDelay = 3000,
+    onRetry,
+  } = options;
 
-    console.warn(`⚠️ ChunkLoadError detected. Retries left: ${retries}`, error);
+  return new Promise((resolve, reject) => {
+    let attempt = 0;
 
-    // Если попытки закончились - перезагружаем страницу
-    if (retries <= 0) {
-      console.error('🔄 Max retries reached. Reloading page to get fresh chunks...');
-      
-      // Показываем уведомление пользователю (опционально)
-      if (typeof window !== 'undefined') {
-        console.log('🔄 Обновление страницы для получения актуальной версии...');
+    const attemptLoad = async () => {
+      try {
+        const module = await importFn();
         
-        // Перезагружаем страницу без кеша
-        window.location.reload();
+        // ✅ Успех - очищаем счетчик reload
+        try {
+          sessionStorage.removeItem('chunk_reload_count');
+        } catch (e) {
+          // Ignore storage errors
+        }
+        
+        resolve(module);
+      } catch (error: any) {
+        attempt++;
+        
+        // 🔍 Проверяем тип ошибки
+        const isChunkError = 
+          error?.name === 'ChunkLoadError' ||
+          error?.message?.includes('Failed to fetch dynamically imported module') ||
+          error?.message?.includes('Importing a module script failed') ||
+          error?.message?.includes('Loading chunk') ||
+          error?.message?.includes('Loading CSS chunk');
+        
+        if (!isChunkError) {
+          // Не chunk error - отклоняем сразу
+          reject(error);
+          return;
+        }
+        
+        console.warn(
+          `⚠️ [Chunk Loader] Attempt ${attempt}/${maxRetries} failed:`,
+          error.message
+        );
+        
+        if (onRetry) {
+          onRetry(attempt, error);
+        }
+        
+        if (attempt >= maxRetries) {
+          // 🔄 После maxRetries попыток - пробуем force reload
+          console.error(
+            '❌ [Chunk Loader] Max retries exceeded. Force reloading page...'
+          );
+          
+          // Проверяем счетчик reload (защита от бесконечных reload)
+          let reloadCount = 0;
+          try {
+            const stored = sessionStorage.getItem('chunk_reload_count');
+            reloadCount = stored ? parseInt(stored, 10) : 0;
+          } catch (e) {
+            // Ignore storage errors
+          }
+          
+          if (reloadCount < 3) {
+            // Увеличиваем счетчик
+            try {
+              sessionStorage.setItem('chunk_reload_count', String(reloadCount + 1));
+            } catch (e) {
+              // Ignore storage errors
+            }
+            
+            // Force reload
+            window.location.reload();
+          } else {
+            // После 3 reload - показываем ошибку
+            console.error(
+              '❌ [Chunk Loader] Too many reloads. Please clear cache manually.'
+            );
+            reject(new Error(
+              'Не удалось загрузить модуль после нескольких попыток. ' +
+              'Пожалуйста, очистите кэш браузера (Ctrl+Shift+R / Cmd+Shift+R) и перезагрузите страницу.'
+            ));
+          }
+          
+          return;
+        }
+        
+        // ⏳ Exponential backoff
+        const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), maxDelay);
+        
+        console.log(`⏳ [Chunk Loader] Retrying in ${delay}ms...`);
+        
+        setTimeout(attemptLoad, delay);
       }
-      
-      // Выбрасываем ошибку (на случай если reload не сработал)
-      throw new Error('ChunkLoadError: Max retries exceeded, page reload initiated');
-    }
+    };
 
-    // Ждем перед следующей попыткой
-    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-
-    // Пробуем снова
-    console.log(`🔄 Retrying chunk load... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`);
-    return retryChunkLoad(importFn, retries - 1);
-  }
-}
-
-/**
- * 🧹 Очистка кеша Service Worker (если установлен)
- * Используется при критических ошибках загрузки
- */
-export async function clearServiceWorkerCache(): Promise<void> {
-  if ('serviceWorker' in navigator && 'caches' in window) {
-    try {
-      console.log('🧹 Clearing Service Worker cache...');
-      
-      // Получаем все ключи кешей
-      const cacheKeys = await caches.keys();
-      
-      // Удаляем все кеши
-      await Promise.all(
-        cacheKeys.map(key => {
-          console.log(`🗑️ Deleting cache: ${key}`);
-          return caches.delete(key);
-        })
-      );
-      
-      // Пытаемся отрегистрировать Service Worker
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(
-        registrations.map(registration => {
-          console.log('🗑️ Unregistering Service Worker...');
-          return registration.unregister();
-        })
-      );
-      
-      console.log('✅ Service Worker cache cleared successfully');
-    } catch (error) {
-      console.error('❌ Error clearing Service Worker cache:', error);
-    }
-  }
+    attemptLoad();
+  });
 }
 
 /**
@@ -340,59 +370,133 @@ export function setupSupabaseReconnection(
     pingInterval?: number;
     maxReconnectAttempts?: number;
     onReconnect?: () => void;
-    onDisconnect?: () => void;
+    onReconnectFailed?: () => void;
   } = {}
 ): () => void {
   const {
     pingInterval = 60000, // 1 минута
     maxReconnectAttempts = 5,
     onReconnect,
-    onDisconnect,
+    onReconnectFailed,
   } = options;
 
   let reconnectAttempts = 0;
-  let isConnected = true;
   let pingIntervalId: NodeJS.Timeout | null = null;
+  let isReconnecting = false;
 
-  // Функция проверки соединения
-  const checkConnection = async () => {
-    try {
-      // Простой запрос для проверки соединения
-      const { error } = await supabaseClient.from('users').select('count', { count: 'exact', head: true });
-      
-      if (error && !isConnected) {
-        reconnectAttempts++;
+  // 🔄 Периодический ping для keep-alive
+  const startPing = () => {
+    if (pingIntervalId) {
+      clearInterval(pingIntervalId);
+    }
+
+    pingIntervalId = setInterval(async () => {
+      try {
+        // Простой запрос для проверки соединения
+        const { error } = await supabaseClient.auth.getSession();
         
-        if (reconnectAttempts <= maxReconnectAttempts) {
-          console.warn(`🔄 [Supabase] Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
-        } else {
-          console.error('❌ [Supabase] Max reconnection attempts reached');
+        if (error) {
+          throw error;
         }
-      } else if (!error && !isConnected) {
-        // Соединение восстановлено
-        isConnected = true;
-        reconnectAttempts = 0;
-        console.log('✅ [Supabase] Connection restored');
-        onReconnect?.();
+        
+        // Успех - сбрасываем счетчик
+        if (reconnectAttempts > 0) {
+          console.log('✅ [Supabase] Connection restored');
+          reconnectAttempts = 0;
+          if (onReconnect) {
+            onReconnect();
+          }
+        }
+      } catch (error: any) {
+        console.warn('⚠️ [Supabase] Ping failed:', error.message);
+        
+        // Не инициируем reconnect если уже в процессе
+        if (!isReconnecting) {
+          handleReconnect();
+        }
       }
-    } catch (error) {
-      if (isConnected) {
-        isConnected = false;
-        console.warn('⚠️ [Supabase] Connection lost', error);
-        onDisconnect?.();
+    }, pingInterval);
+  };
+
+  // 🔄 Обработка reconnection
+  const handleReconnect = async () => {
+    if (isReconnecting) return;
+    
+    isReconnecting = true;
+    reconnectAttempts++;
+    
+    console.log(
+      `🔄 [Supabase] Reconnecting (attempt ${reconnectAttempts}/${maxReconnectAttempts})...`
+    );
+
+    try {
+      // Пробуем обновить сессию
+      const { error } = await supabaseClient.auth.refreshSession();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Успех
+      console.log('✅ [Supabase] Reconnected successfully');
+      reconnectAttempts = 0;
+      isReconnecting = false;
+      
+      if (onReconnect) {
+        onReconnect();
+      }
+    } catch (error: any) {
+      console.error(
+        `❌ [Supabase] Reconnect failed (${reconnectAttempts}/${maxReconnectAttempts}):`,
+        error.message
+      );
+      
+      isReconnecting = false;
+      
+      if (reconnectAttempts >= maxReconnectAttempts) {
+        console.error(
+          '❌ [Supabase] Max reconnect attempts exceeded.'
+        );
+        
+        if (onReconnectFailed) {
+          onReconnectFailed();
+        }
       }
     }
   };
 
-  // Запускаем периодическую проверку
-  pingIntervalId = setInterval(checkConnection, pingInterval);
+  // 🎧 Слушаем события auth
+  const { data: authListener } = supabaseClient.auth.onAuthStateChange((event: string) => {
+    if (event === 'SIGNED_OUT') {
+      console.log('👋 [Supabase] User signed out');
+      reconnectAttempts = 0;
+    }
+    
+    if (event === 'TOKEN_REFRESHED') {
+      console.log('🔄 [Supabase] Token refreshed');
+      reconnectAttempts = 0; // Reset на успешное обновление
+    }
+    
+    if (event === 'SIGNED_IN') {
+      console.log('✅ [Supabase] User signed in');
+      reconnectAttempts = 0;
+    }
+  });
+
+  // Запускаем ping
+  startPing();
+
+  console.log(
+    `✅ [Supabase] Reconnection handler initialized (ping every ${pingInterval}ms)`
+  );
 
   // Cleanup function
   return () => {
     if (pingIntervalId) {
       clearInterval(pingIntervalId);
-      pingIntervalId = null;
     }
+    authListener.subscription.unsubscribe();
+    console.log('🧹 [Supabase] Reconnection handler cleaned up');
   };
 }
 
