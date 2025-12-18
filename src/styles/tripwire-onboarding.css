@@ -1,0 +1,293 @@
+/**
+ * 🎨 TRIPWIRE ONBOARDING CUSTOM STYLES
+ * 
+ * Кастомизация driver.js в киберпанк-стиле с неоновыми эффектами.
+ * Переопределяет стандартные стили driver.js.
+ */
+
+/* ===================================
+   ОВЕРЛЕЙ (Backdrop)
+   =================================== */
+.driver-overlay {
+  background: rgba(3, 3, 3, 0.90) !important;
+  backdrop-filter: blur(6px) !important;
+  z-index: 10000 !important;
+}
+
+/* ===================================
+   ПОДСВЕТКА ЭЛЕМЕНТА
+   =================================== */
+.driver-active-element,
+.driver-highlighted-element {
+  outline: 2px solid #00FF88 !important;
+  outline-offset: 4px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1),
+              0 0 30px rgba(0, 255, 136, 0.5),
+              0 0 60px rgba(0, 255, 136, 0.3) !important;
+  animation: pulse-glow-tripwire 2s ease-in-out infinite;
+  z-index: 10001 !important;
+}
+
+/* Анимация пульсации неонового свечения */
+@keyframes pulse-glow-tripwire {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1),
+                0 0 30px rgba(0, 255, 136, 0.5),
+                0 0 60px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(0, 255, 136, 0.15),
+                0 0 50px rgba(0, 255, 136, 0.7),
+                0 0 80px rgba(0, 255, 136, 0.4);
+  }
+}
+
+/* ===================================
+   ПОПАП (Popover)
+   =================================== */
+.driver-popover {
+  background: rgba(10, 10, 10, 0.95) !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(0, 255, 136, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  padding: 0 !important;
+  max-width: 400px !important;
+  z-index: 10002 !important;
+}
+
+/* Grid Pattern Background */
+.driver-popover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background-image: linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===================================
+   ЗАГОЛОВОК (Title)
+   =================================== */
+.driver-popover-title {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #FFFFFF !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin: 0 !important;
+  padding: 20px 24px 12px 24px !important;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.3) !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   ОПИСАНИЕ (Description)
+   =================================== */
+.driver-popover-description {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #D1D5DB !important;
+  padding: 0 24px 20px 24px !important;
+  margin: 0 !important;
+  white-space: pre-line !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   ПРОГРЕСС (Progress Text)
+   =================================== */
+.driver-popover-progress-text {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  color: #00FF88 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 12px 24px !important;
+  margin: 0 !important;
+  border-top: 1px solid rgba(0, 255, 136, 0.1) !important;
+  background: rgba(0, 255, 136, 0.02) !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   КНОПКИ (Buttons)
+   =================================== */
+.driver-popover-footer {
+  padding: 16px 24px 20px 24px !important;
+  display: flex !important;
+  gap: 12px !important;
+  border-top: 1px solid rgba(0, 255, 136, 0.1) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Кнопка "Далее" / "Завершить" */
+.driver-popover-next-btn {
+  flex: 1 !important;
+  background: #00FF88 !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 12px 20px !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.driver-popover-next-btn:hover {
+  background: #00DD77 !important;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.6) !important;
+  transform: translateY(-2px) !important;
+}
+
+.driver-popover-next-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Кнопка "Назад" */
+.driver-popover-prev-btn {
+  flex: 0 0 auto !important;
+  background: rgba(0, 255, 136, 0.1) !important;
+  color: #00FF88 !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  border-radius: 10px !important;
+  padding: 12px 20px !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background: rgba(0, 255, 136, 0.15) !important;
+  border-color: rgba(0, 255, 136, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.driver-popover-prev-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Кнопка закрытия (скрыта, т.к. нельзя пропустить) */
+.driver-popover-close-btn {
+  display: none !important;
+}
+
+/* ===================================
+   СТРЕЛКА ПОПАПА (Arrow)
+   =================================== */
+.driver-popover-arrow {
+  display: none !important;
+}
+
+.driver-popover-arrow-side {
+  border-color: rgba(0, 255, 136, 0.3) !important;
+}
+
+/* ===================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   =================================== */
+@media (max-width: 768px) {
+  .driver-popover {
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 16px !important;
+  }
+  
+  .driver-popover-title {
+    font-size: 14px !important;
+    padding: 16px 20px 10px 20px !important;
+  }
+  
+  .driver-popover-description {
+    font-size: 13px !important;
+    padding: 0 20px 16px 20px !important;
+  }
+  
+  .driver-popover-footer {
+    padding: 12px 20px 16px 20px !important;
+    flex-direction: column !important;
+  }
+  
+  .driver-popover-next-btn,
+  .driver-popover-prev-btn {
+    width: 100% !important;
+    flex: none !important;
+  }
+  
+  /* Упрощенные анимации на мобилках */
+  .driver-active-element,
+  .driver-highlighted-element {
+    animation: none !important;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5) !important;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+.driver-popover:focus-visible {
+  outline: 2px solid #00FF88 !important;
+  outline-offset: 4px !important;
+}
+
+.driver-popover-next-btn:focus-visible,
+.driver-popover-prev-btn:focus-visible {
+  outline: 2px solid #00FF88 !important;
+  outline-offset: 2px !important;
+}
+
+/* ===================================
+   ТЕМНАЯ ТЕМА (по умолчанию)
+   =================================== */
+/* Tripwire всегда в темной теме, дополнительных стилей не требуется */
+
+/* ===================================
+   АНИМАЦИЯ ПОЯВЛЕНИЯ ПОПАПА
+   =================================== */
+@keyframes tripwire-popover-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.driver-popover {
+  animation: tripwire-popover-fade-in 0.3s ease-out !important;
+}
+
+/* ===================================
+   PERFORMANCE OPTIMIZATION
+   =================================== */
+.driver-active-element,
+.driver-highlighted-element {
+  will-change: box-shadow, outline !important;
+}
+
+.driver-popover {
+  will-change: transform, opacity !important;
+}

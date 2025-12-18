@@ -78,6 +78,7 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
   
   return (
     <div 
+      data-onboarding="sidebar-container"
       className="h-full flex flex-col border-r border-white/5 relative overflow-hidden glass-panel"
       style={{
         background: 'rgba(0, 0, 0, 0.6)',
@@ -115,6 +116,7 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
                   return (
                     <motion.div
                       key={item.url}
+                      data-onboarding={index === 1 ? "menu-locked" : undefined}
                       initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -30 }}
@@ -166,6 +168,11 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
                 return (
                   <motion.div
                     key={item.title}
+                    data-onboarding={
+                      item.title === "Главная" ? "menu-home" :
+                      item.title === "Мой профиль" ? "menu-profile" :
+                      undefined
+                    }
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -30 }}

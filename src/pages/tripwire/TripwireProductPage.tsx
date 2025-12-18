@@ -458,7 +458,10 @@ export default function TripwireProductPage() {
         {/* ═══════════════════════════════════════════════════════════
             GRID LAYOUT: LEFT (Вводный+GPT) + RIGHT (Reels+Эфир)
             ═══════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:gap-8 max-w-[1200px] mx-auto">
+        <div 
+          data-onboarding="modules-container"
+          className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:gap-8 max-w-[1200px] mx-auto"
+        >
           
           {/* ═══════════════════════════════════════════════════════════
               LEFT COLUMN (lg:col-span-6): ВВОДНЫЙ + GPT
@@ -470,6 +473,11 @@ export default function TripwireProductPage() {
             return (
               <motion.div
                 key={module.id}
+                data-onboarding={
+                  module.id === 16 ? "module-active" :
+                  module.id === 17 ? "module-locked" :
+                  undefined
+                }
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1, duration: 0.6 }}
@@ -872,6 +880,7 @@ export default function TripwireProductPage() {
             
             {/* ПРЯМОЙ ЭФИР (4) - ПОД REELS */}
             <motion.div
+              data-onboarding="progress-panel"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}

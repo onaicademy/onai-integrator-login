@@ -102,6 +102,7 @@ import tripwireMassBroadcastRouter from './routes/tripwire/mass-broadcast'; // �
 import tripwireMaterialsRouter from './routes/tripwire/materials'; // ✅ Tripwire Materials (Phase 2)
 import tripwireCertificatesRouter from './routes/tripwire/certificates'; // ✅ Tripwire Certificates (Phase 2)
 import tripwireAiRouter from './routes/tripwire/ai'; // ✅ Tripwire AI Curator (Phase 2)
+import tripwireOnboardingRouter from './routes/tripwire/onboarding'; // ✅ Tripwire Onboarding System
 import debugRouter from './routes/debug'; // 🔍 DEBUG: Environment variables check
 import videoUploadRouter from './routes/videoUpload';
 import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW)
@@ -127,6 +128,15 @@ import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API 
 import iaeAgentRouter from './routes/iae-agent.js'; // 🤖 IAE Agent (Intelligence Analytics Engine)
 import tokenManagerRouter from './routes/token-manager.js'; // 🔑 Token Auto-Refresh Manager
 import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
+import trafficAuthRouter from './routes/traffic-auth.js'; // 🚀 Traffic Dashboard Auth
+import trafficPlansRouter from './routes/traffic-plans.js'; // 📊 Traffic Weekly Plans
+import trafficAdminRouter from './routes/traffic-admin.js'; // ⚙️ Traffic Admin Panel
+import trafficSecurityRouter from './routes/traffic-security.js'; // 🔒 Traffic Security & Sessions Tracking
+import utmAnalyticsRouter from './routes/utm-analytics.js'; // 📊 UTM Analytics (All Sales Sources)
+import trafficOnboardingRouter from './routes/traffic-onboarding.js'; // 🎓 Traffic Onboarding Tour
+import trafficConstructorRouter from './routes/traffic-team-constructor.js'; // 🏗️ Team Constructor (Admin)
+import trafficDetailedAnalyticsRouter from './routes/traffic-detailed-analytics.js'; // 📊 Detailed Analytics (Campaigns/AdSets/Ads)
+import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targetologist Settings
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -392,6 +402,7 @@ app.use('/api/tripwire/analytics', tripwireAnalyticsRouter); // ✅ Tripwire Ana
 app.use('/api/tripwire', tripwireMaterialsRouter); // ✅ Tripwire Materials (Phase 2)
 app.use('/api/tripwire/certificates', tripwireCertificatesRouter); // ✅ Tripwire Certificates (Phase 2)
 app.use('/api/tripwire/ai', tripwireAiRouter); // ✅ Tripwire AI Curator (Phase 2)
+app.use('/api/tripwire/onboarding', tripwireOnboardingRouter); // ✅ Tripwire Onboarding System
 app.use('/api/supabase', supabaseRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/tokens', tokensRouter);
@@ -429,6 +440,15 @@ app.use('/api/iae-agent', iaeAgentRouter); // 🤖 IAE Agent (Intelligence Analy
 app.use('/api/tokens', tokenManagerRouter); // 🔑 Token Auto-Refresh Manager (FB Ads + AmoCRM)
 app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
 app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (мануальная отправка отчетов)
+app.use('/api/traffic-auth', trafficAuthRouter); // 🚀 Traffic Dashboard Auth (JWT + bcrypt)
+app.use('/api/traffic-plans', trafficPlansRouter); // 📊 Traffic Weekly Plans (Groq AI)
+app.use('/api/traffic-admin', trafficAdminRouter); // ⚙️ Traffic Admin Panel (settings, users)
+app.use('/api/traffic-security', trafficSecurityRouter); // 🔒 Traffic Security & Sessions Tracking
+app.use('/api/utm-analytics', utmAnalyticsRouter); // 📊 UTM Analytics (All Sales Sources)
+app.use('/api/traffic-onboarding', trafficOnboardingRouter); // 🎓 Traffic Onboarding Tour
+app.use('/api/traffic-constructor', trafficConstructorRouter); // 🏗️ Team Constructor (Admin)
+app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // 📊 Detailed Analytics
+app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
 
 // 404 обработка
 app.use((req, res) => {
@@ -557,13 +577,22 @@ const server = app.listen(PORT, () => {
       try {
         const { initIAEBot } = await import('./services/iaeAgentBot.js');
         const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
-        
+
         initIAEBot(); // Initialize bot handlers
         startIAESchedulers(); // Start cron jobs
-        
+
         console.log('✅ IAE Agent bot and schedulers initialized');
       } catch (error) {
         console.error('❌ Ошибка инициализации IAE Agent:', error);
+      }
+
+      // 7. Start Traffic Dashboard schedulers (Weekly Plans)
+      try {
+        const { startTrafficSchedulers } = await import('./jobs/weeklyPlanGenerator.js');
+        startTrafficSchedulers(); // Weekly plan generation (Mondays 00:01 Almaty)
+        console.log('✅ Traffic Dashboard schedulers initialized');
+      } catch (error) {
+        console.error('❌ Ошибка инициализации Traffic schedulers:', error);
       }
 
       console.log('✅ All background services initialized');

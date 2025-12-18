@@ -1,0 +1,250 @@
+/**
+ * Onboarding Tour Styles
+ * Кастомизация driver.js под наш премиум дизайн
+ */
+
+/* Driver.js Popover - Основной контейнер */
+.driver-popover {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+  border: 2px solid #00FF88 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 40px rgba(0, 255, 136, 0.3), 0 0 0 1px rgba(0, 255, 136, 0.1) !important;
+  max-width: 420px !important;
+  padding: 0 !important;
+}
+
+/* Заголовок */
+.driver-popover-title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #00FF88 !important;
+  margin-bottom: 12px !important;
+  padding: 20px 20px 0 20px !important;
+}
+
+/* Описание */
+.driver-popover-description {
+  font-size: 14px !important;
+  color: #e0e0e0 !important;
+  line-height: 1.6 !important;
+  padding: 0 20px 20px 20px !important;
+}
+
+.driver-popover-description p {
+  margin: 0 0 10px 0;
+}
+
+.driver-popover-description ul {
+  margin: 10px 0;
+  padding-left: 0;
+}
+
+.driver-popover-description li {
+  list-style: none;
+  padding: 6px 0;
+}
+
+/* Footer с кнопками */
+.driver-popover-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 15px 20px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-top: 1px solid rgba(0, 255, 136, 0.1) !important;
+  border-radius: 0 0 14px 14px !important;
+  gap: 10px !important;
+}
+
+/* Кнопки */
+.driver-popover-prev-btn,
+.driver-popover-next-btn,
+.driver-popover-close-btn {
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+/* Кнопка "Далее" */
+.driver-popover-next-btn {
+  background: #00FF88 !important;
+  color: #000 !important;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3) !important;
+}
+
+.driver-popover-next-btn:hover {
+  background: #00dd77 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5) !important;
+}
+
+.driver-popover-next-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Кнопка "Назад" */
+.driver-popover-prev-btn {
+  background: rgba(0, 255, 136, 0.1) !important;
+  color: #00FF88 !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background: rgba(0, 255, 136, 0.2) !important;
+  border-color: rgba(0, 255, 136, 0.5) !important;
+}
+
+/* Кнопка закрытия */
+.driver-popover-close-btn {
+  position: absolute !important;
+  top: 15px !important;
+  right: 15px !important;
+  background: transparent !important;
+  color: #888 !important;
+  font-size: 24px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.driver-popover-close-btn:hover {
+  background: rgba(255, 107, 107, 0.1) !important;
+  color: #ff6b6b !important;
+  transform: rotate(90deg) !important;
+}
+
+/* Прогресс */
+.driver-popover-progress-text {
+  color: #00FF88 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  flex: 1 !important;
+}
+
+/* Подсветка активного элемента */
+.driver-active-element {
+  outline: 3px solid #00FF88 !important;
+  outline-offset: 6px !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 
+              0 0 30px rgba(0, 255, 136, 0.6),
+              inset 0 0 20px rgba(0, 255, 136, 0.1) !important;
+  border-radius: 12px !important;
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+/* Оверлей (затемнение фона) */
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* Анимация появления */
+@keyframes driverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.driver-popover {
+  animation: driverFadeIn 0.3s ease-out !important;
+}
+
+/* Анимация пульсации для подсветки */
+@keyframes driverPulse {
+  0%, 100% {
+    outline-color: #00FF88;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 
+                0 0 30px rgba(0, 255, 136, 0.6);
+  }
+  50% {
+    outline-color: #00ff88bb;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 
+                0 0 40px rgba(0, 255, 136, 0.8);
+  }
+}
+
+.driver-active-element {
+  animation: driverPulse 2s ease-in-out infinite !important;
+}
+
+/* Стрелка (указатель) */
+.driver-popover-arrow {
+  border: 8px solid transparent !important;
+}
+
+.driver-popover-arrow-side-top.driver-popover-arrow {
+  border-bottom-color: #00FF88 !important;
+}
+
+.driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-top-color: #00FF88 !important;
+}
+
+.driver-popover-arrow-side-left.driver-popover-arrow {
+  border-right-color: #00FF88 !important;
+}
+
+.driver-popover-arrow-side-right.driver-popover-arrow {
+  border-left-color: #00FF88 !important;
+}
+
+/* Responsive для мобильных */
+@media (max-width: 768px) {
+  .driver-popover {
+    max-width: calc(100vw - 40px) !important;
+    margin: 0 20px !important;
+  }
+  
+  .driver-popover-title {
+    font-size: 18px !important;
+  }
+  
+  .driver-popover-description {
+    font-size: 13px !important;
+  }
+  
+  .driver-popover-prev-btn,
+  .driver-popover-next-btn {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+  
+  .driver-popover-footer {
+    flex-direction: column !important;
+  }
+  
+  .driver-popover-progress-text {
+    order: -1 !important;
+    margin-bottom: 10px !important;
+    text-align: center !important;
+  }
+  
+  .driver-popover-prev-btn,
+  .driver-popover-next-btn {
+    width: 100% !important;
+  }
+}
+
+/* Темная тема (по умолчанию) */
+:root {
+  --driver-overlay-color: rgba(0, 0, 0, 0.8);
+  --driver-highlight-color: #00FF88;
+  --driver-bg-color: #1a1a1a;
+  --driver-text-color: #e0e0e0;
+}

@@ -15,6 +15,7 @@
     "pm2:restart": "pm2 restart onai-backend",
     "pm2:logs": "pm2 logs onai-backend",
     "pm2:status": "pm2 status",
+    "seed:traffic-users": "tsx scripts/seed-traffic-users.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

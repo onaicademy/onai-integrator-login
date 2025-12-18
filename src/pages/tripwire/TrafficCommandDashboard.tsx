@@ -260,7 +260,17 @@ const TEAM_COLORS: Record<string, { primary: string; gradient: string; emoji: st
   'Traf4': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '🎯' },
 };
 
-export default function TrafficCommandDashboard() {
+interface TrafficCommandDashboardProps {
+  filterTeam?: string | null;
+  currentUserTeam?: string | null; // Команда залогиненного пользователя
+  language?: string; // Язык интерфейса
+}
+
+export default function TrafficCommandDashboard({ 
+  filterTeam = null, 
+  currentUserTeam = null,
+  language = 'ru'
+}: TrafficCommandDashboardProps) {
   const [dateRange, setDateRange] = useState<'7d' | '14d' | '30d'>('7d');
   const [customDate, setCustomDate] = useState<string | null>(null); // YYYY-MM-DD
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -331,18 +341,24 @@ export default function TrafficCommandDashboard() {
   // 🏆 Ранжирование команд по ROAS (ПОСЛЕ объявления analytics)
   const rankedTeams = useMemo(() => {
     if (!analytics?.teams) return [];
-    
-    const sorted = [...analytics.teams].sort((a, b) => {
+
+    // 🎯 Фильтрация: если filterTeam задан, показываем только эту команду
+    let teamsToShow = analytics.teams;
+    if (filterTeam) {
+      teamsToShow = analytics.teams.filter(t => t.team === filterTeam);
+    }
+
+    const sorted = [...teamsToShow].sort((a, b) => {
       // Сортируем по ROAS (главная метрика)
       return b.roas - a.roas;
     });
-    
+
     return sorted.map((team, index) => ({
       ...team,
       rank: (index + 1) as 1 | 2 | 3 | 4,
       rankInfo: RANK_SYSTEM[Math.min(index + 1, 4) as 1 | 2 | 3 | 4],
     }));
-  }, [analytics?.teams]);
+  }, [analytics?.teams, filterTeam]);
 
   // 💱 Конвертация и форматирование валюты (ПОСЛЕ analytics)
   const exchangeRate = analytics?.exchangeRate?.usdToKzt || 470;
@@ -570,7 +586,7 @@ export default function TrafficCommandDashboard() {
           ) : (
             <>
               {/* 📊 KPI Карточки */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+              <div data-tour="metrics-cards" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
                 {/* Доход */}
                 <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/10 to-[#00FF88]/5 border border-[#00FF88]/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:shadow-lg hover:shadow-[#00FF88]/10 transition-all">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
@@ -668,7 +684,7 @@ export default function TrafficCommandDashboard() {
               </div>
 
               {/* Таблица команд - Desktop only (lg+) */}
-              <div className="hidden lg:block bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden mb-4 sm:mb-6 md:mb-8 backdrop-blur-sm">
+              <div data-tour="results-table" className="hidden lg:block bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden mb-4 sm:mb-6 md:mb-8 backdrop-blur-sm">
                 <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[#00FF88]/10 flex items-center justify-between">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FF88]" />
@@ -783,18 +799,26 @@ export default function TrafficCommandDashboard() {
                               {formatPercent(team.ctr)}
                             </td>
                             <td className="px-6 py-5 text-center">
-                              <button
-                                onClick={() => fetchRecommendations(team.team)}
-                                disabled={loadingRecs === team.team}
-                                className="p-2 hover:bg-[#00FF88]/20 rounded-lg transition-all group"
-                                title="Получить AI-рекомендации"
-                              >
-                                {loadingRecs === team.team ? (
-                                  <Loader2 className="w-4 h-4 animate-spin text-[#00FF88]" />
-                                ) : (
-                                  <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-[#00FF88] transition-colors" />
-                                )}
-                              </button>
+                              {/* AI рекомендации только для своей команды */}
+                              {(!currentUserTeam || team.team === currentUserTeam) ? (
+                                <button
+                                  data-tour="ai-recommendations"
+                                  onClick={() => fetchRecommendations(team.team)}
+                                  disabled={loadingRecs === team.team}
+                                  className="p-2 hover:bg-[#00FF88]/20 rounded-lg transition-all group"
+                                  title="Получить AI-рекомендации"
+                                >
+                                  {loadingRecs === team.team ? (
+                                    <Loader2 className="w-4 h-4 animate-spin text-[#00FF88]" />
+                                  ) : (
+                                    <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-[#00FF88] transition-colors" />
+                                  )}
+                                </button>
+                              ) : (
+                                <div className="p-2 text-gray-600" title="Доступно только для вашей команды">
+                                  —
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );
@@ -861,21 +885,27 @@ export default function TrafficCommandDashboard() {
                         </div>
                       </div>
 
-                      {/* AI кнопка внизу */}
-                      <button
-                        onClick={() => fetchRecommendations(team.team)}
-                        disabled={loadingRecs === team.team}
-                        className="w-full mt-4 px-3 py-2 bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-lg flex items-center justify-center gap-2 hover:bg-[#00FF88]/20 transition-all disabled:opacity-50"
-                      >
-                        {loadingRecs === team.team ? (
-                          <Loader2 className="w-3 h-3 text-[#00FF88] animate-spin" />
-                        ) : (
-                          <Sparkles className="w-3 h-3 text-[#00FF88]" />
-                        )}
-                        <span className="text-xs font-medium text-[#00FF88]">
-                          {loadingRecs === team.team ? 'Генерация...' : 'AI Рекомендации'}
-                        </span>
-                      </button>
+                      {/* AI кнопка внизу - только для своей команды */}
+                      {(!currentUserTeam || team.team === currentUserTeam) ? (
+                        <button
+                          onClick={() => fetchRecommendations(team.team)}
+                          disabled={loadingRecs === team.team}
+                          className="w-full mt-4 px-3 py-2 bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-lg flex items-center justify-center gap-2 hover:bg-[#00FF88]/20 transition-all disabled:opacity-50"
+                        >
+                          {loadingRecs === team.team ? (
+                            <Loader2 className="w-3 h-3 text-[#00FF88] animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3 h-3 text-[#00FF88]" />
+                          )}
+                          <span className="text-xs font-medium text-[#00FF88]">
+                            {loadingRecs === team.team ? 'Генерация...' : 'AI Рекомендации'}
+                          </span>
+                        </button>
+                      ) : (
+                        <div className="w-full mt-4 px-3 py-2 bg-gray-800/20 border border-gray-700/20 rounded-lg flex items-center justify-center gap-2 text-gray-600 text-xs">
+                          Доступно только для вашей команды
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -972,18 +1002,24 @@ export default function TrafficCommandDashboard() {
                         </div>
                       </div>
 
-                      {/* Кнопка AI-рекомендаций */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); fetchRecommendations(team.team); }}
-                        disabled={loadingRecs === team.team}
-                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-xl text-sm font-medium text-[#00FF88] transition-all disabled:opacity-50 hover:shadow-lg hover:shadow-[#00FF88]/20 relative z-10"
-                      >
-                        {loadingRecs === team.team ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" /> Анализ...</>
-                        ) : (
-                          <><Sparkles className="w-4 h-4" /> AI Рекомендации</>
-                        )}
-                      </button>
+                      {/* Кнопка AI-рекомендаций - только для своей команды */}
+                      {(!currentUserTeam || team.team === currentUserTeam) ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); fetchRecommendations(team.team); }}
+                          disabled={loadingRecs === team.team}
+                          className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-xl text-sm font-medium text-[#00FF88] transition-all disabled:opacity-50 hover:shadow-lg hover:shadow-[#00FF88]/20 relative z-10"
+                        >
+                          {loadingRecs === team.team ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> Анализ...</>
+                          ) : (
+                            <><Sparkles className="w-4 h-4" /> AI Рекомендации</>
+                          )}
+                        </button>
+                      ) : (
+                        <div className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-800/20 border border-gray-700/20 rounded-xl text-xs text-gray-600 relative z-10">
+                          Доступно только для вашей команды
+                        </div>
+                      )}
                     </div>
                   );
                 })}

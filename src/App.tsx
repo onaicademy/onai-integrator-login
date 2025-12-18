@@ -68,6 +68,17 @@ const MassBroadcast = lazy(() => retryChunkLoad(() => import("./pages/tripwire/a
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
 import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
+
+// 🚀 Traffic Dashboard (new personal cabinets system)
+const TrafficLogin = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficLogin")));
+const TrafficCabinetDashboard = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficCabinetDashboard")));
+const TrafficTargetologistDashboard = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficTargetologistDashboard")));
+const TrafficAdminPanel = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficAdminPanel")));
+const TrafficSecurityPanel = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficSecurityPanel")));
+const TrafficTeamConstructor = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficTeamConstructor")));
+const UTMSourcesPanel = lazy(() => retryChunkLoad(() => import("./pages/traffic/UTMSourcesPanel")));
+const TrafficDetailedAnalytics = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficDetailedAnalytics")));
+const TrafficSettings = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficSettings")));
 // Integrator Admin pages
 import TripwireAdminDashboard from "./pages/tripwire/admin/Dashboard";
 import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
@@ -242,6 +253,27 @@ const AppRoutes = () => {
       
       {/* Public: Traffic Command Dashboard (no auth required) */}
       <Route path="/integrator/traficcommand" element={<TrafficCommandDashboard />} />
+      
+      {/* 🚀 TRAFFIC DASHBOARD - Personal Cabinets System */}
+      {/* Login for Traffic Dashboard (subdomain: traffic.onai.academy) */}
+      <Route path="/traffic/login" element={<TrafficLogin />} />
+      
+      {/* Personal Cabinet for each targetologist - Simplified NO SIDEBAR */}
+      <Route path="/traffic/cabinet/:team" element={<TrafficTargetologistDashboard />} />
+      
+      {/* Detailed Analytics - Campaigns/AdSets/Ads */}
+      <Route path="/traffic/detailed-analytics" element={<TrafficDetailedAnalytics />} />
+      
+      {/* Settings - Targetologist settings */}
+      <Route path="/traffic/settings" element={<TrafficSettings />} />
+      
+      {/* Admin Panel for Traffic Dashboard */}
+      <Route path="/traffic/admin/dashboard" element={<TrafficAdminPanel />} />
+      <Route path="/traffic/admin/settings" element={<TrafficAdminPanel />} />
+      <Route path="/traffic/admin/users" element={<TrafficAdminPanel />} />
+      <Route path="/traffic/admin/security" element={<TrafficSecurityPanel />} />
+      <Route path="/traffic/admin/utm-sources" element={<UTMSourcesPanel />} />
+      <Route path="/traffic/admin/team-constructor" element={<TrafficTeamConstructor />} />
       
       {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/integrator" element={

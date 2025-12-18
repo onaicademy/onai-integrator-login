@@ -9,6 +9,8 @@ const ACTIVE_CHATS_FILE = path.join(__dirname, '../../data/active-telegram-chats
 interface ActiveChat {
   chatId: number;
   chatTitle?: string;
+  messageThreadId?: number; // 🎯 Для поддержки Telegram Topics (вкладок)
+  topicName?: string; // 🎯 Название вкладки (например, "Отчеты")
   activatedAt: string;
   activatedBy: number;
 }
@@ -46,24 +48,46 @@ function saveActiveChats(chats: ActiveChat[]) {
   }
 }
 
-// Получить список активных чатов
-export function getActiveChats(): number[] {
-  return loadActiveChats().map(c => c.chatId);
+// Получить список активных чатов (с топиками)
+export function getActiveChats(): Array<{ chatId: number; messageThreadId?: number }> {
+  return loadActiveChats().map(c => ({
+    chatId: c.chatId,
+    messageThreadId: c.messageThreadId,
+  }));
 }
 
-// Активация чата
-function activateChat(chatId: number, userId: number, chatTitle?: string) {
+// Активация чата (с поддержкой Topics)
+function activateChat(
+  chatId: number, 
+  userId: number, 
+  chatTitle?: string,
+  messageThreadId?: number,
+  topicName?: string
+) {
   const chats = loadActiveChats();
   
-  // Проверка, уже активирован ли чат
-  if (chats.some(c => c.chatId === chatId)) {
+  // 🎯 Для топиков: проверяем уникальность по chatId + messageThreadId
+  const chatKey = messageThreadId 
+    ? `${chatId}_${messageThreadId}` 
+    : `${chatId}`;
+  
+  const alreadyExists = chats.some(c => {
+    const existingKey = c.messageThreadId 
+      ? `${c.chatId}_${c.messageThreadId}` 
+      : `${c.chatId}`;
+    return existingKey === chatKey;
+  });
+  
+  if (alreadyExists) {
     return false; // Уже активирован
   }
   
-  // Добавление нового чата
+  // Добавление нового чата/топика
   chats.push({
     chatId,
     chatTitle,
+    messageThreadId,
+    topicName,
     activatedAt: new Date().toISOString(),
     activatedBy: userId,
   });
@@ -72,26 +96,47 @@ function activateChat(chatId: number, userId: number, chatTitle?: string) {
   return true;
 }
 
-// Деактивация чата
-function deactivateChat(chatId: number) {
+// Деактивация чата/топика
+function deactivateChat(chatId: number, messageThreadId?: number) {
   const chats = loadActiveChats();
-  const filtered = chats.filter(c => c.chatId !== chatId);
+  
+  // 🎯 Для топиков: фильтруем по chatId + messageThreadId
+  const filtered = chats.filter(c => {
+    if (messageThreadId) {
+      // Деактивируем только конкретный топик
+      return !(c.chatId === chatId && c.messageThreadId === messageThreadId);
+    } else {
+      // Деактивируем общий чат (без топика)
+      return !(c.chatId === chatId && !c.messageThreadId);
+    }
+  });
+  
   saveActiveChats(filtered);
 }
 
-// Отправка сообщения во все активные чаты
+// Отправка сообщения во все активные чаты (с поддержкой Topics)
 export async function sendToAllChats(message: string, parseMode: 'Markdown' | 'HTML' = 'Markdown') {
-  const chatIds = getActiveChats();
+  const chats = getActiveChats();
   const results = [];
   
-  for (const chatId of chatIds) {
+  for (const chat of chats) {
     try {
-      await bot.sendMessage(chatId, message, { parse_mode: parseMode });
-      results.push({ chatId, success: true });
-      console.log(`✅ Отправлено в чат ${chatId}`);
+      // 🎯 Если есть messageThreadId - отправляем в топик, иначе в общий чат
+      const options: any = { parse_mode: parseMode };
+      
+      if (chat.messageThreadId) {
+        options.message_thread_id = chat.messageThreadId;
+        console.log(`📨 Отправка в топик: chatId=${chat.chatId}, threadId=${chat.messageThreadId}`);
+      } else {
+        console.log(`📨 Отправка в общий чат: chatId=${chat.chatId}`);
+      }
+      
+      await bot.sendMessage(chat.chatId, message, options);
+      results.push({ chatId: chat.chatId, messageThreadId: chat.messageThreadId, success: true });
+      console.log(`✅ Отправлено успешно`);
     } catch (error: any) {
-      console.error(`❌ Ошибка отправки в чат ${chatId}:`, error.message);
-      results.push({ chatId, success: false, error: error.message });
+      console.error(`❌ Ошибка отправки в чат ${chat.chatId}:`, error.message);
+      results.push({ chatId: chat.chatId, messageThreadId: chat.messageThreadId, success: false, error: error.message });
     }
   }
   
@@ -105,6 +150,13 @@ export function initTelegramBot() {
   // Обработка команды /start
   bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
+    const messageThreadId = msg.message_thread_id; // 🎯 Топик если есть
+    
+    const options: any = {};
+    if (messageThreadId) {
+      options.message_thread_id = messageThreadId;
+    }
+    
     await bot.sendMessage(chatId, 
       '👋 Привет! Я бот Traffic Command Dashboard.\n\n' +
       '📊 Я отправляю автоматические отчеты:\n' +
@@ -112,7 +164,9 @@ export function initTelegramBot() {
       '• 📊 16:00 - Текущий статус\n' +
       '• 🌙 22:00 - Дневной отчет + рейтинги\n' +
       '• 📅 Воскресенье - Недельный отчет\n\n' +
-      '🔐 Для активации отправь код активации.'
+      (messageThreadId ? '🎯 Отчеты будут приходить в ЭТУ вкладку!\n' : '') +
+      '🔐 Для активации отправь код активации.',
+      options
     );
   });
   
@@ -127,54 +181,122 @@ export function initTelegramBot() {
     // Проверка кода активации
     if (text === ACTIVATION_CODE) {
       const chatTitle = msg.chat.title || `Chat ${chatId}`;
-      const activated = activateChat(chatId, userId, chatTitle);
+      const messageThreadId = msg.message_thread_id; // 🎯 ID топика (если это топик)
+      
+      // 🎯 Получаем название топика из reply_to_message или forum_topic_created
+      let topicName: string | undefined;
+      if (messageThreadId) {
+        // Пробуем получить название топика
+        if (msg.reply_to_message?.forum_topic_created) {
+          topicName = msg.reply_to_message.forum_topic_created.name;
+        } else {
+          topicName = 'Отчеты'; // Дефолтное название
+        }
+      }
+      
+      const activated = activateChat(chatId, userId, chatTitle, messageThreadId, topicName);
       
       if (activated) {
+        const options: any = { parse_mode: 'Markdown' };
+        if (messageThreadId) {
+          options.message_thread_id = messageThreadId;
+        }
+        
+        const locationText = messageThreadId 
+          ? `🎯 Отчеты будут приходить в топик "${topicName}"!` 
+          : '🎯 Отчеты будут приходить в этот чат!';
+        
         await bot.sendMessage(chatId,
           '✅ *АКТИВАЦИЯ УСПЕШНА!*\n\n' +
-          '🎯 Теперь этот чат будет получать автоматические отчеты:\n\n' +
+          locationText + '\n\n' +
+          '📊 Автоматические отчеты:\n\n' +
           '🌅 *10:00* - Отчет за вчера\n' +
           '📊 *16:00* - Текущий статус\n' +
           '🌙 *22:00* - Дневной рейтинг\n' +
           '📅 *Воскресенье* - Недельный отчет\n\n' +
           '🔥 Следите за результатами команд!',
-          { parse_mode: 'Markdown' }
+          options
         );
-        console.log(`✅ Чат ${chatId} (${chatTitle}) активирован пользователем ${userId}`);
+        
+        const locationLog = messageThreadId 
+          ? `топик "${topicName}" (threadId=${messageThreadId})` 
+          : 'общий чат';
+        console.log(`✅ Чат ${chatId} (${chatTitle}) - ${locationLog} активирован пользователем ${userId}`);
       } else {
+        const options: any = { parse_mode: 'Markdown' };
+        if (messageThreadId) {
+          options.message_thread_id = messageThreadId;
+        }
+        
         await bot.sendMessage(chatId,
-          '⚠️ Этот чат уже активирован.\n\nОтчеты приходят автоматически.',
-          { parse_mode: 'Markdown' }
+          '⚠️ Эта вкладка уже активирована.\n\nОтчеты приходят автоматически.',
+          options
         );
       }
     }
     
     // Деактивация (для админа)
     if (text === '/deactivate' && msg.from?.id) {
-      deactivateChat(chatId);
-      await bot.sendMessage(chatId, '❌ Чат деактивирован. Отчеты больше не будут приходить.');
-      console.log(`❌ Чат ${chatId} деактивирован`);
+      const messageThreadId = msg.message_thread_id;
+      
+      deactivateChat(chatId, messageThreadId);
+      
+      const options: any = {};
+      if (messageThreadId) {
+        options.message_thread_id = messageThreadId;
+      }
+      
+      const locationText = messageThreadId 
+        ? 'Эта вкладка деактивирована.' 
+        : 'Чат деактивирован.';
+      
+      await bot.sendMessage(chatId, `❌ ${locationText} Отчеты больше не будут приходить.`, options);
+      
+      const locationLog = messageThreadId ? `топик (threadId=${messageThreadId})` : 'общий чат';
+      console.log(`❌ Чат ${chatId} - ${locationLog} деактивирован`);
     }
     
     // Статус
     if (text === '/status') {
+      const messageThreadId = msg.message_thread_id;
       const chats = loadActiveChats();
-      const isActive = chats.some(c => c.chatId === chatId);
       
-      if (isActive) {
-        const chat = chats.find(c => c.chatId === chatId);
+      // 🎯 Проверяем активацию конкретного топика или общего чата
+      const chat = chats.find(c => {
+        if (messageThreadId) {
+          return c.chatId === chatId && c.messageThreadId === messageThreadId;
+        } else {
+          return c.chatId === chatId && !c.messageThreadId;
+        }
+      });
+      
+      const options: any = { parse_mode: 'Markdown' };
+      if (messageThreadId) {
+        options.message_thread_id = messageThreadId;
+      }
+      
+      if (chat) {
+        const locationText = chat.messageThreadId 
+          ? `🎯 Вкладка: ${chat.topicName || 'Отчеты'}` 
+          : '💬 Общий чат';
+        
         await bot.sendMessage(chatId,
-          `✅ *ЧАТ АКТИВЕН*\n\n` +
-          `📋 Чат: ${chat?.chatTitle || 'Неизвестно'}\n` +
-          `🕐 Активирован: ${chat?.activatedAt ? new Date(chat.activatedAt).toLocaleString('ru-RU') : 'Н/Д'}\n\n` +
+          `✅ *АКТИВИРОВАНА*\n\n` +
+          `📋 Группа: ${chat.chatTitle || 'Неизвестно'}\n` +
+          locationText + '\n' +
+          `🕐 Активирована: ${new Date(chat.activatedAt).toLocaleString('ru-RU')}\n\n` +
           `📊 Отчеты приходят автоматически.`,
-          { parse_mode: 'Markdown' }
+          options
         );
       } else {
+        const locationText = messageThreadId 
+          ? 'ЭТА ВКЛАДКА НЕ АКТИВИРОВАНА' 
+          : 'ЧАТ НЕ АКТИВЕН';
+        
         await bot.sendMessage(chatId,
-          '❌ *ЧАТ НЕ АКТИВЕН*\n\n' +
+          `❌ *${locationText}*\n\n` +
           '🔐 Отправь код активации: `2134`',
-          { parse_mode: 'Markdown' }
+          options
         );
       }
     }

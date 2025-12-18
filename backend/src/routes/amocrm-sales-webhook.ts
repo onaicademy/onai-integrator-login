@@ -69,12 +69,33 @@ function formatTenge(amount: number): string {
 /**
  * POST /api/amocrm/sales-webhook
  * Webhook для получения уведомлений об оплатах из AmoCRM
+ * РАСШИРЕННАЯ ВЕРСИЯ - сохраняет в обе таблицы (sales_notifications + all_sales_tracking)
  */
 router.post('/sales-webhook', async (req: Request, res: Response) => {
   try {
     console.log('📥 AmoCRM Sales Webhook получен:', JSON.stringify(req.body, null, 2));
 
-    const { lead_id, lead_name, contact_name, contact_phone, sale_amount, product_name, pipeline_id, status_id, responsible_user_id } = req.body;
+    const { 
+      lead_id, 
+      lead_name, 
+      contact_name, 
+      contact_phone, 
+      contact_email,
+      sale_amount, 
+      product_name, 
+      pipeline_id, 
+      status_id, 
+      responsible_user_id,
+      responsible_user_name,
+      currency,
+      referrer,
+      landing_page,
+      device_type,
+      browser,
+      os,
+      country,
+      city
+    } = req.body;
 
     // Извлечь UTM метки из custom fields или query params
     const utmSource = req.body.utm_source || null;
@@ -82,6 +103,7 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
     const utmCampaign = req.body.utm_campaign || null;
     const utmContent = req.body.utm_content || null;
     const utmTerm = req.body.utm_term || null;
+    const utmId = req.body.utm_id || null;
 
     if (!lead_id || !sale_amount) {
       console.error('❌ Недостаточно данных в webhook:', req.body);
@@ -92,7 +114,7 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
     const targetologist = determineTargetologist(utmCampaign, utmSource);
     console.log(`🎯 Таргетолог определен: ${targetologist} (utm_campaign: ${utmCampaign}, utm_source: ${utmSource})`);
 
-    // Сохранить в БД
+    // 1. Сохранить в OLD таблицу (sales_notifications) для обратной совместимости
     const { data: savedSale, error: saveError } = await tripwireSupabase
       .from('sales_notifications')
       .insert({
@@ -118,11 +140,56 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
       .single();
 
     if (saveError) {
-      console.error('❌ Ошибка сохранения продажи:', saveError);
-      return res.status(500).json({ error: saveError.message });
+      console.error('❌ Ошибка сохранения в sales_notifications:', saveError);
+    } else {
+      console.log('✅ Продажа сохранена в sales_notifications:', savedSale.id);
     }
 
-    console.log('✅ Продажа сохранена в БД:', savedSale.id);
+    // 2. Сохранить в НОВУЮ таблицу (all_sales_tracking) для расширенной аналитики
+    const { data: savedAllSales, error: allSalesError } = await tripwireSupabase
+      .from('all_sales_tracking')
+      .insert({
+        lead_id,
+        lead_name: lead_name || null,
+        contact_name: contact_name || null,
+        contact_phone: contact_phone || null,
+        contact_email: contact_email || null,
+        sale_amount: parseFloat(sale_amount),
+        product_name: product_name || null,
+        currency: currency || 'KZT',
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        utm_content: utmContent,
+        utm_term: utmTerm,
+        utm_id: utmId,
+        referrer,
+        landing_page,
+        device_type,
+        browser,
+        os,
+        country,
+        city,
+        pipeline_id: pipeline_id || null,
+        status_id: status_id || null,
+        responsible_user_id: responsible_user_id || null,
+        responsible_user_name: responsible_user_name || null,
+        targetologist, // Будет автоматически определён триггером если null
+        sale_date: new Date().toISOString(),
+        webhook_received_at: new Date().toISOString(),
+        raw_webhook_data: req.body, // Сохраняем полные данные для отладки
+      })
+      .select()
+      .single();
+
+    if (allSalesError) {
+      console.error('❌ Ошибка сохранения в all_sales_tracking:', allSalesError);
+      // Не возвращаем 500, т.к. старая таблица сохранена
+    } else {
+      console.log('✅ Продажа сохранена в all_sales_tracking:', savedAllSales.id);
+    }
+
+    const saleId = savedSale?.id || savedAllSales?.id;
 
     // Отправить уведомление в Telegram
     try {
@@ -144,26 +211,38 @@ ${emoji} *Таргетолог:* ${targetologist}
       await sendToAllChats(message);
       console.log('✅ Telegram уведомление отправлено');
 
-      // Обновить статус уведомления
-      await tripwireSupabase
-        .from('sales_notifications')
-        .update({
-          notification_status: 'sent',
-          notified_at: new Date().toISOString(),
-        })
-        .eq('id', savedSale.id);
+      // Обновить статус уведомления (только для sales_notifications)
+      if (savedSale?.id) {
+        await tripwireSupabase
+          .from('sales_notifications')
+          .update({
+            notification_status: 'sent',
+            notified_at: new Date().toISOString(),
+          })
+          .eq('id', savedSale.id);
+      }
 
     } catch (telegramError: any) {
       console.error('❌ Ошибка отправки в Telegram:', telegramError.message);
 
       // Обновить статус на failed
-      await tripwireSupabase
-        .from('sales_notifications')
-        .update({ notification_status: 'failed' })
-        .eq('id', savedSale.id);
+      if (savedSale?.id) {
+        await tripwireSupabase
+          .from('sales_notifications')
+          .update({ notification_status: 'failed' })
+          .eq('id', savedSale.id);
+      }
     }
 
-    res.json({ success: true, sale_id: savedSale.id, targetologist });
+    res.json({ 
+      success: true, 
+      sale_id: saleId,
+      targetologist,
+      saved_to: {
+        sales_notifications: !!savedSale,
+        all_sales_tracking: !!savedAllSales
+      }
+    });
 
   } catch (error: any) {
     console.error('❌ Ошибка обработки webhook:', error);
