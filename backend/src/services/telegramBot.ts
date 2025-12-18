@@ -15,8 +15,15 @@ interface ActiveChat {
   activatedBy: number;
 }
 
-// Инициализация бота
-export const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+// Инициализация бота (ленивая, чтобы избежать дублирования)
+let _bot: TelegramBot | null = null;
+
+export const bot = (() => {
+  if (!_bot) {
+    _bot = new TelegramBot(BOT_TOKEN, { polling: false }); // Polling включится в initTelegramBot()
+  }
+  return _bot;
+})();
 
 // Загрузка активных чатов
 function loadActiveChats(): ActiveChat[] {
@@ -145,6 +152,12 @@ export async function sendToAllChats(message: string, parseMode: 'Markdown' | 'H
 
 // Инициализация обработчиков бота
 export function initTelegramBot() {
+  // 🚀 Запускаем polling только если еще не запущен
+  if (!bot.isPolling()) {
+    bot.startPolling();
+    console.log('🤖 Telegram Bot polling started');
+  }
+  
   console.log('🤖 Telegram Bot инициализирован');
   
   // Обработка команды /start

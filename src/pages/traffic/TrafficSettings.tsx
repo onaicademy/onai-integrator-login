@@ -13,14 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Settings, Save, RefreshCw, CheckCircle2, XCircle,
-  Facebook, Link, Tag, Bell, Globe, LogOut
+  Facebook, Link, Tag, Bell, Globe, LogOut, Target
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 interface FBAccount {
   id: string;

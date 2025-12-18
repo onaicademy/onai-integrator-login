@@ -13,7 +13,7 @@ echo "📡 Connecting to production server..."
 echo ""
 
 # Deploy to production
-ssh root@207.154.231.30 << 'ENDSSH'
+ssh root@164.90.164.107 << 'ENDSSH'
 set -e
 
 echo "📦 Pulling latest changes..."
