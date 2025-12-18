@@ -18,12 +18,15 @@ interface ActiveChat {
 // Инициализация бота (ленивая, чтобы избежать дублирования)
 let _bot: TelegramBot | null = null;
 
-export const bot = (() => {
+export function getBot(): TelegramBot {
   if (!_bot) {
     _bot = new TelegramBot(BOT_TOKEN, { polling: false }); // Polling включится в initTelegramBot()
+    console.log('🤖 Telegram Bot instance created');
   }
   return _bot;
-})();
+}
+
+export const bot = getBot();
 
 // Загрузка активных чатов
 function loadActiveChats(): ActiveChat[] {
@@ -165,22 +168,30 @@ export function initTelegramBot() {
     const chatId = msg.chat.id;
     const messageThreadId = msg.message_thread_id; // 🎯 Топик если есть
     
+    console.log(`📨 /start received: chatId=${chatId}, threadId=${messageThreadId || 'none'}`);
+    
     const options: any = {};
     if (messageThreadId) {
       options.message_thread_id = messageThreadId;
+      console.log(`🎯 Отправляю в топик ${messageThreadId}`);
     }
     
-    await bot.sendMessage(chatId, 
-      '👋 Привет! Я бот Traffic Command Dashboard.\n\n' +
-      '📊 Я отправляю автоматические отчеты:\n' +
-      '• 🌅 10:00 - Вчерашние продажи\n' +
-      '• 📊 16:00 - Текущий статус\n' +
-      '• 🌙 22:00 - Дневной отчет + рейтинги\n' +
-      '• 📅 Воскресенье - Недельный отчет\n\n' +
-      (messageThreadId ? '🎯 Отчеты будут приходить в ЭТУ вкладку!\n' : '') +
-      '🔐 Для активации отправь код активации.',
-      options
-    );
+    try {
+      await bot.sendMessage(chatId, 
+        '👋 Привет! Я бот Traffic Command Dashboard.\n\n' +
+        '📊 Я отправляю автоматические отчеты:\n' +
+        '• 🌅 10:00 - Вчерашние продажи\n' +
+        '• 📊 16:00 - Текущий статус\n' +
+        '• 🌙 22:00 - Дневной отчет + рейтинги\n' +
+        '• 📅 Воскресенье - Недельный отчет\n\n' +
+        (messageThreadId ? '🎯 Отчеты будут приходить в ЭТУ вкладку!\n' : '') +
+        '🔐 Для активации отправь код активации.',
+        options
+      );
+      console.log('✅ Ответ на /start отправлен');
+    } catch (error: any) {
+      console.error('❌ Ошибка отправки /start:', error.message);
+    }
   });
   
   // Обработка кода активации
@@ -191,10 +202,16 @@ export function initTelegramBot() {
     
     if (!text || !userId) return;
     
+    // 🎯 Игнорируем команды (они обрабатываются отдельно)
+    if (text.startsWith('/')) return;
+    
     // Проверка кода активации
     if (text === ACTIVATION_CODE) {
       const chatTitle = msg.chat.title || `Chat ${chatId}`;
       const messageThreadId = msg.message_thread_id; // 🎯 ID топика (если это топик)
+      
+      console.log(`🔑 Код активации получен: chatId=${chatId}, threadId=${messageThreadId || 'none'}`);
+      console.log(`📋 Chat info:`, JSON.stringify({ chatId, chatTitle, messageThreadId, chatType: msg.chat.type }));
       
       // 🎯 Получаем название топика из reply_to_message или forum_topic_created
       let topicName: string | undefined;
@@ -205,6 +222,7 @@ export function initTelegramBot() {
         } else {
           topicName = 'Отчеты'; // Дефолтное название
         }
+        console.log(`🎯 Топик: "${topicName}"`);
       }
       
       const activated = activateChat(chatId, userId, chatTitle, messageThreadId, topicName);
@@ -317,7 +335,18 @@ export function initTelegramBot() {
   
   // Обработка ошибок polling
   bot.on('polling_error', (error) => {
-    console.error('❌ Telegram polling error:', error.message);
+    const errorMsg = error.message || '';
+    
+    // Игнорируем ошибку "Logged out" - она решится сама через несколько секунд
+    if (errorMsg.includes('Logged out')) {
+      // Просто ждем, Telegram API восстановит сессию автоматически
+      return;
+    }
+    
+    // Логируем только важные ошибки
+    if (!errorMsg.includes('409 Conflict')) {
+      console.error('❌ Telegram polling error:', errorMsg);
+    }
   });
   
   console.log('✅ Telegram Bot handlers настроены');
