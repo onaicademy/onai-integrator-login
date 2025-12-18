@@ -997,6 +997,41 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       },
       updatedAt: new Date().toISOString(),
     });
+
+    // 💾 АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ ОТЧЕТА В БД (если это запрос за конкретную дату)
+    if (customDate) {
+      try {
+        await axios.post('http://localhost:3000/api/traffic/reports/save', {
+          report_date: customDate,
+          total_spend: totals.spend,
+          total_revenue: totals.revenue,
+          total_sales: totals.sales,
+          total_roas: totalRoas,
+          total_impressions: totals.impressions,
+          total_clicks: totals.clicks,
+          total_ctr: totalCtr,
+          usd_to_kzt_rate: usdToKztRate,
+          teams_data: combined.map((team: any) => ({
+            team: team.team,
+            spend: team.spend,
+            revenue: team.revenue,
+            sales: team.sales,
+            roas: team.roas,
+            cpa: team.cpa,
+            ctr: team.ctr,
+            impressions: team.impressions,
+            clicks: team.clicks,
+          })),
+          top_utm_sales: topUtmBySales,
+          top_campaigns_ctr: topCampaignsByCtr,
+          top_campaigns_video: topCampaignsByVideo,
+        });
+        console.log(`💾 Отчет за ${customDate} сохранен в БД`);
+      } catch (saveError) {
+        console.error('⚠️ Не удалось сохранить отчет в БД:', saveError);
+        // Не прерываем основной запрос если сохранение не удалось
+      }
+    }
     
   } catch (error: any) {
     console.error('❌ Error fetching combined analytics:', error.message);
