@@ -498,7 +498,7 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
   try {
     const preset = (req.query.preset as string) || '30d';
     const customDate = req.query.date as string; // YYYY-MM-DD format
-
+    
     // Get date range
     let cutoff: number;
     let since: string;
@@ -517,8 +517,8 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       console.log(`📅 Custom date selected: ${since} (single day)`);
     } else {
       // Preset range
-      const now = Date.now();
-      const daysBack = preset === '7d' ? 7 : preset === '14d' ? 14 : 30;
+    const now = Date.now();
+    const daysBack = preset === '7d' ? 7 : preset === '14d' ? 14 : 30;
       cutoff = now - (daysBack * 24 * 60 * 60 * 1000);
       since = new Date(cutoff).toISOString().split('T')[0];
       until = new Date().toISOString().split('T')[0];
@@ -806,9 +806,9 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
         if (leadDate !== customDate) continue;
       } else {
         // Для preset - проверяем что сделка в диапазоне
-        if (closedTime < cutoff) continue;
+      if (closedTime < cutoff) continue;
       }
-
+      
       const team = lead.traffic_team;
       if (!amocrmStats[team]) {
         amocrmStats[team] = { sales: 0, revenue: 0 };

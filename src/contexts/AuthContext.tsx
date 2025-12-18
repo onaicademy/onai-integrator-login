@@ -81,8 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (age < CACHE_TTL) {
             const profile = safeJSONParse(cached, null);
             if (profile) {
-              console.log(`⚡ Профиль из кэша (${Math.round(age / 1000)}s):`, profile.full_name);
-              return profile;
+            console.log(`⚡ Профиль из кэша (${Math.round(age / 1000)}s):`, profile.full_name);
+            return profile;
             }
           } else {
             console.log('🔄 Кэш устарел, обновляем...');
@@ -143,8 +143,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const payloadJson = atob(payloadBase64);
         const payload = safeJSONParse(payloadJson, {});
         
-        if (payload.user_role) {
-          return payload.user_role;
+      if (payload.user_role) {
+        return payload.user_role;
         }
       }
     } catch (e) {
@@ -202,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // 🔑 Удаляем JWT токен при выходе (безопасно)
       try {
-        localStorage.removeItem('supabase_token');
+      localStorage.removeItem('supabase_token');
       } catch (e) {
         console.warn('⚠️ Failed to remove token from localStorage');
       }
@@ -226,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Безопасное чтение localStorage keys
     try {
-      console.log('📦 localStorage keys:', Object.keys(localStorage).filter(k => k.startsWith('sb-')));
+    console.log('📦 localStorage keys:', Object.keys(localStorage).filter(k => k.startsWith('sb-')));
     } catch (e) {
       console.warn('⚠️ localStorage недоступен');
     }
@@ -293,9 +293,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Пробуем прочитать сессию из localStorage напрямую (безопасно)
           try {
-            const storedSession = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
-            if (storedSession) {
-              console.log('📦 Найдена сессия в localStorage, парсим...');
+          const storedSession = localStorage.getItem('sb-arqhkacellqbhjhbebfh-auth-token');
+          if (storedSession) {
+            console.log('📦 Найдена сессия в localStorage, парсим...');
               const parsedSession = safeJSONParse(storedSession, null);
               if (parsedSession && parsedSession.access_token) {
                 console.log('✅ Сессия восстановлена из localStorage');

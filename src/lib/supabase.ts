@@ -55,8 +55,8 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     // Сохраняем JWT токен для использования в API запросах (безопасно)
     if (session.access_token) {
       try {
-        localStorage.setItem('supabase_token', session.access_token)
-        devLog('🔑 JWT токен сохранён в localStorage')
+      localStorage.setItem('supabase_token', session.access_token)
+      devLog('🔑 JWT токен сохранён в localStorage')
       } catch (e) {
         console.warn('⚠️ Failed to save token to localStorage');
       }
@@ -72,7 +72,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     
     // Удаляем токен при выходе (безопасно)
     try {
-      localStorage.removeItem('supabase_token')
+    localStorage.removeItem('supabase_token')
     } catch (e) {
       console.warn('⚠️ Failed to remove token from localStorage');
     }

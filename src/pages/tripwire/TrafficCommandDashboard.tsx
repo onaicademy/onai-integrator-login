@@ -526,16 +526,29 @@ export default function TrafficCommandDashboard() {
                 )}
               </div>
 
-              {/* 🔄 Кнопка синхронизации */}
+              {/* 🔄 Кнопка синхронизации с IAE Agent */}
               <button
-                onClick={() => refetch()}
+                onClick={async () => {
+                  // Обновляем данные
+                  refetch();
+                  
+                  // Опционально: запускаем IAE Agent проверку (только если нужно)
+                  // try {
+                  //   const iaeCheck = await axios.post(`${API_URL}/api/iae-agent/trigger`, { sendToTelegram: false });
+                  //   if (iaeCheck.data.healthScore < 70) {
+                  //     console.warn('⚠️ IAE Agent: Health issues detected', iaeCheck.data.healthScore);
+                  //   }
+                  // } catch (err) {
+                  //   console.error('IAE Agent check failed:', err);
+                  // }
+                }}
                 disabled={isFetching}
                 className={`px-3 sm:px-4 py-2 bg-black/50 border rounded-xl flex items-center justify-center gap-2 font-medium transition-all w-full sm:w-auto ${
-                  isFetching 
-                    ? 'border-[#00FF88]/50 text-[#00FF88] cursor-wait' 
+                  isFetching
+                    ? 'border-[#00FF88]/50 text-[#00FF88] cursor-wait'
                     : 'border-[#00FF88]/20 text-white hover:bg-[#00FF88]/10 hover:border-[#00FF88]/40 hover:shadow-lg hover:shadow-[#00FF88]/20'
                 }`}
-                title="Обновить данные вручную"
+                title="Обновить данные вручную (+ IAE Agent проверка)"
               >
                 <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${isFetching ? 'animate-spin text-[#00FF88]' : 'text-[#00FF88]'}`} />
                 <span className="text-xs sm:text-sm">

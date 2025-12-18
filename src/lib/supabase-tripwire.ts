@@ -83,8 +83,8 @@ tripwireSupabase.auth.onAuthStateChange(async (event, session) => {
     // Сохраняем JWT токен для API запросов (с префиксом tripwire) (безопасно)
     if (session.access_token) {
       try {
-        localStorage.setItem('tripwire_supabase_token', session.access_token)
-        devLog('🔑 Tripwire JWT токен сохранён')
+      localStorage.setItem('tripwire_supabase_token', session.access_token)
+      devLog('🔑 Tripwire JWT токен сохранён')
       } catch (e) {
         console.warn('⚠️ Failed to save Tripwire token to localStorage');
       }
@@ -95,7 +95,7 @@ tripwireSupabase.auth.onAuthStateChange(async (event, session) => {
     devLog('👋 Tripwire: Пользователь вышел из системы')
     
     try {
-      localStorage.removeItem('tripwire_supabase_token')
+    localStorage.removeItem('tripwire_supabase_token')
     } catch (e) {
       console.warn('⚠️ Failed to remove Tripwire token from localStorage');
     }

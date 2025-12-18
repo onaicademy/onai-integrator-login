@@ -124,6 +124,7 @@ import trafficStatsRouter from './routes/traffic-stats'; // 📊 Traffic Command
 import trafficReportsRouter from './routes/traffic-reports'; // 📊 Traffic Reports (Суп history & ROI analysis)
 import amocrmSalesWebhookRouter from './routes/amocrm-sales-webhook'; // 🎉 AmoCRM Sales Webhook (real-time продажи)
 import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API Integration
+import iaeAgentRouter from './routes/iae-agent.js'; // 🤖 IAE Agent (Intelligence Analytics Engine)
 import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
@@ -423,6 +424,7 @@ app.use('/l', shortLinksRouter); // 🔗 Short link redirect handler (прямо
 app.use('/api/traffic', trafficStatsRouter); // 📊 Traffic Command Stats (AmoCRM sales - public)
 app.use('/api/traffic/reports', trafficReportsRouter); // 📊 Traffic Reports History (сохранение и анализ окупаемости)
 app.use('/api/amocrm', amocrmSalesWebhookRouter); // 🎉 AmoCRM Sales Webhook (real-time уведомления о продажах)
+app.use('/api/iae-agent', iaeAgentRouter); // 🤖 IAE Agent (Intelligence Analytics Engine - система проверки аналитики)
 app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
 app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (мануальная отправка отчетов)
 
@@ -539,6 +541,15 @@ const server = app.listen(PORT, () => {
       startAIMentorScheduler();
       startAIAnalyticsScheduler();
       startRecommendationsScheduler(); // 🤖 AI Recommendations (daily at 00:10)
+
+      // 5. Start IAE Agent schedulers
+      try {
+        const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
+        startIAESchedulers(); // 🤖 IAE Agent: 10:00 (daily), 16:00 (current), 1st (monthly), hourly (health)
+        console.log('✅ IAE Agent schedulers initialized');
+      } catch (error) {
+        console.error('❌ Ошибка инициализации IAE Agent schedulers:', error);
+      }
 
       console.log('✅ All background services initialized');
 

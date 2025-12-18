@@ -8,14 +8,14 @@ export function TokenDiagnostics() {
   // Проверка localStorage (безопасно)
   const checkLocalStorage = () => {
     try {
-      const keys = Object.keys(localStorage);
-      const authKey = keys.find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
-      
-      if (!authKey) return { found: false };
-      
+    const keys = Object.keys(localStorage);
+    const authKey = keys.find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+    
+    if (!authKey) return { found: false };
+    
       const stored = safeLocalStorage.getItem(authKey);
-      if (!stored) return { found: false };
-      
+    if (!stored) return { found: false };
+    
       const data = safeJSONParse(stored, null);
       if (!data) return { found: false };
       
