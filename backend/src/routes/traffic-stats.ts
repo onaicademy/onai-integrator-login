@@ -13,11 +13,70 @@ const FB_API_VERSION = 'v21.0';
 const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
 const FB_ACCESS_TOKEN = process.env.FACEBOOK_ADS_TOKEN || 'EAAPVZCSfHj0YBQGxLZAdo9TK0m0Wuj3czwTmXXfEmvUNfwLWMaypNgn4rZBFjsT8w049mzXYBZAGhVkb9Qc7nNXLCpIPMu2NuDfQNEjM3rHXyeSOvSQ2vjhdRppKykbjhLATTRHYFxvPRWEZAg0wnXqXuzRB0BEuZCBELO0yZCPNPpQtiZBijR1c3ZC3p51C8Qb0u';
 
+// 💱 Курс валют (USD → KZT)
+let cachedExchangeRate: { rate: number; timestamp: number } | null = null;
+const CACHE_DURATION = 3600000; // 1 час
+
+async function getUSDtoKZTRate(): Promise<number> {
+  try {
+    // Проверяем кеш
+    if (cachedExchangeRate && Date.now() - cachedExchangeRate.timestamp < CACHE_DURATION) {
+      console.log(`💱 Using cached USD/KZT rate: ${cachedExchangeRate.rate}`);
+      return cachedExchangeRate.rate;
+    }
+
+    // Получаем актуальный курс
+    const response = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json', {
+      timeout: 5000,
+    });
+    
+    const rate = response.data?.usd?.kzt;
+    
+    if (!rate || typeof rate !== 'number') {
+      console.warn('⚠️ Invalid exchange rate, using fallback: 470');
+      return 470; // Fallback курс
+    }
+
+    // Кешируем
+    cachedExchangeRate = { rate, timestamp: Date.now() };
+    console.log(`💱 Fetched new USD/KZT rate: ${rate}`);
+    
+    return rate;
+  } catch (error) {
+    console.error('❌ Error fetching exchange rate:', error);
+    return cachedExchangeRate?.rate || 470; // Используем кеш или fallback
+  }
+}
+
 const AD_ACCOUNTS = {
-  'Kenesary': { id: 'act_964264512447589', team: 'nutrients_kz', utmPattern: 'kenji' },
-  'Arystan': { id: 'act_666059476005255', team: 'arystan_3_1', utmPattern: 'arystan' },
-  'Muha': { id: 'act_839340528712304', team: 'muha_acc3', utmPattern: 'yourmarketolog' },
-  'Traf4': { id: 'act_30779210298344970', team: 'traf4_team', utmPattern: 'pb_agency' },
+  'Kenesary': { 
+    id: 'act_964264512447589', 
+    team: 'nutrients_kz', 
+    utmPattern: 'kenji',
+    // Campaign patterns: ТОЛЬКО tripwire кампании
+    campaignPatterns: ['tripwire'],
+  },
+  'Arystan': { 
+    id: 'act_666059476005255', 
+    team: 'arystan_3_1', 
+    utmPattern: 'arystan',
+    // Campaign patterns: arystan_17.12, arystan_13.12
+    campaignPatterns: ['arystan'],
+  },
+  'Muha': { 
+    id: 'act_839340528712304', 
+    team: 'muha_acc3', 
+    utmPattern: 'yourmarketolog',
+    // Campaign patterns: Запуск на On AI 16.12
+    campaignPatterns: ['on ai', 'onai', 'запуск'],
+  },
+  'Traf4': { 
+    id: 'act_30779210298344970', 
+    team: 'traf4_team', 
+    utmPattern: 'pb_agency',
+    // Campaign patterns: alex/11.12, Proftest/alex
+    campaignPatterns: ['alex', 'traf4', 'proftest'],
+  },
 };
 
 // Create axios client for AmoCRM
@@ -137,26 +196,29 @@ const TRAFFIC_TEAM_PATTERNS = {
   'Kenesary': {
     match: (utm: { source?: string; medium?: string; campaign?: string }) => 
       utm.source?.toLowerCase().includes('kenji'),
-    emoji: '👨‍💼',
-    color: '#3b82f6',
+    emoji: '👑',
+    color: '#00FF88',
   },
   'Arystan': {
     match: (utm: { source?: string; medium?: string; campaign?: string }) => 
       utm.source?.toLowerCase().includes('arystan'),
     emoji: '⚡',
-    color: '#8b5cf6',
+    color: '#00FF88',
   },
   'Muha': {
     match: (utm: { source?: string; medium?: string; campaign?: string }) => 
       utm.medium?.toLowerCase() === 'yourmarketolog',
-    emoji: '🐝',
-    color: '#eab308',
+    emoji: '🚀',
+    color: '#00FF88',
   },
   'Traf4': {
     match: (utm: { source?: string; medium?: string; campaign?: string }) => 
-      utm.source?.toLowerCase().includes('pb_agency'),
-    emoji: '🔴',
-    color: '#ef4444',
+      utm.source?.toLowerCase().includes('pb_agency') || 
+      utm.source?.toLowerCase().includes('alex') ||
+      utm.campaign?.toLowerCase().includes('alex') ||
+      utm.campaign?.toLowerCase().includes('proftest'),
+    emoji: '🎯',
+    color: '#00FF88',
   },
 };
 
@@ -430,6 +492,7 @@ router.get('/pipeline', async (req: Request, res: Response) => {
 /**
  * GET /api/traffic/combined-analytics
  * Combined analytics: FB Ads spend + AmoCRM revenue = Real ROAS
+ * STRICT: Only tripwire campaigns, matched by UTM patterns in campaign/adset/ad names
  */
 router.get('/combined-analytics', async (req: Request, res: Response) => {
   try {
@@ -442,69 +505,259 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     const since = new Date(cutoff).toISOString().split('T')[0];
     const until = new Date().toISOString().split('T')[0];
     
-    console.log(`📊 Fetching combined analytics: ${since} to ${until}`);
+    console.log(`📊 Fetching combined analytics (TRIPWIRE ONLY): ${since} to ${until}`);
     
-    // 1. Fetch FB Ads spend
+    // 1. Fetch FB Ads spend - ONLY tripwire campaigns
     const fbPromises = Object.entries(AD_ACCOUNTS).map(async ([teamName, config]) => {
       try {
+        // Fetch ALL campaigns from account
         const campaignResponse = await axios.get(`${FB_BASE_URL}/${config.id}/campaigns`, {
           params: {
             access_token: FB_ACCESS_TOKEN,
             fields: 'id,name,status',
-            limit: 100,
+            limit: 200,
           },
           timeout: 15000,
         });
         
-        const campaigns = campaignResponse.data.data || [];
-        const relevantCampaigns = campaigns.filter((c: any) => {
+        const allCampaigns = campaignResponse.data.data || [];
+        
+        // 🎯 FILTER: Only campaigns matching team patterns
+        const teamCampaigns = allCampaigns.filter((c: any) => {
           const name = c.name.toLowerCase();
-          return name.includes('proftest') || name.includes('tripwire') || name.includes(teamName.toLowerCase());
+          return config.campaignPatterns.some(pattern => name.includes(pattern.toLowerCase()));
         });
         
-        if (relevantCampaigns.length === 0) {
-          return { team: teamName, spend: 0, impressions: 0, clicks: 0, ctr: 0 };
+        console.log(`🎯 ${teamName}: Found ${teamCampaigns.length} matching campaigns (patterns: ${config.campaignPatterns.join(', ')})`);
+        
+        if (teamCampaigns.length > 0) {
+          console.log(`   └─ Campaigns: ${teamCampaigns.map((c: any) => c.name).join(', ')}`);
         }
         
-        const insights = await Promise.all(
-          relevantCampaigns.map(async (campaign: any) => {
+        if (teamCampaigns.length === 0) {
+          return { 
+            team: teamName, 
+            spend: 0, 
+            impressions: 0, 
+            clicks: 0, 
+            ctr: 0,
+            campaigns: [],
+          };
+        }
+        
+        // Fetch insights for each matching campaign
+        const campaignInsights = await Promise.all(
+          teamCampaigns.map(async (campaign: any) => {
             try {
               const insightResponse = await axios.get(`${FB_BASE_URL}/${campaign.id}/insights`, {
                 params: {
                   access_token: FB_ACCESS_TOKEN,
                   time_range: JSON.stringify({ since, until }),
-                  fields: 'spend,impressions,clicks',
+                  fields: 'campaign_name,spend,impressions,clicks,reach,frequency,cpc,cpm,actions,video_play_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p100_watched_actions,video_avg_time_watched_actions,video_thruplay_watched_actions',
                   level: 'campaign',
                 },
                 timeout: 15000,
               });
               const data = insightResponse.data.data[0] || {};
+              
+              // Extract leads and purchases from actions
+              const actions = data.actions || [];
+              const leads = actions.find((a: any) => a.action_type === 'lead')?.value || 0;
+              const purchases = actions.find((a: any) => 
+                a.action_type === 'purchase' || 
+                a.action_type === 'omni_purchase'
+              )?.value || 0;
+              
+              // 🎬 Extract video engagement metrics
+              const getVideoMetric = (arr: any[] | undefined) => {
+                if (!arr || !Array.isArray(arr)) return 0;
+                return arr.reduce((sum, a) => sum + parseInt(a.value || '0'), 0);
+              };
+              
+              const videoPlays = getVideoMetric(data.video_play_actions);
+              const video25 = getVideoMetric(data.video_p25_watched_actions);
+              const video50 = getVideoMetric(data.video_p50_watched_actions);
+              const video75 = getVideoMetric(data.video_p75_watched_actions);
+              const video100 = getVideoMetric(data.video_p100_watched_actions);
+              const videoThruplay = getVideoMetric(data.video_thruplay_watched_actions);
+              
+              // Avg watch time (in seconds)
+              const avgWatchTimeArr = data.video_avg_time_watched_actions || [];
+              const avgWatchTime = avgWatchTimeArr.length > 0 
+                ? avgWatchTimeArr.reduce((sum: number, a: any) => sum + parseFloat(a.value || '0'), 0) / avgWatchTimeArr.length
+                : 0;
+              
               return {
+                campaignId: campaign.id,
+                campaignName: campaign.name,
                 spend: parseFloat(data.spend || '0'),
                 impressions: parseInt(data.impressions || '0'),
                 clicks: parseInt(data.clicks || '0'),
+                reach: parseInt(data.reach || '0'),
+                frequency: parseFloat(data.frequency || '0'),
+                cpc: parseFloat(data.cpc || '0'),
+                cpm: parseFloat(data.cpm || '0'),
+                leads: parseInt(leads),
+                purchases: parseInt(purchases),
+                // 🎬 Video metrics
+                videoPlays,
+                video25,
+                video50,
+                video75,
+                video100,
+                videoThruplay,
+                avgWatchTime,
               };
             } catch (err) {
+              console.error(`❌ Error fetching insights for campaign ${campaign.name}`);
               return null;
             }
           })
         );
         
-        const valid = insights.filter(i => i !== null);
+        const valid = campaignInsights.filter(i => i !== null);
         const totals = valid.reduce((acc, i) => ({
           spend: acc.spend + i!.spend,
           impressions: acc.impressions + i!.impressions,
           clicks: acc.clicks + i!.clicks,
-        }), { spend: 0, impressions: 0, clicks: 0 });
+          reach: acc.reach + i!.reach,
+          leads: acc.leads + i!.leads,
+          purchases: acc.purchases + i!.purchases,
+          // 🎬 Video aggregation
+          videoPlays: acc.videoPlays + (i!.videoPlays || 0),
+          video25: acc.video25 + (i!.video25 || 0),
+          video50: acc.video50 + (i!.video50 || 0),
+          video75: acc.video75 + (i!.video75 || 0),
+          video100: acc.video100 + (i!.video100 || 0),
+          videoThruplay: acc.videoThruplay + (i!.videoThruplay || 0),
+          totalAvgWatchTime: acc.totalAvgWatchTime + (i!.avgWatchTime || 0),
+        }), { spend: 0, impressions: 0, clicks: 0, reach: 0, leads: 0, purchases: 0, videoPlays: 0, video25: 0, video50: 0, video75: 0, video100: 0, videoThruplay: 0, totalAvgWatchTime: 0 });
+        
+        // 🎬 Video engagement calculations
+        const videoCompletionRate = totals.videoPlays > 0 ? (totals.video100 / totals.videoPlays) * 100 : 0;
+        const videoThruplayRate = totals.videoPlays > 0 ? (totals.videoThruplay / totals.videoPlays) * 100 : 0;
+        const avgWatchTime = valid.length > 0 ? totals.totalAvgWatchTime / valid.length : 0;
+        
+        // 🏆 Fetch AD-LEVEL insights for top video creatives
+        let topVideoCreatives: any[] = [];
+        try {
+          // Get all ads from matching campaigns
+          const campaignIds = teamCampaigns.map((c: any) => c.id);
+          
+          if (campaignIds.length > 0) {
+            const adsResponse = await axios.get(`${FB_BASE_URL}/${config.id}/ads`, {
+              params: {
+                access_token: FB_ACCESS_TOKEN,
+                fields: 'id,name,creative{id,name,thumbnail_url}',
+                filtering: JSON.stringify([{
+                  field: 'campaign.id',
+                  operator: 'IN',
+                  value: campaignIds,
+                }]),
+                limit: 50,
+              },
+              timeout: 15000,
+            });
+            
+            const ads = adsResponse.data.data || [];
+            
+            // Fetch video metrics for each ad
+            const adInsights = await Promise.all(
+              ads.slice(0, 20).map(async (ad: any) => {
+                try {
+                  const insightRes = await axios.get(`${FB_BASE_URL}/${ad.id}/insights`, {
+                    params: {
+                      access_token: FB_ACCESS_TOKEN,
+                      time_range: JSON.stringify({ since, until }),
+                      fields: 'ad_name,video_play_actions,video_p100_watched_actions,video_thruplay_watched_actions,video_avg_time_watched_actions,impressions,clicks',
+                    },
+                    timeout: 10000,
+                  });
+                  
+                  const data = insightRes.data.data[0] || {};
+                  
+                  const getVideoVal = (arr: any[]) => arr?.reduce((s, a) => s + parseInt(a.value || '0'), 0) || 0;
+                  const getAvgTime = (arr: any[]) => arr?.length > 0 ? arr.reduce((s, a) => s + parseFloat(a.value || '0'), 0) / arr.length : 0;
+                  
+                  return {
+                    adId: ad.id,
+                    name: ad.name || data.ad_name,
+                    creativeName: ad.creative?.name || ad.name,
+                    thumbnail: ad.creative?.thumbnail_url,
+                    videoPlays: getVideoVal(data.video_play_actions),
+                    completions: getVideoVal(data.video_p100_watched_actions),
+                    thruplay: getVideoVal(data.video_thruplay_watched_actions),
+                    avgWatchTime: getAvgTime(data.video_avg_time_watched_actions),
+                    impressions: parseInt(data.impressions || '0'),
+                    clicks: parseInt(data.clicks || '0'),
+                  };
+                } catch {
+                  return null;
+                }
+              })
+            );
+            
+            // Filter and sort by video completions
+            topVideoCreatives = adInsights
+              .filter(a => a && a.videoPlays > 0)
+              .sort((a, b) => (b?.completions || 0) - (a?.completions || 0))
+              .slice(0, 3)
+              .map(a => ({
+                name: a!.name,
+                creativeName: a!.creativeName,
+                thumbnail: a!.thumbnail,
+                plays: a!.videoPlays,
+                thruplay: a!.thruplay,
+                completions: a!.completions,
+                completionRate: a!.videoPlays > 0 ? ((a!.completions / a!.videoPlays) * 100).toFixed(1) + '%' : '0%',
+                thruplayRate: a!.videoPlays > 0 ? ((a!.thruplay / a!.videoPlays) * 100).toFixed(1) + '%' : '0%',
+                avgWatchTime: a!.avgWatchTime?.toFixed(1) + 's',
+                ctr: a!.impressions > 0 ? ((a!.clicks / a!.impressions) * 100).toFixed(2) + '%' : '0%',
+              }));
+            
+            console.log(`🏆 ${teamName}: Top ${topVideoCreatives.length} video creatives found`);
+          }
+        } catch (err: any) {
+          console.error(`⚠️ ${teamName}: Could not fetch ad-level video metrics:`, err.message);
+        }
         
         return {
           team: teamName,
-          ...totals,
+          spend: totals.spend,
+          impressions: totals.impressions,
+          clicks: totals.clicks,
+          reach: totals.reach,
+          leads: totals.leads,
+          fbPurchases: totals.purchases,
           ctr: totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0,
+          // 🎬 Video engagement
+          videoMetrics: {
+            plays: totals.videoPlays,
+            thruplay: totals.videoThruplay,
+            completions: totals.video100,
+            completionRate: videoCompletionRate,
+            thruplayRate: videoThruplayRate,
+            avgWatchTime: avgWatchTime,
+            retention: {
+              '25%': totals.video25,
+              '50%': totals.video50,
+              '75%': totals.video75,
+              '100%': totals.video100,
+            },
+          },
+          topVideoCreatives,
+          campaigns: valid.map(c => ({
+            name: c!.campaignName,
+            spend: c!.spend,
+            clicks: c!.clicks,
+            impressions: c!.impressions,
+            videoPlays: c!.videoPlays || 0,
+            videoCompletions: c!.video100 || 0,
+          })),
         };
       } catch (error: any) {
         console.error(`❌ FB Ads error for ${teamName}:`, error.message);
-        return { team: teamName, spend: 0, impressions: 0, clicks: 0, ctr: 0 };
+        return { team: teamName, spend: 0, impressions: 0, clicks: 0, ctr: 0, campaigns: [] };
       }
     });
     
@@ -538,6 +791,9 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     }
     
     // 3. Combine data
+    // 💱 Получаем курс для корректного ROAS
+    const usdToKztRate = await getUSDtoKZTRate();
+    
     const combined = fbResults.map(fb => {
       // Match team names
       let amocrmTeam = amocrmStats[fb.team] || amocrmStats[fb.team.toLowerCase()];
@@ -553,20 +809,33 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       }
       
       const sales = amocrmTeam?.sales || 0;
-      const revenue = amocrmTeam?.revenue || 0;
-      const roas = fb.spend > 0 ? revenue / fb.spend : 0;
+      const revenueKZT = amocrmTeam?.revenue || 0; // Revenue в KZT
+      const spendKZT = fb.spend * usdToKztRate; // Конвертируем spend в KZT
+      
+      // 🎯 ПРАВИЛЬНЫЙ ROAS: Revenue(KZT) / Spend(KZT)
+      const roas = spendKZT > 0 ? revenueKZT / spendKZT : 0;
+      
+      // CPA остаётся в USD (Spend USD / Sales)
       const cpa = sales > 0 ? fb.spend / sales : 0;
       
       return {
         team: fb.team,
-        spend: fb.spend,
-        revenue,
+        spend: fb.spend, // USD
+        spendKZT, // KZT (для отображения)
+        revenue: revenueKZT, // KZT
         roas,
         sales,
         cpa,
         impressions: fb.impressions,
         clicks: fb.clicks,
         ctr: fb.ctr,
+        reach: fb.reach || 0,
+        leads: fb.leads || 0,
+        fbPurchases: fb.fbPurchases || 0,
+        // 🎬 Video engagement metrics
+        videoMetrics: fb.videoMetrics || null,
+        topVideoCreatives: fb.topVideoCreatives || [],
+        campaigns: fb.campaigns || [],
       };
     });
     
@@ -576,13 +845,15 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     // Calculate totals
     const totals = combined.reduce((acc, t) => ({
       spend: acc.spend + t.spend,
+      spendKZT: acc.spendKZT + (t.spendKZT || 0),
       revenue: acc.revenue + t.revenue,
       sales: acc.sales + t.sales,
       impressions: acc.impressions + t.impressions,
       clicks: acc.clicks + t.clicks,
-    }), { spend: 0, revenue: 0, sales: 0, impressions: 0, clicks: 0 });
+    }), { spend: 0, spendKZT: 0, revenue: 0, sales: 0, impressions: 0, clicks: 0 });
     
-    const totalRoas = totals.spend > 0 ? totals.revenue / totals.spend : 0;
+    // 🎯 ПРАВИЛЬНЫЙ расчёт total ROAS
+    const totalRoas = totals.spendKZT > 0 ? totals.revenue / totals.spendKZT : 0;
     const totalCpa = totals.sales > 0 ? totals.spend / totals.sales : 0;
     const totalCtr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
     
@@ -595,6 +866,10 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
         roas: totalRoas,
         cpa: totalCpa,
         ctr: totalCtr,
+      },
+      exchangeRate: {
+        usdToKzt: usdToKztRate,
+        updatedAt: cachedExchangeRate?.timestamp ? new Date(cachedExchangeRate.timestamp).toISOString() : new Date().toISOString(),
       },
       updatedAt: new Date().toISOString(),
     });

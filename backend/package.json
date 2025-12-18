@@ -22,6 +22,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@fawazahmed0/currency-api": "^2025.12.18",
     "@sentry/node": "^10.30.0",
     "@sentry/profiling-node": "^10.30.0",
     "@supabase/supabase-js": "^2.81.1",

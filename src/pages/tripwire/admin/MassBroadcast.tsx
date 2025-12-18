@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Send, MessageSquare, Mail, Users, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Send, MessageSquare, Mail, Users, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,7 @@ const MassBroadcast = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // Email данные
   const [emailSubject, setEmailSubject] = useState('');
@@ -84,6 +85,37 @@ const MassBroadcast = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 🔄 Синхронизация списка получателей
+  const syncRecipients = async () => {
+    setIsSyncing(true);
+    try {
+      const data = await apiRequest('/api/tripwire/admin/mass-broadcast/sync', {
+        method: 'POST',
+      });
+      
+      // Обновить статистику
+      setStats({
+        totalStudents: data.totalStudents,
+        excludedCount: data.excludedCount,
+        emailRecipients: data.emailRecipients,
+        smsRecipients: data.smsRecipients,
+      });
+
+      toast({
+        title: '✅ Синхронизация завершена',
+        description: `Найдено ${data.emailRecipients} email и ${data.smsRecipients} телефонов`,
+      });
+    } catch (error: any) {
+      toast({
+        title: '❌ Ошибка синхронизации',
+        description: error?.message || 'Не удалось синхронизировать данные',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -191,14 +223,25 @@ const MassBroadcast = () => {
             Отправка EMAIL и SMS всем студентам платформы
           </p>
         </div>
-        <Button
-          onClick={loadStats}
-          disabled={isLoading}
-          variant="outline"
-        >
-          <Users className="w-4 h-4 mr-2" />
-          {isLoading ? 'Загрузка...' : 'Обновить статистику'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={syncRecipients}
+            disabled={isSyncing || isSending}
+            variant="default"
+            className="bg-[#00FF88] hover:bg-[#00DD77] text-black"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Синхронизация...' : 'Синхронизировать'}
+          </Button>
+          <Button
+            onClick={loadStats}
+            disabled={isLoading || isSyncing}
+            variant="outline"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            {isLoading ? 'Загрузка...' : 'Обновить'}
+          </Button>
+        </div>
       </div>
 
       {/* Статистика */}
@@ -252,7 +295,9 @@ const MassBroadcast = () => {
               <p className="text-2xl font-bold text-blue-600">
                 {stats.smsRecipients}
               </p>
-              {stats.smsRecipients === 0 && (
+              {stats.smsRecipients > 0 ? (
+                <p className="text-xs text-gray-400 mt-1">из landing_leads БД</p>
+              ) : (
                 <p className="text-xs text-gray-400 mt-1">нет телефонов в БД</p>
               )}
             </CardContent>

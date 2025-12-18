@@ -6,12 +6,107 @@ import {
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
   Zap, Activity, PieChart, Calendar, Filter, Bot, Loader2,
-  Lightbulb, CheckCircle2, AlertTriangle, X
+  Lightbulb, CheckCircle2, AlertTriangle, X, Info, HelpCircle
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
+// 📚 Описания метрик для подсказок
+const METRIC_DESCRIPTIONS: Record<string, { title: string; description: string }> = {
+  revenue: {
+    title: 'Доход (Revenue)',
+    description: 'Общая сумма выручки от продаж через AmoCRM. Это реальные деньги, которые команда заработала за выбранный период.'
+  },
+  spend: {
+    title: 'Затраты (Ad Spend)',
+    description: 'Сумма потраченная на рекламу в Facebook Ads. Включает все расходы на объявления, таргетинг и продвижение.'
+  },
+  roas: {
+    title: 'ROAS (Return on Ad Spend)',
+    description: 'Возврат инвестиций в рекламу. Показывает сколько долларов дохода приносит каждый доллар рекламы. ROAS > 1 = прибыльно, ROAS > 2 = отлично!'
+  },
+  cpa: {
+    title: 'CPA (Cost Per Acquisition)',
+    description: 'Средняя стоимость привлечения одного клиента. Чем ниже CPA при сохранении качества лида, тем эффективнее кампания.'
+  },
+  sales: {
+    title: 'Продажи (Sales)',
+    description: 'Количество успешно закрытых сделок в AmoCRM. Это реальные клиенты, которые оплатили продукт/услугу.'
+  },
+  clicks: {
+    title: 'Клики (Clicks)',
+    description: 'Количество кликов по рекламным объявлениям. Показывает заинтересованность аудитории в вашем предложении.'
+  },
+  impressions: {
+    title: 'Показы (Impressions)',
+    description: 'Сколько раз ваша реклама была показана пользователям Facebook. Охват потенциальной аудитории.'
+  },
+  ctr: {
+    title: 'CTR (Click-Through Rate)',
+    description: 'Процент пользователей, которые кликнули по объявлению после просмотра. Хороший CTR > 1% означает, что креатив и оффер цепляют аудиторию.'
+  },
+};
+
+// 💡 Компонент подсказки с описанием метрики
+const MetricTooltip = ({ metricKey }: { metricKey: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const info = METRIC_DESCRIPTIONS[metricKey];
+  
+  if (!info) return null;
+
+  return (
+    <span className="relative inline-block">
+      <button
+        type="button"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+        className="ml-1.5 p-0.5 hover:bg-[#00FF88]/10 rounded transition-all inline-flex"
+        aria-label={`Информация о метрике: ${info.title}`}
+      >
+        <HelpCircle className="w-3.5 h-3.5 text-[#00FF88]/60 hover:text-[#00FF88]" />
+      </button>
+      
+      {isOpen && (
+        <span className="absolute z-50 w-72 p-4 bg-black/95 border border-[#00FF88]/30 rounded-xl shadow-2xl shadow-[#00FF88]/20 backdrop-blur-xl left-0 top-full mt-2 block">
+          <span className="flex items-start gap-2 mb-2">
+            <Info className="w-4 h-4 text-[#00FF88] flex-shrink-0 mt-0.5" />
+            <span className="text-sm font-bold text-white">{info.title}</span>
+          </span>
+          <span className="text-xs text-gray-300 leading-relaxed block">
+            {info.description}
+          </span>
+        </span>
+      )}
+    </span>
+  );
+};
+
 // Types
+interface VideoMetrics {
+  plays: number;
+  thruplay: number;
+  completions: number;
+  completionRate: number;
+  thruplayRate: number;
+  avgWatchTime: number;
+  retention?: {
+    '25%': number;
+    '50%': number;
+    '75%': number;
+    '100%': number;
+  };
+}
+
+interface TopCreative {
+  name: string;
+  plays: number;
+  thruplay: number;
+  completions: number;
+  completionRate: string;
+  avgWatchTime: string;
+}
+
 interface CombinedTeamData {
   team: string;
   spend: number;
@@ -22,6 +117,9 @@ interface CombinedTeamData {
   impressions: number;
   clicks: number;
   ctr: number;
+  // 🎬 Video engagement
+  videoMetrics?: VideoMetrics | null;
+  topVideoCreatives?: TopCreative[];
 }
 
 interface CombinedAnalytics {
@@ -29,38 +127,100 @@ interface CombinedAnalytics {
   period: { since: string; until: string; preset: string };
   teams: CombinedTeamData[];
   totals: CombinedTeamData;
+  exchangeRate?: {
+    usdToKzt: number;
+    updatedAt: string;
+  };
   updatedAt: string;
 }
 
 // Format helpers
-const formatCurrency = (value: number, currency = '$') => {
-  if (value >= 1000000) return `${currency}${(value / 1000000).toFixed(2)}M`;
-  if (value >= 1000) return `${currency}${(value / 1000).toFixed(1)}K`;
-  return `${currency}${value.toFixed(2)}`;
+const formatDollars = (value: number) => {
+  if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
+  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
+  return `$${value.toFixed(2)}`;
+};
+
+const formatTenge = (value: number) => {
+  if (value >= 1000000) return `₸${(value / 1000000).toFixed(2)}M`;
+  if (value >= 1000) return `₸${(value / 1000).toFixed(1)}K`;
+  return `₸${value.toFixed(0)}`;
 };
 
 const formatNumber = (value: number) => {
   if (value >= 1000000) return `${(value / 1000000).toFixed(2)}M`;
   if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-  return value.toLocaleString();
+  return value.toLocaleString('ru-RU');
 };
 
-const formatPercent = (value: number) => `${value.toFixed(2)}%`;
+const formatPercent = (value: number) => `${value.toFixed(1)}%`;
 
-// ROAS color coding
+// 🎨 TRIPWIRE БРЕНД - ПРАВИЛЬНЫЕ пороги ROAS
 const getRoasColor = (roas: number) => {
-  if (roas >= 3) return { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' };
-  if (roas >= 2) return { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30' };
-  if (roas >= 1) return { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' };
-  return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' };
+  // ROAS >= 2 = Отлично (прибыль 100%+)
+  if (roas >= 2) return { bg: 'bg-[#00FF88]/10', text: 'text-[#00FF88]', border: 'border-[#00FF88]/30', glow: 'shadow-[#00FF88]/20' };
+  // ROAS >= 1 = Прибыльно (в плюсе)
+  if (roas >= 1) return { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20', glow: 'shadow-green-500/10' };
+  // ROAS >= 0.5 = Требует работы
+  if (roas >= 0.5) return { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/20', glow: 'shadow-yellow-500/10' };
+  // ROAS < 0.5 = Критически (убыточно)
+  return { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20', glow: 'shadow-red-500/10' };
 };
 
-// Team colors
-const TEAM_COLORS: Record<string, { primary: string; gradient: string }> = {
-  'Kenesary': { primary: '#3b82f6', gradient: 'from-blue-500/20 to-blue-600/5' },
-  'Arystan': { primary: '#8b5cf6', gradient: 'from-violet-500/20 to-violet-600/5' },
-  'Muha': { primary: '#f59e0b', gradient: 'from-amber-500/20 to-amber-600/5' },
-  'Traf4': { primary: '#ef4444', gradient: 'from-red-500/20 to-red-600/5' },
+// 🎯 Статус ROAS текстом
+const getRoasStatus = (roas: number) => {
+  if (roas >= 2) return '🟢 Отлично';
+  if (roas >= 1) return '🟢 Прибыльно';
+  if (roas >= 0.5) return '🟡 Требует работы';
+  return '🔴 Убыточно';
+};
+
+// 🏆 Рейтинговая система (игровой стиль)
+const RANK_SYSTEM = {
+  1: {
+    title: 'ЛЕГЕНДАРНО',
+    medal: '🏆',
+    color: '#FFD700', // Золото
+    gradient: 'from-yellow-500/30 to-yellow-600/10',
+    glow: 'shadow-[0_0_30px_rgba(255,215,0,0.5)]',
+    border: 'border-yellow-500/50',
+    bgPulse: '', // УБРАЛИ пульсацию
+  },
+  2: {
+    title: 'ЭПИЧНО',
+    medal: '🥈',
+    color: '#C0C0C0', // Серебро
+    gradient: 'from-gray-400/30 to-gray-500/10',
+    glow: 'shadow-[0_0_20px_rgba(192,192,192,0.4)]',
+    border: 'border-gray-400/50',
+    bgPulse: '',
+  },
+  3: {
+    title: 'ОТЛИЧНО',
+    medal: '🥉',
+    color: '#CD7F32', // Бронза
+    gradient: 'from-orange-600/30 to-orange-700/10',
+    glow: 'shadow-[0_0_15px_rgba(205,127,50,0.3)]',
+    border: 'border-orange-600/50',
+    bgPulse: '',
+  },
+  4: {
+    title: 'ТРЕБУЕТ ДОРАБОТОК',
+    medal: '⭐',
+    color: '#00FF88', // Зеленый
+    gradient: 'from-[#00FF88]/20 to-[#00FF88]/5',
+    glow: 'shadow-[0_0_10px_rgba(0,255,136,0.2)]',
+    border: 'border-[#00FF88]/30',
+    bgPulse: '',
+  },
+};
+
+// 🎨 TRIPWIRE КОМАНДЫ - Фирменная палитра
+const TEAM_COLORS: Record<string, { primary: string; gradient: string; emoji: string }> = {
+  'Kenesary': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '👑' },
+  'Arystan': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '⚡' },
+  'Muha': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '🚀' },
+  'Traf4': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '🎯' },
 };
 
 export default function TrafficCommandDashboard() {
@@ -70,6 +230,7 @@ export default function TrafficCommandDashboard() {
   const [showRecommendations, setShowRecommendations] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<Record<string, string>>({});
   const [loadingRecs, setLoadingRecs] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<'USD' | 'KZT'>('USD');
 
   // Fetch AI recommendations for a team
   const fetchRecommendations = async (team: string) => {
@@ -93,8 +254,14 @@ export default function TrafficCommandDashboard() {
             spend: teamData.spend,
             revenue: teamData.revenue,
             roas: teamData.roas,
-            ctr: teamData.ctr,
+            sales: teamData.sales,
             cpa: teamData.cpa,
+            ctr: teamData.ctr,
+            impressions: teamData.impressions,
+            clicks: teamData.clicks,
+            // 🎬 VIDEO METRICS
+            videoMetrics: (teamData as any).videoMetrics || null,
+            topVideoCreatives: (teamData as any).topVideoCreatives || [],
           });
           if (genResponse.data.recommendations) {
             setRecommendations(prev => ({ ...prev, [team]: genResponse.data.recommendations }));
@@ -120,6 +287,40 @@ export default function TrafficCommandDashboard() {
     retry: 2,
   });
 
+  // 🏆 Ранжирование команд по ROAS (ПОСЛЕ объявления analytics)
+  const rankedTeams = useMemo(() => {
+    if (!analytics?.teams) return [];
+    
+    const sorted = [...analytics.teams].sort((a, b) => {
+      // Сортируем по ROAS (главная метрика)
+      return b.roas - a.roas;
+    });
+    
+    return sorted.map((team, index) => ({
+      ...team,
+      rank: (index + 1) as 1 | 2 | 3 | 4,
+      rankInfo: RANK_SYSTEM[Math.min(index + 1, 4) as 1 | 2 | 3 | 4],
+    }));
+  }, [analytics?.teams]);
+
+  // 💱 Конвертация и форматирование валюты (ПОСЛЕ analytics)
+  const exchangeRate = analytics?.exchangeRate?.usdToKzt || 470;
+  
+  const formatMoney = (valueUSD: number, type: 'spend' | 'revenue' = 'spend') => {
+    if (currency === 'KZT') {
+      const valueKZT = type === 'revenue' ? valueUSD : valueUSD * exchangeRate;
+      if (valueKZT >= 1000000) return `₸${(valueKZT / 1000000).toFixed(2)}M`;
+      if (valueKZT >= 1000) return `₸${(valueKZT / 1000).toFixed(1)}K`;
+      return `₸${valueKZT.toFixed(0)}`;
+    } else {
+      // USD
+      const valueUSDDisplay = type === 'revenue' ? valueUSD / exchangeRate : valueUSD;
+      if (valueUSDDisplay >= 1000000) return `$${(valueUSDDisplay / 1000000).toFixed(2)}M`;
+      if (valueUSDDisplay >= 1000) return `$${(valueUSDDisplay / 1000).toFixed(1)}K`;
+      return `$${valueUSDDisplay.toFixed(2)}`;
+    }
+  };
+
   // Filtered teams
   const displayTeams = useMemo(() => {
     if (!analytics?.teams) return [];
@@ -139,80 +340,116 @@ export default function TrafficCommandDashboard() {
   }, [analytics?.teams]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white antialiased">
-      {/* Subtle background pattern */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent" />
+    <div className="min-h-screen bg-[#030303] text-white antialiased">
+      {/* 🎨 TRIPWIRE Фирменный фон */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#00FF88]/5 via-transparent to-transparent" />
         <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,255,136,0.02) 1px, transparent 0)`,
+          backgroundSize: '60px 60px'
         }} />
+        {/* Фирменные акценты */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#00FF88]/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#00FF88]/3 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10">
-        {/* Header */}
-        <header className="border-b border-white/5 bg-black/40 backdrop-blur-xl sticky top-0 z-50">
-          <div className="max-w-[1600px] mx-auto px-6 py-4">
+        {/* 🎯 TRIPWIRE Заголовок */}
+        <header className="border-b border-[#00FF88]/10 bg-black/80 backdrop-blur-xl sticky top-0 z-50 shadow-lg shadow-[#00FF88]/5">
+          <div className="max-w-[1600px] mx-auto px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-white" />
+                <div className="w-12 h-12 rounded-xl bg-[#00FF88]/10 flex items-center justify-center border border-[#00FF88]/20 shadow-lg shadow-[#00FF88]/20">
+                  <BarChart3 className="w-6 h-6 text-[#00FF88]" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold tracking-tight">Traffic Analytics</h1>
-                  <p className="text-sm text-gray-500">Facebook Ads + AmoCRM Performance</p>
+                  <h1 className="text-2xl font-bold tracking-tight text-white">
+                    Командная Панель Трафика
+                  </h1>
+                  <p className="text-sm text-[#00FF88]/60">Facebook Ads + AmoCRM в реальном времени</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Date Range Selector */}
-                <div className="flex bg-white/5 rounded-lg p-1 border border-white/10">
+                {/* 💱 Переключатель валют USD/KZT */}
+                <div className="flex items-center gap-1 bg-black/50 rounded-xl p-1 border border-[#00FF88]/20">
+                  <button
+                    onClick={() => setCurrency('USD')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      currency === 'USD'
+                        ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
+                        : 'text-[#00FF88]/60 hover:text-[#00FF88]'
+                    }`}
+                  >
+                    $ USD
+                  </button>
+                  <button
+                    onClick={() => setCurrency('KZT')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      currency === 'KZT'
+                        ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
+                        : 'text-[#00FF88]/60 hover:text-[#00FF88]'
+                    }`}
+                  >
+                    ₸ KZT
+                  </button>
+                </div>
+                
+                {/* Курс валюты */}
+                {analytics?.exchangeRate && (
+                  <div className="text-xs text-gray-400 flex flex-col items-end">
+                    <span className="text-[#00FF88]/80">1 USD = {analytics.exchangeRate.usdToKzt.toFixed(0)} ₸</span>
+                    <span className="text-gray-500">CB {new Date(analytics.exchangeRate.updatedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                )}
+
+                {/* Переключатель периодов */}
+                <div className="flex bg-[#00FF88]/5 rounded-xl p-1 border border-[#00FF88]/20">
                   {(['7d', '14d', '30d'] as const).map(range => (
                     <button
                       key={range}
                       onClick={() => setDateRange(range)}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                      className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                         dateRange === range
-                          ? 'bg-white/10 text-white'
-                          : 'text-gray-400 hover:text-white'
+                          ? 'bg-[#00FF88] text-black shadow-lg shadow-[#00FF88]/30'
+                          : 'text-[#00FF88]/60 hover:text-[#00FF88]'
                       }`}
                     >
-                      {range === '7d' ? '7 Days' : range === '14d' ? '14 Days' : '30 Days'}
+                      {range === '7d' ? '7 дней' : range === '14d' ? '14 дней' : '30 дней'}
                     </button>
                   ))}
                 </div>
 
-                {/* Team Filter */}
+                {/* Фильтр команд */}
                 <div className="relative">
                   <button
                     onClick={() => setShowTeamDropdown(!showTeamDropdown)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm hover:bg-white/10 transition-all"
+                    className="flex items-center gap-2 px-5 py-2 bg-[#00FF88]/5 border border-[#00FF88]/20 rounded-xl text-sm hover:bg-[#00FF88]/10 transition-all"
                   >
-                    <Filter className="w-4 h-4 text-gray-400" />
-                    <span>{selectedTeam || 'All Teams'}</span>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <Filter className="w-4 h-4 text-[#00FF88]" />
+                    <span className="text-white">{selectedTeam || 'Все команды'}</span>
+                    <ChevronDown className="w-4 h-4 text-[#00FF88]" />
                   </button>
                   
                   {showTeamDropdown && (
-                    <div className="absolute top-full mt-2 right-0 w-48 bg-[#1a1a24] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                    <div className="absolute top-full mt-2 right-0 w-52 bg-black/95 border border-[#00FF88]/20 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl">
                       <button
                         onClick={() => { setSelectedTeam(null); setShowTeamDropdown(false); }}
-                        className="w-full px-4 py-3 text-left text-sm hover:bg-white/5 transition-all flex items-center gap-2"
+                        className="w-full px-4 py-3 text-left text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
                       >
-                        <div className="w-2 h-2 rounded-full bg-gray-400" />
-                        All Teams
+                        <div className="w-2 h-2 rounded-full bg-[#00FF88]" />
+                        Все команды
                       </button>
                       {analytics?.teams.map(team => (
                         <button
                           key={team.team}
                           onClick={() => { setSelectedTeam(team.team); setShowTeamDropdown(false); }}
-                          className="w-full px-4 py-3 text-left text-sm hover:bg-white/5 transition-all flex items-center gap-2"
+                          className="w-full px-4 py-3 text-left text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
                         >
-                          <div 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: TEAM_COLORS[team.team]?.primary || '#6b7280' }}
-                          />
-                          {team.team}
+                          <div className="w-2 h-2 rounded-full bg-[#00FF88]" />
+                          <span className="flex items-center gap-1.5">
+                            {TEAM_COLORS[team.team]?.emoji} {team.team}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -236,97 +473,118 @@ export default function TrafficCommandDashboard() {
           {isLoading ? (
             <div className="flex items-center justify-center h-96">
               <div className="text-center">
-                <div className="w-12 h-12 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-gray-400">Loading analytics...</p>
+                <div className="w-16 h-16 border-3 border-[#00FF88] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-[#00FF88]/80 text-lg font-medium">Загрузка аналитики...</p>
               </div>
             </div>
           ) : (
             <>
-              {/* KPI Cards */}
+              {/* 📊 KPI Карточки */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-                {/* Total Revenue */}
-                <div className="col-span-1 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-2xl p-5">
+                {/* Доход */}
+                <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/10 to-[#00FF88]/5 border border-[#00FF88]/20 rounded-2xl p-5 hover:shadow-lg hover:shadow-[#00FF88]/10 transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                      <DollarSign className="w-4 h-4 text-emerald-400" />
+                    <div className="w-8 h-8 rounded-lg bg-[#00FF88]/20 flex items-center justify-center">
+                      <DollarSign className="w-4 h-4 text-[#00FF88]" />
                     </div>
-                    <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">Revenue</span>
+                    <span className="text-xs font-medium text-[#00FF88] uppercase tracking-wider flex items-center">
+                      Доход
+                      <MetricTooltip metricKey="revenue" />
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(analytics?.totals?.revenue || 0, '₸')}</p>
-                  <p className="text-xs text-emerald-500/70 mt-1">{analytics?.totals?.sales || 0} sales</p>
+                  <p className="text-2xl font-bold text-white">{formatMoney(analytics?.totals?.revenue || 0, 'revenue')}</p>
+                  <p className="text-xs text-[#00FF88]/60 mt-1">{analytics?.totals?.sales || 0} продаж</p>
                 </div>
 
-                {/* Total Spend */}
-                <div className="col-span-1 bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-2xl p-5">
+                {/* Затраты */}
+                <div className="col-span-1 bg-gradient-to-br from-gray-500/10 to-gray-600/5 border border-gray-500/20 rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-                      <TrendingDown className="w-4 h-4 text-red-400" />
+                    <div className="w-8 h-8 rounded-lg bg-gray-500/20 flex items-center justify-center">
+                      <TrendingDown className="w-4 h-4 text-gray-300" />
                     </div>
-                    <span className="text-xs font-medium text-red-400 uppercase tracking-wider">Ad Spend</span>
+                    <span className="text-xs font-medium text-gray-300 uppercase tracking-wider flex items-center">
+                      Затраты
+                      <MetricTooltip metricKey="spend" />
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(analytics?.totals?.spend || 0)}</p>
-                  <p className="text-xs text-red-500/70 mt-1">Facebook Ads</p>
+                  <p className="text-2xl font-bold text-white">{formatMoney(analytics?.totals?.spend || 0, 'spend')}</p>
+                  <p className="text-xs text-gray-400 mt-1">Facebook Ads</p>
                 </div>
 
                 {/* ROAS */}
-                <div className={`col-span-1 bg-gradient-to-br ${getRoasColor(analytics?.totals?.roas || 0).bg} border ${getRoasColor(analytics?.totals?.roas || 0).border} rounded-2xl p-5`}>
+                <div className={`col-span-1 bg-gradient-to-br ${getRoasColor(analytics?.totals?.roas || 0).bg} border ${getRoasColor(analytics?.totals?.roas || 0).border} rounded-2xl p-5 hover:shadow-lg hover:${getRoasColor(analytics?.totals?.roas || 0).glow} transition-all`}>
                   <div className="flex items-center gap-2 mb-3">
                     <div className={`w-8 h-8 rounded-lg ${getRoasColor(analytics?.totals?.roas || 0).bg} flex items-center justify-center`}>
                       <TrendingUp className={`w-4 h-4 ${getRoasColor(analytics?.totals?.roas || 0).text}`} />
                     </div>
-                    <span className={`text-xs font-medium ${getRoasColor(analytics?.totals?.roas || 0).text} uppercase tracking-wider`}>ROAS</span>
+                    <span className={`text-xs font-medium ${getRoasColor(analytics?.totals?.roas || 0).text} uppercase tracking-wider flex items-center`}>
+                      ROAS
+                      <MetricTooltip metricKey="roas" />
+                    </span>
                   </div>
                   <p className="text-2xl font-bold text-white">{(analytics?.totals?.roas || 0).toFixed(1)}x</p>
                   <p className={`text-xs ${getRoasColor(analytics?.totals?.roas || 0).text} opacity-70 mt-1`}>
-                    {(analytics?.totals?.roas || 0) >= 1 ? 'Profitable' : 'Needs optimization'}
+                    {getRoasStatus(analytics?.totals?.roas || 0)}
                   </p>
                 </div>
 
                 {/* CPA */}
-                <div className="col-span-1 bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-500/20 rounded-2xl p-5">
+                <div className="col-span-1 bg-gradient-to-br from-[#00FF88]/5 to-transparent border border-[#00FF88]/10 rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
-                      <Target className="w-4 h-4 text-violet-400" />
+                    <div className="w-8 h-8 rounded-lg bg-[#00FF88]/10 flex items-center justify-center">
+                      <Target className="w-4 h-4 text-[#00FF88]/80" />
                     </div>
-                    <span className="text-xs font-medium text-violet-400 uppercase tracking-wider">CPA</span>
+                    <span className="text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider flex items-center">
+                      CPA
+                      <MetricTooltip metricKey="cpa" />
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(analytics?.totals?.cpa || 0)}</p>
-                  <p className="text-xs text-violet-500/70 mt-1">Cost per acquisition</p>
+                  <p className="text-2xl font-bold text-white">{formatMoney(analytics?.totals?.cpa || 0, 'spend')}</p>
+                  <p className="text-xs text-[#00FF88]/50 mt-1">Цена за продажу</p>
                 </div>
 
-                {/* Clicks */}
+                {/* Клики */}
                 <div className="col-span-1 bg-white/[0.02] border border-white/10 rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-blue-400" />
+                      <Zap className="w-4 h-4 text-[#00FF88]/60" />
                     </div>
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Clicks</span>
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
+                      Клики
+                      <MetricTooltip metricKey="clicks" />
+                    </span>
                   </div>
                   <p className="text-2xl font-bold text-white">{formatNumber(analytics?.totals?.clicks || 0)}</p>
-                  <p className="text-xs text-gray-500 mt-1">CTR: {formatPercent(analytics?.totals?.ctr || 0)}</p>
+                  <p className="text-xs text-gray-500 mt-1 flex items-center">
+                    CTR: {formatPercent(analytics?.totals?.ctr || 0)}
+                    <MetricTooltip metricKey="ctr" />
+                  </p>
                 </div>
 
-                {/* Impressions */}
+                {/* Показы */}
                 <div className="col-span-1 bg-white/[0.02] border border-white/10 rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                      <Activity className="w-4 h-4 text-cyan-400" />
+                      <Activity className="w-4 h-4 text-[#00FF88]/60" />
                     </div>
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Impressions</span>
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
+                      Показы
+                      <MetricTooltip metricKey="impressions" />
+                    </span>
                   </div>
                   <p className="text-2xl font-bold text-white">{formatNumber(analytics?.totals?.impressions || 0)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Ad views</p>
+                  <p className="text-xs text-gray-500 mt-1">Охват рекламы</p>
                 </div>
               </div>
 
-              {/* Team Performance Table */}
-              <div className="bg-[#12121a] border border-white/5 rounded-2xl overflow-hidden mb-8">
-                <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              {/* Таблица команд */}
+              <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden mb-8 backdrop-blur-sm">
+                <div className="px-6 py-4 border-b border-[#00FF88]/10 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <PieChart className="w-5 h-5 text-blue-400" />
-                    <h2 className="text-lg font-semibold">Team Performance</h2>
+                    <PieChart className="w-5 h-5 text-[#00FF88]" />
+                    <h2 className="text-lg font-semibold text-white">Результаты Команд</h2>
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-400">
                     {analytics?.period?.since} → {analytics?.period?.until}
                   </span>
                 </div>
@@ -334,55 +592,93 @@ export default function TrafficCommandDashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-white/5 bg-white/[0.02]">
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Team</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Spend</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Revenue</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">ROAS</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Sales</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">CPA</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Clicks</th>
-                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">CTR</th>
-                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">AI</th>
+                      <tr className="border-b border-[#00FF88]/10 bg-[#00FF88]/[0.02]">
+                        <th className="px-6 py-4 text-left text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">Команда</th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            Затраты
+                            <MetricTooltip metricKey="spend" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            Доход
+                            <MetricTooltip metricKey="revenue" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            ROAS
+                            <MetricTooltip metricKey="roas" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            Продаж
+                            <MetricTooltip metricKey="sales" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            CPA
+                            <MetricTooltip metricKey="cpa" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            Клики
+                            <MetricTooltip metricKey="clicks" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            CTR
+                            <MetricTooltip metricKey="ctr" />
+                          </span>
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">AI</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {displayTeams.map((team, idx) => {
-                        const colors = TEAM_COLORS[team.team] || { primary: '#6b7280', gradient: 'from-gray-500/20 to-gray-600/5' };
+                    <tbody className="divide-y divide-[#00FF88]/5">
+                      {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map((team) => {
+                        const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
                         const roasColor = getRoasColor(team.roas);
+                        const rankInfo = team.rankInfo;
                         
                         return (
-                          <tr key={team.team} className="hover:bg-white/[0.02] transition-colors">
+                          <tr key={team.team} className={`hover:bg-[#00FF88]/[0.02] transition-all ${rankInfo.glow} ${rankInfo.bgPulse}`}>
                             <td className="px-6 py-5">
                               <div className="flex items-center gap-3">
-                                <div 
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: colors.primary }}
-                                />
-                                <span className="font-medium">{team.team}</span>
-                                {topByRoas?.team === team.team && (
-                                  <span className="px-2 py-0.5 text-[10px] font-medium bg-emerald-500/20 text-emerald-400 rounded-full">
-                                    TOP ROAS
+                                {/* 🏆 Медаль + Ранг */}
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <span className="text-2xl">{rankInfo.medal}</span>
+                                  <span className="text-[10px] font-bold" style={{ color: rankInfo.color }}>
+                                    #{team.rank}
                                   </span>
-                                )}
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{colors.emoji}</span>
+                                  <span className="font-medium text-white">{team.team}</span>
+                                </div>
                               </div>
                             </td>
-                            <td className="px-6 py-5 text-right font-mono text-sm text-red-400">
-                              {formatCurrency(team.spend)}
+                            <td className="px-6 py-5 text-right font-mono text-sm text-gray-300">
+                              {formatMoney(team.spend, 'spend')}
                             </td>
-                            <td className="px-6 py-5 text-right font-mono text-sm text-emerald-400">
-                              {formatCurrency(team.revenue, '₸')}
+                            <td className="px-6 py-5 text-right font-mono text-sm text-[#00FF88]">
+                              {formatMoney(team.revenue, 'revenue')}
                             </td>
                             <td className="px-6 py-5 text-right">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-medium ${roasColor.bg} ${roasColor.text}`}>
+                              <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-bold ${roasColor.bg} ${roasColor.text} border ${roasColor.border}`}>
                                 {team.roas.toFixed(1)}x
                               </span>
                             </td>
-                            <td className="px-6 py-5 text-right font-mono text-sm">
+                            <td className="px-6 py-5 text-right font-mono text-sm text-white font-bold">
                               {team.sales}
                             </td>
                             <td className="px-6 py-5 text-right font-mono text-sm text-gray-400">
-                              {team.cpa > 0 ? formatCurrency(team.cpa) : '—'}
+                              {team.cpa > 0 ? formatMoney(team.cpa, 'spend') : '—'}
                             </td>
                             <td className="px-6 py-5 text-right font-mono text-sm text-gray-400">
                               {formatNumber(team.clicks)}
@@ -394,13 +690,13 @@ export default function TrafficCommandDashboard() {
                               <button
                                 onClick={() => fetchRecommendations(team.team)}
                                 disabled={loadingRecs === team.team}
-                                className="p-2 hover:bg-violet-500/20 rounded-lg transition-all group"
+                                className="p-2 hover:bg-[#00FF88]/20 rounded-lg transition-all group"
                                 title="Получить AI-рекомендации"
                               >
                                 {loadingRecs === team.team ? (
-                                  <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                                  <Loader2 className="w-4 h-4 animate-spin text-[#00FF88]" />
                                 ) : (
-                                  <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-violet-400 transition-colors" />
+                                  <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-[#00FF88] transition-colors" />
                                 )}
                               </button>
                             </td>
@@ -412,78 +708,93 @@ export default function TrafficCommandDashboard() {
                 </div>
               </div>
 
-              {/* Team Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {displayTeams.map(team => {
-                  const colors = TEAM_COLORS[team.team] || { primary: '#6b7280', gradient: 'from-gray-500/20 to-gray-600/5' };
+              {/* 🎯 Карточки команд - МОБИЛЬНАЯ АДАПТАЦИЯ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+                {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map(team => {
+                  const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
                   const roasColor = getRoasColor(team.roas);
+                  const rankInfo = team.rankInfo;
                   
                   return (
                     <div 
                       key={team.team}
-                      className={`bg-gradient-to-br ${colors.gradient} border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all cursor-pointer`}
+                      className={`relative bg-gradient-to-br ${rankInfo.gradient} border-2 ${rankInfo.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-opacity-80 ${rankInfo.glow} ${rankInfo.bgPulse} transition-all cursor-pointer`}
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
+                      {/* 🏆 Медаль слева вверху - МОБИЛЬНАЯ */}
+                      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex items-center gap-1 sm:gap-1.5">
+                        <span className="text-xl sm:text-2xl drop-shadow-lg">{rankInfo.medal}</span>
+                        <span 
+                          className="text-[10px] sm:text-xs font-bold"
+                          style={{ color: rankInfo.color }}
+                        >
+                          #{team.rank}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <div 
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold"
-                            style={{ backgroundColor: `${colors.primary}20`, color: colors.primary }}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-black/30 border"
+                            style={{ borderColor: rankInfo.color + '40' }}
                           >
-                            {team.team.charAt(0)}
+                            {colors.emoji}
                           </div>
                           <div>
-                            <h3 className="font-semibold">{team.team}</h3>
-                            <p className="text-xs text-gray-500">{team.sales} sales</p>
+                            <h3 className="text-sm sm:text-base font-bold text-white">{team.team}</h3>
+                            <p className="text-[10px] sm:text-xs flex items-center gap-1">
+                              <span style={{ color: rankInfo.color }}>#{team.rank}</span>
+                              <span className="text-gray-400">• {team.sales} продаж</span>
+                            </p>
                           </div>
                         </div>
-                        <div className={`px-3 py-1.5 rounded-lg text-sm font-bold ${roasColor.bg} ${roasColor.text}`}>
+                        <div className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-bold ${roasColor.bg} ${roasColor.text} border ${roasColor.border}`}>
                           {team.roas.toFixed(1)}x
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Spend</span>
-                          <span className="font-mono text-red-400">{formatCurrency(team.spend)}</span>
+                      <div className="space-y-2 sm:space-y-3">
+                        <div className="flex justify-between text-xs sm:text-sm">
+                          <span className="text-gray-400">Затраты</span>
+                          <span className="font-mono text-gray-300">{formatMoney(team.spend, 'spend')}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Revenue</span>
-                          <span className="font-mono text-emerald-400">{formatCurrency(team.revenue, '₸')}</span>
+                        <div className="flex justify-between text-xs sm:text-sm">
+                          <span className="text-gray-400">Доход</span>
+                          <span className="font-mono text-[#00FF88] font-bold">{formatMoney(team.revenue, 'revenue')}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-gray-400">CPA</span>
-                          <span className="font-mono">{team.cpa > 0 ? formatCurrency(team.cpa) : '—'}</span>
+                          <span className="font-mono text-white">{team.cpa > 0 ? formatMoney(team.cpa, 'spend') : '—'}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-gray-400">CTR</span>
-                          <span className="font-mono">{formatPercent(team.ctr)}</span>
+                          <span className="font-mono text-white">{formatPercent(team.ctr)}</span>
                         </div>
                       </div>
 
-                      {/* Mini progress bar for ROAS */}
-                      <div className="mt-4 pt-4 border-t border-white/5">
+                      {/* Progress bar для ROAS */}
+                      <div className="mt-4 pt-4 border-t border-[#00FF88]/10">
                         <div className="flex items-center justify-between text-xs mb-2">
-                          <span className="text-gray-500">ROAS Target: 2.0x</span>
-                          <span className={roasColor.text}>{team.roas >= 2 ? '✓ Met' : 'Needs work'}</span>
+                          <span className="text-gray-400">Цель ROAS: 2.0x</span>
+                          <span className={roasColor.text}>{team.roas >= 2 ? '✓ Достигнуто' : 'В работе'}</span>
                         </div>
-                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
                           <div 
-                            className={`h-full rounded-full transition-all ${team.roas >= 2 ? 'bg-emerald-500' : team.roas >= 1 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            className={`h-full rounded-full transition-all ${team.roas >= 2 ? 'bg-[#00FF88]' : team.roas >= 1 ? 'bg-[#00FF88]/60' : 'bg-gray-500'}`}
                             style={{ width: `${Math.min(team.roas / 3 * 100, 100)}%` }}
                           />
                         </div>
                       </div>
 
-                      {/* AI Recommendations Button */}
+                      {/* Кнопка AI-рекомендаций */}
                       <button
                         onClick={(e) => { e.stopPropagation(); fetchRecommendations(team.team); }}
                         disabled={loadingRecs === team.team}
-                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-500/20 to-blue-500/20 hover:from-violet-500/30 hover:to-blue-500/30 border border-violet-500/30 rounded-xl text-sm font-medium text-violet-300 transition-all disabled:opacity-50"
+                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-xl text-sm font-medium text-[#00FF88] transition-all disabled:opacity-50 hover:shadow-lg hover:shadow-[#00FF88]/20"
                       >
                         {loadingRecs === team.team ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Анализ...</>
                         ) : (
-                          <><Sparkles className="w-4 h-4" /> AI Recommendations</>
+                          <><Sparkles className="w-4 h-4" /> AI Рекомендации</>
                         )}
                       </button>
                     </div>
@@ -491,13 +802,103 @@ export default function TrafficCommandDashboard() {
                 })}
               </div>
 
+              {/* 🎬 ТОП ВИДЕО ПО ВОВЛЕЧЕННОСТИ */}
+              {rankedTeams.some(t => t.topVideoCreatives && t.topVideoCreatives.length > 0) && (
+                <div className="mb-8">
+                  <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+                    <div className="px-6 py-4 border-b border-[#00FF88]/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/20 flex items-center justify-center">
+                          <span className="text-xl">🎬</span>
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-semibold text-white">ТОП ВИДЕО ПО ВОВЛЕЧЕННОСТИ</h2>
+                          <p className="text-xs text-gray-400">Лучшие креативы по просмотрам и досмотрам</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 space-y-6">
+                      {rankedTeams.map(team => {
+                        if (!team.topVideoCreatives || team.topVideoCreatives.length === 0) return null;
+                        const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
+                        const rankInfo = team.rankInfo;
+                        
+                        return (
+                          <div key={`videos-${team.team}`} className="space-y-3">
+                            {/* Заголовок команды */}
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{rankInfo.medal}</span>
+                              <span className="text-lg">{colors.emoji}</span>
+                              <h3 className="font-bold text-white">{team.team}</h3>
+                              <span className="text-xs text-gray-500">({team.topVideoCreatives.length} видео)</span>
+                            </div>
+                            
+                            {/* Список видео */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                              {team.topVideoCreatives.map((video, idx) => (
+                                <div 
+                                  key={`${team.team}-${idx}`}
+                                  className="bg-gradient-to-br from-[#00FF88]/5 to-black/20 border border-[#00FF88]/20 rounded-xl p-4 hover:border-[#00FF88]/40 transition-all"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-bold text-[#00FF88]">#{idx + 1}</span>
+                                        <span className="text-xs text-gray-400 truncate">{video.name}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Метрики */}
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-gray-400">👁️ Просмотры</span>
+                                      <span className="text-white font-mono">{video.plays?.toLocaleString() || 0}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-gray-400">✅ Dosмотры</span>
+                                      <span className="text-[#00FF88] font-mono font-bold">{video.completions?.toLocaleString() || 0} ({video.completionRate})</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-gray-400">⏱️ Ср. время</span>
+                                      <span className="text-white font-mono">{video.avgWatchTime}</span>
+                                    </div>
+                                    {video.ctr && (
+                                      <div className="flex justify-between text-xs">
+                                        <span className="text-gray-400">🖱️ CTR</span>
+                                        <span className="text-white font-mono">{video.ctr}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Прогресс бар досмотров */}
+                                  <div className="mt-3 pt-3 border-t border-[#00FF88]/10">
+                                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full bg-gradient-to-r from-[#00FF88] to-green-400 rounded-full"
+                                        style={{ width: video.completionRate }}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Footer */}
-              <div className="text-center py-8 border-t border-white/5">
-                <p className="text-xs text-gray-500">
-                  Data updates every 60 seconds • Last updated: {analytics?.updatedAt ? new Date(analytics.updatedAt).toLocaleString('ru-RU') : '—'}
+              <div className="text-center py-8 border-t border-[#00FF88]/10">
+                <p className="text-xs text-gray-400">
+                  Обновление каждые 60 секунд • Последнее обновление: {analytics?.updatedAt ? new Date(analytics.updatedAt).toLocaleString('ru-RU') : '—'}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">
-                  Powered by Facebook Ads API + AmoCRM + Groq AI
+                  Facebook Ads API + AmoCRM + Groq AI
                 </p>
               </div>
             </>
@@ -515,23 +916,23 @@ export default function TrafficCommandDashboard() {
           />
           
           {/* Modal */}
-          <div className="relative w-full max-w-2xl bg-[#12121a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="relative w-full max-w-2xl bg-black/95 border border-[#00FF88]/20 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-gradient-to-r from-violet-500/10 to-blue-500/10">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#00FF88]/10 bg-[#00FF88]/5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-white" />
+                <div className="w-12 h-12 rounded-xl bg-[#00FF88]/20 flex items-center justify-center border border-[#00FF88]/30">
+                  <Bot className="w-6 h-6 text-[#00FF88]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Рекомендации для {showRecommendations}</h3>
-                  <p className="text-xs text-gray-400">AI-анализ на основе текущих метрик</p>
+                  <h3 className="text-lg font-bold text-white">AI Рекомендации • {showRecommendations}</h3>
+                  <p className="text-xs text-[#00FF88]/60">Анализ на основе текущих метрик</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowRecommendations(null)}
-                className="p-2 hover:bg-white/5 rounded-lg transition-all"
+                className="p-2 hover:bg-[#00FF88]/10 rounded-lg transition-all"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-gray-400 hover:text-white" />
               </button>
             </div>
 
@@ -550,10 +951,10 @@ export default function TrafficCommandDashboard() {
                     if (isNumbered || isBullet) {
                       return (
                         <div key={idx} className="flex gap-3 items-start">
-                          <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <Lightbulb className="w-3.5 h-3.5 text-violet-400" />
+                          <div className="w-6 h-6 rounded-full bg-[#00FF88]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Lightbulb className="w-3.5 h-3.5 text-[#00FF88]" />
                           </div>
-                          <p className="text-gray-300 leading-relaxed">
+                          <p className="text-gray-200 leading-relaxed">
                             {line.replace(/^[\d\.\ \-•\*]+/, '').trim()}
                           </p>
                         </div>
@@ -579,10 +980,10 @@ export default function TrafficCommandDashboard() {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Sparkles className="w-4 h-4" />
-                <span>Powered by Groq AI (Llama 3.3 70B)</span>
+            <div className="px-6 py-4 border-t border-[#00FF88]/10 bg-[#00FF88]/[0.02] flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <Sparkles className="w-4 h-4 text-[#00FF88]/60" />
+                <span>Groq AI • Llama 3.3 70B</span>
               </div>
               <button
                 onClick={() => {
@@ -590,10 +991,10 @@ export default function TrafficCommandDashboard() {
                   setRecommendations({ ...recommendations });
                   fetchRecommendations(showRecommendations);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/30 rounded-lg text-sm transition-all text-[#00FF88]"
               >
                 <RefreshCw className="w-4 h-4" />
-                Обновить
+                Обновить рекомендации
               </button>
             </div>
           </div>
