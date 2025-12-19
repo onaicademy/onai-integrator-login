@@ -1,0 +1,100 @@
+{
+  "name": "onAI Cyber Architecture",
+  "type": "dark",
+  "include": "./themes/onai-base.json", // если хочешь базовый шаблон
+  "colors": {
+    "editor.background": "#030303",
+    "editor.foreground": "#FFFFFF",
+    "activityBar.background": "#0A0A0A",
+    "activityBar.foreground": "#00FF94",
+    "activityBar.activeBorder": "#00FF94",
+    "sideBar.background": "#0A0A0A",
+    "sideBar.foreground": "#9CA3AF",
+    "statusBar.background": "#030303",
+    "statusBar.foreground": "#9CA3AF",
+    "editorGroup.border": "#00FF94",
+    "editor.selectionBackground": "#00FF9444",
+    "editor.lineHighlightBackground": "#00FF9411",
+    "editorCursor.foreground": "#00FF94",
+    "editorIndentGuide.background": "#00FF9422",
+    "editorIndentGuide.activeBackground": "#00FF94",
+    "editorSuggestWidget.background": "rgba(10, 10, 10, 0.6)",
+    "editorSuggestWidget.border": "rgba(255, 255, 255, 0.08)",
+    "editorSuggestWidget.foreground": "#FFFFFF",
+    "editorSuggestWidget.selectedBackground": "#00FF9444",
+    "editorWidget.background": "rgba(15, 15, 15, 0.6)",
+    "editorWidget.border": "rgba(255, 255, 255, 0.08)",
+    "editorWidget.foreground": "#FFFFFF",
+    "input.background": "#0A0A0A",
+    "input.border": "rgba(255, 255, 255, 0.08)",
+    "input.foreground": "#FFFFFF",
+    "button.background": "#00FF94",
+    "button.foreground": "#000000",
+    "button.hoverBackground": "#00FF94CC",
+    "terminal.background": "#030303",
+    "terminal.foreground": "#FFFFFF",
+    "terminalCursor.background": "#00FF94",
+    "terminalCursor.foreground": "#00FF94",
+    "notificationToast.border": "#00FF94",
+    "panel.background": "#0A0A0A",
+    "panel.border": "rgba(255, 255, 255, 0.08)",
+    "tab.activeBackground": "#0A0A0A",
+    "tab.activeForeground": "#FFFFFF",
+    "tab.inactiveBackground": "#030303",
+    "tab.inactiveForeground": "#9CA3AF",
+    "tab.border": "rgba(255, 255, 255, 0.08)",
+    "titleBar.activeBackground": "#030303",
+    "titleBar.activeForeground": "#FFFFFF",
+    "titleBar.border": "rgba(255, 255, 255, 0.08)",
+    "badge.background": "#FF3366",
+    "badge.foreground": "#FFFFFF",
+    "breadcrumb.background": "#030303",
+    "breadcrumb.foreground": "#9CA3AF",
+    "breadcrumb.focusForeground": "#FFFFFF",
+    "scrollbarSlider.background": "#00FF9433",
+    "scrollbarSlider.hoverBackground": "#00FF9466",
+    "scrollbarSlider.activeBackground": "#00FF94CC"
+  },
+  "tokenColors": [
+    {
+      "scope": "comment",
+      "settings": { "foreground": "#7CA668" }
+    },
+    {
+      "scope": "string",
+      "settings": { "foreground": "#CE9178" }
+    },
+    {
+      "scope": "keyword",
+      "settings": { "foreground": "#00FF94" }
+    },
+    {
+      "scope": "variable",
+      "settings": { "foreground": "#9CDCFE" }
+    },
+    {
+      "scope": "support.function",
+      "settings": { "foreground": "#DCDCAA" }
+    },
+    {
+      "scope": "entity.name.type",
+      "settings": { "foreground": "#4EC9B0" }
+    },
+    {
+      "scope": "entity.name.function",
+      "settings": { "foreground": "#DCDCAA" }
+    },
+    {
+      "scope": "constant.numeric",
+      "settings": { "foreground": "#B5CEA8" }
+    },
+    {
+      "scope": "constant.language",
+      "settings": { "foreground": "#569CD6" }
+    },
+    {
+      "scope": "support.class",
+      "settings": { "foreground": "#4EC9B0" }
+    }
+  ]
+}

@@ -19,8 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
 interface Session {
   id: string;

@@ -23,8 +23,7 @@ import {
   Mail, Send, Calendar, Clock, Target, Activity
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
 // Helper for domain-aware paths
 const getPath = (path: string) => {

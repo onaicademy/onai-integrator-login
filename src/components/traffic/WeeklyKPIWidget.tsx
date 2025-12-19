@@ -8,8 +8,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Target, TrendingUp, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
 interface WeeklyKPIWidgetProps {
   team: string;

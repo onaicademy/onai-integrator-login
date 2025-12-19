@@ -13,8 +13,7 @@ import { Plus, Users, Edit2, Trash2, Building2, Target, Save, X, Loader2, Mail, 
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
 interface Team {
   id: string;

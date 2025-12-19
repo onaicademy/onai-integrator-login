@@ -14,8 +14,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
 import { useLanguage } from '@/hooks/useLanguage';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
 export default function TrafficLogin() {
   const [email, setEmail] = useState('');
