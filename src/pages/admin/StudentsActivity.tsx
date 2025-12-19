@@ -80,6 +80,9 @@ type StudentRow = {
     course_name: string;
     course_slug: string;
     progress_percentage: number;
+    completed_modules?: number; // ✅ Для фильтрации по прогрессу
+    total_modules?: number; // ✅ Для фильтрации по прогрессу
+    enrolled_at?: string;
   }>;
 };
 
@@ -435,24 +438,79 @@ export default function StudentsActivity() {
     ).length;
     const inactive = total - active;
 
-    return { total, active, inactive };
+    // ✅ НОВАЯ СТАТИСТИКА: по прогрессу обучения
+    const getProgress = (student: StudentRow) => {
+      if (!student.courses || student.courses.length === 0) return { completed: 0, total: 3 };
+      return {
+        completed: student.courses[0].completed_modules || 0,
+        total: student.courses[0].total_modules || 3,
+      };
+    };
+
+    const completed = activeStudents.filter((student) => {
+      const { completed, total } = getProgress(student);
+      return completed >= total;
+    }).length;
+
+    const inProgress = activeStudents.filter((student) => {
+      const { completed, total } = getProgress(student);
+      return completed > 0 && completed < total;
+    }).length;
+
+    const notStarted = activeStudents.filter((student) => {
+      const { completed } = getProgress(student);
+      return completed === 0;
+    }).length;
+
+    return { total, active, inactive, completed, inProgress, notStarted };
   }, [allStudents]);
 
   const filteredStudents = useMemo(() => {
-    const threshold = new Date();
-    threshold.setDate(threshold.getDate() - 7);
-
     const activeOnly = allStudents.filter((student) => student.is_active !== false);
 
-    if (filter === "active") {
-      return activeOnly.filter((student) => isRecentlyActive(student, threshold));
+    const getProgress = (student: StudentRow) => {
+      if (!student.courses || student.courses.length === 0) return { completed: 0, total: 3 };
+      return {
+        completed: student.courses[0].completed_modules || 0,
+        total: student.courses[0].total_modules || 3,
+      };
+    };
+
+    // ✅ ФИЛЬТРАЦИЯ ПО ПРОГРЕССУ ОБУЧЕНИЯ
+    let filtered = activeOnly;
+
+    if (filter === "completed") {
+      // Кто закончил обучение (completed_modules >= total_modules)
+      filtered = activeOnly.filter((student) => {
+        const { completed, total } = getProgress(student);
+        return completed >= total;
+      });
+    } else if (filter === "in-progress") {
+      // Кто проходит обучение (0 < completed_modules < total_modules)
+      filtered = activeOnly.filter((student) => {
+        const { completed, total } = getProgress(student);
+        return completed > 0 && completed < total;
+      });
+    } else if (filter === "not-started") {
+      // Кто не начинал обучение (completed_modules === 0)
+      filtered = activeOnly.filter((student) => {
+        const { completed } = getProgress(student);
+        return completed === 0;
+      });
     }
 
-    if (filter === "inactive") {
-      return activeOnly.filter((student) => !isRecentlyActive(student, threshold));
-    }
+    // ✅ СОРТИРОВКА: СВЕРХУ КТО ЗАКОНЧИЛ, ВНИЗУ КТО НЕ ЗАКОНЧИЛ
+    return filtered.sort((a, b) => {
+      const progressA = getProgress(a);
+      const progressB = getProgress(b);
 
-    return activeOnly;
+      // Процент завершения
+      const percentA = progressA.total > 0 ? (progressA.completed / progressA.total) * 100 : 0;
+      const percentB = progressB.total > 0 ? (progressB.completed / progressB.total) * 100 : 0;
+
+      // Сортируем по убыванию процента (100% сверху, 0% внизу)
+      return percentB - percentA;
+    });
   }, [allStudents, filter]);
 
   return (
@@ -568,21 +626,32 @@ export default function StudentsActivity() {
                 onClick={() => setFilter("all")}
                 className={filter === "all" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
               >
-                Все
+                <Users className="w-4 h-4 mr-2" />
+                Все <Badge className="ml-2 bg-zinc-700 text-white">{stats.total}</Badge>
               </Button>
               <Button
-                variant={filter === "active" ? "default" : "outline"}
-                onClick={() => setFilter("active")}
-                className={filter === "active" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
+                variant={filter === "completed" ? "default" : "outline"}
+                onClick={() => setFilter("completed")}
+                className={filter === "completed" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
               >
-                Активные
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Кто закончил <Badge className="ml-2 bg-green-600 text-white">{stats.completed}</Badge>
               </Button>
               <Button
-                variant={filter === "inactive" ? "default" : "outline"}
-                onClick={() => setFilter("inactive")}
-                className={filter === "inactive" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
+                variant={filter === "in-progress" ? "default" : "outline"}
+                onClick={() => setFilter("in-progress")}
+                className={filter === "in-progress" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
               >
-                Неактивные
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Кто не закончил <Badge className="ml-2 bg-orange-600 text-white">{stats.inProgress}</Badge>
+              </Button>
+              <Button
+                variant={filter === "not-started" ? "default" : "outline"}
+                onClick={() => setFilter("not-started")}
+                className={filter === "not-started" ? "bg-[#00FF88] text-black hover:bg-[#00cc88]" : "border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#00FF88]/30"}
+              >
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Не проходил обучение <Badge className="ml-2 bg-red-600 text-white">{stats.notStarted}</Badge>
               </Button>
             </div>
           </CardContent>

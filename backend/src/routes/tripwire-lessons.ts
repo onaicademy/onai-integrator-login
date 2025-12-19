@@ -435,7 +435,7 @@ router.post('/complete', async (req, res) => {
     const { data: progress, error: progressError } = await tripwireAdminSupabase
       .from('tripwire_progress')
       .upsert({
-        tripwire_user_id: tripwire_user_id,  // ✅ FIX: Use tripwire_users.id, NOT auth.users.id!
+        tripwire_user_id: main_user_id,  // ✅ CORRECT: Use auth.users.id (foreign key constraint!)
         module_id,
         lesson_id,
         is_completed: true,
@@ -463,7 +463,7 @@ router.post('/complete', async (req, res) => {
     const { data: completedLessons, error: completedError } = await tripwireAdminSupabase
       .from('tripwire_progress')
       .select('lesson_id')
-      .eq('tripwire_user_id', tripwire_user_id)  // ✅ FIX: Use tripwire_users.id, NOT auth.users.id!
+      .eq('tripwire_user_id', main_user_id)  // ✅ CORRECT: Use auth.users.id (foreign key constraint!)
       .eq('module_id', module_id)
       .eq('is_completed', true);
 
@@ -550,7 +550,7 @@ router.post('/complete', async (req, res) => {
         const { data: allCompletedModules, error: modulesError } = await tripwireAdminSupabase
           .from('tripwire_progress')
           .select('module_id')
-          .eq('tripwire_user_id', tripwire_user_id)  // ✅ Use tripwire_users.id
+          .eq('tripwire_user_id', main_user_id)  // ✅ CORRECT: Use auth.users.id (foreign key constraint!)
           .eq('is_completed', true);
         
         if (!modulesError && allCompletedModules) {
