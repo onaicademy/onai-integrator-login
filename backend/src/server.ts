@@ -242,7 +242,7 @@ app.use(cors({
         return callback(null, true);
       }
       console.warn(`⚠️ CORS blocked in staging: ${origin}`);
-      return callback(new Error('CORS not allowed'), false);
+      return callback(null, false); // ✅ Don't throw Error
     }
     
     // ✅ DEVELOPMENT: Любой localhost на любом порту (максимально гибко)
