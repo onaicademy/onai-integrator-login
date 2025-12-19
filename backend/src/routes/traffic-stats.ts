@@ -794,8 +794,16 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       };
     });
     
+    // 🔍 ДИАГНОСТИКА: Логируем распределение по командам
+    console.log(`\n🔍 === ДИАГНОСТИКА AMOCRM LEADS ===`);
+    console.log(`📊 Всего платных лидов: ${paidLeads.length}`);
+    console.log(`📅 Период: ${since} → ${until}`);
+    
     // Group by team
     const amocrmStats: Record<string, { sales: number; revenue: number }> = {};
+    let unknownLeadsCount = 0;
+    let outsideDateRangeCount = 0;
+    const unknownLeadsExamples: any[] = []; // 🔍 Примеры Unknown лидов
     
     for (const lead of processedLeads) {
       const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
@@ -803,19 +811,59 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       // Для custom date - проверяем что сделка закрыта именно в этот день
       if (customDate) {
         const leadDate = new Date(closedTime).toISOString().split('T')[0];
-        if (leadDate !== customDate) continue;
+        if (leadDate !== customDate) {
+          outsideDateRangeCount++;
+          continue;
+        }
       } else {
         // Для preset - проверяем что сделка в диапазоне
-      if (closedTime < cutoff) continue;
+        if (closedTime < cutoff) {
+          outsideDateRangeCount++;
+          continue;
+        }
       }
       
       const team = lead.traffic_team;
+      
+      // 🔍 Считаем Unknown лиды и сохраняем примеры
+      if (team === 'Unknown' || team === 'Другие' || !team) {
+        unknownLeadsCount++;
+        if (unknownLeadsExamples.length < 5) { // Сохраняем первые 5 примеров
+          unknownLeadsExamples.push({
+            utm_source: lead.utm_source || 'NULL',
+            utm_medium: lead.utm_medium || 'NULL',
+            utm_campaign: lead.utm_campaign || 'NULL',
+            closed_date: new Date(closedTime).toISOString().split('T')[0],
+          });
+        }
+      }
+      
       if (!amocrmStats[team]) {
         amocrmStats[team] = { sales: 0, revenue: 0 };
       }
       amocrmStats[team].sales++;
       amocrmStats[team].revenue += 5000; // 5000₸ per sale
     }
+    
+    // 🔍 Выводим статистику по командам
+    console.log(`\n📊 Распределение продаж по командам:`);
+    Object.entries(amocrmStats)
+      .sort(([, a], [, b]) => b.sales - a.sales)
+      .forEach(([team, stats]) => {
+        console.log(`   ${team}: ${stats.sales} продаж, ${stats.revenue.toLocaleString()}₸`);
+      });
+    console.log(`\n⚠️ Unknown/Другие лиды: ${unknownLeadsCount}`);
+    
+    if (unknownLeadsExamples.length > 0) {
+      console.log(`\n🔍 Примеры Unknown лидов (UTM метки):`);
+      unknownLeadsExamples.forEach((example, i) => {
+        console.log(`   ${i + 1}. source: "${example.utm_source}" | medium: "${example.utm_medium}" | campaign: "${example.utm_campaign}" | date: ${example.closed_date}`);
+      });
+    }
+    
+    console.log(`\n⏰ За пределами диапазона: ${outsideDateRangeCount}`);
+    console.log(`✅ В диапазоне: ${processedLeads.length - outsideDateRangeCount}`);
+    console.log(`🔍 === КОНЕЦ ДИАГНОСТИКИ ===\n`);
     
     // 3. Combine data
     // 💱 Получаем курс для корректного ROAS
