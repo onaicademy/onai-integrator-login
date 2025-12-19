@@ -200,6 +200,17 @@ export function initTelegramBot() {
     const text = msg.text?.trim();
     const userId = msg.from?.id;
     
+    // 🎯 PERPLEXITY BEST PRACTICE: Расширенное логирование
+    console.log(`📨 [Traffic Bot] Message received:`, {
+      chat_id: chatId,
+      chat_type: msg.chat.type,
+      is_forum: msg.chat.is_forum,
+      is_topic_message: msg.is_topic_message,
+      message_thread_id: msg.message_thread_id,
+      user_id: userId,
+      text_preview: text?.substring(0, 50)
+    });
+    
     if (!text || !userId) return;
     
     // 🎯 Игнорируем команды (они обрабатываются отдельно)

@@ -99,7 +99,8 @@ export default function StudentsActivity() {
   const [allStudents, setAllStudents] = useState<StudentRow[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<StudentRow | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  // ✅ НОВЫЕ ФИЛЬТРЫ: по прогрессу обучения
+  const [filter, setFilter] = useState<"all" | "completed" | "in-progress" | "not-started">("all");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
   const { toast } = useToast();
