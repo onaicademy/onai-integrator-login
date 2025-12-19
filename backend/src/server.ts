@@ -263,7 +263,7 @@ app.use(cors({
     }
     
     console.warn(`⚠️ CORS blocked: ${origin}`);
-    callback(new Error('CORS not allowed'), false);
+    callback(null, false); // ✅ Don't throw Error - just reject
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
