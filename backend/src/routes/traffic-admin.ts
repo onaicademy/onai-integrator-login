@@ -198,6 +198,16 @@ router.get('/dashboard-stats', authenticateToken, adminOnly, async (req, res) =>
       .from('traffic_weekly_plans')
       .select('status, completion_percentage');
     
+    // Get teams count
+    const { data: teams } = await tripwireAdminSupabase
+      .from('traffic_teams')
+      .select('id, name');
+    
+    // Get settings count
+    const { data: settings } = await tripwireAdminSupabase
+      .from('traffic_admin_settings')
+      .select('id');
+    
     const stats = {
       users: {
         total: users?.length || 0,
@@ -213,6 +223,12 @@ router.get('/dashboard-stats', authenticateToken, adminOnly, async (req, res) =>
         averageCompletion: plans?.length 
           ? Math.round(plans.reduce((sum, p) => sum + (p.completion_percentage || 0), 0) / plans.length)
           : 0
+      },
+      teams: {
+        total: teams?.length || 0
+      },
+      settings: {
+        total: settings?.length || 0
       }
     };
     
@@ -267,4 +283,5 @@ router.post('/generate-all-plans', authenticateToken, adminOnly, async (req, res
 });
 
 export default router;
+
 

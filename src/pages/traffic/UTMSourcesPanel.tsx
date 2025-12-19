@@ -99,8 +99,16 @@ export default function UTMSourcesPanel() {
           </Button>
         </div>
 
+        {/* Loading State */}
+        {loadingOverview && (
+          <div className="text-center py-16">
+            <Activity className="w-12 h-12 mx-auto mb-4 animate-pulse text-[#00FF88]" />
+            <p className="text-gray-400">Загрузка данных...</p>
+          </div>
+        )}
+
         {/* Summary Cards */}
-        {overview && (
+        {!loadingOverview && overview && overview.summary && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <div className="bg-[#00FF88]/10 border border-[#00FF88]/30 rounded-xl p-4">
               <p className="text-xs text-[#00FF88]/60 mb-2">Всего продаж</p>
@@ -159,8 +167,20 @@ export default function UTMSourcesPanel() {
           />
         </div>
 
+        {/* Empty State */}
+        {!loadingOverview && !overview?.summary && (
+          <div className="text-center py-16 bg-gradient-to-br from-black/40 to-black/20 rounded-2xl border border-[#00FF88]/20">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-800/50 flex items-center justify-center">
+              <PieChart className="w-10 h-10 text-gray-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">Нет данных о продажах</h3>
+            <p className="text-gray-400 mb-2">За выбранный период продаж с UTM метками не найдено</p>
+            <p className="text-sm text-gray-500">Проверьте подключение AmoCRM или увеличьте период</p>
+          </div>
+        )}
+
         {/* Overview Tab */}
-        {activeTab === 'overview' && overview && (
+        {activeTab === 'overview' && !loadingOverview && overview && overview.summary && (
           <div className="space-y-6">
             {/* By Targetologist */}
             <div className="bg-black/40 border border-[#00FF88]/20 rounded-xl p-6">
@@ -179,7 +199,7 @@ export default function UTMSourcesPanel() {
         )}
 
         {/* Sources Tab */}
-        {activeTab === 'sources' && overview && (
+        {activeTab === 'sources' && !loadingOverview && overview?.by_source && overview.by_source.length > 0 && (
           <div className="space-y-3">
             {overview.by_source?.map((source: any, idx: number) => (
               <div key={source.source} className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-4 hover:bg-black/60 transition-all">
@@ -206,6 +226,14 @@ export default function UTMSourcesPanel() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'sources' && !loadingOverview && (!overview?.by_source || overview.by_source.length === 0) && (
+          <div className="text-center py-12 bg-black/40 rounded-xl border border-[#00FF88]/20">
+            <Activity className="w-10 h-10 mx-auto mb-3 text-gray-600" />
+            <p className="text-white font-bold">Нет данных по источникам</p>
+            <p className="text-sm text-gray-400 mt-1">Продажи без UTM source меток</p>
           </div>
         )}
 

@@ -9,9 +9,10 @@ import { useState, useEffect } from 'react';
 import { TrafficCabinetLayout } from '@/components/traffic/TrafficCabinetLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Users, Edit2, Trash2, Building2, Target, Save, X, Loader2 } from 'lucide-react';
+import { Plus, Users, Edit2, Trash2, Building2, Target, Save, X, Loader2, Mail, Send } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
 
@@ -32,15 +33,25 @@ interface User {
   fullName: string;
   team: string;
   role: 'targetologist' | 'admin';
+  isActive?: boolean;
+  lastLoginAt?: string;
   created_at: string;
 }
 
+// Фиксированные команды (если в БД пусто)
+const DEFAULT_TEAMS = [
+  { name: 'Kenesary' },
+  { name: 'Arystan' },
+  { name: 'Traf4' },
+  { name: 'Muha' },
+];
+
 const DIRECTIONS = [
-  { value: 'nutcab_tripwire', label: 'Nutcab/Tripwire (Kenesary)', icon: '👑' },
-  { value: 'arystan', label: 'Arystan', icon: '⚡' },
-  { value: 'onai_zapusk', label: 'On AI / Запуск (Muha)', icon: '🚀' },
-  { value: 'proftest', label: 'ProfTest / Alex (Traf4)', icon: '🎯' },
-  { value: 'custom', label: 'Кастомное направление', icon: '🎨' }
+  { value: 'nutcab_tripwire', label: 'Nutcab/Tripwire (Kenesary)' },
+  { value: 'arystan', label: 'Arystan' },
+  { value: 'onai_zapusk', label: 'On AI / Запуск (Muha)' },
+  { value: 'proftest', label: 'ProfTest / Alex (Traf4)' },
+  { value: 'custom', label: 'Кастомное направление' }
 ];
 
 const COLORS = [
@@ -51,8 +62,6 @@ const COLORS = [
   { value: '#EC4899', label: 'Розовый' },
   { value: '#10B981', label: 'Изумрудный' }
 ];
-
-const EMOJIS = ['👑', '⚡', '🚀', '🎯', '💎', '🔥', '⭐', '💪', '🎨', '🌟'];
 
 export default function TrafficTeamConstructor() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -68,8 +77,7 @@ export default function TrafficTeamConstructor() {
     direction: '',
     customDirection: '',
     fbAdAccountId: '',
-    color: COLORS[0].value,
-    emoji: EMOJIS[0]
+    color: COLORS[0].value
   });
   
   // User Form State
@@ -78,8 +86,10 @@ export default function TrafficTeamConstructor() {
     email: '',
     fullName: '',
     team: '',
+    customTeam: '',
     password: '',
-    role: 'targetologist' as 'targetologist' | 'admin'
+    role: 'targetologist' as 'targetologist' | 'admin',
+    sendEmail: true
   });
   
   useEffect(() => {
@@ -91,14 +101,14 @@ export default function TrafficTeamConstructor() {
       setLoading(true);
       const token = localStorage.getItem('traffic_token');
       
-      // Fetch teams
-      const teamsResponse = await axios.get(`${API_URL}/api/traffic-admin/teams`, {
+      // Fetch teams - используем constructor API
+      const teamsResponse = await axios.get(`${API_URL}/api/traffic-constructor/teams`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTeams(teamsResponse.data.teams || []);
       
-      // Fetch users
-      const usersResponse = await axios.get(`${API_URL}/api/traffic-admin/users`, {
+      // Fetch users - используем constructor API
+      const usersResponse = await axios.get(`${API_URL}/api/traffic-constructor/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(usersResponse.data.users || []);
@@ -116,7 +126,7 @@ export default function TrafficTeamConstructor() {
       const token = localStorage.getItem('traffic_token');
       const direction = teamForm.direction === 'custom' ? teamForm.customDirection : teamForm.direction;
       
-      await axios.post(`${API_URL}/api/traffic-admin/teams`, {
+      await axios.post(`${API_URL}/api/traffic-constructor/teams`, {
         name: teamForm.name,
         company: teamForm.company,
         direction,
@@ -141,7 +151,7 @@ export default function TrafficTeamConstructor() {
     
     try {
       const token = localStorage.getItem('traffic_token');
-      await axios.delete(`${API_URL}/api/traffic-admin/teams/${teamId}`, {
+      await axios.delete(`${API_URL}/api/traffic-constructor/teams/${teamId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -157,11 +167,30 @@ export default function TrafficTeamConstructor() {
     try {
       const token = localStorage.getItem('traffic_token');
       
-      await axios.post(`${API_URL}/api/traffic-admin/users`, userForm, {
+      // Используем customTeam если выбрано 'custom'
+      const teamName = userForm.team === 'custom' ? userForm.customTeam : userForm.team;
+      
+      if (!teamName) {
+        toast.error('Укажите название команды');
+        return;
+      }
+      
+      const response = await axios.post(`${API_URL}/api/traffic-constructor/users`, {
+        email: userForm.email,
+        fullName: userForm.fullName,
+        team: teamName,
+        password: userForm.password,
+        role: userForm.role,
+        sendEmail: userForm.sendEmail
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      toast.success(`Пользователь "${userForm.email}" создан!`);
+      if (response.data.emailSent) {
+        toast.success(`Пользователь создан! Email с данными доступа отправлен на ${userForm.email}`);
+      } else {
+        toast.success(`Пользователь "${userForm.email}" создан!`);
+      }
       resetUserForm();
       fetchTeamsAndUsers();
     } catch (error: any) {
@@ -175,7 +204,7 @@ export default function TrafficTeamConstructor() {
     
     try {
       const token = localStorage.getItem('traffic_token');
-      await axios.delete(`${API_URL}/api/traffic-admin/users/${userId}`, {
+      await axios.delete(`${API_URL}/api/traffic-constructor/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -187,6 +216,28 @@ export default function TrafficTeamConstructor() {
     }
   };
   
+  const handleResendCredentials = async (userId: string, userEmail: string) => {
+    const newPassword = prompt(`Введите новый пароль для ${userEmail} (или оставьте пустым для автогенерации):`, '');
+    if (newPassword === null) return; // Отмена
+    
+    try {
+      const token = localStorage.getItem('traffic_token');
+      const response = await axios.post(`${API_URL}/api/traffic-constructor/users/${userId}/send-credentials`, 
+        { newPassword: newPassword || undefined },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.emailSent) {
+        toast.success(`✉️ Данные доступа отправлены на ${userEmail}`);
+      } else {
+        toast.error('Пароль обновлен, но email не отправлен (Resend не настроен)');
+      }
+    } catch (error: any) {
+      console.error('Failed to resend credentials:', error);
+      toast.error('Ошибка отправки данных доступа');
+    }
+  };
+  
   const resetTeamForm = () => {
     setTeamForm({
       name: '',
@@ -194,8 +245,7 @@ export default function TrafficTeamConstructor() {
       direction: '',
       customDirection: '',
       fbAdAccountId: '',
-      color: COLORS[0].value,
-      emoji: EMOJIS[0]
+      color: COLORS[0].value
     });
     setIsAddingTeam(false);
     setEditingTeamId(null);
@@ -206,8 +256,10 @@ export default function TrafficTeamConstructor() {
       email: '',
       fullName: '',
       team: '',
+      customTeam: '',
       password: '',
-      role: 'targetologist'
+      role: 'targetologist',
+      sendEmail: true
     });
     setIsAddingUser(false);
   };
@@ -286,12 +338,12 @@ export default function TrafficTeamConstructor() {
                     onChange={(e) => setTeamForm({ ...teamForm, direction: e.target.value })}
                     className="w-full h-10 px-3 bg-black/50 border border-[#00FF88]/20 text-white rounded-md"
                   >
-                    <option value="">Выберите направление</option>
-                    {DIRECTIONS.map(dir => (
-                      <option key={dir.value} value={dir.value}>
-                        {dir.icon} {dir.label}
-                      </option>
-                    ))}
+                <option value="">Выберите направление</option>
+                {DIRECTIONS.map(dir => (
+                  <option key={dir.value} value={dir.value}>
+                    {dir.label}
+                  </option>
+                ))}
                   </select>
                 </div>
                 
@@ -332,23 +384,6 @@ export default function TrafficTeamConstructor() {
                     ))}
                   </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Эмодзи</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {EMOJIS.map(emoji => (
-                      <button
-                        key={emoji}
-                        onClick={() => setTeamForm({ ...teamForm, emoji })}
-                        className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center border-2 ${
-                          teamForm.emoji === emoji ? 'border-[#00FF88] bg-[#00FF88]/20' : 'border-gray-600 bg-black/50'
-                        }`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
               
               <div className="flex gap-2 mt-4">
@@ -379,12 +414,7 @@ export default function TrafficTeamConstructor() {
                 className="p-4 bg-black/30 border border-[#00FF88]/10 rounded-xl flex items-center justify-between hover:bg-black/50 transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                    style={{ backgroundColor: `${team.color}20`, border: `2px solid ${team.color}` }}
-                  >
-                    {team.emoji}
-                  </div>
+                  <TeamAvatar teamName={team.name} size="lg" />
                   <div>
                     <h3 className="text-lg font-bold text-white">{team.name}</h3>
                     <p className="text-sm text-gray-400">
@@ -458,13 +488,27 @@ export default function TrafficTeamConstructor() {
                     className="w-full h-10 px-3 bg-black/50 border border-[#00FF88]/20 text-white rounded-md"
                   >
                     <option value="">Выберите команду</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.name}>
-                        {team.emoji} {team.name}
+                    {/* Сначала команды из БД, затем дефолтные */}
+                    {(teams.length > 0 ? teams : DEFAULT_TEAMS.map(t => ({ id: t.name, name: t.name }))).map(team => (
+                      <option key={team.id || team.name} value={team.name}>
+                        {team.name}
                       </option>
                     ))}
+                    <option value="custom">+ Другая команда...</option>
                   </select>
                 </div>
+                
+                {userForm.team === 'custom' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Название команды</label>
+                    <Input
+                      value={userForm.customTeam}
+                      onChange={(e) => setUserForm({ ...userForm, customTeam: e.target.value })}
+                      placeholder="Введите название"
+                      className="bg-black/50 border-[#00FF88]/20 text-white"
+                    />
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Пароль</label>
@@ -487,6 +531,23 @@ export default function TrafficTeamConstructor() {
                     <option value="targetologist">Таргетолог</option>
                     <option value="admin">Администратор</option>
                   </select>
+                </div>
+                
+                {/* Отправить Email */}
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={userForm.sendEmail}
+                      onChange={(e) => setUserForm({ ...userForm, sendEmail: e.target.checked })}
+                      className="w-5 h-5 rounded border-[#00FF88]/30 bg-black/50 text-[#00FF88] focus:ring-[#00FF88]/50"
+                    />
+                    <span className="text-gray-300 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-[#00FF88]" />
+                      Отправить данные доступа на email
+                    </span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1 ml-8">Пользователь получит письмо с логином и паролем</p>
                 </div>
               </div>
               
@@ -517,14 +578,31 @@ export default function TrafficTeamConstructor() {
                 key={user.id}
                 className="p-4 bg-black/30 border border-[#00FF88]/10 rounded-xl flex items-center justify-between hover:bg-black/50 transition-all"
               >
-                <div>
-                  <h3 className="text-lg font-bold text-white">{user.fullName}</h3>
-                  <p className="text-sm text-gray-400">
-                    {user.email} • {user.team} • {user.role === 'admin' ? 'Админ' : 'Таргетолог'}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${user.isActive !== false ? 'bg-[#00FF88]' : 'bg-gray-500'}`} />
+                  <div>
+                    <h3 className="text-lg font-bold text-white">{user.fullName}</h3>
+                    <p className="text-sm text-gray-400">
+                      {user.email} • {user.team} • {user.role === 'admin' ? 'Админ' : 'Таргетолог'}
+                    </p>
+                    {user.lastLoginAt && (
+                      <p className="text-xs text-gray-500">
+                        Последний вход: {new Date(user.lastLoginAt).toLocaleDateString('ru-RU')}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleResendCredentials(user.id, user.email)}
+                    variant="outline"
+                    size="sm"
+                    className="border-[#00FF88]/20 text-[#00FF88] hover:bg-[#00FF88]/10"
+                    title="Отправить данные доступа"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
                   <Button
                     onClick={() => handleDeleteUser(user.id, user.email)}
                     variant="outline"
@@ -536,6 +614,14 @@ export default function TrafficTeamConstructor() {
                 </div>
               </div>
             ))}
+            
+            {users.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Пользователи не найдены</p>
+                <p className="text-sm">Добавьте первого пользователя</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

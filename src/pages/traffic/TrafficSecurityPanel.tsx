@@ -209,10 +209,37 @@ export default function TrafficSecurityPanel() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-[#00FF88]/5 rounded-xl border border-[#00FF88]/20">
-                <Shield className="w-12 h-12 text-[#00FF88] mx-auto mb-4" />
-                <p className="text-white font-bold mb-2">Подозрительной активности не обнаружено</p>
-                <p className="text-sm text-gray-400">Все пользователи входят с привычных устройств</p>
+              <div className="relative overflow-hidden">
+                {/* Premium Empty State */}
+                <div className="text-center py-16 bg-gradient-to-br from-[#00FF88]/5 via-black/20 to-[#00FF88]/5 rounded-2xl border border-[#00FF88]/30 relative">
+                  {/* Animated glow */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00FF88]/10 to-transparent animate-pulse" />
+                  
+                  <div className="relative z-10">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#00FF88]/10 flex items-center justify-center ring-4 ring-[#00FF88]/20">
+                      <Shield className="w-10 h-10 text-[#00FF88]" />
+                    </div>
+                    
+                    <h3 className="text-2xl font-bold text-white mb-3">Всё под контролем! 🛡️</h3>
+                    <p className="text-gray-300 mb-2">Подозрительной активности не обнаружено</p>
+                    <p className="text-sm text-gray-500">Все пользователи входят с привычных устройств и локаций</p>
+                    
+                    <div className="mt-8 grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+                      <div className="bg-black/40 rounded-xl p-4 border border-[#00FF88]/10">
+                        <Globe className="w-6 h-6 text-[#00FF88] mx-auto mb-2" />
+                        <p className="text-xs text-gray-400">Стабильные IP</p>
+                      </div>
+                      <div className="bg-black/40 rounded-xl p-4 border border-[#00FF88]/10">
+                        <Monitor className="w-6 h-6 text-[#00FF88] mx-auto mb-2" />
+                        <p className="text-xs text-gray-400">Знакомые устройства</p>
+                      </div>
+                      <div className="bg-black/40 rounded-xl p-4 border border-[#00FF88]/10">
+                        <Activity className="w-6 h-6 text-[#00FF88] mx-auto mb-2" />
+                        <p className="text-xs text-gray-400">Нормальная активность</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -237,8 +264,11 @@ export default function TrafficSecurityPanel() {
             </div>
 
             {loadingSessions ? (
-              <div className="text-center py-12 text-gray-400">Загрузка...</div>
-            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Activity className="w-8 h-8 mx-auto mb-3 animate-pulse text-[#00FF88]" />
+                <p>Загрузка сессий...</p>
+              </div>
+            ) : sessionsData && sessionsData.length > 0 ? (
               <div className="space-y-2">
                 {sessionsData?.map((session) => (
                   <div
@@ -288,6 +318,22 @@ export default function TrafficSecurityPanel() {
                   </div>
                 ))}
               </div>
+            ) : (
+              <div className="text-center py-16 bg-gradient-to-br from-black/40 to-black/20 rounded-2xl border border-[#00FF88]/20">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800/50 flex items-center justify-center">
+                  <Activity className="w-8 h-8 text-gray-600" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Нет данных о входах</h3>
+                <p className="text-gray-400 mb-4">За выбранный период ({days} дн.) входов не было</p>
+                <Button
+                  onClick={() => setDays(30)}
+                  variant="outline"
+                  className="border-[#00FF88]/20 text-[#00FF88] hover:bg-[#00FF88]/10"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Увеличить период до 30 дней
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -300,18 +346,35 @@ export default function TrafficSecurityPanel() {
                 placeholder="Email пользователя..."
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedUser(searchEmail)}
                 className="flex-1 bg-black/50 border-[#00FF88]/20 text-white"
               />
               <Button
                 onClick={() => setSelectedUser(searchEmail)}
-                className="bg-[#00FF88] hover:bg-[#00FF88]/90 text-black"
+                disabled={!searchEmail}
+                className="bg-[#00FF88] hover:bg-[#00FF88]/90 text-black disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Search className="w-4 h-4 mr-2" />
                 Найти
               </Button>
             </div>
 
-            {loadingUser && <div className="text-center py-12 text-gray-400">Загрузка...</div>}
+            {!selectedUser && !loadingUser && (
+              <div className="text-center py-16 bg-gradient-to-br from-black/40 to-black/20 rounded-2xl border border-[#00FF88]/20">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#00FF88]/10 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-[#00FF88]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Введите email для поиска</h3>
+                <p className="text-gray-400">Вы сможете увидеть полную историю входов пользователя</p>
+              </div>
+            )}
+
+            {loadingUser && (
+              <div className="text-center py-12 text-gray-400">
+                <Search className="w-8 h-8 mx-auto mb-3 animate-pulse text-[#00FF88]" />
+                <p>Поиск данных...</p>
+              </div>
+            )}
             
             {userSummary && (
               <div className="space-y-4">

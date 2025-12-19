@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
 import { landingSupabase } from '@/lib/supabase-landing';
 import axios from 'axios';
+import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
@@ -253,11 +254,11 @@ const RANK_SYSTEM = {
 };
 
 // 🎨 TRIPWIRE КОМАНДЫ - Фирменная палитра
-const TEAM_COLORS: Record<string, { primary: string; gradient: string; emoji: string }> = {
-  'Kenesary': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '👑' },
-  'Arystan': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '⚡' },
-  'Muha': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '🚀' },
-  'Traf4': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '🎯' },
+const TEAM_COLORS: Record<string, { primary: string; gradient: string }> = {
+  'Kenesary': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' },
+  'Arystan': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' },
+  'Muha': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' },
+  'Traf4': { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' },
 };
 
 interface TrafficCommandDashboardProps {
@@ -532,10 +533,8 @@ export default function TrafficCommandDashboard({
                         onClick={() => { setSelectedTeam(team.team); setShowTeamDropdown(false); }}
                         className="w-full px-4 py-3 text-left text-xs sm:text-sm hover:bg-[#00FF88]/10 transition-all flex items-center gap-2 text-white"
                       >
-                        <div className="w-2 h-2 rounded-full bg-[#00FF88]" />
-                        <span className="flex items-center gap-1.5">
-                          {TEAM_COLORS[team.team]?.emoji} {team.team}
-                        </span>
+                        <TeamAvatar teamName={team.team} size="sm" />
+                        <span className="text-sm">{team.team}</span>
                       </button>
                     ))}
                   </div>
@@ -747,7 +746,7 @@ export default function TrafficCommandDashboard({
                     </thead>
                     <tbody className="divide-y divide-[#00FF88]/5">
                       {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map((team) => {
-                        const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
+                        const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' };
                         const roasColor = getRoasColor(team.roas);
                         const rankInfo = team.rankInfo;
                         
@@ -769,10 +768,7 @@ export default function TrafficCommandDashboard({
                                   </span>
                                 </div>
                                 
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg">{colors.emoji}</span>
-                                  <span className="font-medium text-white">{team.team}</span>
-                                </div>
+                                <TeamAvatar teamName={team.team} size="md" showLabel />
                               </div>
                             </td>
                             <td className="px-6 py-5 text-right font-mono text-sm text-gray-300">
@@ -831,7 +827,7 @@ export default function TrafficCommandDashboard({
               {/* 🎯 Карточки команд - Mobile/Tablet (до lg) */}
               <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 sm:mb-6">
                 {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map(team => {
-                  const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
+                  const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' };
                   const roasColor = getRoasColor(team.roas);
                   const rankInfo = team.rankInfo;
 
@@ -853,8 +849,7 @@ export default function TrafficCommandDashboard({
 
                       {/* Заголовок команды */}
                       <div className="flex items-center gap-2 mb-4">
-                        <span className="text-2xl">{colors.emoji}</span>
-                        <h3 className="text-lg font-bold text-white">{team.team}</h3>
+                        <TeamAvatar teamName={team.team} size="lg" showLabel />
                       </div>
 
                       {/* Метрики сеткой 2x3 */}
@@ -914,7 +909,7 @@ export default function TrafficCommandDashboard({
               {/* 🎯 Карточки команд - Desktop (lg+) */}
               <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
                 {rankedTeams.filter(t => !selectedTeam || t.team === selectedTeam).map(team => {
-                  const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5', emoji: '📊' };
+                  const colors = TEAM_COLORS[team.team] || { primary: '#00FF88', gradient: 'from-[#00FF88]/15 to-[#00FF88]/5' };
                   const roasColor = getRoasColor(team.roas);
                   const rankInfo = team.rankInfo;
                   
@@ -950,12 +945,7 @@ export default function TrafficCommandDashboard({
 
                       <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
                         <div className="flex items-center gap-2 sm:gap-3">
-                          <div 
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-black/40 border"
-                            style={{ borderColor: rankInfo.color + '40' }}
-                          >
-                            {colors.emoji}
-                          </div>
+                          <TeamAvatar teamName={team.team} size="lg" />
                           <div>
                             <h3 className="text-sm sm:text-base font-bold text-white">{team.team}</h3>
                             <p className="text-[10px] sm:text-xs flex items-center gap-1">
@@ -1170,7 +1160,7 @@ export default function TrafficCommandDashboard({
                             {/* Заголовок команды */}
                             <div className="flex items-center gap-3">
                               <span className="text-xl">{rankInfo.medal}</span>
-                              <span className="text-lg">{colors.emoji}</span>
+                              <TeamAvatar teamName={team.team} size="md" />
                               <h3 className="font-bold text-white">{team.team}</h3>
                               <span className="text-xs text-gray-500">({team.topVideoCreatives.length} видео)</span>
                             </div>
