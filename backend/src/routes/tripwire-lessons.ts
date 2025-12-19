@@ -435,7 +435,7 @@ router.post('/complete', async (req, res) => {
     const { data: progress, error: progressError } = await tripwireAdminSupabase
       .from('tripwire_progress')
       .upsert({
-        tripwire_user_id: main_user_id,
+        tripwire_user_id: tripwire_user_id,  // ✅ FIX: Use tripwire_users.id, NOT auth.users.id!
         module_id,
         lesson_id,
         is_completed: true,
@@ -463,7 +463,7 @@ router.post('/complete', async (req, res) => {
     const { data: completedLessons, error: completedError } = await tripwireAdminSupabase
       .from('tripwire_progress')
       .select('lesson_id')
-      .eq('tripwire_user_id', main_user_id)
+      .eq('tripwire_user_id', tripwire_user_id)  // ✅ FIX: Use tripwire_users.id, NOT auth.users.id!
       .eq('module_id', module_id)
       .eq('is_completed', true);
 
@@ -541,6 +541,52 @@ router.post('/complete', async (req, res) => {
           console.log(`✅ [STEP 6b SUCCESS] Achievement created: ${achievementId}`);
         } else {
         console.log(`[STEP 6b INFO] Achievement already exists or error:`, achievementError?.message);
+        }
+
+        // ✅ STEP 6c: Update tripwire_user_profile (modules_completed counter)
+        console.log(`[STEP 6c] Updating tripwire_user_profile.modules_completed...`);
+        
+        // Подсчитываем сколько ВСЕГО модулей завершено
+        const { data: allCompletedModules, error: modulesError } = await tripwireAdminSupabase
+          .from('tripwire_progress')
+          .select('module_id')
+          .eq('tripwire_user_id', tripwire_user_id)  // ✅ Use tripwire_users.id
+          .eq('is_completed', true);
+        
+        if (!modulesError && allCompletedModules) {
+          // Группируем по модулю и проверяем завершённость каждого
+          const moduleIds = [16, 17, 18]; // Tripwire модули
+          let completedModulesCount = 0;
+          
+          for (const modId of moduleIds) {
+            const { getModuleLessons } = await import('../config/tripwire-mappings');
+            const moduleLessons = getModuleLessons(modId);
+            const completedInModule = allCompletedModules.filter(m => m.module_id === modId).length;
+            
+            if (moduleLessons.length > 0 && completedInModule >= moduleLessons.length) {
+              completedModulesCount++;
+              console.log(`   ✅ Module ${modId}: ${completedInModule}/${moduleLessons.length} lessons → COMPLETED`);
+            } else {
+              console.log(`   ⏳ Module ${modId}: ${completedInModule}/${moduleLessons.length} lessons → In Progress`);
+            }
+          }
+          
+          // Обновляем tripwire_user_profile
+          const completion_percentage = (completedModulesCount / 3) * 100;
+          const { error: profileError } = await tripwireAdminSupabase
+            .from('tripwire_user_profile')
+            .update({
+              modules_completed: completedModulesCount,
+              completion_percentage: completion_percentage,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', main_user_id);  // ✅ tripwire_user_profile uses auth.users.id
+          
+          if (profileError) {
+            console.error(`❌ [STEP 6c ERROR] Failed to update profile:`, profileError);
+          } else {
+            console.log(`✅ [STEP 6c SUCCESS] Profile updated: ${completedModulesCount}/3 modules (${completion_percentage}%)`);
+          }
         }
       }
 
