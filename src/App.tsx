@@ -114,14 +114,17 @@ const RedirectWithParams = ({ from, to }: { from: string; to: string }) => {
 const AppRoutes = () => {
   const location = useLocation();
   const isWelcomePage = location.pathname === '/welcome';
+  // ✅ Domain detection for Traffic Dashboard
+  const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
 
   return (
     <Suspense fallback={<SuspenseLoader />}>
       <Routes>
       {/* Публичные страницы (без авторизации) */}
-      <Route path="/login" element={<Login />} />
+      {/* ✅ MAIN PLATFORM LOGIN (only on main domains) */}
+      {!isTrafficDomain && <Route path="/login" element={<Login />} />}
+      {!isTrafficDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
       <Route path="/update-password" element={<UpdatePassword />} />
-      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/access-denied" element={<AccessDenied />} />
       
       {/* 🔗 Short link redirect */}
@@ -256,7 +259,9 @@ const AppRoutes = () => {
       
       {/* 🚀 TRAFFIC DASHBOARD - Personal Cabinets System */}
       {/* ✅ PRODUCTION: subdomain traffic.onai.academy (routes WITHOUT prefix) */}
-      <Route path="/login" element={<TrafficLogin />} />
+      {/* ✅ TRAFFIC LOGIN (only on traffic.onai.academy) */}
+      {isTrafficDomain && <Route path="/login" element={<TrafficLogin />} />}
+      {isTrafficDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
       
       {/* Personal Cabinet for each targetologist - Simplified NO SIDEBAR */}
       <Route path="/cabinet/:team" element={<TrafficTargetologistDashboard />} />
