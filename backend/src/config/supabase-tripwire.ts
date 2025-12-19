@@ -51,6 +51,22 @@ console.log('   URL:', tripwireUrl);
 console.log('   Authorization: Bearer ***' + tripwireServiceRoleKey.slice(-8));
 
 /**
+ * Tripwire Anon Supabase Client (для публичных операций)
+ * Uses anon key (with RLS)
+ */
+const tripwireAnonKey = process.env.VITE_TRIPWIRE_SUPABASE_ANON_KEY!;
+
+export const tripwireSupabase = createClient(tripwireUrl, tripwireAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  },
+  db: {
+    schema: 'public'
+  }
+});
+
+/**
  * Export default для обратной совместимости
  */
 export default tripwireAdminSupabase;
