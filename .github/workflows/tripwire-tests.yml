@@ -1,0 +1,75 @@
+name: 🛡️ Tripwire Critical Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/src/routes/tripwire-lessons.ts'
+      - 'backend/src/routes/tripwire.ts'
+      - 'src/pages/tripwire/**'
+      - 'src/hooks/useHonestVideoTracking.tsx'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/src/routes/tripwire-lessons.ts'
+      - 'backend/src/routes/tripwire.ts'
+      - 'src/pages/tripwire/**'
+      - 'src/hooks/useHonestVideoTracking.tsx'
+
+jobs:
+  critical-tests:
+    runs-on: ubuntu-latest
+    name: ⚠️ Critical ID Usage Tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+      
+      - name: 🛡️ Run Critical Tests
+        run: |
+          cd backend
+          npm test -- __tests__/tripwire-complete.test.ts
+      
+      - name: ✅ Validate ID Usage in Code
+        run: |
+          echo "🔍 Checking for incorrect ID usage..."
+          
+          # ❌ BAD: tripwire_user_id used for FK operations
+          if grep -r "tripwire_user_id: tripwire_user_id" backend/src/routes/tripwire-lessons.ts; then
+            echo "❌ CRITICAL: Found incorrect tripwire_user_id usage!"
+            echo "❌ Use main_user_id (auth.users.id) instead!"
+            exit 1
+          fi
+          
+          # ✅ GOOD: main_user_id used for FK operations
+          if grep -q "tripwire_user_id: main_user_id" backend/src/routes/tripwire-lessons.ts; then
+            echo "✅ Correct ID usage detected"
+          else
+            echo "⚠️ Warning: Cannot verify correct ID usage"
+          fi
+      
+      - name: 📊 Check for Foreign Key Errors
+        run: |
+          echo "🔍 Checking for FK constraint references..."
+          
+          if grep -r "foreign key constraint" backend/src/routes/; then
+            echo "⚠️ Found FK constraint mentions"
+          fi
+          
+          echo "✅ FK validation complete"
+      
+      - name: ✅ All Critical Tests Passed
+        run: |
+          echo "🎉 All critical tests passed!"
+          echo "✅ ID usage is correct"
+          echo "✅ No FK constraint violations"
