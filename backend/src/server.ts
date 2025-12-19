@@ -120,6 +120,7 @@ import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Repor
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
 import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
+import testIaeReportRouter from './routes/test-iae-report'; // 🧪 TEST: IAE & Traffic Bot Reports
 import shortLinksRouter from './routes/short-links'; // 🔗 URL Shortener for SMS Links
 import trafficStatsRouter from './routes/traffic-stats'; // 📊 Traffic Command Stats (AmoCRM sales)
 import trafficReportsRouter from './routes/traffic-reports'; // 📊 Traffic Reports (Суп history & ROI analysis)
@@ -389,6 +390,7 @@ app.use('/api/openai', openaiRouter);
 app.use('/api/telegram', telegramRouter);
 app.use('/api/telegram-leads', telegramLeadsRouter); // 🤖 Telegram Leads Bot (активация группы кодом 2134)
 app.use('/api/debug', debugRouter); // 🔍 DEBUG: Check env variables
+app.use('/api/test', testIaeReportRouter); // 🧪 TEST: IAE & Traffic Bot Reports
 app.use('/api/tripwire', tripwireRouter);
 app.use('/api/tripwire', tripwireLessonsRouter); // Tripwire lessons endpoints
 app.use('/api/tripwire', tripwireHomeworkRouter); // ✅ Homework submissions
