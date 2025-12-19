@@ -180,21 +180,6 @@ export default function TrafficLogin() {
               )}
             </Button>
           </form>
-          
-          {/* Demo Credentials (remove in production) */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-8 p-5 bg-gradient-to-br from-[#00FF88]/10 to-[#00FF88]/5 rounded-xl border border-[#00FF88]/20 backdrop-blur-sm">
-              <p className="text-xs text-gray-400 mb-3 font-semibold uppercase tracking-wider">Demo credentials:</p>
-              <div className="space-y-2">
-                <p className="text-xs text-[#00FF88] font-mono bg-black/30 px-3 py-2 rounded-lg">
-                  admin@onai.academy / admin123
-                </p>
-                <p className="text-xs text-[#00FF88] font-mono bg-black/30 px-3 py-2 rounded-lg">
-                  kenesary@onai.academy / changeme123
-                </p>
-              </div>
-            </div>
-          )}
         </div>
         
         {/* Premium Footer */}
