@@ -68,37 +68,34 @@ router.get('/', async (req: Request, res: Response) => {
     // Calculate date range
     const since = getDateRange(dateRange as string);
     
-    // Fetch campaigns из кабинета команды
+    // Fetch campaigns из кабинета команды (basic data only)
     const campaignsResponse = await axios.get(
       `${FB_API_BASE}/act_${adAccountId}/campaigns`,
       {
         params: {
           access_token: accessToken,
-          fields: 'id,name,status,objective,insights.time_range({"since":"' + since + '","until":"today"}){spend,impressions,clicks,ctr,cpc,cpm,actions}',
+          fields: 'id,name,status,objective',
+          date_preset: dateRange === '14d' ? 'last_14d' : dateRange === '30d' ? 'last_30d' : dateRange === '90d' ? 'last_90d' : 'last_7d',
           limit: 100
         }
       }
     );
     
     const campaigns = (campaignsResponse.data.data || []).map((campaign: any) => {
-      const insights = campaign.insights?.data?.[0] || {};
-      const conversions = extractConversions(insights.actions);
-      const revenue = extractRevenue(insights.actions);
-      
       return {
         id: campaign.id,
         name: campaign.name,
         status: campaign.status,
         objective: campaign.objective,
-        spend: parseFloat(insights.spend || 0),
-        impressions: parseInt(insights.impressions || 0),
-        clicks: parseInt(insights.clicks || 0),
-        ctr: parseFloat(insights.ctr || 0),
-        cpc: parseFloat(insights.cpc || 0),
-        cpm: parseFloat(insights.cpm || 0),
-        conversions,
-        revenue,
-        roas: insights.spend > 0 ? revenue / parseFloat(insights.spend) : 0
+        spend: 0, // TODO: Get from insights
+        impressions: 0,
+        clicks: 0,
+        ctr: 0,
+        cpc: 0,
+        cpm: 0,
+        conversions: 0,
+        revenue: 0,
+        roas: 0
       };
     });
     
@@ -261,7 +258,11 @@ function getDateRange(range: string): string {
   }
   
   const date = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-  return date.toISOString().split('T')[0];
+  // ✅ Format as YYYY-MM-DD in UTC
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function extractConversions(actions: any[]): number {
