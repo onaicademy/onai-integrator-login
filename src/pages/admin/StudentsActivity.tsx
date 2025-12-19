@@ -164,94 +164,56 @@ export default function StudentsActivity() {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек timeout
       
       try {
-        // ✅ ИСПРАВЛЕНИЕ: Показываем ВСЕХ пользователей (не только из student_profiles)
-        const { data: profiles, error: profilesError } = await supabase
-          .from("users")
-          .select("*")
-          .neq("role", "admin") // Исключаем админов
-          .order("created_at", { ascending: false });
+        // ✅ ИСПОЛЬЗУЕМ TRIPWIRE API ENDPOINT ДЛЯ ПОЛУЧЕНИЯ СТУДЕНТОВ С ПРОГРЕССОМ!
+        console.log('🔥 Запрашиваем студентов через /api/tripwire/admin/students...');
+        const response = await api.get('/api/tripwire/admin/students');
         
         clearTimeout(timeoutId);
         
-        console.log('✅ Запрос завершён');
+        console.log('✅ Получен ответ от Tripwire API:', response);
 
-        if (profilesError) {
-          console.error('❌ Ошибка загрузки студентов:', profilesError);
-          console.error('📊 Детали ошибки:', profilesError.message, profilesError.details);
-          throw profilesError;
-        }
-        
-        if (!profiles) {
-          console.warn('⚠️ Нет данных от сервера');
+        if (!response || !response.students) {
+          console.warn('⚠️ Нет студентов в ответе');
           setAllStudents([]);
           return;
         }
 
-        console.log(`✅ Получено ${profiles?.length || 0} записей из users (без админов)`);
+        const tripwireStudents = response.students;
+        console.log(`✅ Получено ${tripwireStudents.length} Tripwire студентов`);
 
       const mapped: StudentRow[] =
-        profiles?.map((profile) => {
+        tripwireStudents?.map((student: any) => {
           return {
-            id: profile.id,
-            email: profile.email || "",
-            full_name: profile.full_name || profile.email || "Без имени",
-            role: profile.role || "student",
-            is_active: profile.role !== 'inactive', // ✅ Активен, если role НЕ 'inactive'
-            last_login_at: profile.last_login_at ?? profile.updated_at ?? null,
-            last_active_date: null, // Нет в users, можно добавить позже
-            account_expires_at: null, // Нет в users
+            id: student.id,
+            email: student.email || "",
+            full_name: student.full_name || student.email || "Без имени",
+            role: "student", // ✅ Tripwire студенты всегда student
+            is_active: true, // ✅ Если они в списке, значит активны
+            last_login_at: student.last_sign_in_at || student.created_at,
+            last_active_date: student.last_sign_in_at || null,
+            account_expires_at: null, // ✅ Tripwire не имеет срока действия
             deleted_at: null,
             deactivation_reason: null,
-            total_xp: Math.floor(Math.random() * 3000), // Mock
-            level: Math.floor(Math.random() * 15) + 1, // Mock
-            streak_days: Math.floor(Math.random() * 30), // Mock
-            total_study_time: Math.floor(Math.random() * 5000), // Mock в минутах
-            courses: [], // Будет заполнено позже
+            total_xp: 0, // ✅ У Tripwire нет XP системы (или можно добавить позже)
+            level: 1, // ✅ У Tripwire нет уровней
+            streak_days: 0, // ✅ У Tripwire нет стрика
+            total_study_time: 0, // ✅ Нет данных о времени обучения (можно добавить)
+            // ✅ ГЛАВНОЕ: ПРОГРЕСС ПО TRIPWIRE МОДУЛЯМ!
+            courses: [{
+              course_id: 13, // ✅ Tripwire course ID
+              course_name: "Tripwire: Интегратор Вводный",
+              course_slug: "tripwire",
+              progress_percentage: student.progress_percent || 0, // ✅ РЕАЛЬНЫЙ ПРОГРЕСС!
+              // ✅ Добавляем дополнительные данные для отображения
+              completed_modules: student.completed_modules || 0,
+              total_modules: student.total_modules || 3,
+              enrolled_at: student.enrolled_at || student.created_at,
+            }],
           };
         }) ?? [];
 
-      console.log(`✅ Смаппировано ${mapped.length} студентов`);
-
-      // ✅ Загружаем курсы для каждого студента
-      try {
-        const { data: allCourses, error: coursesError } = await supabase
-          .from('user_courses')
-          .select(`
-            user_id,
-            course_id,
-            progress_percentage,
-            courses:course_id (
-              id,
-              name,
-              slug
-            )
-          `);
-
-        if (!coursesError && allCourses) {
-          // Группируем курсы по user_id
-          const coursesByUser: Record<string, any[]> = {};
-          allCourses.forEach((item: any) => {
-            if (!coursesByUser[item.user_id]) {
-              coursesByUser[item.user_id] = [];
-            }
-            coursesByUser[item.user_id].push({
-              course_id: item.course_id,
-              course_name: item.courses?.name || 'Unknown',
-              course_slug: item.courses?.slug || '',
-              progress_percentage: item.progress_percentage || 0,
-            });
-          });
-
-          // Добавляем курсы к студентам
-          mapped.forEach((student) => {
-            student.courses = coursesByUser[student.id] || [];
-          });
-
-          console.log('✅ Курсы загружены для студентов');
-        }
-      } catch (error) {
-        console.warn('⚠️ Не удалось загрузить курсы студентов:', error);
-      }
+      console.log(`✅ Смаппировано ${mapped.length} Tripwire студентов с РЕАЛЬНЫМ прогрессом`);
+      console.log('📊 Пример студента:', mapped[0]);
 
       console.log('📊 Первые 3 студента с курсами:', mapped.slice(0, 3));
       setAllStudents(mapped);
@@ -678,18 +640,18 @@ export default function StudentsActivity() {
                       {student.courses && student.courses.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {student.courses.map((course) => {
-                            const courseIcon = course.course_id === 1 ? '📚' : course.course_id === 2 ? '🎨' : '💻';
-                            const courseColor = course.course_id === 1 ? 'bg-purple-600/20 text-purple-300 border-purple-500/30' :
-                                              course.course_id === 2 ? 'bg-blue-600/20 text-blue-300 border-blue-500/30' :
-                                              'bg-green-600/20 text-green-300 border-green-500/30';
+                            const courseIcon = '🎓'; // Tripwire icon
+                            const courseColor = 'bg-green-600/20 text-[#00FF88] border-green-500/30'; // onAI green
+                            const completedModules = course.completed_modules || 0;
+                            const totalModules = course.total_modules || 3;
                             return (
                               <Badge
                                 key={course.course_id}
                                 variant="outline"
                                 className={`text-xs ${courseColor}`}
-                                title={`${course.course_name} - ${course.progress_percentage}% пройдено`}
+                                title={`${course.course_name} - ${completedModules}/${totalModules} модулей`}
                               >
-                                {courseIcon} {course.progress_percentage}%
+                                {courseIcon} {completedModules}/{totalModules}
                               </Badge>
                             );
                           })}
@@ -1080,9 +1042,22 @@ export default function StudentsActivity() {
                       Прогресс по курсам
                     </h3>
                     <div className="space-y-4">
-                      {mockCourseProgress.map((course, index) => (
-                        <CourseProgressCard key={index} course={course} />
-                      ))}
+                      {selectedStudent.courses && selectedStudent.courses.length > 0 ? (
+                        selectedStudent.courses.map((course, index) => (
+                          <div key={index} className="p-4 bg-zinc-800 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-bold text-white">{course.course_name}</h4>
+                              <p className="text-sm text-gray-400">{course.progress_percentage}%</p>
+                            </div>
+                            <Progress value={course.progress_percentage} className="h-2 bg-zinc-700 [&>*]:bg-[#00FF88]" />
+                            <p className="text-xs text-gray-500 mt-1">
+                              {course.completed_modules || 0} / {course.total_modules || 3} модулей завершено
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-400">Нет данных о прогрессе</p>
+                      )}
                     </div>
 
                     {/* Последняя активность */}

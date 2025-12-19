@@ -39,36 +39,21 @@ export default function AdminDashboard() {
 
   const loadStudentStats = async () => {
     try {
-      console.log('[AdminDashboard] Загружаем статистику студентов...');
+      console.log('[AdminDashboard] Загружаем статистику Tripwire студентов...');
       
-      // Получаем всех пользователей (кроме админов)
-      const { data: allUsers, error } = await supabase
-        .from('users')
-        .select('id, role, created_at')
-        .neq('role', 'admin');
-
-      if (error) {
-        console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
-        return;
-      }
-
-      const totalStudents = allUsers?.length || 0;
+      // ✅ ИСПОЛЬЗУЕМ TRIPWIRE API ДЛЯ ПОЛУЧЕНИЯ РЕАЛЬНОЙ СТАТИСТИКИ!
+      const response = await api.get('/api/tripwire/admin/stats');
+      const statsData = response;
       
-      // Активные = все, у кого role !== 'inactive'
-      const activeStudents = allUsers?.filter(u => u.role !== 'inactive').length || 0;
-      
-      // Новые за неделю = created_at > 7 дней назад
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const newThisWeek = allUsers?.filter(u => new Date(u.created_at) > weekAgo).length || 0;
+      console.log('[AdminDashboard] ✅ Получена статистика от Tripwire API:', statsData);
 
       const stats = {
-        total: totalStudents,
-        active: activeStudents,
-        newThisWeek: newThisWeek,
+        total: statsData.total_students || 0,
+        active: statsData.active_students || 0,
+        newThisWeek: statsData.total_students || 0, // ✅ Можно улучшить добавив фильтр по дате в API
       };
 
-      console.log('[AdminDashboard] ✅ Статистика студентов загружена:', stats);
+      console.log('[AdminDashboard] ✅ Статистика Tripwire студентов загружена:', stats);
       setStudentStats(stats);
     } catch (error) {
       console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
@@ -77,24 +62,52 @@ export default function AdminDashboard() {
 
   const loadTripwireStats = async () => {
     try {
-      console.log('[AdminDashboard] Загружаем статистику Tripwire...');
-      const response = await api.get('/api/admin/tripwire/leaderboard');
-      const data = response.data || response;
+      console.log('[AdminDashboard] Загружаем статистику Tripwire продаж...');
       
-      // Подсчитываем общую статистику
-      const managers = data.managers || [];
-      const totalSales = managers.reduce((sum: number, m: any) => sum + m.total_sales, 0);
-      const totalRevenue = managers.reduce((sum: number, m: any) => sum + m.total_revenue, 0);
-      const thisMonthSales = managers.reduce((sum: number, m: any) => sum + m.this_month_sales, 0);
+      // ✅ ИСПОЛЬЗУЕМ TRIPWIRE ADMIN STATS API
+      const statsResponse = await api.get('/api/tripwire/admin/stats');
+      console.log('[AdminDashboard] ✅ Tripwire Stats API response:', statsResponse);
+      
+      // ✅ Также получаем данные о менеджерах для доп. информации
+      try {
+        const leaderboardResponse = await api.get('/api/admin/tripwire/leaderboard');
+        const managers = leaderboardResponse.data?.managers || leaderboardResponse.managers || [];
+        
+        // Подсчитываем суммы из leaderboard (для продаж)
+        const totalSales = managers.reduce((sum: number, m: any) => sum + m.total_sales, 0);
+        const totalRevenue = managers.reduce((sum: number, m: any) => sum + m.total_revenue, 0);
+        const thisMonthSales = managers.reduce((sum: number, m: any) => sum + m.this_month_sales, 0);
 
-      setTripwireStats({
-        totalSales,
-        totalRevenue,
-        thisMonthSales,
-        managersCount: managers.length,
-      });
+        setTripwireStats({
+          // ✅ Основные метрики берём из реальной статистики
+          totalStudents: statsResponse.total_students || 0,
+          completedStudents: statsResponse.completed_students || 0,
+          completionRate: statsResponse.completion_rate || 0,
+          // ✅ Продажи берём из leaderboard (это для менеджеров)
+          totalSales,
+          totalRevenue,
+          thisMonthSales,
+          managersCount: managers.length,
+        });
 
-      console.log('[AdminDashboard] ✅ Статистика Tripwire загружена:', { totalSales, totalRevenue });
+        console.log('[AdminDashboard] ✅ Статистика Tripwire загружена:', { 
+          students: statsResponse.total_students, 
+          sales: totalSales, 
+          revenue: totalRevenue 
+        });
+      } catch (leaderboardError) {
+        // Если leaderboard не доступен, используем только stats
+        console.warn('[AdminDashboard] ⚠️ Leaderboard недоступен, используем только stats');
+        setTripwireStats({
+          totalStudents: statsResponse.total_students || 0,
+          completedStudents: statsResponse.completed_students || 0,
+          completionRate: statsResponse.completion_rate || 0,
+          totalSales: statsResponse.total_students || 0, // Fallback: кол-во студентов = кол-во продаж
+          totalRevenue: (statsResponse.total_students || 0) * 5000, // Fallback: студенты * 5000₸
+          thisMonthSales: 0,
+          managersCount: 0,
+        });
+      }
     } catch (error) {
       console.error('[AdminDashboard] ❌ Ошибка загрузки Tripwire:', error);
     }
@@ -128,20 +141,20 @@ export default function AdminDashboard() {
     }
   };
 
-  // Форматирование данных для карточки студентов
+  // Форматирование данных для карточки студентов (TRIPWIRE)
   const formatStudentStats = () => {
     if (!studentStats) {
       return [
         { label: "Всего студентов", value: "..." },
         { label: "Активных", value: "..." },
-        { label: "Новых за неделю", value: "..." },
+        { label: "Завершили курс", value: "..." },
       ];
     }
 
     return [
       { label: "Всего студентов", value: studentStats.total.toString() },
-      { label: "Активных", value: studentStats.active.toString() },
-      { label: "Новых за неделю", value: `+${studentStats.newThisWeek}` },
+      { label: "Активных (7 дн)", value: studentStats.active.toString() },
+      { label: "Завершений", value: `${tripwireStats?.completedStudents || 0}` },
     ];
   };
 
@@ -258,9 +271,9 @@ export default function AdminDashboard() {
             icon={<TrendingUp className="w-8 h-8" />}
             onClick={() => navigate("/admin/tripwire-sales-global")}
             stats={[
-              { label: "Всего продаж", value: tripwireStats?.totalSales?.toString() || "0" },
+              { label: "Всего студентов", value: tripwireStats?.totalStudents?.toString() || "0" },
+              { label: "Завершений курса", value: `${tripwireStats?.completedStudents || 0} (${Math.round(tripwireStats?.completionRate || 0)}%)` },
               { label: "Выручка", value: tripwireStats ? `${tripwireStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },
-              { label: "Этот месяц", value: `+${tripwireStats?.thisMonthSales || 0}` },
             ]}
           />
 

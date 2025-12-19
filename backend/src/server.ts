@@ -575,18 +575,17 @@ const server = app.listen(PORT, () => {
       }
 
       // 6. Start IAE Agent schedulers and bot
-      // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ОТЛАДКИ 409
-      // try {
-      //   const { initIAEBot } = await import('./services/iaeAgentBot.js');
-      //   const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
+      try {
+        const { initIAEBot } = await import('./services/iaeAgentBot.js');
+        const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
 
-      //   initIAEBot(); // Initialize bot handlers
-      //   startIAESchedulers(); // Start cron jobs
+        initIAEBot(); // Initialize bot handlers
+        startIAESchedulers(); // Start cron jobs
 
-      //   console.log('✅ IAE Agent bot and schedulers initialized');
-      // } catch (error) {
-      //   console.error('❌ Ошибка инициализации IAE Agent:', error);
-      // }
+        console.log('✅ IAE Agent bot and schedulers initialized');
+      } catch (error) {
+        console.error('❌ Ошибка инициализации IAE Agent:', error);
+      }
 
       // 7. Start Traffic Dashboard schedulers (Weekly Plans)
       try {

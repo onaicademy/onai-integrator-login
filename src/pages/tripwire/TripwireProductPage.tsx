@@ -146,12 +146,12 @@ export default function TripwireProductPage() {
 
   // Load newly unlocked modules and progress on mount
   useEffect(() => {
-    if (!tripwireUser?.id) return;
+    if (!tripwireUser?.user_id) return; // ✅ FIX: Check user_id (auth.users.id)
 
     const loadUnlocks = async () => {
       try {
         // ✅ КЭШИРОВАНИЕ: Проверяем есть ли в localStorage
-        const cachedKey = `tripwire_unlocks_${tripwireUser.id}`;
+        const cachedKey = `tripwire_unlocks_${tripwireUser.user_id}`; // ✅ FIX: Use user_id
         const cached = localStorage.getItem(cachedKey);
         
         if (cached) {
@@ -161,7 +161,7 @@ export default function TripwireProductPage() {
         }
         
         // Загружаем с сервера в фоне
-        const response = await api.get(`/api/tripwire/module-unlocks/${tripwireUser.id}`);
+        const response = await api.get(`/api/tripwire/module-unlocks/${tripwireUser.user_id}`); // ✅ FIX: Use user_id (auth.users.id)
         const unlocks = response.unlocks || [];
         
         console.log('🔓 Loaded unlocks from API:', unlocks);
@@ -201,7 +201,7 @@ export default function TripwireProductPage() {
         const { data: progressData, error: progressError } = await tripwireSupabase
           .from('tripwire_progress')
           .select('lesson_id, is_completed')
-          .eq('tripwire_user_id', tripwireUser.id)
+          .eq('tripwire_user_id', tripwireUser.user_id) // ✅ FIX: Use user_id (auth.users.id)
           .eq('is_completed', true);
         
         if (!progressError && progressData) {
@@ -215,7 +215,7 @@ export default function TripwireProductPage() {
     };
 
     loadUnlocks();
-  }, [tripwireUser?.id]);
+  }, [tripwireUser?.user_id]); // ✅ FIX: Depend on user_id
 
   // 🔥 Load lesson durations from database (video_duration in seconds)
   useEffect(() => {
@@ -265,12 +265,12 @@ export default function TripwireProductPage() {
 
   // Handle unlock animation completion
   const handleUnlockComplete = async () => {
-    if (!currentUnlock || !tripwireUser?.id) return;
+    if (!currentUnlock || !tripwireUser?.user_id) return; // ✅ FIX: Check user_id
 
     try {
       // Mark animation as shown
       await api.post('/api/tripwire/module-unlocks/mark-shown', {
-        userId: tripwireUser.id,
+        userId: tripwireUser.user_id, // ✅ FIX: Use user_id (auth.users.id)
         moduleId: currentUnlock.module_id
       });
 

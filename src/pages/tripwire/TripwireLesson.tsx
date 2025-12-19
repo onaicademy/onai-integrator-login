@@ -658,8 +658,8 @@ const TripwireLesson = () => {
           console.log(`🔓 Module ${response.data.unlockedModuleId} unlocked!`);
           
           // ✅ ИНВАЛИДАЦИЯ КЭША: Очищаем чтобы загрузить свежие данные
-          if (tripwireUserId) {
-            const cachedKey = `tripwire_unlocks_${tripwireUserId}`;
+          if (mainUserId) {
+            const cachedKey = `tripwire_unlocks_${mainUserId}`; // ✅ FIX: Use mainUserId (auth.users.id)
             localStorage.removeItem(cachedKey);
             console.log('🗑️ Cache invalidated - will reload fresh unlocks');
           }

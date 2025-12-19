@@ -13,12 +13,18 @@ interface ActiveChat {
   activatedBy: number;
 }
 
-// Инициализация IAE бота
-export const iaeBot = new TelegramBot(IAE_BOT_TOKEN, { 
-  polling: true 
-});
+// Инициализация IAE бота (ленивая)
+let _iaeBot: TelegramBot | null = null;
 
-console.log('🤖 [IAE Bot] Initialized with token:', IAE_BOT_TOKEN.substring(0, 20) + '...');
+export function getIAEBot(): TelegramBot {
+  if (!_iaeBot) {
+    _iaeBot = new TelegramBot(IAE_BOT_TOKEN, { polling: false }); // Polling включится в initIAEBot()
+    console.log('🤖 [IAE Bot] Instance created with token:', IAE_BOT_TOKEN.substring(0, 20) + '...');
+  }
+  return _iaeBot;
+}
+
+export const iaeBot = getIAEBot();
 
 // Загрузка активных чатов
 function loadActiveChats(): ActiveChat[] {
@@ -99,6 +105,12 @@ function deactivateChat(chatId: number): boolean {
 // Инициализация обработчиков бота
 export function initIAEBot() {
   console.log('🤖 [IAE Bot] Инициализация обработчиков...');
+  
+  // 🚀 Запускаем polling только если еще не запущен
+  if (!iaeBot.isPolling()) {
+    iaeBot.startPolling();
+    console.log('🤖 [IAE Bot] Polling started');
+  }
   
   // Команда /start
   iaeBot.onText(/\/start/, async (msg) => {
@@ -181,6 +193,24 @@ export function initIAEBot() {
       }
     }
   });
+  
+  // Обработка ошибок polling
+  iaeBot.on('polling_error', (error) => {
+    const errorMsg = error.message || '';
+    
+    // Игнорируем временные ошибки
+    if (errorMsg.includes('Logged out')) {
+      // Ждем, Telegram API восстановит сессию автоматически
+      return;
+    }
+    
+    // Логируем только важные ошибки
+    if (!errorMsg.includes('409 Conflict')) {
+      console.error('❌ [IAE Bot] Polling error:', errorMsg);
+    }
+  });
+  
+  console.log('✅ [IAE Bot] Handlers настроены');
 }
 
 // Отправка отчета во все активные чаты
@@ -214,9 +244,5 @@ export async function sendIAEReport(report: string, reportId?: string): Promise<
   return successCount;
 }
 
-// Обработка ошибок polling
-iaeBot.on('polling_error', (error) => {
-  console.error('❌ [IAE Bot] Polling error:', error.message);
-});
-
+// ✅ Bot готов к инициализации через initIAEBot()
 console.log('✅ [IAE Bot] Bot initialized, call initIAEBot() to start handlers');
