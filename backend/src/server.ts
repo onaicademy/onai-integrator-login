@@ -222,12 +222,13 @@ app.use(cors({
       const allowedProd = [
         'https://onai.academy',
         'https://tripwire.onai.academy',
+        'https://traffic.onai.academy',
       ];
       if (allowedProd.includes(origin)) {
         return callback(null, true);
       }
       console.warn(`⚠️ CORS blocked in production: ${origin}`);
-      return callback(new Error('CORS not allowed'), false);
+      return callback(null, false);
     }
     
     // ✅ STAGING: Vercel/Netlify preview deployments
