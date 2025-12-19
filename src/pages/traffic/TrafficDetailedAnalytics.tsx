@@ -322,8 +322,66 @@ export default function TrafficDetailedAnalytics() {
             <RefreshCw className="w-8 h-8 animate-spin text-[#00FF88]" />
           </div>
         ) : filteredCampaigns.length === 0 ? (
-          <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-12 text-center">
-            <p className="text-gray-400">{t('detailedAnalytics.noData')}</p>
+          <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-12">
+            {/* Premium Empty State */}
+            <div className="text-center max-w-2xl mx-auto">
+              {/* Icon with glow */}
+              <div className="relative inline-block mb-6">
+                <div className="absolute inset-0 bg-[#00FF88]/20 blur-3xl rounded-full" />
+                <div className="relative bg-gradient-to-br from-black to-gray-900 p-6 rounded-2xl border border-[#00FF88]/30">
+                  <BarChart3 className="w-16 h-16 text-[#00FF88] mx-auto" />
+                </div>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Нет данных по кампаниям
+              </h3>
+              
+              {/* Description */}
+              <div className="space-y-4 text-left bg-black/60 border border-[#00FF88]/20 rounded-xl p-6 backdrop-blur-sm">
+                <p className="text-gray-300 text-base leading-relaxed">
+                  <span className="text-[#00FF88] font-semibold">Причина:</span> Facebook Ad Account не подключен или токен доступа истёк.
+                </p>
+                
+                {/* Instructions */}
+                <div className="space-y-3 mt-4">
+                  <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider">Что нужно сделать:</p>
+                  <ol className="space-y-2 text-sm text-gray-300">
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-[#00FF88]/20 text-[#00FF88] rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                      <span>Обратитесь к <span className="text-[#00FF88] font-semibold">администратору</span> для подключения Facebook кабинета</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-[#00FF88]/20 text-[#00FF88] rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                      <span>Убедитесь что у токена есть разрешения <code className="text-[#00FF88] bg-black/50 px-2 py-0.5 rounded">ads_read</code></span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-[#00FF88]/20 text-[#00FF88] rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                      <span>После настройки данные появятся автоматически</span>
+                    </li>
+                  </ol>
+                </div>
+                
+                {/* Contact Admin Button */}
+                <div className="pt-4">
+                  <Button 
+                    onClick={() => navigate('/settings')}
+                    className="w-full bg-gradient-to-r from-[#00FF88] to-[#00dd77] hover:from-[#00dd77] hover:to-[#00FF88] text-black font-bold"
+                  >
+                    Перейти в настройки →
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Security Notice */}
+              <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                <p className="text-xs text-yellow-300/80 flex items-center justify-center gap-2">
+                  <span>⚠️</span>
+                  <span>IP-адреса отслеживаются. Передача доступа запрещена. Конфиденциальная информация.</span>
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
