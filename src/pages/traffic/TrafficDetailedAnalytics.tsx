@@ -173,7 +173,7 @@ export default function TrafficDetailedAnalytics() {
   const handleLogout = () => {
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
-    navigate('/traffic/login');
+    navigate('/login');
   };
   
   const formatMoney = (value: number) => {

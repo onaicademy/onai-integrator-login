@@ -27,7 +27,7 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
     
     if (!userData || !token) {
       console.log('❌ No auth found, redirecting to login');
-      navigate('/traffic/login');
+      navigate('/login');
       return;
     }
     
@@ -45,7 +45,7 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
     console.log('👋 Logging out');
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
-    navigate('/traffic/login');
+    navigate('/login');
   };
   
   const isActive = (path: string) => {

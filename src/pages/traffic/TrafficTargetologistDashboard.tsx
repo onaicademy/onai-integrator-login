@@ -33,7 +33,7 @@ export default function TrafficTargetologistDashboard() {
   const handleLogout = () => {
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
-    navigate('/traffic/login');
+    navigate('/login');
   };
   
   return (
@@ -85,7 +85,7 @@ export default function TrafficTargetologistDashboard() {
               
               {/* Settings Button */}
               <Button
-                onClick={() => navigate('/traffic/settings')}
+                onClick={() => navigate('/settings')}
                 variant="outline"
                 size="sm"
                 className="bg-black/80 border-[#00FF88]/20 text-white hover:bg-[#00FF88]/10 hover:border-[#00FF88]/40 backdrop-blur-xl rounded-lg px-3 py-2 flex items-center gap-2"
@@ -96,7 +96,7 @@ export default function TrafficTargetologistDashboard() {
               
               {/* Detailed Analytics Button */}
               <Button
-                onClick={() => navigate('/traffic/detailed-analytics')}
+                onClick={() => navigate('/detailed-analytics')}
                 variant="outline"
                 size="sm"
                 className="bg-black/80 border-[#00FF88]/20 text-white hover:bg-[#00FF88]/10 hover:border-[#00FF88]/40 backdrop-blur-xl rounded-lg px-3 py-2 flex items-center gap-2"

@@ -48,11 +48,11 @@ export default function TrafficLogin() {
       
       toast.success(`Добро пожаловать, ${user.fullName}!`);
       
-      // Redirect to cabinet
+      // ✅ PRODUCTION: Routes without prefix
       if (user.role === 'admin') {
-        navigate('/traffic/admin/dashboard');
+        navigate('/admin/dashboard');
       } else {
-        navigate(`/traffic/cabinet/${user.team.toLowerCase()}`);
+        navigate(`/cabinet/${user.team.toLowerCase()}`);
       }
     } catch (error: any) {
       console.error('❌ Login failed:', error);

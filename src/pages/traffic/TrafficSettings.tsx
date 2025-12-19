@@ -185,7 +185,7 @@ export default function TrafficSettings() {
   const handleLogout = () => {
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
-    navigate('/traffic/login');
+    navigate('/login');
   };
   
   if (loading) {

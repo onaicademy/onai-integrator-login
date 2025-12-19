@@ -255,25 +255,25 @@ const AppRoutes = () => {
       <Route path="/integrator/traficcommand" element={<TrafficCommandDashboard />} />
       
       {/* 🚀 TRAFFIC DASHBOARD - Personal Cabinets System */}
-      {/* Login for Traffic Dashboard (subdomain: traffic.onai.academy) */}
-      <Route path="/traffic/login" element={<TrafficLogin />} />
+      {/* ✅ PRODUCTION: subdomain traffic.onai.academy (routes WITHOUT prefix) */}
+      <Route path="/login" element={<TrafficLogin />} />
       
       {/* Personal Cabinet for each targetologist - Simplified NO SIDEBAR */}
-      <Route path="/traffic/cabinet/:team" element={<TrafficTargetologistDashboard />} />
+      <Route path="/cabinet/:team" element={<TrafficTargetologistDashboard />} />
       
       {/* Detailed Analytics - Campaigns/AdSets/Ads */}
-      <Route path="/traffic/detailed-analytics" element={<TrafficDetailedAnalytics />} />
+      <Route path="/detailed-analytics" element={<TrafficDetailedAnalytics />} />
       
       {/* Settings - Targetologist settings */}
-      <Route path="/traffic/settings" element={<TrafficSettings />} />
+      <Route path="/settings" element={<TrafficSettings />} />
       
       {/* Admin Panel for Traffic Dashboard */}
-      <Route path="/traffic/admin/dashboard" element={<TrafficAdminPanel />} />
-      <Route path="/traffic/admin/settings" element={<TrafficAdminPanel />} />
-      <Route path="/traffic/admin/users" element={<TrafficAdminPanel />} />
-      <Route path="/traffic/admin/security" element={<TrafficSecurityPanel />} />
-      <Route path="/traffic/admin/utm-sources" element={<UTMSourcesPanel />} />
-      <Route path="/traffic/admin/team-constructor" element={<TrafficTeamConstructor />} />
+      <Route path="/admin/dashboard" element={<TrafficAdminPanel />} />
+      <Route path="/admin/settings" element={<TrafficAdminPanel />} />
+      <Route path="/admin/users" element={<TrafficAdminPanel />} />
+      <Route path="/admin/security" element={<TrafficSecurityPanel />} />
+      <Route path="/admin/utm-sources" element={<UTMSourcesPanel />} />
+      <Route path="/admin/team-constructor" element={<TrafficTeamConstructor />} />
       
       {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/integrator" element={
