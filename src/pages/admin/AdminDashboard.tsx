@@ -256,7 +256,7 @@ export default function AdminDashboard() {
             title="Мой отдел продаж"
             description="Мои продажи, мои клиенты, добавление пользователей"
             icon={<TrendingUp className="w-8 h-8" />}
-            onClick={() => navigate("/admin/tripwire-manager")}
+            onClick={() => navigate("/integrator/sales-manager")}
             stats={[
               { label: "Мои продажи", value: myStats?.totalSales?.toString() || "0" },
               { label: "Моя выручка", value: myStats ? `${myStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },

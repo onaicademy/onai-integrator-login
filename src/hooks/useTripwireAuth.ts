@@ -95,7 +95,7 @@ export function useTripwireAuth() {
       if (userRole === 'sales') {
         console.log('✅ Sales manager logged in, redirecting to Sales Manager Dashboard...');
         setTimeout(() => {
-          navigate('/admin/tripwire-manager', { replace: true });
+          navigate('/integrator/sales-manager', { replace: true });
         }, 500);
         return;
       }

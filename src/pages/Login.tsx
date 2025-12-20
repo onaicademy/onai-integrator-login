@@ -141,12 +141,12 @@ export default function Login() {
         // ✅ ОНБОРДИНГ ТОЛЬКО ДЛЯ СТУДЕНТОВ
         // 🔥 AUTO-REDIRECT: Sales менеджеры → Sales Manager Panel
         if (userData?.role === 'sales') {
-          console.log('👨‍💼 Sales менеджер, редирект на /admin/tripwire-manager');
+          console.log('👨‍💼 Sales менеджер, редирект на /integrator/sales-manager');
           toast({
             title: '✅ Добро пожаловать!',
             description: 'Панель управления продажами Tripwire',
           });
-          navigate('/admin/tripwire-manager', { replace: true });
+          navigate('/integrator/sales-manager', { replace: true });
           return;
         }
 
