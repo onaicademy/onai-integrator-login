@@ -187,8 +187,32 @@ export default function TripwireManager() {
             <button
               onClick={async () => {
                 if (confirm('Вы уверены что хотите выйти?')) {
-                  await tripwireSupabase.auth.signOut();
-                  window.location.href = '/tripwire/login';
+                  console.log('🚪 [LOGOUT] Starting logout process...');
+                  
+                  try {
+                    // 1. Sign out from Tripwire Supabase
+                    const { error } = await tripwireSupabase.auth.signOut();
+                    if (error) {
+                      console.error('❌ [LOGOUT] Tripwire signOut error:', error);
+                    } else {
+                      console.log('✅ [LOGOUT] Tripwire signOut successful');
+                    }
+                    
+                    // 2. Clear ALL localStorage tokens
+                    console.log('🗑️ [LOGOUT] Clearing localStorage tokens...');
+                    localStorage.removeItem('sb-tripwire-auth-token');
+                    localStorage.removeItem('sb-main-auth-token');
+                    localStorage.removeItem('sb-landing-auth-token');
+                    console.log('✅ [LOGOUT] localStorage cleared');
+                    
+                    // 3. Redirect to login
+                    console.log('🔄 [LOGOUT] Redirecting to /tripwire/login');
+                    window.location.href = '/tripwire/login';
+                  } catch (err) {
+                    console.error('❌ [LOGOUT] Unexpected error:', err);
+                    // Force redirect anyway
+                    window.location.href = '/tripwire/login';
+                  }
                 }
               }}
               className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-white/5 hover:bg-red-500/20

@@ -242,7 +242,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 
 /**
  * Получает список Tripwire пользователей
- * ✅ USING SUPABASE CLIENT (tripwirePool connection issue fixed)
+ * ✅ USING SUPABASE CLIENT - SIMPLE QUERY WITHOUT JOINS
  * ✅ С REAL-TIME расчетом modules_completed из tripwire_progress
  */
 export async function getTripwireUsers(params: GetTripwireUsersParams & { startDate?: string; endDate?: string }) {
@@ -254,10 +254,10 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
 
     const offset = (page - 1) * limit;
 
-    // Базовый запрос через Supabase
+    // Базовый запрос через Supabase БЕЗ JOINS
     let query = tripwireAdminSupabase
       .from('tripwire_users')
-      .select('*, tripwire_progress!inner(module_id, is_completed)', { count: 'exact' });
+      .select('*', { count: 'exact' });
 
     // Фильтры
     if (managerId) {
@@ -289,16 +289,23 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
 
     // Подсчитываем real_modules_completed для каждого пользователя
     const usersWithModules = await Promise.all((data || []).map(async (user) => {
-      // Подсчет завершенных модулей через progress
-      const { count: completedModules } = await tripwireAdminSupabase
+      // Подсчет завершенных УНИКАЛЬНЫХ модулей через progress
+      const { data: progressData, error: progressError } = await tripwireAdminSupabase
         .from('tripwire_progress')
-        .select('module_id', { count: 'exact', head: true })
+        .select('module_id')
         .eq('tripwire_user_id', user.user_id)
         .eq('is_completed', true);
 
+      if (progressError) {
+        console.error(`⚠️ Error fetching progress for ${user.email}:`, progressError);
+      }
+
+      // Считаем уникальные module_id
+      const uniqueModules = progressData ? new Set(progressData.map(p => p.module_id)).size : 0;
+
       return {
         ...user,
-        modules_completed: completedModules || user.modules_completed || 0,
+        modules_completed: uniqueModules || user.modules_completed || 0,
         total_count: count || 0
       };
     }));
