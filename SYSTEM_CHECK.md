@@ -88,7 +88,7 @@ Password: [твой пароль]
 
 ---
 
-### **4️⃣ VAMUS RM INTEGRATION**
+### **4️⃣ AmoCRM INTEGRATION**
 
 **Проверка табов:**
 ```

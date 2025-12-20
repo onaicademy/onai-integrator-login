@@ -126,16 +126,9 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
       if (profileError) throw new Error(`tripwire_user_profile: ${profileError.message}`);
       console.log('   ✅ tripwire_user_profile');
 
-      // 4. module_unlocks (Module 16)
-      const { error: unlockError } = await tripwireAdminSupabase
-        .from('module_unlocks')
-        .insert({
-          user_id: userId,
-          module_id: 16,
-          unlocked_at: new Date().toISOString()
-        });
-      if (unlockError) throw new Error(`module_unlocks: ${unlockError.message}`);
-      console.log('   ✅ module_unlocks');
+      // 4. module_unlocks - ПРОПУСКАЕМ! 
+      // Триггер auto_unlock_first_module_on_user_creation автоматически создаст запись
+      console.log('   ⏭️  module_unlocks (skipped - will be created by trigger)');
 
       // 🔥 5. CREATE tripwire_progress for Lesson 67 (КРИТИЧНО!)
       // ВАЖНО: tripwire_progress.tripwire_user_id = userId (из auth.users), НЕ tripwire_users.id!
@@ -533,44 +526,73 @@ export async function getSalesChartData(
  * 🔥 ONLY FOR ADMIN (smmmcwin@gmail.com)
  * ✅ Удаляет из auth.users, tripwire_users, sales_activity_log, tripwire_user_profile, public.users
  */
+/**
+ * Удаляет Tripwire пользователя полностью из системы
+ * @param userId - UUID пользователя
+ * @returns Объект с информацией об удалении
+ */
 export async function deleteTripwireUser(userId: string) {
   try {
-    console.log(`🗑️ [DELETE] Deleting user: ${userId}`);
+    console.log(`🗑️ [DELETE] Starting deletion process for user: ${userId}`);
 
-    // 1. Вызываем RPC для удаления из DB tables (через Supabase RPC)
+    // 1. Вызываем улучшенную RPC для удаления из всех DB tables
     const { data: rpcResult, error: rpcError } = await tripwireAdminSupabase.rpc('rpc_delete_tripwire_user', {
       p_user_id: userId
     });
 
     if (rpcError) {
       console.error('❌ [DELETE] RPC error:', rpcError);
-      throw new Error(`Failed to delete user from database: ${rpcError.message}`);
+      throw new Error(`Database deletion failed: ${rpcError.message || rpcError.hint || 'Unknown RPC error'}`);
     }
 
     console.log('✅ [DELETE] RPC result:', rpcResult);
 
     if (!rpcResult || !rpcResult.success) {
-      throw new Error(rpcResult?.error || 'Failed to delete user from database');
+      const errorMsg = rpcResult?.error || 'Failed to delete user from database';
+      const errorDetails = rpcResult?.details || 'No additional details';
+      
+      console.error('❌ [DELETE] RPC returned failure:', errorMsg, errorDetails);
+      
+      throw new Error(`${errorMsg}\n\nDetails: ${errorDetails}`);
     }
 
     // 2. Удаляем из auth.users через Admin API
+    console.log('🔐 [DELETE] Attempting to delete from auth.users...');
     const { error: authError } = await tripwireAdminSupabase.auth.admin.deleteUser(userId);
-    
+
     if (authError) {
       console.error('⚠️ [DELETE] Auth deletion error:', authError.message);
-      // Не критичная ошибка, продолжаем
-    } else {
-      console.log('✅ [DELETE] Deleted from auth.users');
+      
+      // Если auth.users удалить не удалось - это НЕ критично
+      // Пользователь уже удален из всех таблиц БД
+      return {
+        success: true,
+        email: rpcResult.email,
+        full_name: rpcResult.full_name,
+        warning: `User deleted from database, but auth deletion failed: ${authError.message}`,
+        details: rpcResult.details,
+      };
     }
+
+    console.log('✅ [DELETE] Deleted from auth.users successfully');
 
     return {
       success: true,
       email: rpcResult.email,
       full_name: rpcResult.full_name,
+      message: rpcResult.message || 'User deleted completely',
+      details: rpcResult.details,
     };
   } catch (error: any) {
     console.error('❌ [DELETE] Error deleting user:', error);
-    throw error;
+    
+    // Возвращаем детальную ошибку для фронтенда
+    throw {
+      message: error.message || 'Unknown error during user deletion',
+      details: error.details || error.stack || 'No additional details available',
+      userId: userId,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
 

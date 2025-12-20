@@ -38,7 +38,7 @@ https://api.onai.academy/webhook/amocrm/traffic
 - ☑️ Изменение статуса
 
 **Фильтры:**
-- Pipeline (Воронка): `VAMUS RM` (ID: 10418746)
+- Pipeline (Воронка): `AmoCRM` (ID: 10418746)
 - Status (Статус): `Успешно реализовано` (ID: 142)
 
 **Метод:** POST
@@ -116,7 +116,7 @@ pm2 logs onai-backend --lines 50 | grep "Traffic Webhook"
   👑 Таргетолог: Kenesary
   👤 Клиент: Тест Клиент
   💰 Сумма: 100,000 ₸
-  📦 Продукт: Main Product (VAMUS RM)
+  📦 Продукт: Main Product (AmoCRM)
   🏷️ Кампания: tripwire_dec20
   ```
 
@@ -200,7 +200,7 @@ FACEBOOK_APP_SECRET=[SET]
 ## 📊 **Архитектура**
 
 ```
-AmoCRM VAMUS RM Pipeline (10418746)
+AmoCRM AmoCRM Pipeline (10418746)
     ↓
 Deal → "Успешно реализовано" (142)
     ↓

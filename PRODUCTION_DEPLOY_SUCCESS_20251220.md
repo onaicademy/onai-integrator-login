@@ -14,7 +14,7 @@
 - ✅ Traffic Dashboard: полные числа
 - ✅ Казахский язык: 45+ переводов
 - ✅ Onboarding Tour: баг исправлен
-- ✅ VAMUS RM integration: готов
+- ✅ AmoCRM integration: готов
 
 ### **Backend (already up to date)**
 - ✅ Коммит `2e7fcb6` уже на production

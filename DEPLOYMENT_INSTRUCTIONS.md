@@ -16,7 +16,7 @@
 - ✅ Исправленный OnboardingTour (без ошибок)
 - ✅ Полные числа вместо K/M
 - ✅ Полный перевод на казахский
-- ✅ VAMUS RM integration (Main Products)
+- ✅ AmoCRM integration (Main Products)
 - ✅ Табы Express / Main Products
 
 ### **2. Backend:**
@@ -26,7 +26,7 @@ backend/dist/routes/traffic-main-products.js (8.4KB)
 
 **Новый endpoint:**
 - ✅ `/api/traffic/main-products-sales`
-- ✅ Подключение к VAMUS RM воронке
+- ✅ Подключение к AmoCRM воронке
 - ✅ Извлечение UTM меток
 
 ---
@@ -259,7 +259,7 @@ pm2 restart onai-backend
 4. `MainProductsAnalytics.tsx` - **НОВЫЙ** компонент
 
 ### **Backend (2 файла):**
-1. `traffic-main-products.ts` - **НОВЫЙ** route для VAMUS RM
+1. `traffic-main-products.ts` - **НОВЫЙ** route для AmoCRM
 2. `server.ts` - подключен новый route
 
 ### **Translations:**
@@ -292,7 +292,7 @@ pm2 restart onai-backend
 - PM2 без ошибок
 - Логи чистые
 
-✅ **VAMUS RM:**
+✅ **AmoCRM:**
 - API подключен
 - Готов получать продажи
 - Будет показывать статистику

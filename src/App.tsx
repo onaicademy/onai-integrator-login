@@ -92,7 +92,27 @@ import DebugDashboard from "./pages/admin/DebugDashboard";
 // 🛡️ Initialize Sentry FIRST - до создания компонентов
 initSentry();
 
-const queryClient = new QueryClient();
+// 🚀 ОПТИМИЗАЦИЯ: Enhanced QueryClient config с retry и stale time
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 минут - данные считаются свежими
+      gcTime: 10 * 60 * 1000, // 10 минут - время хранения в кэше (было cacheTime)
+      retry: 3, // 3 попытки при ошибке
+      retryDelay: (attemptIndex) => 
+        Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff: 1s, 2s, 4s, макс 30s
+      refetchOnWindowFocus: false, // Не перезапрашивать при фокусе окна (было 'stale')
+      refetchOnReconnect: 'always', // Перезапросить при reconnect
+      refetchOnMount: false, // Не перезапрашивать при каждом mount если есть в кэше
+      networkMode: 'online', // Запросы только online
+    },
+    mutations: {
+      retry: 2, // 2 попытки для мутаций
+      retryDelay: 1000, // 1 секунда между попытками
+      networkMode: 'online',
+    },
+  },
+});
 
 // 🚀 ОПТИМИЗАЦИЯ: Красивый Loader для Suspense
 const SuspenseLoader = () => (
@@ -227,8 +247,8 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Sales Manager Dashboard для Tripwire (ЗАЩИЩЕНО: admin и sales роли) */}
-      <Route path="/admin/tripwire-manager" element={
+      {/* Sales Manager Dashboard (ЗАЩИЩЕНО: admin и sales роли) */}
+      <Route path="/integrator/sales-manager" element={
         <SalesGuard><TripwireManager /></SalesGuard>
       } />
       
@@ -273,6 +293,19 @@ const AppRoutes = () => {
       {isTrafficDomain && <Route path="/login" element={<TrafficLogin />} />}
       {isTrafficDomain && <Route path="/reset-password" element={<TrafficResetPassword />} />}
       {isTrafficDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
+      
+      {/* ✅ DEVELOPMENT: /traffic prefix routes for localhost testing */}
+      <Route path="/traffic/login" element={<TrafficLogin />} />
+      <Route path="/traffic/reset-password" element={<TrafficResetPassword />} />
+      <Route path="/traffic/cabinet/:team" element={<TrafficTargetologistDashboard />} />
+      <Route path="/traffic/detailed-analytics" element={<TrafficDetailedAnalytics />} />
+      <Route path="/traffic/settings" element={<TrafficSettings />} />
+      <Route path="/traffic/admin/dashboard" element={<TrafficAdminPanel />} />
+      <Route path="/traffic/admin/settings" element={<TrafficAdminPanel />} />
+      <Route path="/traffic/admin/users" element={<TrafficAdminPanel />} />
+      <Route path="/traffic/admin/security" element={<TrafficSecurityPanel />} />
+      <Route path="/traffic/admin/utm-sources" element={<UTMSourcesPanel />} />
+      <Route path="/traffic/admin/team-constructor" element={<TrafficTeamConstructor />} />
       
       {/* Personal Cabinet for each targetologist - Simplified NO SIDEBAR */}
       <Route path="/cabinet/:team" element={<TrafficTargetologistDashboard />} />

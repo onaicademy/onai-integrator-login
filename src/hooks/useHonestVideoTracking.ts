@@ -30,6 +30,33 @@ interface VideoTrackingState {
   lastPosition: number;
 }
 
+// 🛡️ NEW: Retry helper с exponential backoff
+const retryWithBackoff = async <T,>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  retryDelay = 1000
+): Promise<T> => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const isLastAttempt = i === maxRetries - 1;
+      
+      if (isLastAttempt) {
+        console.error(`❌ [Retry] Failed after ${maxRetries} attempts:`, error);
+        throw error;
+      }
+      
+      const delay = Math.min(retryDelay * 2 ** i, 30000); // Max 30 секунд
+      console.warn(`⚠️ [Retry] Attempt ${i + 1}/${maxRetries} failed, retrying in ${delay}ms...`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw new Error('Retry logic exhausted');
+};
+
 // Функция объединения перекрывающихся сегментов
 const mergeSegments = (segments: WatchedSegment[]): WatchedSegment[] => {
   if (segments.length === 0) return [];
@@ -180,7 +207,7 @@ export const useHonestVideoTracking = (
     loadProgress();
   }, [lessonId, userId, tableName, userIdField]);
   
-  // 💾 Функция сохранения в базу
+  // 💾 Функция сохранения в базу с RETRY LOGIC
   const syncProgress = useCallback(async () => {
     if (!userId || !lessonId || videoDurationRef.current === 0) return;
     
@@ -236,14 +263,17 @@ export const useHonestVideoTracking = (
         ? 'tripwire_user_id,lesson_id' 
         : 'user_id,lesson_id';
       
-      const { error } = await supabase
-        .from(tableName)
-        .upsert(upsertData as any, { onConflict: conflictField });
-      
-      if (error) {
-        console.error('❌ [HonestTracking] Save error:', error);
-        return;
-      }
+      // 🛡️ NEW: Используем retry с exponential backoff
+      await retryWithBackoff(async () => {
+        const { error } = await supabase
+          .from(tableName)
+          .upsert(upsertData as any, { onConflict: conflictField });
+        
+        if (error) {
+          console.error('❌ [HonestTracking] Save error:', error);
+          throw error; // Важно! Чтобы retry сработал
+        }
+      }, 3, 1000);
       
       console.log('✅ [HonestTracking] Saved:', percentage + '%');
       lastSavedRef.current = percentage;
@@ -255,8 +285,52 @@ export const useHonestVideoTracking = (
         setIsCompleted(true);
         console.log('🎉 [HonestTracking] Lesson qualified for completion!');
       }
+      
     } catch (e) {
-      console.error('❌ [HonestTracking] Exception:', e);
+      console.error('❌ [HonestTracking] Exception after retries:', e);
+      
+      // 🛡️ NEW: Offline queue - сохраняем в localStorage при полном провале
+      try {
+        const offlineData = {
+          userId,
+          lessonId,
+          tableName,
+          data: tableName === 'tripwire_progress'
+            ? {
+                tripwire_user_id: userId,
+                lesson_id: lessonId,
+                watched_segments: JSON.stringify(merged),
+                total_watched_seconds: Math.round(totalWatched),
+                video_duration: Math.round(videoDurationRef.current),
+                video_progress_percent: percentage,
+                last_position_seconds: Math.round(lastTimeRef.current),
+                is_completed: qualified,
+                video_qualified_for_completion: qualified,
+                updated_at: new Date().toISOString()
+              }
+            : {
+                user_id: userId,
+                lesson_id: lessonId,
+                watched_segments: JSON.stringify(merged),
+                total_watched_seconds: Math.round(totalWatched),
+                video_duration_seconds: Math.round(videoDurationRef.current),
+                watch_percentage: percentage,
+                last_position_seconds: Math.round(lastTimeRef.current),
+                is_qualified_for_completion: qualified,
+                updated_at: new Date().toISOString()
+              },
+          timestamp: Date.now()
+        };
+        
+        const existingQueue = localStorage.getItem('pending_video_progress');
+        const queue = existingQueue ? JSON.parse(existingQueue) : [];
+        queue.push(offlineData);
+        localStorage.setItem('pending_video_progress', JSON.stringify(queue));
+        
+        console.log('📦 [HonestTracking] Saved to offline queue');
+      } catch (storageError) {
+        console.error('❌ [HonestTracking] Failed to save to localStorage:', storageError);
+      }
     }
   }, [userId, lessonId, tableName, isCompleted, isQualifiedForCompletion]);
   
@@ -401,6 +475,60 @@ export const useHonestVideoTracking = (
           segmentsRef.current.push(segment);
         }
       }
+    };
+  }, []);
+  
+  // 🛡️ NEW: Обработка offline queue при возвращении online
+  useEffect(() => {
+    const processOfflineQueue = async () => {
+      try {
+        const queueData = localStorage.getItem('pending_video_progress');
+        if (!queueData) return;
+        
+        const queue = JSON.parse(queueData);
+        console.log(`📦 [HonestTracking] Processing ${queue.length} offline items...`);
+        
+        for (const item of queue) {
+          try {
+            const conflictField = item.tableName === 'tripwire_progress' 
+              ? 'tripwire_user_id,lesson_id' 
+              : 'user_id,lesson_id';
+            
+            await retryWithBackoff(async () => {
+              const { error } = await supabase
+                .from(item.tableName)
+                .upsert(item.data as any, { onConflict: conflictField });
+              
+              if (error) throw error;
+            }, 3, 1000);
+            
+            console.log('✅ [HonestTracking] Offline item synced:', item.lessonId);
+          } catch (error) {
+            console.error('❌ [HonestTracking] Failed to sync offline item:', error);
+          }
+        }
+        
+        // Очищаем queue после успешной синхронизации
+        localStorage.removeItem('pending_video_progress');
+        console.log('✅ [HonestTracking] Offline queue cleared');
+        
+      } catch (error) {
+        console.error('❌ [HonestTracking] Error processing offline queue:', error);
+      }
+    };
+    
+    // Обрабатываем queue при mount и при возвращении online
+    processOfflineQueue();
+    
+    const handleOnline = () => {
+      console.log('🌐 [HonestTracking] Back online, processing queue...');
+      processOfflineQueue();
+    };
+    
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
     };
   }, []);
   

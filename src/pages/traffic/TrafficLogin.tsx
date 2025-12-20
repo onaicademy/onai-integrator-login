@@ -15,6 +15,21 @@ import toast from 'react-hot-toast';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
 import { useLanguage } from '@/hooks/useLanguage';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
+import { AuthManager } from '@/lib/auth';
+
+interface LoginResponse {
+  accessToken?: string;
+  token?: string; // fallback for old API response
+  refreshToken?: string;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    team: string;
+    role: 'admin' | 'targetologist';
+  };
+  expiresIn?: number;
+}
 
 export default function TrafficLogin() {
   const [email, setEmail] = useState('');
@@ -32,31 +47,51 @@ export default function TrafficLogin() {
     try {
       console.log('🔐 Attempting login:', email);
       
-      const response = await axios.post(`${API_URL}/api/traffic-auth/login`, {
-        email: email.trim().toLowerCase(),
-        password
-      });
+      const response = await axios.post<LoginResponse>(
+        `${API_URL}/api/traffic-auth/login`,
+        {
+          email: email.trim().toLowerCase(),
+          password
+        }
+      );
       
-      const { token, user } = response.data;
+      const data = response.data;
       
-      // Save to localStorage
-      localStorage.setItem('traffic_token', token);
-      localStorage.setItem('traffic_user', JSON.stringify(user));
+      // ✅ Support both old and new API response formats
+      const accessToken = data.accessToken || data.token;
+      const refreshToken = data.refreshToken || accessToken; // fallback to accessToken if no refresh
+      const expiresIn = data.expiresIn || (24 * 60 * 60); // default 24 hours
+      const user = data.user;
+      
+      if (!accessToken) {
+        throw new Error('No access token received');
+      }
+      
+      // ✅ Save tokens using AuthManager
+      AuthManager.saveTokens(
+        {
+          accessToken,
+          refreshToken,
+          expiresIn
+        },
+        user
+      );
       
       console.log('✅ Login successful:', user);
-      
       toast.success(`Добро пожаловать, ${user.fullName}!`);
       
-      // ✅ PRODUCTION: Routes without prefix
+      // ✅ Navigate based on role and environment
+      const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+      
       if (user.role === 'admin') {
-        navigate('/admin/dashboard');
+        navigate(isTrafficDomain ? '/admin/dashboard' : '/traffic/admin/dashboard');
       } else {
-        navigate(`/cabinet/${user.team.toLowerCase()}`);
+        navigate(isTrafficDomain ? `/cabinet/${user.team.toLowerCase()}` : `/traffic/cabinet/${user.team.toLowerCase()}`);
       }
     } catch (error: any) {
       console.error('❌ Login failed:', error);
       
-      const errorMessage = error.response?.data?.error || 'Ошибка входа';
+      const errorMessage = error.response?.data?.error || 'Ошибка входа. Проверьте данные.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home, Zap } from 'lucide-react';
 import { isChunkLoadError } from '@/utils/error-recovery';
+import * as Sentry from '@sentry/react';
 
 interface Props {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ interface State {
   errorInfo: React.ErrorInfo | null;
   isChunkError: boolean;
   retryCount: number;
+  eventId: string | null; // 🛡️ NEW: Sentry event ID для user feedback
 }
 
 export class ErrorBoundary extends React.Component<Props, State> {
@@ -25,6 +27,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
       errorInfo: null,
       isChunkError: false,
       retryCount: 0,
+      eventId: null, // 🛡️ NEW: Sentry event ID
     };
   }
 
@@ -43,9 +46,29 @@ export class ErrorBoundary extends React.Component<Props, State> {
     const isChunk = isChunkLoadError(error);
     
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // 🛡️ NEW: Логируем в Sentry (только НЕ chunk errors - они ожидаемые)
+    let eventId: string | null = null;
+    if (!isChunk) {
+      eventId = Sentry.captureException(error, {
+        contexts: {
+          react: {
+            componentStack: errorInfo.componentStack,
+          },
+        },
+        level: 'error',
+        tags: {
+          errorBoundary: true,
+          errorType: error.name,
+        },
+      });
+      console.log('🛡️ [ErrorBoundary] Logged to Sentry:', eventId);
+    }
+    
     this.setState({ 
       errorInfo,
       isChunkError: isChunk,
+      eventId,
     });
     
     // 🛡️ ChunkLoadError - автоматический retry с reload
@@ -64,8 +87,28 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null, retryCount: 0 });
+    this.setState({ hasError: false, error: null, errorInfo: null, retryCount: 0, eventId: null });
     window.location.href = '/';
+  };
+
+  // 🛡️ NEW: Показать форму feedback от Sentry
+  handleReportFeedback = () => {
+    if (this.state.eventId) {
+      Sentry.showReportDialog({ 
+        eventId: this.state.eventId,
+        title: 'Сообщить об ошибке',
+        subtitle: 'Опишите, что вы делали когда произошла ошибка',
+        subtitle2: 'Мы получим информацию и исправим проблему',
+        labelName: 'Имя',
+        labelEmail: 'Email',
+        labelComments: 'Что произошло?',
+        labelClose: 'Закрыть',
+        labelSubmit: 'Отправить',
+        errorGeneric: 'Произошла ошибка при отправке. Попробуйте еще раз.',
+        errorFormEntry: 'Некоторые поля не заполнены. Пожалуйста, исправьте ошибки и попробуйте снова.',
+        successMessage: 'Спасибо за отзыв! Мы получили информацию.',
+      });
+    }
   };
 
   handleReload = () => {
@@ -192,6 +235,22 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 Обновить страницу
               </Button>
             </div>
+            
+            {/* 🛡️ NEW: Кнопка для report feedback в Sentry */}
+            {this.state.eventId && (
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <p className="text-sm text-gray-400 mb-3">
+                  Помогите нам стать лучше - расскажите что произошло
+                </p>
+                <Button
+                  onClick={this.handleReportFeedback}
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white text-sm"
+                >
+                  📝 Отправить отчет об ошибке
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       );

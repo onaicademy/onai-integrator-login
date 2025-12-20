@@ -10,32 +10,140 @@ import { useParams, useNavigate } from 'react-router-dom';
 import TrafficCommandDashboard from '../tripwire/TrafficCommandDashboard';
 import MainProductsAnalytics from '@/components/traffic/MainProductsAnalytics';
 import { Button } from '@/components/ui/button';
-import { Users, User, Globe, LogOut, BarChart3, Settings } from 'lucide-react';
+import { Users, User, Globe, LogOut, BarChart3, Settings, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { OnboardingTour } from '@/components/traffic/OnboardingTour';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
+import { AuthManager, AuthUser } from '@/lib/auth';
 
 export default function TrafficTargetologistDashboard() {
   const { team } = useParams<{ team: string }>();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [unauthorized, setUnauthorized] = useState(false);
+  const [activeTab, setActiveTab] = useState<'express' | 'main-products'>('express');
+  const [showOnlyMyTeam, setShowOnlyMyTeam] = useState(false);
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   
+  // ✅ CRITICAL: Validate authentication on mount
   useEffect(() => {
-    const userData = localStorage.getItem('traffic_user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    validateAuthAndLoadUser();
+  }, []);
+
+  const validateAuthAndLoadUser = () => {
+    try {
+      // ✅ Check if token exists and is valid
+      const token = AuthManager.getAccessToken();
+      
+      if (!token) {
+        console.warn('❌ No valid token found');
+        setUnauthorized(true);
+        setLoading(false);
+        setTimeout(() => {
+          const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+          navigate(isTrafficDomain ? '/login' : '/traffic/login');
+        }, 2000);
+        return;
+      }
+
+      // ✅ Validate user data
+      const userData = AuthManager.getUser();
+      
+      if (!userData) {
+        console.warn('❌ Invalid user data');
+        setUnauthorized(true);
+        setLoading(false);
+        setTimeout(() => {
+          const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+          navigate(isTrafficDomain ? '/login' : '/traffic/login');
+        }, 2000);
+        return;
+      }
+
+      // ✅ Check if user has permission for this route
+      if (userData.role === 'admin') {
+        // Redirect admin to admin dashboard
+        const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+        navigate(isTrafficDomain ? '/admin/dashboard' : '/traffic/admin/dashboard');
+        return;
+      }
+
+      setUser(userData);
+      setUnauthorized(false);
+      setLoading(false);
+    } catch (error) {
+      console.error('❌ Auth validation error:', error);
+      setUnauthorized(true);
+      setLoading(false);
     }
+  };
+
+  // ✅ Refresh validation every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      validateAuthAndLoadUser();
+    }, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, []);
   
   const teamName = team?.charAt(0).toUpperCase() + team?.slice(1).toLowerCase() || user?.team;
-  const [showOnlyMyTeam, setShowOnlyMyTeam] = useState(false);
   
   const handleLogout = () => {
-    localStorage.removeItem('traffic_token');
-    localStorage.removeItem('traffic_user');
-    navigate('/login');
+    // ✅ Clear all authentication data
+    AuthManager.clearAll();
+    
+    // ✅ Notify server to invalidate session (optional but recommended)
+    fetch('/api/traffic-auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(err => console.error('Logout error:', err));
+    
+    const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+    navigate(isTrafficDomain ? '/login' : '/traffic/login');
   };
+
+  // ✅ Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#030303] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#00FF88]"></div>
+          <p className="mt-4 text-[#00FF88] font-semibold">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Show unauthorized message
+  if (unauthorized) {
+    return (
+      <div className="min-h-screen bg-[#030303] flex items-center justify-center p-4">
+        <div className="max-w-md bg-black/60 border border-red-500/30 rounded-xl p-8 text-center">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">{t('auth.unauthorized') || 'Нет доступа'}</h2>
+          <p className="text-gray-400 mb-6">
+            Your session has expired. Please log in again.
+          </p>
+          <Button
+            onClick={() => {
+              const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+              navigate(isTrafficDomain ? '/login' : '/traffic/login');
+            }}
+            className="w-full bg-[#00FF88] text-black font-bold"
+          >
+            {t('auth.returnToLogin') || 'Вернуться ко входу'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Render dashboard only if authenticated
+  if (!user) {
+    return null;
+  }
   
   return (
     <div className="min-h-screen bg-[#030303] relative">

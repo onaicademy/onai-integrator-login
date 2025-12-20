@@ -420,7 +420,7 @@ router.post('/amocrm', async (req: Request, res: Response) => {
           const pipelineId = deal.pipeline_id || lead.pipeline_id;
           const statusId = deal.status_id || deal.pipeline?.status_id;
 
-          // Фильтр: только VAMUS RM pipeline
+          // Фильтр: только AmoCRM pipeline
           if (pipelineId && pipelineId !== VAMUS_RM_PIPELINE_ID) {
             console.log(`⏭️ [Unified Webhook] Skipping deal ${deal.id} - wrong pipeline ${pipelineId}`);
             results.skipped++;
@@ -486,7 +486,7 @@ router.post('/amocrm', async (req: Request, res: Response) => {
               contact_phone: contactPhone,
               contact_email: contactEmail,
               sale_amount: dealValue,
-              product_name: 'Main Product (VAMUS RM)',
+              product_name: 'Main Product (AmoCRM)',
               pipeline_id: pipelineId,
               status_id: statusId,
               responsible_user_id: deal.responsible_user_id,
@@ -530,7 +530,7 @@ router.post('/amocrm', async (req: Request, res: Response) => {
               contact_phone: contactPhone,
               contact_email: contactEmail,
               sale_amount: dealValue,
-              product_name: 'Main Product (VAMUS RM)',
+              product_name: 'Main Product (AmoCRM)',
               pipeline_id: pipelineId,
               status_id: statusId,
               utm_source: utmData.utm_source,

@@ -3,6 +3,7 @@ import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
 import { api } from '@/utils/apiClient';
+import { getVideoUrls, getVideoSupport } from '@/utils/videoUrls';
 
 interface SmartVideoPlayerProps {
   videoUrl: string;
@@ -40,6 +41,12 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
   const [transcodingStatus, setTranscodingStatus] = useState<'processing' | 'ready' | 'failed' | null>(null);
   const [transcodingProgress, setTranscodingProgress] = useState(0);
   const [isPlayerReady, setIsPlayerReady] = useState(false); // 🔥 NEW: Флаг готовности плеера
+  
+  // 🎯 NEW: Multiple format support для fallback
+  const [videoFormats] = useState(() => getVideoUrls(videoId));
+  const [playbackSource, setPlaybackSource] = useState<'hls' | 'native-hls' | 'mp4' | 'webm'>('hls');
+  const [videoError, setVideoError] = useState<string | null>(null);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<Plyr | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -389,47 +396,135 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
     }
   }, [videoId, enableAutoSubtitles]);
 
-  // ШАГ 2: Инициализация HLS и Plyr (ОДИН РАЗ)
+  // ШАГ 2: Инициализация HLS и Plyr (ОДИН РАЗ) с FALLBACK
   useEffect(() => {
     if (!videoRef.current || playerRef.current) return; // Не инициализировать повторно!
 
     const video = videoRef.current;
+    
+    // 🛡️ Helper: Переключение на fallback формат
+    const switchToFallback = (reason: string) => {
+      console.warn(`⚠️ ${reason}, trying fallback...`);
+      
+      // Try MP4 first
+      if (video.canPlayType('video/mp4')) {
+        console.log('✅ Switching to MP4 fallback');
+        setPlaybackSource('mp4');
+        video.src = videoFormats.mp4;
+        video.load();
+        initPlyr(video, null);
+        setVideoError(null);
+      }
+      // Try WebM if MP4 not supported
+      else if (video.canPlayType('video/webm')) {
+        console.log('✅ Switching to WebM fallback');
+        setPlaybackSource('webm');
+        video.src = videoFormats.webm;
+        video.load();
+        initPlyr(video, null);
+        setVideoError(null);
+      }
+      // Last resort - show error
+      else {
+        console.error('❌ No supported video format found');
+        setVideoError('Ваш браузер не поддерживает воспроизведение видео. Попробуйте обновить браузер.');
+      }
+    };
 
-    // B. Инициализировать HLS
-    if (Hls.isSupported()) {
-      // 🚀 ОПТИМИЗАЦИЯ: Конфигурация HLS для быстрой загрузки
-      const hls = new Hls({
-        enableWorker: true, // Используем Web Worker для парсинга
-        lowLatencyMode: false,
-        backBufferLength: 30, // ✅ Уменьшено с 90 до 30 секунд (меньше памяти)
-        maxBufferLength: 30, // ✅ Макс буфер 30 секунд
-        maxBufferSize: 60 * 1000 * 1000, // ✅ 60MB макс (вместо default)
-        maxMaxBufferLength: 600, // ✅ 10 минут макс
-        liveSyncDurationCount: 3, // ✅ Live буфер
-        liveMaxLatencyDurationCount: 10, // ✅ Live макс задержка
-        startLevel: -1, // ✅ Автовыбор начального качества
-        abrEwmaDefaultEstimate: 500000, // ✅ 500Kbps начальная оценка
-        abrBandWidthFactor: 0.95, // ✅ 95% от bandwidth для выбора качества
-        abrBandWidthUpFactor: 0.7, // ✅ 70% запас для апгрейда качества
-        capLevelToPlayerSize: true, // ✅ Ограничение качества размером плеера
-        debug: false, // ✅ Отключаем debug логи
-      });
-
-      hls.loadSource(videoUrl);
-      hls.attachMedia(video);
-      hlsRef.current = hls;
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('✅ HLS manifest loaded');
+    try {
+      // B. Инициализировать HLS
+      if (Hls.isSupported()) {
+        setPlaybackSource('hls');
         
-        // C. Инициализировать Plyr ПОСЛЕ HLS
-        initPlyr(video, hls);
-      });
+        // 🚀 ОПТИМИЗАЦИЯ: Конфигурация HLS для быстрой загрузки
+        const hls = new Hls({
+          enableWorker: true, // Используем Web Worker для парсинга
+          lowLatencyMode: false,
+          backBufferLength: 30, // ✅ Уменьшено с 90 до 30 секунд (меньше памяти)
+          maxBufferLength: 30, // ✅ Макс буфер 30 секунд
+          maxBufferSize: 60 * 1000 * 1000, // ✅ 60MB макс (вместо default)
+          maxMaxBufferLength: 600, // ✅ 10 минут макс
+          liveSyncDurationCount: 3, // ✅ Live буфер
+          liveMaxLatencyDurationCount: 10, // ✅ Live макс задержка
+          startLevel: -1, // ✅ Автовыбор начального качества
+          abrEwmaDefaultEstimate: 500000, // ✅ 500Kbps начальная оценка
+          abrBandWidthFactor: 0.95, // ✅ 95% от bandwidth для выбора качества
+          abrBandWidthUpFactor: 0.7, // ✅ 70% запас для апгрейда качества
+          capLevelToPlayerSize: true, // ✅ Ограничение качества размером плеера
+          debug: false, // ✅ Отключаем debug логи
+          
+          // 🛡️ NEW: Retry настройки для стабильности
+          levelLoadingRetryDelay: 1000,
+          levelLoadingMaxRetry: 4,
+          levelLoadingTimeoutMs: 10000,
+          fragLoadingRetryDelay: 500,
+          fragLoadingMaxRetry: 6,
+          fragLoadingTimeoutMs: 8000,
+        });
 
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari native HLS
-      video.src = videoUrl;
-      initPlyr(video, null);
+        // 🛡️ NEW: Enhanced error handling с fallback
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS error:', data);
+
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.warn('HLS network error, retrying...');
+                // Попробовать перезагрузить
+                setTimeout(() => {
+                  try {
+                    hls.startLoad();
+                  } catch (e) {
+                    switchToFallback('HLS network error persists');
+                  }
+                }, 1000);
+                break;
+
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.warn('HLS media error, trying recovery...');
+                try {
+                  hls.recoverMediaError();
+                } catch (e) {
+                  switchToFallback('HLS media error - cannot recover');
+                }
+                break;
+
+              default:
+                switchToFallback('HLS fatal error');
+                break;
+            }
+          }
+        });
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          console.log('✅ HLS manifest loaded');
+          setVideoError(null);
+          
+          // C. Инициализировать Plyr ПОСЛЕ HLS
+          initPlyr(video, hls);
+        });
+
+        hls.loadSource(videoUrl);
+        hls.attachMedia(video);
+        hlsRef.current = hls;
+
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari native HLS
+        console.log('✅ Using native HLS support (Safari)');
+        setPlaybackSource('native-hls');
+        video.src = videoUrl;
+        initPlyr(video, null);
+        setVideoError(null);
+        
+      } else {
+        // 🛡️ NEW: Fallback для старых браузеров
+        console.warn('⚠️ HLS not supported, using fallback...');
+        switchToFallback('HLS not supported in this browser');
+      }
+
+    } catch (error) {
+      console.error('❌ Video player initialization error:', error);
+      switchToFallback('Player initialization failed');
     }
 
     // Cleanup
@@ -606,6 +701,37 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
                 <p className="text-gray-400 text-sm">
                   Попробуйте загрузить видео в формате MP4 (H.264)
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 🛡️ NEW: ОШИБКА ВОСПРОИЗВЕДЕНИЯ (Fallback не сработал) */}
+        {videoError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0A0A] z-50">
+            <div className="text-center space-y-4 px-8 max-w-md">
+              <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  Не удалось загрузить видео
+                </h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  {videoError}
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-2 bg-[#00FF88] text-black rounded-lg font-semibold hover:bg-[#00CC6E] transition-colors"
+                >
+                  Обновить страницу
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 mt-4">
+                <p>Поддерживаемые форматы: HLS, MP4, WebM</p>
+                <p className="mt-1">Текущий формат: {playbackSource}</p>
               </div>
             </div>
           </div>

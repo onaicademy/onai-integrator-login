@@ -18,7 +18,7 @@ Deploy: `c59688d`
 
 **Test endpoint:** `https://api.onai.academy/webhook/amocrm/traffic/test`
 
-**Цель:** Обработка продаж из воронки **VAMUS RM** (Pipeline ID: `10418746`)
+**Цель:** Обработка продаж из воронки **AmoCRM** (Pipeline ID: `10418746`)
 
 **Таргетологи:**
 - Kenesary
@@ -142,12 +142,12 @@ curl https://api.onai.academy/webhook/amocrm/referral/test
 
 ## 🎯 ИНСТРУКЦИЯ ДЛЯ AmoCRM
 
-### 1. Traffic Dashboard (VAMUS RM):
+### 1. Traffic Dashboard (AmoCRM):
 
 1. Открой AmoCRM → Настройки → Webhooks
 2. Добавь новый webhook:
    - **URL:** `https://api.onai.academy/webhook/amocrm/traffic`
-   - **Pipeline:** VAMUS RM (ID: `10418746`)
+   - **Pipeline:** AmoCRM (ID: `10418746`)
    - **Событие:** "Сделка изменила статус" → "Успешно реализовано" (Status ID: `142`)
    - **Метод:** POST
    - **Format:** application/x-www-form-urlencoded
@@ -168,7 +168,7 @@ curl https://api.onai.academy/webhook/amocrm/referral/test
 
 ### Test 1: Traffic Dashboard Sale
 
-1. Создай сделку в VAMUS RM:
+1. Создай сделку в AmoCRM:
    - Название: "TEST WEBHOOK - Kenesary Dec20"
    - Сумма: 100,000 KZT
    - UTM fields:

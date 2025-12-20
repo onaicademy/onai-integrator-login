@@ -109,7 +109,7 @@
 ### Настройка в AmoCRM:
 ```
 URL: https://api.onai.academy/webhook/amocrm/traffic
-Pipeline: VAMUS RM (10418746)
+Pipeline: AmoCRM (10418746)
 Status: Успешно реализовано (142)
 Method: POST
 ```
@@ -209,7 +209,7 @@ CPU: 0%
 
 1. **Настроить AmoCRM webhook:**
    - URL: `https://api.onai.academy/webhook/amocrm/traffic`
-   - Pipeline: VAMUS RM (10418746)
+   - Pipeline: AmoCRM (10418746)
    - Trigger: Успешно реализовано
 
 2. **Протестировать с тестовой сделкой**

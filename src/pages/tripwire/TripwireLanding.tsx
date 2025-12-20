@@ -130,6 +130,23 @@ export default function TripwireLanding() {
     let height = canvas.height = window.innerHeight;
     let particles: any[] = [];
     let animationId: number;
+    let isVisible = true; // 🚀 NEW: Track page visibility
+
+    // 🚀 NEW: Page Visibility API handler
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      
+      if (!document.hidden && !animationId) {
+        console.log('🎨 [TripwireLanding] Resuming canvas animation');
+        animate();
+      } else if (document.hidden && animationId) {
+        console.log('⏸️ [TripwireLanding] Pausing canvas animation');
+        cancelAnimationFrame(animationId);
+        animationId = 0;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     class Particle {
       x: number;
@@ -163,11 +180,12 @@ export default function TripwireLanding() {
 
     function initParticles() {
       particles = [];
-      // 🚀 OPTIMIZATION: Reduce particle count (was 100, now 50 max)
-      const particleCount = Math.min(Math.floor(width * height / 30000), 50);
+      // 🚀 OPTIMIZATION: Reduce particle count from 50 to 30
+      const particleCount = Math.min(Math.floor(width * height / 30000), 30);
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
+      console.log(`🎨 [TripwireLanding] Initialized ${particleCount} particles`);
     }
 
     function animate() {
@@ -177,8 +195,11 @@ export default function TripwireLanding() {
         particles[i].update();
         particles[i].draw();
 
-        // 🚀 OPTIMIZATION: Skip some connections for performance
-        for (let j = i + 1; j < Math.min(i + 5, particles.length); j++) {
+        // 🚀 OPTIMIZATION: Limit connections to max 5 per particle
+        let connectionCount = 0;
+        const maxConnections = 5;
+        
+        for (let j = i + 1; j < Math.min(i + 10, particles.length) && connectionCount < maxConnections; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -190,13 +211,18 @@ export default function TripwireLanding() {
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
+            connectionCount++;
           }
         }
       }
-      animationId = requestAnimationFrame(animate);
+      
+      // 🚀 OPTIMIZATION: Only request next frame if page is visible
+      if (isVisible) {
+        animationId = requestAnimationFrame(animate);
+      }
     }
 
-    // 🚀 OPTIMIZATION: Debounce resize handler
+    // 🚀 OPTIMIZATION: Debounce resize handler (250ms)
     let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(resizeTimeout);
@@ -204,6 +230,7 @@ export default function TripwireLanding() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         initParticles();
+        console.log('🔄 [TripwireLanding] Canvas resized');
       }, 250);
     };
 
@@ -213,6 +240,7 @@ export default function TripwireLanding() {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       cancelAnimationFrame(animationId);
       clearTimeout(resizeTimeout);
     };

@@ -408,6 +408,11 @@ export async function getMyStats(req: Request, res: Response) {
  * Удаляет Tripwire студента
  * 🔥 ONLY FOR ADMIN (smmmcwin@gmail.com)
  */
+/**
+ * DELETE /api/admin/tripwire/users/:userId
+ * Удаляет Tripwire пользователя полностью из системы
+ * Доступ: admin и sales роли (SalesGuard на фронте + requireSalesOrAdmin middleware)
+ */
 export async function deleteTripwireUser(req: Request, res: Response) {
   try {
     const { userId } = req.params;
@@ -417,24 +422,50 @@ export async function deleteTripwireUser(req: Request, res: Response) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // 🔒 ПРОВЕРКА: Только smmmcwin@gmail.com может удалять!
     const userEmail = currentUser.email;
-    if (userEmail !== 'smmmcwin@gmail.com') {
-      return res.status(403).json({
-        error: 'Forbidden: Only smmmcwin@gmail.com can delete users',
-      });
-    }
+    const currentUserId = currentUser.sub || currentUser.id;
 
-    console.log(`🗑️ [DELETE] Admin ${userEmail} is deleting user ${userId}`);
+    console.log(`🗑️ [DELETE] Sales Manager ${userEmail} (ID: ${currentUserId}) is deleting user ${userId}`);
 
     // Удаляем через service
     const result = await tripwireManagerService.deleteTripwireUser(userId);
 
-    return res.status(200).json(result);
+    // Логируем успешное удаление в activity log
+    try {
+      await tripwirePool.query(
+        `INSERT INTO sales_activity_log (manager_id, action, user_id, details, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [
+          currentUserId,
+          'delete_user',
+          userId,
+          JSON.stringify({
+            deleted_email: result.email,
+            deleted_name: result.full_name,
+            deleted_by: userEmail,
+          }),
+        ]
+      );
+    } catch (logError) {
+      console.error('⚠️ [DELETE] Failed to log deletion:', logError);
+      // Не критичная ошибка, продолжаем
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'User deleted successfully',
+      ...result,
+    });
   } catch (error: any) {
     console.error('❌ Error in deleteTripwireUser:', error);
+    
+    // Возвращаем детальную ошибку для Sales Manager
     return res.status(500).json({
+      success: false,
       error: error.message || 'Internal server error',
+      details: error.details || null,
+      timestamp: new Date().toISOString(),
+      userId: req.params.userId,
     });
   }
 }

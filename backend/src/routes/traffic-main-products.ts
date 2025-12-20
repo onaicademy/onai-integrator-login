@@ -1,7 +1,7 @@
 /**
- * 🚀 VAMUS RM - Main Products Sales Analytics
+ * 🚀 AmoCRM - Main Products Sales Analytics
  * 
- * Pipeline: VAMUS RM (ID: 10418746)
+ * Pipeline: AmoCRM (ID: 10418746)
  * Success Stage: "Успешно реализовано" (ID: 142)
  * 
  * Эта воронка для основных продуктов (не ExpressCourse)
@@ -17,7 +17,7 @@ const AMOCRM_DOMAIN = process.env.AMOCRM_DOMAIN || 'onaiagencykz';
 const AMOCRM_TOKEN = process.env.AMOCRM_ACCESS_TOKEN;
 const AMOCRM_BASE_URL = `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4`;
 
-// 🎯 VAMUS RM Pipeline
+// 🎯 AmoCRM Pipeline
 const VAMUS_RM_PIPELINE_ID = 10418746;
 const VAMUS_RM_SUCCESS_STATUS = 142; // "Успешно реализовано"
 
@@ -36,7 +36,7 @@ interface MainProductSale {
 
 /**
  * GET /api/traffic/main-products-sales
- * Получить продажи основных продуктов из VAMUS RM
+ * Получить продажи основных продуктов из AmoCRM
  * 
  * NOTE: Primary data source is webhook (POST /webhook/amocrm)
  * This endpoint queries all_sales_tracking table which is populated by webhooks.
@@ -53,10 +53,10 @@ router.get('/main-products-sales', async (req: Request, res: Response) => {
 
     const { dateFrom, dateTo } = req.query;
 
-    console.log('📊 Fetching main products sales from VAMUS RM...');
+    console.log('📊 Fetching main products sales from AmoCRM...');
     console.log(`   Pipeline: ${VAMUS_RM_PIPELINE_ID}, Status: ${VAMUS_RM_SUCCESS_STATUS}`);
 
-    // Получить все лиды из воронки VAMUS RM в статусе "Успешно реализовано"
+    // Получить все лиды из воронки AmoCRM в статусе "Успешно реализовано"
     const leads = await getAllMainProductSales(dateFrom as string, dateTo as string);
 
     console.log(`✅ Found ${leads.length} main product sales`);
@@ -250,7 +250,7 @@ router.get('/roi-with-main-products', async (req: Request, res: Response) => {
     console.log('💰 Calculating FULL ROI (Express → Main Products)...');
 
     // 1. Получить продажи ExpressCourse (из обычного pipeline)
-    // 2. Получить продажи основных продуктов (VAMUS RM)
+    // 2. Получить продажи основных продуктов (AmoCRM)
     // 3. Сопоставить по таргетологу
     // 4. Рассчитать ROI
 

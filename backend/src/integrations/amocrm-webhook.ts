@@ -173,4 +173,25 @@ router.get('/referral/test', (req: Request, res: Response) => {
   });
 });
 
+/**
+ * HEAD /webhook/amocrm/referral
+ * AmoCRM verification endpoint
+ */
+router.head('/referral', (req: Request, res: Response) => {
+  res.status(200).end();
+});
+
+/**
+ * GET /webhook/amocrm/referral
+ * Status check endpoint
+ */
+router.get('/referral', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Referral webhook endpoint active - use POST to submit data',
+    endpoint: '/webhook/amocrm/referral',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 export default router;

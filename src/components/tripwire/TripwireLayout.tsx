@@ -9,10 +9,11 @@ import { List } from "@phosphor-icons/react";
 import { Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Footer } from "@/components/Footer";
-import { TripwireOnboardingProvider } from "@/contexts/TripwireOnboardingContext";
-import { OnboardingWelcomeModal } from "./OnboardingWelcomeModal";
-import { TripwireOnboardingTour } from "./TripwireOnboardingTour";
-import "@/styles/tripwire-onboarding.css";
+// ONBOARDING DISABLED - студенты не могут начать обучение
+// import { TripwireOnboardingProvider } from "@/contexts/TripwireOnboardingContext";
+// import { OnboardingWelcomeModal } from "./OnboardingWelcomeModal";
+// import { TripwireOnboardingTour } from "./TripwireOnboardingTour";
+// import "@/styles/tripwire-onboarding.css";
 
 interface TripwireLayoutProps {
   children: React.ReactNode;
@@ -30,8 +31,9 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <TripwireOnboardingProvider>
-      <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF88]/30">
+    // ONBOARDING DISABLED
+    // <TripwireOnboardingProvider>
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF88]/30">
       {/* Sidebar - добавили z-[100] чтобы был поверх всего */}
       {!isMobile && (
         <aside 
@@ -112,11 +114,11 @@ export function TripwireLayout({ children }: TripwireLayoutProps) {
         <Footer />
       </main>
       
-      {/* 🎯 ONBOARDING COMPONENTS */}
-      <OnboardingWelcomeModal />
-      <TripwireOnboardingTour />
+      {/* 🎯 ONBOARDING COMPONENTS - DISABLED */}
+      {/* <OnboardingWelcomeModal /> */}
+      {/* <TripwireOnboardingTour /> */}
     </div>
-    </TripwireOnboardingProvider>
+    // </TripwireOnboardingProvider>
   );
 }
 

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { api } from "@/utils/apiClient";
 import LiveStreamModule from "./components/LiveStreamModule";
 import { tripwireSupabase } from "@/lib/supabase-tripwire";
 import { showLocked } from "@/lib/notifications"; // ✅ Import notification helper
+import { getCacheItem, setCacheItem } from "@/utils/tripwire-cache"; // 🚀 NEW: Cache utils
 
 // 🎯 Brand Code v3.0 - Cyber-Architecture
 const BRAND = {
@@ -150,31 +151,30 @@ export default function TripwireProductPage() {
 
     const loadUnlocks = async () => {
       try {
-        // ✅ КЭШИРОВАНИЕ: Проверяем есть ли в localStorage
-        const cachedKey = `tripwire_unlocks_${tripwireUser.id}`; // ✅ CRITICAL FIX: Use id (auth.users.id)
-        const cached = localStorage.getItem(cachedKey);
+        // 🚀 OPTIMIZATION: Check cache with TTL (15 minutes)
+        const cachedKey = `tripwire_unlocks_${tripwireUser.id}`;
+        const cached = getCacheItem<{ moduleIds: number[]; timestamp: number }>(cachedKey);
         
         if (cached) {
-          const cachedData = JSON.parse(cached);
-          console.log('⚡ Loaded from CACHE:', cachedData.moduleIds);
-          setUserUnlockedModuleIds(cachedData.moduleIds);
+          console.log('⚡ [Unlocks] Loaded from cache:', cached.moduleIds);
+          setUserUnlockedModuleIds(cached.moduleIds);
         }
         
         // Загружаем с сервера в фоне
-        const response = await api.get(`/api/tripwire/module-unlocks/${tripwireUser.id}`); // ✅ CRITICAL FIX: Use id (auth.users.id)
+        const response = await api.get(`/api/tripwire/module-unlocks/${tripwireUser.id}`);
         const unlocks = response.unlocks || [];
         
-        console.log('🔓 Loaded unlocks from API:', unlocks);
+        console.log('🔓 [Unlocks] Loaded from API:', unlocks);
         
         // Store all unlocked module IDs (для изменения визуала)
         const allUnlockedIds = unlocks.map((u: any) => u.module_id);
         setUserUnlockedModuleIds(allUnlockedIds);
         
-        // ✅ СОХРАНЯЕМ В КЭШЕ
-        localStorage.setItem(cachedKey, JSON.stringify({
+        // 🚀 OPTIMIZATION: Save to cache with 15 minute TTL
+        setCacheItem(cachedKey, {
           moduleIds: allUnlockedIds,
           timestamp: Date.now()
-        }));
+        }, 15);
         
         // ✅ FIX: Показываем анимацию ТОЛЬКО если unlock создан недавно (последние 10 секунд)
         const now = new Date().getTime();
@@ -222,6 +222,27 @@ export default function TripwireProductPage() {
     const loadDurations = async () => {
       try {
         console.log('⏱️ [TripwireProductPage] Loading lesson durations...');
+        
+        // 🚀 OPTIMIZATION: Check cache with TTL (1 hour)
+        const cacheKey = 'tripwire_lesson_durations';
+        const cached = getCacheItem<{ id: number; duration_seconds: number }[]>(cacheKey);
+        
+        if (cached) {
+          console.log('⚡ [Durations] Loaded from cache:', cached);
+          // Update modules with cached durations
+          const updatedModules = tripwireModules.map(module => {
+            const lesson = cached.find(l => l.id === module.lessonId);
+            if (lesson && lesson.duration_seconds > 0) {
+              const minutes = Math.round(lesson.duration_seconds / 60);
+              const durationStr = `${minutes} мин`;
+              return { ...module, duration: durationStr };
+            }
+            return module;
+          });
+          setModulesWithDuration(updatedModules);
+          return; // Skip API calls if we have cache
+        }
+        
         // Load all 3 lessons and extract duration from DB
         const lessonIds = [67, 68, 69];
         const lessons = await Promise.all(
@@ -240,6 +261,9 @@ export default function TripwireProductPage() {
             }
           })
         );
+        
+        // 🚀 OPTIMIZATION: Save to cache with 1 hour TTL
+        setCacheItem(cacheKey, lessons, 60);
         
         const updatedModules = tripwireModules.map(module => {
           const lesson = lessons.find(l => l.id === module.lessonId);
@@ -307,24 +331,27 @@ export default function TripwireProductPage() {
   };
 
   // ✅ DYNAMICALLY unlock modules based on userUnlockedModuleIds
-  const modulesWithDynamicStatus = modulesWithDuration.map(module => {
-    // 🔥 Admin видит все модули
-    if (isAdmin) {
-      console.log(`🔥 Admin mode: unlocking module ${module.id}`);
-      return { ...module, status: 'active' };
-    }
-    
-    // 🎯 ПРОГРЕССИВНАЯ РАЗБЛОКИРОВКА
-    // Модуль 16 (Вводный) открыт по умолчанию
-    // Модули 17-18 открываются через userUnlockedModuleIds (после завершения предыдущих)
-    const isUnlocked = module.id === 16 || userUnlockedModuleIds.includes(module.id);
-    console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
-    
-      return {
-        ...module,
-      status: isUnlocked ? 'active' : 'locked'
-    };
-  });
+  // 🚀 OPTIMIZATION: useMemo to avoid recalculation on every render
+  const modulesWithDynamicStatus = useMemo(() => {
+    return modulesWithDuration.map(module => {
+      // 🔥 Admin видит все модули
+      if (isAdmin) {
+        console.log(`🔥 Admin mode: unlocking module ${module.id}`);
+        return { ...module, status: 'active' };
+      }
+      
+      // 🎯 ПРОГРЕССИВНАЯ РАЗБЛОКИРОВКА
+      // Модуль 16 (Вводный) открыт по умолчанию
+      // Модули 17-18 открываются через userUnlockedModuleIds (после завершения предыдущих)
+      const isUnlocked = module.id === 16 || userUnlockedModuleIds.includes(module.id);
+      console.log(`🔍 Module ${module.id}: unlocked=${isUnlocked}, userUnlockedIds=[${userUnlockedModuleIds.join(', ')}], isAdmin=${isAdmin}`);
+      
+        return {
+          ...module,
+        status: isUnlocked ? 'active' : 'locked'
+      };
+    });
+  }, [modulesWithDuration, userUnlockedModuleIds, isAdmin]); // Only recalculate when these change
 
   const activeModules = modulesWithDynamicStatus.filter(m => m.status === 'active');
   const lockedModules = modulesWithDynamicStatus.filter(m => m.status === 'locked');

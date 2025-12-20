@@ -4,6 +4,7 @@ import { landingSupabase } from '@/lib/supabase-landing';
 import axios from 'axios';
 import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
 import { TRAFFIC_API_URL } from '@/config/traffic-api';
+import { useLanguage } from '@/hooks/useLanguage';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
@@ -274,6 +275,7 @@ export default function TrafficCommandDashboard({
   currentUserTeam = null,
   language = 'ru'
 }: TrafficCommandDashboardProps) {
+  const { t } = useLanguage();
   const [dateRange, setDateRange] = useState<'7d' | '14d' | '30d'>('7d');
   const [customDate, setCustomDate] = useState<string | null>(null); // YYYY-MM-DD
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);

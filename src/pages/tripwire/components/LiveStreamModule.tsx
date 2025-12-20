@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { getStreamTime, getStreamCountdown } from '@/lib/tripwire-utils';
 import { motion } from 'framer-motion';
 import { Lock, Radio, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 interface LiveStreamModuleProps {
   modulesCompleted: number;
@@ -12,18 +12,19 @@ interface LiveStreamModuleProps {
  * 🔴 LIVE STREAM MODULE - REDESIGN
  * - Замена эмоджи на 3D иконку (Radio)
  * - Адаптация под общий стиль
+ * - 🚀 OPTIMIZATION: Memoized with React.memo
  */
-export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleProps) {
+const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: LiveStreamModuleProps) {
   const [streamTime, setStreamTime] = useState(getStreamTime());
   const [countdown, setCountdown] = useState(getStreamCountdown());
   const isUnlocked = modulesCompleted >= 3;
 
-  // Обновляем время каждую секунду для точности
+  // 🚀 OPTIMIZATION: Update every 10 seconds instead of 1 second (less re-renders)
   useEffect(() => {
     const interval = setInterval(() => {
       setStreamTime(getStreamTime());
       setCountdown(getStreamCountdown());
-    }, 1000); // каждую секунду
+    }, 10000); // каждые 10 секунд вместо 1
 
     return () => clearInterval(interval);
   }, []);
@@ -183,4 +184,6 @@ export default function LiveStreamModule({ modulesCompleted }: LiveStreamModuleP
       </div>
     </Card>
   );
-}
+});
+
+export default LiveStreamModule;

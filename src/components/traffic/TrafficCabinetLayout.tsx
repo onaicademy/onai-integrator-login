@@ -20,6 +20,12 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // ✅ FIX: Helper for correct login path
+  const getLoginPath = () => {
+    const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+    return isTrafficDomain ? '/login' : '/traffic/login';
+  };
+  
   useEffect(() => {
     // Check authentication
     const userData = localStorage.getItem('traffic_user');
@@ -27,7 +33,7 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
     
     if (!userData || !token) {
       console.log('❌ No auth found, redirecting to login');
-      navigate('/login');
+      navigate(getLoginPath());
       return;
     }
     
@@ -37,7 +43,7 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
       console.log('✅ User loaded:', parsedUser);
     } catch (error) {
       console.error('❌ Failed to parse user data:', error);
-      navigate('/login');
+      navigate(getLoginPath());
     }
   }, [navigate]);
   
@@ -45,7 +51,7 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
     console.log('👋 Logging out');
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
-    navigate('/login');
+    navigate(getLoginPath());
   };
   
   const isActive = (path: string) => {

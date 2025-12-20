@@ -138,7 +138,7 @@ import trafficOnboardingRouter from './routes/traffic-onboarding.js'; // 🎓 Tr
 import trafficConstructorRouter from './routes/traffic-team-constructor.js'; // 🏗️ Team Constructor (Admin)
 import trafficDetailedAnalyticsRouter from './routes/traffic-detailed-analytics.js'; // 📊 Detailed Analytics (Campaigns/AdSets/Ads)
 import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targetologist Settings
-import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (VAMUS RM)
+import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
 import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks (DEPRECATED - use unified)
 import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
@@ -472,7 +472,7 @@ app.use('/api/traffic-onboarding', trafficOnboardingRouter); // 🎓 Traffic Onb
 app.use('/api/traffic-constructor', trafficConstructorRouter); // 🏗️ Team Constructor (Admin)
 app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // 📊 Detailed Analytics
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
-app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (VAMUS RM)
+app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
 app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook → /webhook/amocrm/traffic
 app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook → /webhook/amocrm/referral

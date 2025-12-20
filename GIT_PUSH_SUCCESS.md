@@ -19,7 +19,7 @@
 - ✅ Onboarding Tour: баг `moveNext` исправлен
 - ✅ Полная адаптивность (mobile/tablet/desktop)
 
-### **3. VAMUS RM Integration** 💼
+### **3. AmoCRM Integration** 💼
 - ✅ Backend route для Main Products
 - ✅ Frontend компонент analytics
 - ✅ Табы Express / Main Products
@@ -117,7 +117,7 @@ bf70bdc - ✨ PREMIUM: Multi-source traffic settings with token status
 |-----------|-----------|--------|
 | **Интегратор 3.0** | Название + описание + адаптивность | ✅ |
 | **Traffic Dashboard** | Числа + переводы + onboarding | ✅ |
-| **VAMUS RM** | Backend + Frontend + API | ✅ |
+| **AmoCRM** | Backend + Frontend + API | ✅ |
 | **CORS** | Referral subdomain | ✅ |
 | **Git Commit** | 226 файлов | ✅ |
 | **Git Push** | origin/main | ✅ |

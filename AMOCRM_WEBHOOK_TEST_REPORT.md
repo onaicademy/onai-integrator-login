@@ -47,7 +47,7 @@ Verify that a sale with targetologist UTM patterns is correctly:
 ### Test Setup
 To execute this test, create a deal in AmoCRM:
 
-**Pipeline:** VAMUS RM (https://onaiagencykz.amocrm.ru/leads/pipeline/10418746/)
+**Pipeline:** AmoCRM (https://onaiagencykz.amocrm.ru/leads/pipeline/10418746/)
 
 **Deal Details:**
 ```
@@ -151,7 +151,7 @@ Check the Telegram bot channel for notification:
 👑 Таргетолог: Kenesary
 👤 Клиент: Test Customer
 💰 Сумма: 100,000 ₸
-📦 Продукт: Main Product (VAMUS RM)
+📦 Продукт: Main Product (AmoCRM)
 🏷️ Кампания: tripwire_test_dec20
 
 Kenesary, ПОЗДРАВЛЯЕМ! ПО ВАМ СДЕЛАЛИ ПРОДАЖУ! 🔥

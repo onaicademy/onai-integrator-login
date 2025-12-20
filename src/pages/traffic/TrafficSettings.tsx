@@ -339,7 +339,8 @@ export default function TrafficSettings() {
   const handleLogout = () => {
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
-    navigate('/login');
+    const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+    navigate(isTrafficDomain ? '/login' : '/traffic/login');
   };
   
   const handleChangePassword = async () => {

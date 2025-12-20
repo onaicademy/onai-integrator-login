@@ -126,6 +126,20 @@
   color: var(--holo-white);
 }
 
+/* Desktop: заголовок в одну строку */
+@media (min-width: 769px) {
+  .main-title {
+    white-space: nowrap;
+  }
+}
+
+/* Mobile: заголовок может быть в две строки */
+@media (max-width: 768px) {
+  .main-title {
+    white-space: normal;
+  }
+}
+
 .gradient-text {
   background: linear-gradient(135deg, var(--acid-green) 0%, var(--acid-green-dim) 100%);
   -webkit-background-clip: text;

@@ -22,7 +22,7 @@ export function SalesGuard({ children }: SalesGuardProps) {
 
   const checkAuth = async () => {
     try {
-      console.log('🔥🔥🔥 SALESGUARD VERSION 2.0 - DIRECT POSTGRES - DEC 4 01:40 🔥🔥🔥');
+      console.log('🔥🔥🔥 SALESGUARD VERSION 3.0 - SECURE DB CHECK - DEC 20 🔥🔥🔥');
       console.log('🔐 SalesGuard: Проверка Tripwire auth...');
       
       const { data: { session }, error } = await tripwireSupabase.auth.getSession();
@@ -34,16 +34,32 @@ export function SalesGuard({ children }: SalesGuardProps) {
         return;
       }
 
-      // Получаем роль из user_metadata
-      const role = session.user.user_metadata?.role || null;
+      console.log('✅ SalesGuard: Сессия найдена:', session.user.email);
+
+      // 🛡️ SECURITY: Читаем роль напрямую из БД, а НЕ из user_metadata!
+      // user_metadata может быть подделан на клиенте!
+      const { data: userData, error: userError } = await tripwireSupabase
+        .from('users')
+        .select('role, email')
+        .eq('id', session.user.id)
+        .single();
+
+      if (userError || !userData) {
+        console.error('❌ SalesGuard: Ошибка получения роли из БД:', userError);
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const role = userData.role;
       setUserRole(role);
 
-      console.log('✅ SalesGuard: Пользователь:', session.user.email);
-      console.log('  Роль:', role);
+      console.log('✅ SalesGuard: Пользователь:', userData.email);
+      console.log('  Роль (из БД):', role);
 
-      // Разрешаем доступ только admin и sales
+      // 🛡️ SECURITY: Разрешаем доступ только admin и sales
       if (role === 'admin' || role === 'sales') {
-        console.log('✅ SalesGuard: Доступ разрешён');
+        console.log('✅ SalesGuard: Доступ разрешён (роль:', role, ')');
         setIsAuthorized(true);
       } else {
         console.log('❌ SalesGuard: Доступ запрещён. Роль:', role);

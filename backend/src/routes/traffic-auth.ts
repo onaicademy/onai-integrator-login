@@ -98,6 +98,61 @@ router.post('/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
+// 🔄 POST /api/traffic-auth/refresh
+// Refresh access token using refresh token
+router.post('/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Refresh token is required' });
+    }
+    
+    // Verify refresh token
+    jwt.verify(refreshToken, JWT_SECRET, async (err: any, decoded: any) => {
+      if (err) {
+        console.log('❌ Invalid refresh token:', err.message);
+        return res.status(403).json({ error: 'Invalid or expired refresh token' });
+      }
+      
+      // Get user to verify they still exist and are active
+      const { data: user, error } = await trafficAdminSupabase
+        .from('traffic_users')
+        .select('id, email, full_name, team_name, role')
+        .eq('id', decoded.userId)
+        .eq('is_active', true)
+        .single();
+      
+      if (error || !user) {
+        return res.status(404).json({ error: 'User not found or inactive' });
+      }
+      
+      // Generate new access token
+      const newAccessToken = jwt.sign(
+        { 
+          userId: user.id,
+          email: user.email,
+          team: user.team_name,
+          role: user.role
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
+      
+      console.log(`✅ Token refreshed for: ${user.email}`);
+      
+      res.json({
+        success: true,
+        accessToken: newAccessToken,
+        expiresIn: 7 * 24 * 60 * 60 // 7 days in seconds
+      });
+    });
+  } catch (error) {
+    console.error('❌ Token refresh error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // 👤 GET /api/traffic-auth/me
 router.get('/me', authenticateToken, async (req, res) => {
   try {

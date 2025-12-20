@@ -13,6 +13,7 @@ export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodesRef = useRef<Node[]>([]);
   const animationFrameRef = useRef<number>();
+  const isVisibleRef = useRef<boolean>(true); // 🚀 NEW: Track page visibility
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,6 +21,24 @@ export function AnimatedBackground() {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // 🚀 OPTIMIZATION: Page Visibility API - stop animation when tab is hidden
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden;
+      
+      if (!document.hidden && !animationFrameRef.current) {
+        // Resume animation when tab becomes visible
+        console.log('🎨 [AnimatedBackground] Resuming animation');
+        animate();
+      } else if (document.hidden && animationFrameRef.current) {
+        // Pause animation when tab is hidden
+        console.log('⏸️ [AnimatedBackground] Pausing animation');
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = undefined;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Set canvas size
     const resizeCanvas = () => {
@@ -29,8 +48,8 @@ export function AnimatedBackground() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Initialize nodes
-    const nodeCount = 50;
+    // 🚀 OPTIMIZATION: Reduce particle count from 50 to 30
+    const nodeCount = 30;
     nodesRef.current = Array.from({ length: nodeCount }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
@@ -59,8 +78,12 @@ export function AnimatedBackground() {
           ctx.fillStyle = 'rgba(0, 255, 136, 0.4)';
         ctx.fill();
 
-        // Draw connections
-        nodesRef.current.slice(i + 1).forEach((otherNode) => {
+        // 🚀 OPTIMIZATION: Limit connections to max 5 per particle (reduce O(n²) complexity)
+        let connectionCount = 0;
+        const maxConnections = 5;
+        
+        for (let j = i + 1; j < nodesRef.current.length && connectionCount < maxConnections; j++) {
+          const otherNode = nodesRef.current[j];
           const dx = node.x - otherNode.x;
           const dy = node.y - otherNode.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -73,17 +96,22 @@ export function AnimatedBackground() {
             ctx.strokeStyle = `rgba(0, 255, 136, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
+            connectionCount++;
           }
-        });
+        }
       });
 
-      animationFrameRef.current = requestAnimationFrame(animate);
+      // 🚀 OPTIMIZATION: Only request next frame if page is visible
+      if (isVisibleRef.current) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
     };
 
     animate();
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }

@@ -94,7 +94,7 @@ curl https://api.onai.academy/webhook/amocrm/traffic/test
 2. Добавить webhook:
    - URL: `https://api.onai.academy/webhook/amocrm/traffic`
    - Триггер: Изменение статуса
-   - Pipeline: VAMUS RM (10418746)
+   - Pipeline: AmoCRM (10418746)
    - Status: Успешно реализовано (142)
 3. Активировать
 

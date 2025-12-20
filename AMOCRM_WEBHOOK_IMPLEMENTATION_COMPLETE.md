@@ -12,7 +12,7 @@
 **File:** `backend/src/integrations/unified-amocrm-webhook.ts`
 
 **Features:**
-- ✅ Receives webhooks from AmoCRM VAMUS RM pipeline (ID: 10418746)
+- ✅ Receives webhooks from AmoCRM AmoCRM pipeline (ID: 10418746)
 - ✅ Extracts UTM data from custom fields (multiple methods)
 - ✅ Intelligent routing based on UTM patterns:
   - `ref_*` → Referral System
@@ -83,7 +83,7 @@
 
 ```mermaid
 graph TD
-    A[AmoCRM VAMUS RM Pipeline] -->|Deal → Успешно реализовано| B[Webhook POST /webhook/amocrm]
+    A[AmoCRM AmoCRM Pipeline] -->|Deal → Успешно реализовано| B[Webhook POST /webhook/amocrm]
     B --> C{Extract UTM Data}
     C --> D{Determine Routing}
     D -->|utm_source starts with ref_| E[Referral Processor]
@@ -160,7 +160,7 @@ The implementation is complete, but **you must manually test** by creating deals
 - ⚠️ **AmoCRM Webhook Settings** - Needs verification
   - URL should be: `https://api.onai.academy/webhook/amocrm/`
   - Trigger: Status change to "Успешно реализовано"
-  - Pipeline: VAMUS RM (10418746)
+  - Pipeline: AmoCRM (10418746)
 
 ---
 
@@ -218,7 +218,7 @@ Before testing, verify:
 - [ ] URL: `https://api.onai.academy/webhook/amocrm/`
 - [ ] Trigger: Status change
 - [ ] Target status: "Успешно реализовано" (ID: 142)
-- [ ] Pipeline filter: VAMUS RM (ID: 10418746)
+- [ ] Pipeline filter: AmoCRM (ID: 10418746)
 - [ ] Webhook is active (not paused)
 
 ### Backend Environment

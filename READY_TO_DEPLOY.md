@@ -43,7 +43,7 @@
 - ✅ Dashboard переведен
 - ✅ Settings переведены
 
-### **4. VAMUS RM Integration**
+### **4. AmoCRM Integration**
 - ✅ Backend route создан
 - ✅ API endpoint работает
 - ✅ Frontend компонент готов
@@ -192,7 +192,7 @@ pm2 restart onai-backend
 1. **SSH** - если не настроен, используй ручной деплой (инструкция в DEPLOYMENT_INSTRUCTIONS.md)
 2. **Кэш** - критично очистить после деплоя (Cmd+Shift+R)
 3. **Логи** - первые 30 сек после restart смотри PM2 логи
-4. **VAMUS RM** - данные появятся когда будут продажи в воронке
+4. **AmoCRM** - данные появятся когда будут продажи в воронке
 5. **Тесты** - используй SYSTEM_CHECK.md для полной проверки
 
 ---
