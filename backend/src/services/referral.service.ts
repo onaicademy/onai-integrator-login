@@ -219,7 +219,7 @@ class ReferralService {
     );
 
     // Send email notification (async, don't wait)
-    this.sendSaleNotificationEmail(referrer, saleAmount, commissionAmount, utmSource)
+    this.sendSaleNotificationEmail(referrer, saleAmount, commissionAmount, utmSource, customerName, new Date().toISOString())
       .catch(err => console.error('❌ Failed to send notification email:', err));
 
     return data;
@@ -233,10 +233,32 @@ class ReferralService {
     referrer: Referrer,
     saleAmount: number,
     commissionAmount: number,
-    utmSource: string
+    utmSource: string,
+    customerName?: string,
+    saleDate?: string
   ): Promise<void> {
     const dashboardUrl = process.env.DASHBOARD_URL || 'https://traffic.onai.academy';
-    const managerContactUrl = 'https://t.me/ayaulym_sales'; // Ссылка на менеджера по продажам
+    
+    // 📱 Contact buttons
+    const whatsappUrl = 'https://wa.me/77066523203';
+    const telegramUrl = 'https://t.me/flaaee';
+    
+    // Format sale date
+    const formattedDate = saleDate 
+      ? new Date(saleDate).toLocaleString('ru-RU', { 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      : new Date().toLocaleString('ru-RU', { 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
     
     // ═══════════════════════════════════════════════════════════════
     // 📧 SEND EMAIL via Resend
@@ -259,19 +281,29 @@ class ReferralService {
               Один из твоих рефералов совершил покупку нашего курса! 🎉
             </p>
             
+            <!-- Sale Details Box -->
             <div style="background: rgba(0,255,148,0.1); border-left: 4px solid #00FF94; padding: 20px; margin: 25px 0; border-radius: 0 12px 12px 0;">
+              ${customerName ? `
               <p style="margin: 8px 0; color: #9CA3AF;">
-                <strong style="color: #fff;">Сумма продажи:</strong> ${saleAmount.toLocaleString()} KZT
+                <strong style="color: #fff;">👤 Покупатель:</strong> 
+                <span style="color: #00FF94; font-weight: bold;">${customerName}</span>
+              </p>
+              ` : ''}
+              <p style="margin: 8px 0; color: #9CA3AF;">
+                <strong style="color: #fff;">📅 Дата покупки:</strong> ${formattedDate}
               </p>
               <p style="margin: 8px 0; color: #9CA3AF;">
-                <strong style="color: #fff;">Ваша комиссия:</strong> 
-                <span style="color: #00FF94; font-size: 22px; font-weight: bold;">${commissionAmount.toLocaleString()} KZT</span>
+                <strong style="color: #fff;">💰 Сумма продажи:</strong> ${saleAmount.toLocaleString()} KZT
               </p>
               <p style="margin: 8px 0; color: #9CA3AF;">
-                <strong style="color: #fff;">Процент:</strong> ${referrer.current_commission_percent}%
+                <strong style="color: #fff;">🎯 Ваша комиссия:</strong> 
+                <span style="color: #00FF94; font-size: 24px; font-weight: bold;">${commissionAmount.toLocaleString()} KZT</span>
               </p>
               <p style="margin: 8px 0; color: #9CA3AF;">
-                <strong style="color: #fff;">UTM-метка:</strong> 
+                <strong style="color: #fff;">📊 Процент:</strong> ${referrer.current_commission_percent}%
+              </p>
+              <p style="margin: 8px 0; color: #9CA3AF;">
+                <strong style="color: #fff;">🔗 UTM-метка:</strong> 
                 <code style="background: #0A0A0A; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${utmSource}</code>
               </p>
             </div>
@@ -280,15 +312,28 @@ class ReferralService {
               💡 <strong style="color: #fff;">Следующий шаг:</strong> Свяжитесь с менеджером для получения выплаты.
             </p>
             
-            <a href="${managerContactUrl}" 
-               style="display: inline-block; background: #00FF94; color: #000; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; margin-top: 20px; letter-spacing: 0.5px;">
-              НАПИСАТЬ МЕНЕДЖЕРУ →
-            </a>
+            <!-- Contact Buttons -->
+            <div style="margin-top: 25px;">
+              <a href="${whatsappUrl}" 
+                 style="display: inline-block; background: #25D366; color: #fff; padding: 16px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; margin-right: 10px; margin-bottom: 10px;">
+                📱 НАПИСАТЬ В WHATSAPP
+              </a>
+              <a href="${telegramUrl}" 
+                 style="display: inline-block; background: #0088CC; color: #fff; padding: 16px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; margin-bottom: 10px;">
+                ✈️ НАПИСАТЬ В TELEGRAM
+              </a>
+            </div>
+            
+            <p style="font-size: 12px; color: #666; margin-top: 15px;">
+              Если кнопки не работают:<br>
+              WhatsApp: <a href="${whatsappUrl}" style="color: #25D366;">${whatsappUrl}</a><br>
+              Telegram: <a href="${telegramUrl}" style="color: #0088CC;">${telegramUrl}</a>
+            </p>
             
             <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 30px 0;">
             
             <p style="font-size: 12px; color: #666; margin: 0;">
-              onAI Academy | Реферальная система v3.0
+              onAI Academy | Реферальная система v4.0
             </p>
             
           </div>
@@ -323,7 +368,7 @@ class ReferralService {
     // ═══════════════════════════════════════════════════════════════
     
     try {
-      const smsText = `onAI Academy: Продажа! Комиссия ${commissionAmount.toLocaleString()}₸. Напишите менеджеру: ${managerContactUrl}`;
+      const smsText = `onAI: Продажа! ${commissionAmount.toLocaleString()}₸. WhatsApp: wa.me/77066523203 или TG: t.me/flaaee`;
       
       if (referrer.phone_number && process.env.MOBIZON_API_KEY) {
         const smsResult = await sendSMS({

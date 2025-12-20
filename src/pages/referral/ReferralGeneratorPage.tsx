@@ -579,8 +579,8 @@ export default function ReferralGeneratorPage() {
               style={{
                 background: 'linear-gradient(135deg, rgba(15,15,15,0.98) 0%, rgba(10,10,10,0.98) 100%)',
                 border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '24px',
-                padding: '40px',
+                borderRadius: '20px',
+                padding: 'clamp(20px, 5vw, 40px)',
                 maxWidth: '800px',
                 width: '100%',
                 maxHeight: '90vh',
@@ -593,27 +593,28 @@ export default function ReferralGeneratorPage() {
                 onClick={() => setShowInstructionsPopup(false)}
                 style={{
                   position: 'absolute',
-                  top: '20px',
-                  right: '20px',
+                  top: 'clamp(12px, 3vw, 20px)',
+                  right: 'clamp(12px, 3vw, 20px)',
                   background: 'rgba(255,255,255,0.1)',
                   border: 'none',
                   borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
+                  width: 'clamp(36px, 8vw, 40px)',
+                  height: 'clamp(36px, 8vw, 40px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
                   color: '#fff',
+                  zIndex: 10,
                 }}
               >
                 <X size={24} />
               </button>
 
               {/* Header */}
-              <div style={{ marginBottom: '30px' }}>
+              <div style={{ marginBottom: 'clamp(16px, 4vw, 30px)' }}>
                 <div className="micro-text">/// ПОЛНАЯ ИНСТРУКЦИЯ</div>
-                <h2 style={{ fontSize: '28px', margin: '10px 0', color: '#fff' }}>
+                <h2 style={{ fontSize: 'clamp(20px, 5vw, 28px)', margin: '10px 0', color: '#fff' }}>
                   🚀 Как использовать твою UTM-ссылку
                 </h2>
               </div>
@@ -622,18 +623,18 @@ export default function ReferralGeneratorPage() {
               <div style={{
                 background: 'rgba(0,255,148,0.1)',
                 border: '2px solid #00FF94',
-                borderRadius: '16px',
-                padding: '20px',
-                marginBottom: '30px',
+                borderRadius: 'clamp(12px, 3vw, 16px)',
+                padding: 'clamp(14px, 4vw, 20px)',
+                marginBottom: 'clamp(20px, 5vw, 30px)',
               }}>
-                <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '0 0 10px 0' }}>🔗 Твоя ссылка:</p>
+                <p style={{ color: '#9CA3AF', fontSize: 'clamp(12px, 3vw, 14px)', margin: '0 0 10px 0' }}>🔗 Твоя ссылка:</p>
                 <code style={{
                   display: 'block',
                   background: '#0A0A0A',
-                  padding: '15px',
+                  padding: 'clamp(10px, 3vw, 15px)',
                   borderRadius: '10px',
                   color: '#00FF94',
-                  fontSize: '14px',
+                  fontSize: 'clamp(11px, 2.5vw, 14px)',
                   wordBreak: 'break-all',
                 }}>
                   {generated.utm_link}

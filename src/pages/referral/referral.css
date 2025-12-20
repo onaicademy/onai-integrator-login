@@ -1205,3 +1205,303 @@
     text-align: center;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Extra small devices (phones < 375px) */
+@media (max-width: 374px) {
+  .referral-page {
+    padding: 16px 12px 50px;
+  }
+  
+  .main-title {
+    font-size: 22px;
+  }
+  
+  .subtitle {
+    font-size: 13px;
+  }
+  
+  .glass-card {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+  
+  .card-header h2 {
+    font-size: 17px;
+  }
+  
+  .form-input {
+    padding: 12px 14px;
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+  
+  .submit-btn {
+    padding: 14px 16px;
+    font-size: 12px;
+  }
+  
+  .code-value {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+  
+  .amount-col .amount {
+    font-size: 26px;
+  }
+  
+  .step-number {
+    font-size: 28px;
+  }
+  
+  .step-card {
+    padding: 18px;
+  }
+  
+  .step-card h3 {
+    font-size: 14px;
+  }
+  
+  .step-card p {
+    font-size: 12px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 22px;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 11px;
+  }
+  
+  .leaderboard-item {
+    padding: 10px 12px;
+  }
+  
+  .leaderboard-item .earned {
+    font-size: 16px;
+  }
+  
+  .mini-amount {
+    font-size: 16px;
+  }
+}
+
+/* Small devices (phones 375px - 480px) */
+@media (min-width: 375px) and (max-width: 480px) {
+  .referral-page {
+    padding: 20px 14px 60px;
+  }
+  
+  .main-title {
+    font-size: 26px;
+  }
+  
+  .glass-card {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+  
+  .form-input {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+}
+
+/* Medium devices (tablets 481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .referral-page {
+    padding: 28px 20px 70px;
+  }
+  
+  .main-title {
+    font-size: 32px;
+  }
+  
+  .referral-grid {
+    gap: 20px;
+  }
+  
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large devices (tablets landscape, small laptops 769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .referral-page {
+    padding: 32px 28px 80px;
+  }
+  
+  .referral-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+/* Extra large devices (desktops 1025px+) */
+@media (min-width: 1025px) {
+  .referral-page {
+    padding: 48px 40px 100px;
+  }
+  
+  .main-title {
+    font-size: 56px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POPUP MOBILE ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.instructions-popup-overlay {
+  padding: 10px;
+}
+
+.instructions-popup-content {
+  padding: 24px !important;
+  border-radius: 20px !important;
+  max-height: calc(100vh - 20px) !important;
+}
+
+@media (max-width: 480px) {
+  .instructions-popup-content {
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+  
+  .instructions-popup-content h2 {
+    font-size: 20px !important;
+  }
+  
+  .instructions-popup-content h3 {
+    font-size: 15px !important;
+  }
+  
+  .instructions-popup-content p,
+  .instructions-popup-content li {
+    font-size: 13px !important;
+  }
+  
+  .instructions-popup-content code {
+    font-size: 11px !important;
+    padding: 10px !important;
+  }
+  
+  .instructions-popup-content button {
+    padding: 14px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Instruction method cards on mobile */
+  .instructions-popup-content div[style*="borderLeft"] {
+    padding: 18px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOUCH-FRIENDLY IMPROVEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Larger tap targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .submit-btn,
+  .copy-btn {
+    min-height: 48px;
+    padding: 14px 20px;
+  }
+  
+  .form-input {
+    min-height: 48px;
+  }
+  
+  .step-card {
+    padding: 24px 20px;
+  }
+  
+  .leaderboard-item {
+    min-height: 60px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .glass-card:hover,
+  .tier-card:hover,
+  .step-card:hover {
+    transform: none;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .submit-btn:hover:not(:disabled),
+  .copy-btn:hover {
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SAFE AREA SUPPORT (iPhone notch/home indicator)
+   ═══════════════════════════════════════════════════════════════ */
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .referral-page {
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(60px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LANDSCAPE MODE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .referral-header {
+    margin-bottom: 20px;
+  }
+  
+  .main-title {
+    font-size: 28px;
+  }
+  
+  .glass-card {
+    padding: 20px 24px;
+  }
+  
+  .placeholder-content {
+    min-height: 250px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR STYLING
+   ═══════════════════════════════════════════════════════════════ */
+
+.referral-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.referral-page::-webkit-scrollbar-track {
+  background: var(--void-black);
+}
+
+.referral-page::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 148, 0.3);
+  border-radius: 4px;
+}
+
+.referral-page::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 148, 0.5);
+}
+
+/* Hide scrollbar on mobile */
+@media (max-width: 768px) {
+  .referral-page::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .referral-page {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

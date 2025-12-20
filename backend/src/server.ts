@@ -296,6 +296,11 @@ app.use(cors({
 import corsMonitoringMiddleware from './monitoring/cors-monitor';
 app.use(corsMonitoringMiddleware);
 
+// 🔍 Correlation ID Middleware (must be before routes)
+import { correlationIdMiddleware, requestLogger } from './middleware/correlationId.js';
+app.use(correlationIdMiddleware);
+app.use(requestLogger);
+
 // ✅ Apply Rate Limiting to API routes
 // ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes
 app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
@@ -345,6 +350,11 @@ app.get('/api/health', (req, res) => {
 // ✅ КРИТИЧНО: MULTER ROUTES ДО express.json()
 // ============================================
 console.log('🔥 Registering Multer routes BEFORE express.json()');
+
+// ✅ Health check route (первым, без body parsing)
+import healthRouter from './routes/health.js';
+app.use('/api/health', healthRouter); // 🏥 Health checks
+
 app.use('/api/materials', materialsRouter);
 app.use('/api/stream', streamUploadRouter); // ✅ Bunny Stream Upload (NEW!)
 
