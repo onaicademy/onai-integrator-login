@@ -7,7 +7,7 @@ import {
   Copy, Check, ChevronDown, ChevronUp,
   Sparkles, Link2, Mail, Phone, User, 
   ArrowRight, Video, Zap, DollarSign, TrendingUp,
-  Trophy, Crown, Medal, Flame, X, ExternalLink, MessageCircle, PlayCircle
+  Trophy, Crown, Medal, Flame, X, ExternalLink, MessageCircle, PlayCircle, AlertTriangle
 } from 'lucide-react';
 import './referral.css';
 
@@ -309,6 +309,41 @@ export default function ReferralGeneratorPage() {
                 <h2>Отлично! 🎉</h2>
               </div>
 
+              {/* 🚨 КРИТИЧЕСКИ ВАЖНОЕ УВЕДОМЛЕНИЕ О ПОЧТЕ */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,59,48,0.15) 0%, rgba(255,45,85,0.1) 100%)',
+                  border: '2px solid #FF3B30',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  marginBottom: '20px',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '12px' }}>
+                  <AlertTriangle size={28} style={{ color: '#FF3B30' }} />
+                  <span style={{ 
+                    color: '#FF3B30', 
+                    fontSize: 'clamp(18px, 4vw, 22px)', 
+                    fontWeight: 800, 
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                  }}>
+                    ПРОВЕРЬТЕ ПОЧТУ!
+                  </span>
+                  <AlertTriangle size={28} style={{ color: '#FF3B30' }} />
+                </div>
+                <p style={{ color: '#fff', fontSize: 'clamp(13px, 3vw, 15px)', margin: '0 0 8px 0', lineHeight: '1.5' }}>
+                  На твою почту <strong style={{ color: '#00FF94' }}>{generated.email}</strong> отправлено письмо с <strong>видео-инструкцией</strong>
+                </p>
+                <p style={{ color: '#9CA3AF', fontSize: 'clamp(12px, 2.5vw, 14px)', margin: 0 }}>
+                  🎬 В видео показано, как подключить бота в Instagram для автоответов в Reels
+                </p>
+              </motion.div>
+
               <div className="code-block">
                 <div className="code-label">Твой реферальный код</div>
                 <div className="code-value">{generated.referral_code}</div>
@@ -378,6 +413,24 @@ export default function ReferralGeneratorPage() {
               </div>
               <h3>Твоя ссылка появится здесь</h3>
               <p>Заполни форму слева и получи уникальную ссылку для продвижения</p>
+              
+              {/* 📧 Уведомление о письме с инструкцией */}
+              <div style={{
+                background: 'rgba(99,102,241,0.1)',
+                border: '1px solid rgba(99,102,241,0.3)',
+                borderRadius: '12px',
+                padding: '16px',
+                margin: '16px 0',
+                textAlign: 'center',
+              }}>
+                <Mail size={24} style={{ color: '#6366F1', marginBottom: '8px' }} />
+                <p style={{ color: '#fff', fontSize: '14px', margin: '0 0 6px 0', fontWeight: 600 }}>
+                  📨 После регистрации на твою почту придёт письмо
+                </p>
+                <p style={{ color: '#9CA3AF', fontSize: '12px', margin: 0 }}>
+                  В нём будет <strong style={{ color: '#00FF94' }}>видео-инструкция</strong> по подключению реферальной ссылки
+                </p>
+              </div>
               
               {/* Мини-таблица комиссий */}
               <div className="mini-commission-table">
