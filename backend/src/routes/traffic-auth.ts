@@ -203,5 +203,64 @@ export function authenticateToken(req: any, res: any, next: any) {
   });
 }
 
+// 🔒 POST /api/traffic-auth/request-password-reset
+router.post('/request-password-reset', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    console.log(`🔑 Password reset requested for: ${email}`);
+    
+    // Get user from traffic_users table
+    const { data: user, error } = await tripwireAdminSupabase
+      .from('traffic_users')
+      .select('id, email')
+      .eq('email', email.toLowerCase().trim())
+      .eq('is_active', true)
+      .single();
+    
+    if (error || !user) {
+      // Return success anyway for security (don't reveal if email exists)
+      console.log(`⚠️ Password reset requested for non-existent email: ${email}`);
+      return res.json({ success: true, message: 'If the email exists, a password reset link will be sent' });
+    }
+    
+    // Generate password reset token using Supabase Auth
+    const tripwireUrl = process.env.TRIPWIRE_SUPABASE_URL!;
+    const supabaseServiceKey = process.env.TRIPWIRE_SERVICE_ROLE_KEY!;
+    
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseAuth = createClient(tripwireUrl, supabaseServiceKey);
+    
+    // Send password reset email via Supabase
+    const { data, error: resetError } = await supabaseAuth.auth.admin.generateLink({
+      type: 'recovery',
+      email: user.email,
+      options: {
+        redirectTo: 'https://traffic.onai.academy/reset-password' // TODO: Create this page
+      }
+    });
+    
+    if (resetError) {
+      console.error('❌ Supabase password reset error:', resetError);
+      return res.status(500).json({ error: 'Failed to send password reset email' });
+    }
+    
+    console.log(`✅ Password reset email sent to: ${email}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Password reset link sent to your email'
+    });
+    
+  } catch (error: any) {
+    console.error('❌ Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
 

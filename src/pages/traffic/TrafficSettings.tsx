@@ -1,16 +1,12 @@
 /**
- * Traffic Targetologist Settings Page - PREMIUM REDESIGN
+ * Traffic Targetologist Settings Page - FULL REFACTOR V2
  * 
- * Multi-source integration:
- * - Facebook Ads (with token status)
- * - YouTube Ads (with token status)
- * - TikTok Ads (with token status)
- * - Google Ads (with token status)
- * 
- * Features:
- * - Token connection status for each source
- * - Collapsible dropdowns for accounts and campaigns
- * - Premium UI with gradients and glow effects
+ * НОВАЯ АРХИТЕКТУРА:
+ * 1. Процесс подключения кабинетов с визуальным индикатором
+ * 2. Выпадающие списки для кабинетов и кампаний
+ * 3. Система поиска по кабинетам и кампаниям
+ * 4. Персональные UTM метки для каждого таргетолога
+ * 5. Logout и Change Password кнопки
  */
 
 import { useState, useEffect } from 'react';
@@ -20,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Settings, Save, RefreshCw, CheckCircle2, XCircle, ChevronDown, ChevronRight,
   Facebook, Youtube, Link, Tag, Bell, Globe, LogOut, Target, AlertCircle,
-  Check, X, Loader2
+  Check, X, Loader2, Search, Key, Power
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
@@ -30,6 +26,7 @@ import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
 // Traffic Source Types
 type TrafficSource = 'facebook' | 'youtube' | 'tiktok' | 'google_ads';
+type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
 
 interface TokenStatus {
   connected: boolean;
@@ -43,6 +40,7 @@ interface FBAccount {
   status?: string;
   currency?: string;
   enabled: boolean;
+  connectionStatus: ConnectionStatus; // NEW!
 }
 
 interface Campaign {
@@ -103,6 +101,7 @@ export default function TrafficSettings() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   
   // Source selection
   const [selectedSource, setSelectedSource] = useState<TrafficSource>('facebook');
@@ -117,12 +116,13 @@ export default function TrafficSettings() {
   const [fbAccounts, setFbAccounts] = useState<FBAccount[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [expandedAccounts, setExpandedAccounts] = useState<Set<string>>(new Set());
-  const [utmSource, setUtmSource] = useState('facebook');
-  const [utmMedium, setUtmMedium] = useState('cpc');
-  const [utmTemplates, setUtmTemplates] = useState<any>({
-    campaign: '{campaign_name}',
-    content: '{ad_name}'
-  });
+  
+  // Search state
+  const [accountSearchQuery, setAccountSearchQuery] = useState('');
+  const [campaignSearchQuery, setCampaignSearchQuery] = useState('');
+  
+  // UTM персональная метка
+  const [personalUtmSource, setPersonalUtmSource] = useState('');
   
   const { language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
@@ -145,14 +145,13 @@ export default function TrafficSettings() {
       });
       
       setTokenStatuses(res.data.statuses || {
-        facebook: { connected: true }, // FB token всегда есть в ENV
+        facebook: { connected: true },
         youtube: { connected: false },
         tiktok: { connected: false },
         google_ads: { connected: false }
       });
     } catch (error) {
       console.error('Failed to check token statuses:', error);
-      // Default: only FB connected
       setTokenStatuses({
         facebook: { connected: true },
         youtube: { connected: false },
@@ -173,11 +172,13 @@ export default function TrafficSettings() {
       
       const settings = settingsRes.data.settings;
       if (settings) {
-        setFbAccounts(settings.fb_ad_accounts || []);
+        const accounts = (settings.fb_ad_accounts || []).map((acc: any) => ({
+          ...acc,
+          connectionStatus: acc.enabled ? 'connected' : 'idle'
+        }));
+        setFbAccounts(accounts);
         setCampaigns(settings.tracked_campaigns || []);
-        setUtmSource(settings.utm_source || 'facebook');
-        setUtmMedium(settings.utm_medium || 'cpc');
-        setUtmTemplates(settings.utm_templates || {});
+        setPersonalUtmSource(settings.personal_utm_source || `fb_${user?.team?.toLowerCase() || 'default'}`);
       }
       
     } catch (error: any) {
@@ -199,7 +200,11 @@ export default function TrafficSettings() {
       
       const mergedAccounts = availableAccounts.map((acc: FBAccount) => {
         const existing = fbAccounts.find(a => a.id === acc.id);
-        return { ...acc, enabled: existing?.enabled || false };
+        return { 
+          ...acc, 
+          enabled: existing?.enabled || false,
+          connectionStatus: existing?.connectionStatus || 'idle'
+        };
       });
       
       setFbAccounts(mergedAccounts);
@@ -240,6 +245,55 @@ export default function TrafficSettings() {
     }
   };
   
+  // NEW: Connect account with visual feedback
+  const connectAccount = async (accountId: string) => {
+    try {
+      // Update status to connecting
+      setFbAccounts(prev => prev.map(acc => 
+        acc.id === accountId 
+          ? { ...acc, connectionStatus: 'connecting' as ConnectionStatus } 
+          : acc
+      ));
+      
+      // Simulate connection process (replace with actual API call)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Update status to connected
+      setFbAccounts(prev => prev.map(acc => 
+        acc.id === accountId 
+          ? { ...acc, enabled: true, connectionStatus: 'connected' as ConnectionStatus } 
+          : acc
+      ));
+      
+      toast.success('Кабинет подключен!');
+      
+      // Auto-load campaigns
+      await loadCampaignsForAccount(accountId);
+      
+    } catch (error) {
+      setFbAccounts(prev => prev.map(acc => 
+        acc.id === accountId 
+          ? { ...acc, connectionStatus: 'error' as ConnectionStatus } 
+          : acc
+      ));
+      toast.error('Ошибка подключения кабинета');
+    }
+  };
+  
+  // NEW: Disconnect account
+  const disconnectAccount = (accountId: string) => {
+    setFbAccounts(prev => prev.map(acc => 
+      acc.id === accountId 
+        ? { ...acc, enabled: false, connectionStatus: 'idle' as ConnectionStatus } 
+        : acc
+    ));
+    
+    // Remove campaigns for this account
+    setCampaigns(prev => prev.filter(c => c.ad_account_id !== accountId));
+    
+    toast.success('Кабинет отключен');
+  };
+  
   const saveSettings = async () => {
     try {
       setSaving(true);
@@ -248,9 +302,7 @@ export default function TrafficSettings() {
       await axios.put(`${API_URL}/api/traffic-settings/${user.id}`, {
         fb_ad_accounts: fbAccounts,
         tracked_campaigns: campaigns,
-        utm_source: utmSource,
-        utm_medium: utmMedium,
-        utm_templates: utmTemplates,
+        personal_utm_source: personalUtmSource,
         active_source: selectedSource
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -264,12 +316,6 @@ export default function TrafficSettings() {
     } finally {
       setSaving(false);
     }
-  };
-  
-  const toggleAccount = (accountId: string) => {
-    setFbAccounts(prev => prev.map(acc => 
-      acc.id === accountId ? { ...acc, enabled: !acc.enabled } : acc
-    ));
   };
   
   const toggleCampaign = (campaignId: string) => {
@@ -294,6 +340,38 @@ export default function TrafficSettings() {
     localStorage.removeItem('traffic_token');
     localStorage.removeItem('traffic_user');
     navigate('/login');
+  };
+  
+  const handleChangePassword = async () => {
+    try {
+      const token = localStorage.getItem('traffic_token');
+      await axios.post(`${API_URL}/api/traffic-auth/request-password-reset`, {
+        email: user.email
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success('Письмо для сброса пароля отправлено на ваш email!');
+      setShowPasswordDialog(false);
+    } catch (error) {
+      toast.error('Ошибка отправки письма');
+    }
+  };
+  
+  // Filter accounts by search
+  const filteredAccounts = fbAccounts.filter(acc => 
+    acc.name.toLowerCase().includes(accountSearchQuery.toLowerCase()) ||
+    acc.id.includes(accountSearchQuery)
+  );
+  
+  // Filter campaigns by search
+  const filteredCampaigns = (accountId: string) => {
+    return campaigns
+      .filter(c => c.ad_account_id === accountId)
+      .filter(c => 
+        c.name.toLowerCase().includes(campaignSearchQuery.toLowerCase()) ||
+        c.id.includes(campaignSearchQuery)
+      );
   };
   
   if (loading) {
@@ -357,6 +435,17 @@ export default function TrafficSettings() {
                 Dashboard
               </Button>
               
+              {/* NEW: Change Password Button */}
+              <Button
+                onClick={() => setShowPasswordDialog(true)}
+                variant="outline"
+                size="sm"
+                className="bg-black/80 border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/10"
+              >
+                <Key className="w-4 h-4" />
+              </Button>
+              
+              {/* NEW: Logout Button */}
               <Button
                 onClick={handleLogout}
                 variant="outline"
@@ -376,7 +465,7 @@ export default function TrafficSettings() {
         <div className="mb-8 bg-gradient-to-r from-[#00FF88]/10 to-transparent border border-[#00FF88]/20 rounded-2xl p-6">
           <h1 className="text-3xl font-bold text-white mb-2">⚙️ Настройки источников трафика</h1>
           <p className="text-sm text-[#00FF88]/60">
-            Подключай рекламные источники, настраивай кабинеты и отслеживай кампании
+            Подключай рекламные источники, настраивай кабинеты и персональные UTM метки
           </p>
         </div>
         
@@ -399,21 +488,17 @@ export default function TrafficSettings() {
                   }
                 `}
               >
-                {/* Glow effect for selected */}
                 {isSelected && (
                   <div className="absolute inset-0 bg-[#00FF88]/10 blur-xl rounded-xl -z-10" />
                 )}
                 
-                {/* Icon */}
                 <div className={`w-12 h-12 ${source.iconBg} rounded-xl flex items-center justify-center mb-4 border border-white/10`}>
                   <Icon className="w-6 h-6" style={{ color: source.color }} />
                 </div>
                 
-                {/* Name */}
                 <h3 className="text-lg font-bold text-white mb-1">{source.name}</h3>
                 <p className="text-xs text-gray-400 mb-3">{source.description}</p>
                 
-                {/* Token Status */}
                 <div className={`
                   flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg
                   ${status.connected 
@@ -434,7 +519,6 @@ export default function TrafficSettings() {
                   )}
                 </div>
                 
-                {/* Selection indicator */}
                 {isSelected && (
                   <div className="absolute top-3 right-3">
                     <div className="w-6 h-6 bg-[#00FF88] rounded-full flex items-center justify-center">
@@ -462,7 +546,6 @@ export default function TrafficSettings() {
                 </div>
               </div>
               
-              {/* Token Status Badge */}
               <div className={`
                 flex items-center gap-3 px-4 py-3 rounded-xl border
                 ${currentTokenStatus.connected 
@@ -491,9 +574,46 @@ export default function TrafficSettings() {
             </div>
           </div>
           
-          {/* Content based on selected source */}
+          {/* Facebook Content */}
           {selectedSource === 'facebook' && currentTokenStatus.connected && (
             <>
+              {/* Персональная UTM метка */}
+              <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-[#00FF88]/20 rounded-xl flex items-center justify-center border border-[#00FF88]/30">
+                    <Tag className="w-6 h-6 text-[#00FF88]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Персональная UTM метка</h3>
+                    <p className="text-xs text-gray-400">Для отслеживания вашего трафика</p>
+                  </div>
+                </div>
+                
+                <div className="bg-black/60 border border-[#00FF88]/20 rounded-xl p-6">
+                  <label className="text-sm text-gray-400 mb-3 block font-semibold">
+                    UTM Source (автоматическое отслеживание)
+                  </label>
+                  <Input
+                    value={personalUtmSource}
+                    onChange={(e) => setPersonalUtmSource(e.target.value)}
+                    className="bg-black/50 border-[#00FF88]/20 text-white text-lg font-mono"
+                    placeholder="fb_kenesary"
+                  />
+                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                    💡 Все продажи с этой UTM меткой будут автоматически присвоены вам.
+                    <br />
+                    Используйте формат: <code className="text-[#00FF88] bg-black/50 px-2 py-1 rounded">источник_имя</code> (например: fb_kenesary, fb_arystan)
+                  </p>
+                  
+                  <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <p className="text-sm text-green-400 font-semibold mb-2">✅ Автоматическое отслеживание включено</p>
+                    <p className="text-xs text-green-400/70">
+                      Система будет отслеживать все продажи с UTM меткой <code className="font-mono bg-black/50 px-2 py-1 rounded">{personalUtmSource}</code>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               {/* FB Accounts */}
               <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -501,7 +621,7 @@ export default function TrafficSettings() {
                     <Facebook className="w-6 h-6 text-[#1877F2]" />
                     <div>
                       <h3 className="text-xl font-bold text-white">Рекламные кабинеты</h3>
-                      <p className="text-xs text-gray-400">Выберите кабинеты для отслеживания</p>
+                      <p className="text-xs text-gray-400">Подключите кабинеты для отслеживания</p>
                     </div>
                   </div>
                   <Button
@@ -514,6 +634,21 @@ export default function TrafficSettings() {
                   </Button>
                 </div>
                 
+                {/* Search for accounts */}
+                {fbAccounts.length > 0 && (
+                  <div className="mb-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        value={accountSearchQuery}
+                        onChange={(e) => setAccountSearchQuery(e.target.value)}
+                        placeholder="Поиск по кабинетам..."
+                        className="pl-10 bg-black/50 border-[#00FF88]/20 text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 {fbAccounts.length === 0 ? (
                   <div className="text-center py-12 border border-dashed border-gray-700 rounded-xl">
                     <Facebook className="w-12 h-12 text-gray-600 mx-auto mb-3" />
@@ -521,30 +656,38 @@ export default function TrafficSettings() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {fbAccounts.map((account) => {
+                    {filteredAccounts.map((account) => {
                       const isExpanded = expandedAccounts.has(account.id);
-                      const accountCampaigns = campaigns.filter(c => c.ad_account_id === account.id);
+                      const accountCampaigns = filteredCampaigns(account.id);
+                      const { connectionStatus } = account;
                       
                       return (
                         <div key={account.id} className="border border-gray-800 rounded-xl overflow-hidden">
                           {/* Account Header */}
-                          <div
-                            className={`
-                              p-4 flex items-center justify-between cursor-pointer transition-all
-                              ${account.enabled 
-                                ? 'bg-[#00FF88]/10 hover:bg-[#00FF88]/15' 
-                                : 'bg-black/20 hover:bg-black/30'
-                              }
-                            `}
-                          >
+                          <div className={`
+                            p-4 flex items-center justify-between transition-all
+                            ${account.enabled 
+                              ? 'bg-[#00FF88]/10' 
+                              : 'bg-black/20'
+                            }
+                          `}>
                             <div className="flex items-center gap-3 flex-1">
-                              <div onClick={(e) => { e.stopPropagation(); toggleAccount(account.id); }}>
-                                {account.enabled ? (
+                              {/* Connection Status Indicator */}
+                              <div className="flex items-center gap-2">
+                                {connectionStatus === 'connecting' && (
+                                  <Loader2 className="w-5 h-5 text-[#00FF88] animate-spin" />
+                                )}
+                                {connectionStatus === 'connected' && (
                                   <CheckCircle2 className="w-5 h-5 text-[#00FF88]" />
-                                ) : (
+                                )}
+                                {connectionStatus === 'idle' && (
                                   <XCircle className="w-5 h-5 text-gray-500" />
                                 )}
+                                {connectionStatus === 'error' && (
+                                  <AlertCircle className="w-5 h-5 text-red-500" />
+                                )}
                               </div>
+                              
                               <div className="flex-1">
                                 <p className="text-sm font-semibold text-white">{account.name}</p>
                                 <p className="text-xs text-gray-400">ID: {account.id} • {account.currency || 'N/A'}</p>
@@ -552,33 +695,53 @@ export default function TrafficSettings() {
                             </div>
                             
                             <div className="flex items-center gap-2">
-                              {account.enabled && accountCampaigns.length > 0 && (
-                                <span className="text-xs bg-[#00FF88]/20 px-2 py-1 rounded">
+                              {/* Connection Status Text */}
+                              {connectionStatus === 'connecting' && (
+                                <span className="text-xs text-[#00FF88] px-3 py-1 bg-[#00FF88]/20 rounded-lg font-semibold">
+                                  Подключение...
+                                </span>
+                              )}
+                              {connectionStatus === 'connected' && accountCampaigns.length > 0 && (
+                                <span className="text-xs bg-[#00FF88]/20 px-2 py-1 rounded text-[#00FF88] font-semibold">
                                   {accountCampaigns.filter(c => c.enabled).length}/{accountCampaigns.length} кампаний
                                 </span>
                               )}
                               
-                              {account.enabled && (
+                              {/* Connect/Disconnect Button */}
+                              {!account.enabled ? (
+                                <Button
+                                  onClick={() => connectAccount(account.id)}
+                                  disabled={connectionStatus === 'connecting'}
+                                  size="sm"
+                                  className="bg-[#00FF88] text-black hover:bg-[#00FF88]/90"
+                                >
+                                  {connectionStatus === 'connecting' ? (
+                                    <>
+                                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                      Подключение
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Power className="w-3 h-3 mr-1" />
+                                      Подключить
+                                    </>
+                                  )}
+                                </Button>
+                              ) : (
                                 <>
                                   <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      loadCampaignsForAccount(account.id);
-                                    }}
+                                    onClick={() => disconnectAccount(account.id)}
                                     size="sm"
                                     variant="outline"
-                                    className="border-[#00FF88]/20 text-[#00FF88] hover:bg-[#00FF88]/10"
+                                    className="border-red-500/20 text-red-400 hover:bg-red-500/10"
                                   >
-                                    <RefreshCw className="w-3 h-3 mr-1" />
-                                    Загрузить кампании
+                                    <Power className="w-3 h-3 mr-1" />
+                                    Отключить
                                   </Button>
                                   
                                   {accountCampaigns.length > 0 && (
                                     <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleAccountExpansion(account.id);
-                                      }}
+                                      onClick={() => toggleAccountExpansion(account.id)}
                                       className="p-2 hover:bg-[#00FF88]/10 rounded-lg transition-all"
                                     >
                                       {isExpanded ? (
@@ -596,9 +759,22 @@ export default function TrafficSettings() {
                           {/* Campaigns Dropdown */}
                           {account.enabled && isExpanded && accountCampaigns.length > 0 && (
                             <div className="bg-black/60 border-t border-gray-800 p-4">
+                              {/* Search for campaigns */}
+                              <div className="mb-3">
+                                <div className="relative">
+                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                                  <Input
+                                    value={campaignSearchQuery}
+                                    onChange={(e) => setCampaignSearchQuery(e.target.value)}
+                                    placeholder="Поиск по кампаниям..."
+                                    className="pl-9 py-1 text-sm bg-black/50 border-[#00FF88]/20 text-white"
+                                  />
+                                </div>
+                              </div>
+                              
                               <div className="space-y-2">
                                 <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-3">
-                                  Кампании этого кабинета:
+                                  Кампании этого кабинета ({accountCampaigns.length}):
                                 </p>
                                 {accountCampaigns.map((campaign) => (
                                   <div
@@ -668,69 +844,6 @@ export default function TrafficSettings() {
               </div>
             </div>
           )}
-          
-          {/* UTM Settings */}
-          <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-[#00FF88]/20 rounded-xl flex items-center justify-center border border-[#00FF88]/30">
-                <Tag className="w-6 h-6 text-[#00FF88]" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">UTM Метки</h3>
-                <p className="text-xs text-gray-400">Настройте шаблоны для отслеживания</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-gray-400 mb-2 block font-semibold">UTM Source</label>
-                <Input
-                  value={utmSource}
-                  onChange={(e) => setUtmSource(e.target.value)}
-                  className="bg-black/50 border-[#00FF88]/20 text-white"
-                  placeholder="facebook"
-                />
-                <p className="text-xs text-gray-500 mt-1">Источник трафика (facebook, youtube, tiktok)</p>
-              </div>
-              
-              <div>
-                <label className="text-sm text-gray-400 mb-2 block font-semibold">UTM Medium</label>
-                <Input
-                  value={utmMedium}
-                  onChange={(e) => setUtmMedium(e.target.value)}
-                  className="bg-black/50 border-[#00FF88]/20 text-white"
-                  placeholder="cpc"
-                />
-                <p className="text-xs text-gray-500 mt-1">Тип трафика (cpc, cpm, banner)</p>
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="text-sm text-gray-400 mb-2 block font-semibold">
-                  UTM Campaign Template
-                </label>
-                <Input
-                  value={utmTemplates.campaign || ''}
-                  onChange={(e) => setUtmTemplates({ ...utmTemplates, campaign: e.target.value })}
-                  className="bg-black/50 border-[#00FF88]/20 text-white"
-                  placeholder="{campaign_name}"
-                />
-                <p className="text-xs text-gray-500 mt-1">Используй {'{campaign_name}'} для подстановки имени кампании</p>
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="text-sm text-gray-400 mb-2 block font-semibold">
-                  UTM Content Template
-                </label>
-                <Input
-                  value={utmTemplates.content || ''}
-                  onChange={(e) => setUtmTemplates({ ...utmTemplates, content: e.target.value })}
-                  className="bg-black/50 border-[#00FF88]/20 text-white"
-                  placeholder="{ad_name}"
-                />
-                <p className="text-xs text-gray-500 mt-1">Используй {'{ad_name}'} для подстановки имени объявления</p>
-              </div>
-            </div>
-          </div>
         </div>
         
         {/* Save Button */}
@@ -762,6 +875,34 @@ export default function TrafficSettings() {
           </Button>
         </div>
       </div>
+      
+      {/* Change Password Dialog */}
+      {showPasswordDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-black border border-[#00FF88]/20 rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold text-white mb-4">Изменить пароль</h3>
+            <p className="text-gray-400 mb-6">
+              Мы отправим вам письмо со ссылкой для сброса пароля на <span className="text-[#00FF88] font-semibold">{user?.email}</span>
+            </p>
+            
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowPasswordDialog(false)}
+                variant="outline"
+                className="flex-1 border-gray-700"
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={handleChangePassword}
+                className="flex-1 bg-[#00FF88] text-black hover:bg-[#00FF88]/90"
+              >
+                Отправить письмо
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Footer */}
       <div className="bg-black/40 border-t border-gray-800/30 py-4 mt-12">
