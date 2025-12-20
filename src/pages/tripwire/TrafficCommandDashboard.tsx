@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { landingSupabase } from '@/lib/supabase-landing';
 import axios from 'axios';
 import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
+import { TRAFFIC_API_URL } from '@/config/traffic-api';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
@@ -10,7 +11,8 @@ import {
   Lightbulb, CheckCircle2, AlertTriangle, X, Info, HelpCircle
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+// 🚀 Use TRAFFIC_API_URL for correct nginx proxy handling
+const API_URL = TRAFFIC_API_URL;
 
 // 📚 Описания метрик для подсказок
 const METRIC_DESCRIPTIONS: Record<string, { title: string; description: string }> = {
