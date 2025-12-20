@@ -144,67 +144,67 @@ export default function ReferralGeneratorPage() {
 
 
 
-      {/* СИСТЕМА ВЫПЛАТ */}
-      <motion.div
-        className="glass-card commission-hero full-width"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <div className="card-header">
-          <div className="micro-text">/// СИСТЕМА ВЫПЛАТ</div>
-          <h2>💰 Сколько ты заработаешь?</h2>
-          <p>Чем больше продаж в месяц — тем выше выплата <strong>за каждую</strong> продажу!</p>
-        </div>
-
-        <div className="commission-table">
-          <div className="table-header">
-            <div className="col">Продаж в месяц</div>
-            <div className="col">Выплата за продажу</div>
-            <div className="col">Пример дохода</div>
-          </div>
-          {COMMISSION_TIERS.map((tier, index) => (
-            <motion.div
-              key={tier.sales}
-              className="table-row"
-              style={{ '--tier-color': tier.color } as React.CSSProperties}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
-            >
-              <div className="col sales-col">
-                <span className="badge" style={{ background: tier.color }}>{tier.label}</span>
-                <span className="sales-range">{tier.sales} продаж</span>
-              </div>
-              <div className="col amount-col">
-                <DollarSign size={20} />
-                <span className="amount">${tier.amount}</span>
-                <span className="per-sale">за продажу</span>
-              </div>
-              <div className="col example-col">
-                <TrendingUp size={16} />
-                <span>
-                  {tier.sales === '1-2' && `2 × $${tier.amount} = $${2 * tier.amount}`}
-                  {tier.sales === '3-4' && `4 × $${tier.amount} = $${4 * tier.amount}`}
-                  {tier.sales === '5-7' && `7 × $${tier.amount} = $${7 * tier.amount}`}
-                  {tier.sales === '8+' && `10 × $${tier.amount} = $${10 * tier.amount}`}
-                </span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="commission-note">
-          <Zap size={20} />
-          <p>
-            <strong>Важно:</strong> Уровень считается по количеству продаж за текущий месяц. 
-            Сделал 5 продаж — получаешь <strong>$100 за каждую</strong> из них!
-          </p>
-        </div>
-      </motion.div>
-
       {/* Основная сетка контента */}
       <div className="referral-grid">
+        {/* СИСТЕМА ВЫПЛАТ - Теперь внутри грида */}
+        <motion.div
+          className="glass-card commission-hero full-width"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="card-header">
+            <div className="micro-text">/// СИСТЕМА ВЫПЛАТ</div>
+            <h2>💰 Сколько ты заработаешь?</h2>
+            <p>Чем больше продаж в месяц — тем выше выплата <strong>за каждую</strong> продажу!</p>
+          </div>
+
+          <div className="commission-table">
+            <div className="table-header">
+              <div className="col">Продаж в месяц</div>
+              <div className="col">Выплата за продажу</div>
+              <div className="col">Пример дохода</div>
+            </div>
+            {COMMISSION_TIERS.map((tier, index) => (
+              <motion.div
+                key={tier.sales}
+                className="table-row"
+                style={{ '--tier-color': tier.color } as React.CSSProperties}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+              >
+                <div className="col sales-col">
+                  <span className="badge" style={{ background: tier.color }}>{tier.label}</span>
+                  <span className="sales-range">{tier.sales} продаж</span>
+                </div>
+                <div className="col amount-col">
+                  <DollarSign size={20} />
+                  <span className="amount">${tier.amount}</span>
+                  <span className="per-sale">за продажу</span>
+                </div>
+                <div className="col example-col">
+                  <TrendingUp size={16} />
+                  <span>
+                    {tier.sales === '1-2' && `2 × $${tier.amount} = $${2 * tier.amount}`}
+                    {tier.sales === '3-4' && `4 × $${tier.amount} = $${4 * tier.amount}`}
+                    {tier.sales === '5-7' && `7 × $${tier.amount} = $${7 * tier.amount}`}
+                    {tier.sales === '8+' && `10 × $${tier.amount} = $${10 * tier.amount}`}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="commission-note">
+            <Zap size={20} />
+            <p>
+              <strong>Важно:</strong> Уровень считается по количеству продаж за текущий месяц. 
+              Сделал 5 продаж — получаешь <strong>$100 за каждую</strong> из них!
+            </p>
+          </div>
+        </motion.div>
+
         {/* Левая часть: Форма */}
         <motion.div
           className="glass-card form-card"

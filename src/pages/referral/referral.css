@@ -100,6 +100,10 @@
   margin-bottom: 48px;
   position: relative;
   z-index: 1;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 24px;
 }
 
 .micro-text {
@@ -959,7 +963,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .commission-hero {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .commission-hero .card-header h2 {
