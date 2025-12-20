@@ -242,7 +242,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 
 /**
  * Получает список Tripwire пользователей
- * 🔥 DIRECT POSTGRES CONNECTION - обход PostgREST/Kong cache!
+ * ✅ USING SUPABASE CLIENT (tripwirePool connection issue fixed)
  * ✅ С REAL-TIME расчетом modules_completed из tripwire_progress
  */
 export async function getTripwireUsers(params: GetTripwireUsersParams & { startDate?: string; endDate?: string }) {
@@ -250,69 +250,62 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
   const { managerId, status, page = 1, limit = 50, startDate, endDate } = params;
 
   try {
-    console.log(`🔌 [DIRECT QUERY] getTripwireUsers called with manager=${managerId}, status=${status}`);
+    console.log(`🔌 [SUPABASE] getTripwireUsers called with manager=${managerId}, status=${status}`);
 
     const offset = (page - 1) * limit;
 
-    // 🔥 REAL-TIME CALCULATION: Подсчитываем modules_completed из tripwire_progress
-    let query = `
-      SELECT 
-        tu.*,
-        COALESCE(
-          (SELECT COUNT(DISTINCT tp.module_id)
-           FROM tripwire_progress tp
-           WHERE tp.tripwire_user_id = tu.user_id
-             AND tp.is_completed = true),
-          0
-        ) as real_modules_completed,
-        COUNT(*) OVER() as total_count
-      FROM tripwire_users tu
-      WHERE 1=1
-    `;
-
-    const queryParams: any[] = [];
-    let paramIndex = 1;
+    // Базовый запрос через Supabase
+    let query = tripwireAdminSupabase
+      .from('tripwire_users')
+      .select('*, tripwire_progress!inner(module_id, is_completed)', { count: 'exact' });
 
     // Фильтры
     if (managerId) {
-      query += ` AND tu.granted_by = $${paramIndex}`;
-      queryParams.push(managerId);
-      paramIndex++;
+      query = query.eq('granted_by', managerId);
     }
     if (status) {
-      query += ` AND tu.status = $${paramIndex}`;
-      queryParams.push(status);
-      paramIndex++;
+      query = query.eq('status', status);
     }
     if (startDate) {
-      query += ` AND tu.created_at >= $${paramIndex}`;
-      queryParams.push(startDate);
-      paramIndex++;
+      query = query.gte('created_at', startDate);
     }
     if (endDate) {
-      query += ` AND tu.created_at <= $${paramIndex}`;
-      queryParams.push(endDate);
-      paramIndex++;
+      query = query.lte('created_at', endDate);
     }
 
-    query += ` ORDER BY tu.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    queryParams.push(limit, offset);
+    // Пагинация и сортировка
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    const result = await tripwirePool.query(query, queryParams);
+    const { data, error, count } = await query;
 
-    console.log(`✅ [DIRECT QUERY] Found ${result.rows.length} users`);
+    if (error) {
+      console.error('❌ [SUPABASE] Error fetching tripwire users:', error);
+      throw new Error(error.message);
+    }
 
-    // Преобразуем к ожидаемому формату, используя real_modules_completed
-    const usersWithCount = result.rows.map(user => ({
-      ...user,
-      modules_completed: user.real_modules_completed || user.modules_completed, // ✅ Приоритет real-time расчету
-      user_id: user.user_id || user.id,
-      total_count: user.total_count || result.rows.length
+    console.log(`✅ [SUPABASE] Found ${data?.length || 0} users`);
+
+    // Подсчитываем real_modules_completed для каждого пользователя
+    const usersWithModules = await Promise.all((data || []).map(async (user) => {
+      // Подсчет завершенных модулей через progress
+      const { count: completedModules } = await tripwireAdminSupabase
+        .from('tripwire_progress')
+        .select('module_id', { count: 'exact', head: true })
+        .eq('tripwire_user_id', user.user_id)
+        .eq('is_completed', true);
+
+      return {
+        ...user,
+        modules_completed: completedModules || user.modules_completed || 0,
+        total_count: count || 0
+      };
     }));
 
-    return usersWithCount;
+    return usersWithModules;
   } catch (error: any) {
-    console.error('❌ [DIRECT QUERY] Error fetching tripwire users:', error);
+    console.error('❌ [SUPABASE] Error fetching tripwire users:', error);
     throw error;
   }
 }

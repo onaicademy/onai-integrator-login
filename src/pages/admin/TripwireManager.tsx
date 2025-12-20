@@ -169,17 +169,37 @@ export default function TripwireManager() {
             </div>
           </div>
 
-          {/* Create User Button */}
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="group relative w-full lg:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
-                     hover:from-[#00CC6A] hover:to-[#00FF94]
-                     text-black font-bold font-['JetBrains_Mono'] uppercase tracking-wider text-sm sm:text-base
-                     rounded-xl transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
-          >
-            <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform flex-shrink-0" />
-            <span className="whitespace-nowrap">ДОБАВИТЬ УЧЕНИКА</span>
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            {/* Create User Button */}
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#00FF94] to-[#00CC6A] 
+                       hover:from-[#00CC6A] hover:to-[#00FF94]
+                       text-black font-bold font-['JetBrains_Mono'] uppercase tracking-wider text-sm sm:text-base
+                       rounded-xl transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
+            >
+              <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform flex-shrink-0" />
+              <span className="whitespace-nowrap">ДОБАВИТЬ УЧЕНИКА</span>
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={async () => {
+                if (confirm('Вы уверены что хотите выйти?')) {
+                  await tripwireSupabase.auth.signOut();
+                  window.location.href = '/tripwire/login';
+                }
+              }}
+              className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-white/5 hover:bg-red-500/20
+                       border border-white/10 hover:border-red-500/50
+                       text-white hover:text-red-400 font-bold font-['JetBrains_Mono'] uppercase tracking-wider text-sm sm:text-base
+                       rounded-xl transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
+            >
+              <Icon icon="solar:logout-2-bold" className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform flex-shrink-0" />
+              <span className="whitespace-nowrap">ВЫХОД</span>
+            </button>
+          </div>
         </div>
 
 
