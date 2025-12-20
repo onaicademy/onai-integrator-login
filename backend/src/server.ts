@@ -140,7 +140,10 @@ import trafficDetailedAnalyticsRouter from './routes/traffic-detailed-analytics.
 import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targetologist Settings
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (VAMUS RM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
-import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks
+import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks (DEPRECATED - use unified)
+import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
+import trafficWebhookRouter from './integrations/traffic-webhook.js'; // 🎯 DEDICATED Traffic Dashboard Webhook
+import adminWebhookLogsRouter from './routes/admin-webhook-logs.js'; // 🔍 Admin Webhook Logs Viewer
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -471,7 +474,10 @@ app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // �
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (VAMUS RM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
-app.use('/webhook', amoCRMWebhookRouter); // 🔔 AmoCRM Referral Webhooks
+app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 DEDICATED Traffic Dashboard Webhook
+app.use('/webhook', amoCRMWebhookRouter); // 🔔 Referral System Webhook (legacy endpoint)
+app.use('/api/admin', adminWebhookLogsRouter); // 🔍 Admin Webhook Logs Viewer
+// app.use('/webhook', unifiedAmoCRMWebhookRouter); // 🎯 UNIFIED (not used - separate endpoints instead)
 
 // 404 обработка
 import { notFoundHandler, errorHandler as enhancedErrorHandler } from './middleware/errorHandler.js';

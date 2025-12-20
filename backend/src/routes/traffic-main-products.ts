@@ -37,6 +37,10 @@ interface MainProductSale {
 /**
  * GET /api/traffic/main-products-sales
  * Получить продажи основных продуктов из VAMUS RM
+ * 
+ * NOTE: Primary data source is webhook (POST /webhook/amocrm)
+ * This endpoint queries all_sales_tracking table which is populated by webhooks.
+ * Manual AmoCRM API polling is available as fallback/backup.
  */
 router.get('/main-products-sales', async (req: Request, res: Response) => {
   try {
