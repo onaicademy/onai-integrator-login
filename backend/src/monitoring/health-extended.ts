@@ -73,8 +73,8 @@ router.get('/health', async (req: Request, res: Response) => {
     const tripwireDbStart = Date.now();
     try {
       const tripwireSupabase = createClient(
-        process.env.SUPABASE_TRIPWIRE_URL!,
-        process.env.SUPABASE_TRIPWIRE_SERVICE_KEY!
+        process.env.TRIPWIRE_SUPABASE_URL!,
+        process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
       await tripwireSupabase.from('tripwire_users').select('id').limit(1);
       services.push({
@@ -90,12 +90,12 @@ router.get('/health', async (req: Request, res: Response) => {
       });
     }
 
-    // 3. Check LeadLand Supabase (Referral)
+    // 3. Check LeadLand/Landing Supabase (Referral)
     const leadlandDbStart = Date.now();
     try {
       const leadlandSupabase = createClient(
-        process.env.LEADLAND_SUPABASE_URL!,
-        process.env.LEADLAND_SUPABASE_SERVICE_KEY!
+        process.env.LANDING_SUPABASE_URL!,
+        process.env.LANDING_SUPABASE_SERVICE_KEY || process.env.LANDING_SUPABASE_KEY!
       );
       await leadlandSupabase.from('referrers').select('id').limit(1);
       services.push({
@@ -206,8 +206,8 @@ router.get('/scenario/:name', async (req: Request, res: Response) => {
     'tripwire': async () => {
       try {
         const tripwireSupabase = createClient(
-          process.env.SUPABASE_TRIPWIRE_URL!,
-          process.env.SUPABASE_TRIPWIRE_SERVICE_KEY!
+          process.env.TRIPWIRE_SUPABASE_URL!,
+          process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
         const { count, error } = await tripwireSupabase
           .from('tripwire_users')
@@ -222,8 +222,8 @@ router.get('/scenario/:name', async (req: Request, res: Response) => {
     'referral': async () => {
       try {
         const leadlandSupabase = createClient(
-          process.env.LEADLAND_SUPABASE_URL!,
-          process.env.LEADLAND_SUPABASE_SERVICE_KEY!
+          process.env.LANDING_SUPABASE_URL!,
+          process.env.LANDING_SUPABASE_SERVICE_KEY || process.env.LANDING_SUPABASE_KEY!
         );
         const { count, error } = await leadlandSupabase
           .from('referrers')
@@ -238,8 +238,8 @@ router.get('/scenario/:name', async (req: Request, res: Response) => {
     'landing': async () => {
       try {
         const leadlandSupabase = createClient(
-          process.env.LEADLAND_SUPABASE_URL!,
-          process.env.LEADLAND_SUPABASE_SERVICE_KEY!
+          process.env.LANDING_SUPABASE_URL!,
+          process.env.LANDING_SUPABASE_SERVICE_KEY || process.env.LANDING_SUPABASE_KEY!
         );
         const { count, error } = await leadlandSupabase
           .from('landing_leads')
@@ -254,8 +254,8 @@ router.get('/scenario/:name', async (req: Request, res: Response) => {
     'amocrm': async () => {
       try {
         const tripwireSupabase = createClient(
-          process.env.SUPABASE_TRIPWIRE_URL!,
-          process.env.SUPABASE_TRIPWIRE_SERVICE_KEY!
+          process.env.TRIPWIRE_SUPABASE_URL!,
+          process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
         const { data, error } = await tripwireSupabase
           .from('webhook_logs')
