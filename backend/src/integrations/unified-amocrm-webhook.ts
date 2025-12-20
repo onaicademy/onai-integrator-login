@@ -14,7 +14,7 @@ const router = Router();
 
 const tripwireSupabase = createClient(
   process.env.TRIPWIRE_SUPABASE_URL || 'https://pjmvxecykysfrzppdcto.supabase.co',
-  process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.TRIPWIRE_SUPABASE_ANON_KEY || ''
+  process.env.TRIPWIRE_SERVICE_ROLE_KEY || process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
 );
 
 // ═══════════════════════════════════════════════════════════════
