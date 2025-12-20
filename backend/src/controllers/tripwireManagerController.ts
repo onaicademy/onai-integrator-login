@@ -229,6 +229,27 @@ export async function updateTripwireUserStatus(req: Request, res: Response) {
       currentUserId
     );
 
+    // Логируем изменение статуса в activity log
+    try {
+      await tripwirePool.query(
+        `INSERT INTO sales_activity_log (manager_id, action_type, target_user_id, details, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [
+          currentUserId,
+          'status_changed',
+          id,
+          JSON.stringify({
+            new_status: status,
+            changed_by: currentUser.email,
+          }),
+        ]
+      );
+      console.log('✅ [STATUS] Logged to sales_activity_log');
+    } catch (logError) {
+      console.error('⚠️ [STATUS] Failed to log status change:', logError);
+      // Не критичная ошибка, продолжаем
+    }
+
     return res.status(200).json(result);
   } catch (error: any) {
     console.error('❌ Error in updateTripwireUserStatus:', error);
@@ -433,19 +454,20 @@ export async function deleteTripwireUser(req: Request, res: Response) {
     // Логируем успешное удаление в activity log
     try {
       await tripwirePool.query(
-        `INSERT INTO sales_activity_log (manager_id, action, user_id, details, created_at)
+        `INSERT INTO sales_activity_log (manager_id, action_type, target_user_id, details, created_at)
          VALUES ($1, $2, $3, $4, NOW())`,
         [
           currentUserId,
-          'delete_user',
+          'user_deleted',
           userId,
           JSON.stringify({
-            deleted_email: result.email,
-            deleted_name: result.full_name,
+            email: result.email,
+            full_name: result.full_name,
             deleted_by: userEmail,
           }),
         ]
       );
+      console.log('✅ [DELETE] Logged to sales_activity_log');
     } catch (logError) {
       console.error('⚠️ [DELETE] Failed to log deletion:', logError);
       // Не критичная ошибка, продолжаем

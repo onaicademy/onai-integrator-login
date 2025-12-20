@@ -206,6 +206,21 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
           .eq('user_id', userId);
 
         console.log(`✅ Welcome email sent to ${email}`);
+
+        // Логируем отправку email
+        try {
+          await tripwireAdminSupabase
+            .from('sales_activity_log')
+            .insert({
+              manager_id: currentUserId,
+              action_type: 'email_sent',
+              target_user_id: userId,
+              details: { email, full_name, email_type: 'welcome' }
+            });
+          console.log('✅ [EMAIL] Logged to sales_activity_log');
+        } catch (logError) {
+          console.warn('⚠️ [EMAIL] Failed to log email send:', logError);
+        }
       }
     } catch (emailError: any) {
       console.warn(`⚠️ Email sending failed: ${emailError.message}`);
@@ -228,6 +243,7 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
 /**
  * Получает список Tripwire пользователей
  * 🔥 DIRECT POSTGRES CONNECTION - обход PostgREST/Kong cache!
+ * ✅ С REAL-TIME расчетом modules_completed из tripwire_progress
  */
 export async function getTripwireUsers(params: GetTripwireUsersParams & { startDate?: string; endDate?: string }) {
   // 🔥 DEFAULT LIMIT: защита от неограниченной загрузки
@@ -236,50 +252,63 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
   try {
     console.log(`🔌 [DIRECT QUERY] getTripwireUsers called with manager=${managerId}, status=${status}`);
 
-    // 🔧 FIX: Прямой запрос вместо RPC (т.к. RPC возвращает NULL для email/full_name)
     const offset = (page - 1) * limit;
 
-    let query = tripwireAdminSupabase
-      .from('tripwire_users')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    // 🔥 REAL-TIME CALCULATION: Подсчитываем modules_completed из tripwire_progress
+    let query = `
+      SELECT 
+        tu.*,
+        COALESCE(
+          (SELECT COUNT(DISTINCT tp.module_id)
+           FROM tripwire_progress tp
+           WHERE tp.tripwire_user_id = tu.user_id
+             AND tp.is_completed = true),
+          0
+        ) as real_modules_completed,
+        COUNT(*) OVER() as total_count
+      FROM tripwire_users tu
+      WHERE 1=1
+    `;
+
+    const queryParams: any[] = [];
+    let paramIndex = 1;
 
     // Фильтры
     if (managerId) {
-      query = query.eq('granted_by', managerId);
+      query += ` AND tu.granted_by = $${paramIndex}`;
+      queryParams.push(managerId);
+      paramIndex++;
     }
     if (status) {
-      query = query.eq('status', status);
+      query += ` AND tu.status = $${paramIndex}`;
+      queryParams.push(status);
+      paramIndex++;
     }
     if (startDate) {
-      query = query.gte('created_at', startDate);
+      query += ` AND tu.created_at >= $${paramIndex}`;
+      queryParams.push(startDate);
+      paramIndex++;
     }
     if (endDate) {
-      query = query.lte('created_at', endDate);
+      query += ` AND tu.created_at <= $${paramIndex}`;
+      queryParams.push(endDate);
+      paramIndex++;
     }
 
-    const { data, error, count } = await withRetry(
-      async () => {
-        const result = await query;
-        if (result.error) throw result.error;
-        return result;
-      },
-      {
-        maxRetries: 3,
-        delayMs: 500,
-        onRetry: (attempt) => console.warn(`   ⚠️ Retry ${attempt}/3 for getTripwireUsers`)
-      }
-    );
+    query += ` ORDER BY tu.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    queryParams.push(limit, offset);
 
-    console.log(`✅ [DIRECT QUERY] Found ${data?.length || 0} users (total: ${count})`);
-    
-    // Преобразуем к ожидаемому формату (добавляем total_count к каждой записи)
-    const usersWithCount = data?.map(user => ({
+    const result = await tripwirePool.query(query, queryParams);
+
+    console.log(`✅ [DIRECT QUERY] Found ${result.rows.length} users`);
+
+    // Преобразуем к ожидаемому формату, используя real_modules_completed
+    const usersWithCount = result.rows.map(user => ({
       ...user,
-      user_id: user.user_id || user.id, // fallback
-      total_count: count || 0
-    })) || [];
+      modules_completed: user.real_modules_completed || user.modules_completed, // ✅ Приоритет real-time расчету
+      user_id: user.user_id || user.id,
+      total_count: user.total_count || result.rows.length
+    }));
 
     return usersWithCount;
   } catch (error: any) {
