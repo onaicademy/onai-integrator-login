@@ -252,6 +252,11 @@ const AppRoutes = () => {
         <SalesGuard><TripwireManager /></SalesGuard>
       } />
       
+      {/* REDIRECT: Old URL → New URL */}
+      <Route path="/admin/tripwire-manager" element={
+        <Navigate to="/integrator/sales-manager" replace />
+      } />
+      
       {/* Чат (требует авторизацию) */}
       <Route path="/messages" element={
         <ProtectedRoute>
