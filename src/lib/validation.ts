@@ -88,6 +88,19 @@ export const ChangePasswordSchema = z.object({
   path: ['confirmPassword']
 });
 
+export const passwordRecoverySchema = z.object({
+  email: EmailSchema
+});
+
+export type PasswordRecoveryFormData = z.infer<typeof passwordRecoverySchema>;
+
+export const tripwireLoginSchema = z.object({
+  email: EmailSchema,
+  password: SimplePasswordSchema
+});
+
+export type TripwireLoginFormData = z.infer<typeof tripwireLoginSchema>;
+
 // ============================================
 // Traffic Dashboard Schemas
 // ============================================

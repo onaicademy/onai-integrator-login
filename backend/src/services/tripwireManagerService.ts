@@ -164,13 +164,24 @@ export async function createTripwireUser(params: CreateTripwireUserParams) {
     } catch (dbError: any) {
       console.error('❌ [SUPABASE] Insert failed:', dbError);
       
-      // 🔥 ROLLBACK: DELETE USER FROM auth.users
+      // 🔥 ROLLBACK: Delete from ALL tables
       try {
-        console.log(`🗑️ Rolling back auth user ${userId}...`);
+        console.log(`🗑️ Rolling back user ${userId}...`);
+        
+        // 1. Delete from public.users (если успели создать)
+        await tripwireAdminSupabase
+          .from('users')
+          .delete()
+          .eq('id', userId);
+        console.log(`   ✅ Deleted from public.users`);
+        
+        // 2. Delete from auth.users
         await tripwireAdminSupabase.auth.admin.deleteUser(userId);
-        console.log(`✅ Auth user deleted (rollback)`);
+        console.log(`   ✅ Deleted from auth.users`);
+        
+        console.log(`✅ Rollback complete`);
       } catch (rollbackError: any) {
-        console.error('❌ Failed to rollback auth user:', rollbackError.message);
+        console.error('❌ Failed to rollback:', rollbackError.message);
       }
       
       throw dbError;
