@@ -351,3 +351,4 @@ UPDATE tripwire_users SET onboarding_completed = FALSE WHERE email = 'user@examp
 **Создано**: 19 декабря 2025  
 **Автор**: Claude Sonnet 4.5  
 **Статус**: ✅ **ГОТОВО К ТЕСТИРОВАНИЮ**
+

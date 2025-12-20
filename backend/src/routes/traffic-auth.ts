@@ -8,7 +8,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
+import { trafficAdminSupabase, trafficSupabase } from '../config/supabase-traffic.js';
 import { logUserSession } from './traffic-security.js';
 
 const router = express.Router();
@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
     console.log(`🔐 Traffic login attempt: ${email}`);
     
     // Get user from traffic_users table
-    const { data: user, error } = await tripwireAdminSupabase
+    const { data: user, error } = await trafficAdminSupabase
       .from('traffic_users')
       .select('*')
       .eq('email', email.toLowerCase().trim())
@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
     }
     
     // Update last login timestamp
-    await tripwireAdminSupabase
+    await trafficAdminSupabase
       .from('traffic_users')
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', user.id);
@@ -215,7 +215,7 @@ router.post('/request-password-reset', async (req, res) => {
     console.log(`🔑 Password reset requested for: ${email}`);
     
     // Get user from traffic_users table
-    const { data: user, error } = await tripwireAdminSupabase
+    const { data: user, error } = await trafficAdminSupabase
       .from('traffic_users')
       .select('id, email')
       .eq('email', email.toLowerCase().trim())
@@ -228,12 +228,12 @@ router.post('/request-password-reset', async (req, res) => {
       return res.json({ success: true, message: 'If the email exists, a password reset link will be sent' });
     }
     
-    // Generate password reset token using Supabase Auth
-    const tripwireUrl = process.env.TRIPWIRE_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.TRIPWIRE_SERVICE_ROLE_KEY!;
+    // Generate password reset token using NEW Traffic Supabase Auth
+    const trafficUrl = process.env.TRAFFIC_SUPABASE_URL!;
+    const trafficServiceKey = process.env.TRAFFIC_SERVICE_ROLE_KEY!;
     
     const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAuth = createClient(tripwireUrl, supabaseServiceKey);
+    const supabaseAuth = createClient(trafficUrl, trafficServiceKey);
     
     // Send password reset email via Supabase
     const { data, error: resetError } = await supabaseAuth.auth.admin.generateLink({

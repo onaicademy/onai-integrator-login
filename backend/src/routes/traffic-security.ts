@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { tripwireAdminSupabase } from '../config/supabase.js';
+import { trafficAdminSupabase } from '../config/supabase.js';
 import { parseUserAgent, generateDeviceFingerprint } from '../utils/deviceParser.js';
 
 const router = Router();
@@ -33,7 +33,7 @@ export async function logUserSession(req: Request, userId: string, user: any) {
     );
     
     // Сохранение в БД
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_user_sessions')
       .insert({
         user_id: userId,
@@ -74,7 +74,7 @@ export async function logUserSession(req: Request, userId: string, user: any) {
  */
 async function checkSuspiciousActivity(userId: string, email: string) {
   try {
-    const { data: recentSessions } = await tripwireAdminSupabase
+    const { data: recentSessions } = await trafficAdminSupabase
       .from('traffic_user_sessions')
       .select('ip_address, device_fingerprint')
       .eq('user_id', userId)
@@ -95,7 +95,7 @@ async function checkSuspiciousActivity(userId: string, email: string) {
       const reason = `${uniqueIPs.size} разных IP и ${uniqueDevices.size} разных устройств за 24 часа`;
       
       // Обновить флаг подозрительности для последних сессий
-      await tripwireAdminSupabase
+      await trafficAdminSupabase
         .from('traffic_user_sessions')
         .update({
           is_suspicious: true,
@@ -121,7 +121,7 @@ router.get('/sessions/:userId', async (req: Request, res: Response) => {
     
     // TODO: Add auth middleware to check if user is admin
     
-    const { data: sessions, error } = await tripwireAdminSupabase
+    const { data: sessions, error } = await trafficAdminSupabase
       .from('traffic_user_sessions')
       .select('*')
       .eq('user_id', userId)
@@ -151,7 +151,7 @@ router.get('/all-sessions', async (req: Request, res: Response) => {
   try {
     const { days = 7, suspicious = false } = req.query;
     
-    let query = tripwireAdminSupabase
+    let query = trafficAdminSupabase
       .from('traffic_user_sessions')
       .select('*')
       .gte('login_at', new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000).toISOString())
@@ -184,7 +184,7 @@ router.get('/all-sessions', async (req: Request, res: Response) => {
  */
 router.get('/suspicious', async (req: Request, res: Response) => {
   try {
-    const { data: suspicious, error } = await tripwireAdminSupabase
+    const { data: suspicious, error } = await trafficAdminSupabase
       .from('traffic_suspicious_activity')
       .select('*')
       .order('unique_ips', { ascending: false });
@@ -213,7 +213,7 @@ router.get('/user-summary/:email', async (req: Request, res: Response) => {
     const { email } = req.params;
     const { days = 30 } = req.query;
     
-    const { data: sessions, error } = await tripwireAdminSupabase
+    const { data: sessions, error } = await trafficAdminSupabase
       .from('traffic_user_sessions')
       .select('*')
       .eq('email', email)

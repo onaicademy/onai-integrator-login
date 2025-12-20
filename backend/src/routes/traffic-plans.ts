@@ -7,7 +7,7 @@
 
 import express from 'express';
 import { authenticateToken } from './traffic-auth.js';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get('/current', authenticateToken, async (req, res) => {
     
     console.log(`📊 Getting current plan for team: ${team}`);
     
-    const { data: plan, error } = await tripwireAdminSupabase
+    const { data: plan, error } = await trafficAdminSupabase
       .from('traffic_weekly_plans')
       .select('*')
       .eq('team_name', team)
@@ -64,7 +64,7 @@ router.get('/history', authenticateToken, async (req, res) => {
     
     console.log(`📜 Getting plan history for team: ${team} (limit: ${limit})`);
     
-    const { data: plans, error } = await tripwireAdminSupabase
+    const { data: plans, error } = await trafficAdminSupabase
       .from('traffic_weekly_plans')
       .select('*')
       .eq('team_name', team)
@@ -130,7 +130,7 @@ router.put('/:id/update-actual', authenticateToken, async (req, res) => {
     const { actual_revenue, actual_sales, actual_spend, actual_roas, actual_cpa } = req.body;
     
     // Calculate completion percentage
-    const { data: plan } = await tripwireAdminSupabase
+    const { data: plan } = await trafficAdminSupabase
       .from('traffic_weekly_plans')
       .select('plan_revenue, plan_sales')
       .eq('id', id)
@@ -145,7 +145,7 @@ router.put('/:id/update-actual', authenticateToken, async (req, res) => {
     );
     
     // Update actual values
-    const { data: updatedPlan, error } = await tripwireAdminSupabase
+    const { data: updatedPlan, error } = await trafficAdminSupabase
       .from('traffic_weekly_plans')
       .update({
         actual_revenue,
@@ -183,7 +183,7 @@ router.get('/stats/:team', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    const { data: plans, error } = await tripwireAdminSupabase
+    const { data: plans, error } = await trafficAdminSupabase
       .from('traffic_weekly_plans')
       .select('status, completion_percentage, week_start')
       .eq('team_name', team)
@@ -209,4 +209,5 @@ router.get('/stats/:team', authenticateToken, async (req, res) => {
 });
 
 export default router;
+
 

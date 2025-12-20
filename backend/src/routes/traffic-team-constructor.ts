@@ -5,7 +5,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { tripwireSupabase } from '../config/supabase-tripwire.js';
+import { trafficSupabase } from '../config/supabase-traffic.js';
 import bcrypt from 'bcrypt';
 
 const router = Router();
@@ -20,7 +20,7 @@ const router = Router();
  */
 router.get('/teams', async (req: Request, res: Response) => {
   try {
-    const { data: teams, error } = await tripwireSupabase
+    const { data: teams, error } = await trafficSupabase
       .from('traffic_teams')
       .select('*')
       .order('created_at', { ascending: false });
@@ -56,7 +56,7 @@ router.post('/teams', async (req: Request, res: Response) => {
     }
 
     // Проверить что команда с таким именем не существует
-    const { data: existing } = await tripwireSupabase
+    const { data: existing } = await trafficSupabase
       .from('traffic_teams')
       .select('id')
       .eq('name', name)
@@ -70,7 +70,7 @@ router.post('/teams', async (req: Request, res: Response) => {
     }
 
     // Создать команду
-    const { data, error } = await tripwireSupabase
+    const { data, error } = await trafficSupabase
       .from('traffic_teams')
       .insert({
         name,
@@ -109,7 +109,7 @@ router.delete('/teams/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Проверить что в команде нет пользователей
-    const { data: users } = await tripwireSupabase
+    const { data: users } = await trafficSupabase
       .from('traffic_users')
       .select('id')
       .eq('team_id', id);
@@ -122,7 +122,7 @@ router.delete('/teams/:id', async (req: Request, res: Response) => {
     }
 
     // Удалить команду
-    const { error } = await tripwireSupabase
+    const { error } = await trafficSupabase
       .from('traffic_teams')
       .delete()
       .eq('id', id);
@@ -153,7 +153,7 @@ router.delete('/teams/:id', async (req: Request, res: Response) => {
  */
 router.get('/users', async (req: Request, res: Response) => {
   try {
-    const { data: users, error } = await tripwireSupabase
+    const { data: users, error } = await trafficSupabase
       .from('traffic_users')
       .select('id, email, full_name, team_name, role, created_at')
       .order('created_at', { ascending: false });
@@ -199,7 +199,7 @@ router.post('/users', async (req: Request, res: Response) => {
     }
 
     // Проверить что email уникален
-    const { data: existing } = await tripwireSupabase
+    const { data: existing } = await trafficSupabase
       .from('traffic_users')
       .select('id')
       .eq('email', email.trim().toLowerCase())
@@ -216,7 +216,7 @@ router.post('/users', async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Создать пользователя
-    const { data, error } = await tripwireSupabase
+    const { data, error } = await trafficSupabase
       .from('traffic_users')
       .insert({
         email: email.trim().toLowerCase(),
@@ -260,7 +260,7 @@ router.delete('/users/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Удалить пользователя
-    const { error } = await tripwireSupabase
+    const { error } = await trafficSupabase
       .from('traffic_users')
       .delete()
       .eq('id', id);

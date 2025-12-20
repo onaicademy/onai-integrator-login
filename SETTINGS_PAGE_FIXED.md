@@ -342,3 +342,4 @@ supabase/migrations/...targetologist_settings.sql  (БД)
 
 **Создано**: 19 декабря 2025, 07:30 AM  
 **Статус**: ✅ FIXED & READY TO TEST
+

@@ -138,6 +138,9 @@ import trafficOnboardingRouter from './routes/traffic-onboarding.js'; // 🎓 Tr
 import trafficConstructorRouter from './routes/traffic-team-constructor.js'; // 🏗️ Team Constructor (Admin)
 import trafficDetailedAnalyticsRouter from './routes/traffic-detailed-analytics.js'; // 📊 Detailed Analytics (Campaigns/AdSets/Ads)
 import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targetologist Settings
+import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (VAMUS RM)
+import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
+import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -223,6 +226,7 @@ app.use(cors({
         'https://onai.academy',
         'https://tripwire.onai.academy',
         'https://traffic.onai.academy',
+        'https://referral.onai.academy', // 🎯 Referral System
       ];
       if (allowedProd.includes(origin)) {
         return callback(null, true);
@@ -254,6 +258,9 @@ app.use(cors({
     const allowedOrigins = [
       'https://onai.academy',
       'https://www.onai.academy',
+      'https://tripwire.onai.academy',
+      'https://traffic.onai.academy',
+      'https://referral.onai.academy', // 🎯 Referral System
       'https://onai-integrator-login.vercel.app',
       process.env.FRONTEND_URL
     ].filter(Boolean);
@@ -452,6 +459,9 @@ app.use('/api/traffic-onboarding', trafficOnboardingRouter); // 🎓 Traffic Onb
 app.use('/api/traffic-constructor', trafficConstructorRouter); // 🏗️ Team Constructor (Admin)
 app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // 📊 Detailed Analytics
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
+app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (VAMUS RM)
+app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
+app.use('/webhook', amoCRMWebhookRouter); // 🔔 AmoCRM Referral Webhooks
 
 // 404 обработка
 app.use((req, res) => {

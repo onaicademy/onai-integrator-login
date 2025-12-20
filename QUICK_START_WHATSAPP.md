@@ -218,3 +218,4 @@ http://localhost:5173/tripwire/admin/mass-broadcast
 
 **Удачи с рассылкой, Александр! 💪**
 
+

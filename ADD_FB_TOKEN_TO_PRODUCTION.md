@@ -184,3 +184,4 @@ curl https://api.onai.academy/api/traffic/combined-analytics?preset=7d
 **Дата**: 19 декабря 2025, 08:10 AM  
 **Локально**: ✅ ДОБАВЛЕНО  
 **Production**: ⏳ НУЖНО ДОБАВИТЬ
+

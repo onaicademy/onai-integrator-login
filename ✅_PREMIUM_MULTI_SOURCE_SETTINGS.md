@@ -343,3 +343,4 @@ https://traffic.onai.academy/settings
 **Рекомендация:**
 Выполни Hard Refresh (Cmd+Shift+R на Mac) чтобы загрузить новую версию.
 Или используй: https://traffic.onai.academy/force-refresh.html
+

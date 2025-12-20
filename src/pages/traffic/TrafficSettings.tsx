@@ -642,7 +642,7 @@ export default function TrafficSettings() {
                       <Input
                         value={accountSearchQuery}
                         onChange={(e) => setAccountSearchQuery(e.target.value)}
-                        placeholder="Поиск по кабинетам..."
+                        placeholder={t('settings.searchAccounts')}
                         className="pl-10 bg-black/50 border-[#00FF88]/20 text-white"
                       />
                     </div>
@@ -652,7 +652,7 @@ export default function TrafficSettings() {
                 {fbAccounts.length === 0 ? (
                   <div className="text-center py-12 border border-dashed border-gray-700 rounded-xl">
                     <Facebook className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">Нажмите "Загрузить доступные" для подключения кабинетов</p>
+                    <p className="text-gray-400">{t('settings.clickLoadAccounts')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -766,7 +766,7 @@ export default function TrafficSettings() {
                                   <Input
                                     value={campaignSearchQuery}
                                     onChange={(e) => setCampaignSearchQuery(e.target.value)}
-                                    placeholder="Поиск по кампаниям..."
+                                    placeholder={t('settings.searchCampaigns')}
                                     className="pl-9 py-1 text-sm bg-black/50 border-[#00FF88]/20 text-white"
                                   />
                                 </div>

@@ -132,6 +132,36 @@ export const translations = {
     'detailedAnalytics.paused': 'Остановленные',
     'detailedAnalytics.archived': 'Архивные',
     'detailedAnalytics.dashboard': 'Dashboard',
+    
+    // Onboarding
+    'onboarding.step1.title': 'Добро пожаловать в Traffic Dashboard!',
+    'onboarding.step1.desc': 'Система для отслеживания эффективности вашей рекламы в реальном времени. Пройдите краткий тур, чтобы начать работу.',
+    'onboarding.step2.title': 'Почему UTM метки критичны?',
+    'onboarding.step2.desc': 'UTM метки - это ваш уникальный идентификатор в системе. Они позволяют точно отслеживать какие продажи пришли именно от ваших кампаний.',
+    'onboarding.step3.title': 'Настройте UTM метки',
+    'onboarding.step3.desc': 'Перейдите в Настройки и укажите вашу персональную UTM метку для каждого источника трафика: Facebook, YouTube, Google Ads, TikTok. Используйте одну метку на один источник!',
+    'onboarding.step4.title': 'Подключите рекламные кабинеты',
+    'onboarding.step4.desc': 'В настройках выберите рекламные кабинеты Facebook, которые вы хотите отслеживать. Система автоматически загрузит все доступные кампании.',
+    'onboarding.step5.title': 'Выберите кампании для отслеживания',
+    'onboarding.step5.desc': 'Отметьте галочками те кампании, результаты которых вы хотите видеть в дашборде. Можно выбрать сразу несколько кампаний из разных кабинетов.',
+    'onboarding.step6.title': 'ВАЖНО: Правило одной UTM метки',
+    'onboarding.step6.desc': 'Для каждого источника трафика используйте только ОДНУ уникальную UTM source метку. Пример: "fb_kenesary" для Facebook, "yt_kenesary" для YouTube.',
+    'onboarding.step7.title': 'Синхронизируйте UTM метки в рекламных кампаниях',
+    'onboarding.step7.desc': 'После настройки здесь, обязательно измените UTM source в настройках ваших рекламных кампаний на тот же самый источник, который вы указали в системе.',
+    'onboarding.step8.title': 'Используйте AI рекомендации',
+    'onboarding.step8.desc': 'На главной странице вашего кабинета есть AI ассистент, который анализирует ваши результаты и дает советы по оптимизации кампаний в реальном времени.',
+    'onboarding.step9.title': 'Ваша панель аналитики',
+    'onboarding.step9.desc': 'Отслеживайте результаты в вашем личном кабинете. Система показывает продажи, конверсии и эффективность в разрезе каждой кампании.',
+    'onboarding.skip': 'Пропустить',
+    'onboarding.next': 'Далее',
+    'onboarding.back': 'Назад',
+    'onboarding.complete': 'Начать работу',
+    'onboarding.stepOf': 'Шаг',
+    
+    // Settings
+    'settings.searchAccounts': 'Поиск по кабинетам...',
+    'settings.searchCampaigns': 'Поиск по кампаниям...',
+    'settings.clickLoadAccounts': 'Нажмите "Загрузить доступные" для подключения кабинетов',
   },
   
   kz: {
@@ -264,6 +294,36 @@ export const translations = {
     'detailedAnalytics.paused': 'Тоқтатылған',
     'detailedAnalytics.archived': 'Мұрағатталған',
     'detailedAnalytics.dashboard': 'Dashboard',
+    
+    // Onboarding
+    'onboarding.step1.title': 'Traffic Dashboard-қа қош келдіңіз!',
+    'onboarding.step1.desc': 'Жарнаманың тиімділігін нақты уақытта бақылау жүйесі. Жұмысты бастау үшін қысқаша турды өтіңіз.',
+    'onboarding.step2.title': 'UTM белгілері неліктен маңызды?',
+    'onboarding.step2.desc': 'UTM белгілері - бұл жүйедегі сіздің бірегей идентификаторыңыз. Олар қандай сатулар сіздің науқандарыңыздан келгенін дәл бақылауға мүмкіндік береді.',
+    'onboarding.step3.title': 'UTM белгілерін баптаңыз',
+    'onboarding.step3.desc': 'Баптауларға өтіп, әр трафик көзі үшін жеке UTM белгісін көрсетіңіз: Facebook, YouTube, Google Ads, TikTok. Бір көзге бір белгі қолданыңыз!',
+    'onboarding.step4.title': 'Жарнама кабинеттерін қосыңыз',
+    'onboarding.step4.desc': 'Баптауларда бақылағыңыз келетін Facebook жарнама кабинеттерін таңдаңыз. Жүйе барлық қолжетімді науқандарды автоматты түрде жүктейді.',
+    'onboarding.step5.title': 'Бақылау үшін науқандарды таңдаңыз',
+    'onboarding.step5.desc': 'Нәтижелерін дашбордта көргіңіз келетін науқандарды белгілеңіз. Әр түрлі кабинеттерден бірнеше науқандарды бірден таңдауға болады.',
+    'onboarding.step6.title': 'МАҢЫЗДЫ: Бір UTM белгісінің ережесі',
+    'onboarding.step6.desc': 'Әр трафик көзі үшін тек БІРДЕЙ бірегей UTM source белгісін қолданыңыз. Мысалы: "fb_kenesary" Facebook үшін, "yt_kenesary" YouTube үшін.',
+    'onboarding.step7.title': 'UTM белгілерін жарнама науқандарында синхрондаңыз',
+    'onboarding.step7.desc': 'Мұнда баптағаннан кейін, жарнама науқандарыңыздың баптауларында UTM source-ті жүйеде көрсеткенмен бірдей көзге міндетті түрде өзгертіңіз.',
+    'onboarding.step8.title': 'AI ұсыныстарды қолданыңыз',
+    'onboarding.step8.desc': 'Кабинетіңіздің басты бетінде нәтижелерді талдап, науқандарды оңтайландыру бойынша нақты уақытта кеңестер беретін AI ассистенті бар.',
+    'onboarding.step9.title': 'Сіздің аналитика панеліңіз',
+    'onboarding.step9.desc': 'Жеке кабинетіңізде нәтижелерді бақылаңыз. Жүйе әр науқан бойынша сатулар, конверсиялар және тиімділікті көрсетеді.',
+    'onboarding.skip': 'Өткізу',
+    'onboarding.next': 'Әрі қарай',
+    'onboarding.back': 'Артқа',
+    'onboarding.complete': 'Жұмысты бастау',
+    'onboarding.stepOf': 'Қадам',
+    
+    // Settings
+    'settings.searchAccounts': 'Кабинеттер бойынша іздеу...',
+    'settings.searchCampaigns': 'Науқандар бойынша іздеу...',
+    'settings.clickLoadAccounts': 'Кабинеттерді қосу үшін "Қолжетімдерді жүктеу" түймесін басыңыз',
   }
 };
 

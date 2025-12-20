@@ -369,15 +369,12 @@ export default function TrafficCommandDashboard({
   const formatMoney = (valueUSD: number, type: 'spend' | 'revenue' = 'spend') => {
     if (currency === 'KZT') {
       const valueKZT = type === 'revenue' ? valueUSD : valueUSD * exchangeRate;
-      if (valueKZT >= 1000000) return `₸${(valueKZT / 1000000).toFixed(2)}M`;
-      if (valueKZT >= 1000) return `₸${(valueKZT / 1000).toFixed(1)}K`;
-      return `₸${valueKZT.toFixed(0)}`;
+      // ✅ ПОЛНЫЕ ЧИСЛА с разделителями тысяч
+      return `₸${valueKZT.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
     } else {
-      // USD
+      // USD - ПОЛНЫЕ ЧИСЛА с разделителями
       const valueUSDDisplay = type === 'revenue' ? valueUSD / exchangeRate : valueUSD;
-      if (valueUSDDisplay >= 1000000) return `$${(valueUSDDisplay / 1000000).toFixed(2)}M`;
-      if (valueUSDDisplay >= 1000) return `$${(valueUSDDisplay / 1000).toFixed(1)}K`;
-      return `$${valueUSDDisplay.toFixed(2)}`;
+      return `$${valueUSDDisplay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
   };
 
@@ -595,12 +592,12 @@ export default function TrafficCommandDashboard({
                       <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]" />
                     </div>
                     <span className="text-[10px] sm:text-xs font-medium text-[#00FF88] uppercase tracking-wider flex items-center">
-                      Доход
+                      {t('metrics.revenue')}
                       <MetricTooltip metricKey="revenue" />
                     </span>
                   </div>
                   <p className="text-base sm:text-xl md:text-2xl font-bold text-white truncate">{formatMoney(analytics?.totals?.revenue || 0, 'revenue')}</p>
-                  <p className="text-[10px] sm:text-xs text-[#00FF88]/60 mt-0.5 sm:mt-1">{analytics?.totals?.sales || 0} продаж</p>
+                  <p className="text-[10px] sm:text-xs text-[#00FF88]/60 mt-0.5 sm:mt-1">{analytics?.totals?.sales || 0} {t('common.sales')}</p>
                 </div>
 
                 {/* Затраты */}
@@ -610,7 +607,7 @@ export default function TrafficCommandDashboard({
                       <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300" />
                     </div>
                     <span className="text-[10px] sm:text-xs font-medium text-gray-300 uppercase tracking-wider flex items-center">
-                      Затраты
+                      {t('metrics.spend')}
                       <MetricTooltip metricKey="spend" />
                     </span>
                   </div>
@@ -657,7 +654,7 @@ export default function TrafficCommandDashboard({
                       <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]/60" />
                     </div>
                     <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
-                      Клики
+                      {t('metrics.clicks')}
                       <MetricTooltip metricKey="clicks" />
                     </span>
                   </div>
@@ -675,7 +672,7 @@ export default function TrafficCommandDashboard({
                       <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-[#00FF88]/60" />
                     </div>
                     <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center">
-                      Показы
+                      {t('metrics.impressions')}
                       <MetricTooltip metricKey="impressions" />
                     </span>
                   </div>
@@ -703,43 +700,43 @@ export default function TrafficCommandDashboard({
                         <th className="px-6 py-4 text-left text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">Команда</th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            Затраты
+                            {t('metrics.spend')}
                             <MetricTooltip metricKey="spend" />
                           </span>
                         </th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            Доход
+                            {t('metrics.revenue')}
                             <MetricTooltip metricKey="revenue" />
                           </span>
                         </th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            ROAS
+                            {t('metrics.roas')}
                             <MetricTooltip metricKey="roas" />
                           </span>
                         </th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            Продаж
+                            {t('metrics.sales')}
                             <MetricTooltip metricKey="sales" />
                           </span>
                         </th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            CPA
+                            {t('metrics.cpa')}
                             <MetricTooltip metricKey="cpa" />
                           </span>
                         </th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            Клики
+                            {t('metrics.clicks')}
                             <MetricTooltip metricKey="clicks" />
                           </span>
                         </th>
                         <th className="px-6 py-4 text-right text-xs font-medium text-[#00FF88]/80 uppercase tracking-wider">
                           <span className="inline-flex items-center justify-end gap-1">
-                            CTR
+                            {t('metrics.ctr')}
                             <MetricTooltip metricKey="ctr" />
                           </span>
                         </th>
@@ -857,27 +854,27 @@ export default function TrafficCommandDashboard({
                       {/* Метрики сеткой 2x3 */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">Доход</p>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">{t('metrics.revenue')}</p>
                           <p className="text-sm font-bold text-[#00FF88]">{formatMoney(team.revenue, 'revenue')}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">Затраты</p>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">{t('metrics.spend')}</p>
                           <p className="text-sm font-bold text-gray-300">{formatMoney(team.spend, 'spend')}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">ROAS</p>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">{t('metrics.roas')}</p>
                           <p className={`text-sm font-bold ${roasColor.text}`}>{team.roas.toFixed(1)}x</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">Продаж</p>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">{t('metrics.sales')}</p>
                           <p className="text-sm font-bold text-white">{team.sales}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">CPA</p>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">{t('metrics.cpa')}</p>
                           <p className="text-sm font-bold text-gray-300">{formatMoney(team.cpa, 'spend')}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">CTR</p>
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">{t('metrics.ctr')}</p>
                           <p className="text-sm font-bold text-white">{formatPercent(team.ctr)}</p>
                         </div>
                       </div>
@@ -963,19 +960,19 @@ export default function TrafficCommandDashboard({
 
                       <div className="space-y-2 sm:space-y-3 relative z-10">
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">Затраты</span>
+                          <span className="text-gray-400">{t('metrics.spend')}</span>
                           <span className="font-mono text-gray-300">{formatMoney(team.spend, 'spend')}</span>
                         </div>
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">Доход</span>
+                          <span className="text-gray-400">{t('metrics.revenue')}</span>
                           <span className="font-mono text-[#00FF88] font-bold">{formatMoney(team.revenue, 'revenue')}</span>
                         </div>
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">CPA</span>
+                          <span className="text-gray-400">{t('metrics.cpa')}</span>
                           <span className="font-mono text-white">{team.cpa > 0 ? formatMoney(team.cpa, 'spend') : '—'}</span>
                         </div>
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">CTR</span>
+                          <span className="text-gray-400">{t('metrics.ctr')}</span>
                           <span className="font-mono text-white">{formatPercent(team.ctr)}</span>
                         </div>
                       </div>

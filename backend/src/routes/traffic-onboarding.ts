@@ -5,7 +5,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.get('/status/:userId', async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     // Получить прогресс из БД
-    const { data: progress, error } = await tripwireAdminSupabase
+    const { data: progress, error } = await trafficAdminSupabase
       .from('traffic_onboarding_progress')
       .select('*')
       .eq('user_id', userId)
@@ -65,7 +65,7 @@ router.post('/start', async (req: Request, res: Response) => {
     }
 
     // Создать или обновить запись
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_onboarding_progress')
       .upsert({
         user_id,
@@ -129,7 +129,7 @@ router.post('/progress', async (req: Request, res: Response) => {
     }
 
     // Обновить прогресс
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_onboarding_progress')
       .update(updateData)
       .eq('user_id', user_id)
@@ -139,7 +139,7 @@ router.post('/progress', async (req: Request, res: Response) => {
     if (error) {
       // Если записи нет - создать
       if (error.code === 'PGRST116') {
-        const { data: newData, error: insertError } = await tripwireAdminSupabase
+        const { data: newData, error: insertError } = await trafficAdminSupabase
           .from('traffic_onboarding_progress')
           .insert({
             user_id,
@@ -189,10 +189,10 @@ router.post('/skip', async (req: Request, res: Response) => {
     }
 
     // Увеличить счетчик пропусков
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_onboarding_progress')
       .update({
-        skip_count: tripwireAdminSupabase.rpc('increment', { x: 1 }),
+        skip_count: trafficAdminSupabase.rpc('increment', { x: 1 }),
         is_completed: true, // Считаем что пропуск = завершение
         completed_at: new Date().toISOString()
       })
@@ -234,14 +234,14 @@ router.post('/restart', async (req: Request, res: Response) => {
     }
 
     // Сбросить прогресс
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_onboarding_progress')
       .update({
         is_completed: false,
         current_step: 0,
         started_at: new Date().toISOString(),
         completed_at: null,
-        view_count: tripwireAdminSupabase.rpc('increment', { x: 1 })
+        view_count: trafficAdminSupabase.rpc('increment', { x: 1 })
       })
       .eq('user_id', user_id)
       .select()
@@ -271,7 +271,7 @@ router.post('/restart', async (req: Request, res: Response) => {
  */
 router.get('/stats', async (req: Request, res: Response) => {
   try {
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('onboarding_stats')
       .select('*');
 

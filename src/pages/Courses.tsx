@@ -12,8 +12,8 @@ export default function Courses() {
   const courses = [
     {
       id: 1,
-      title: 'Интегратор 2.0',
-      description: 'Создавай автоматизации и интеграции с AI для бизнеса',
+      title: 'Интегратор 3.0',
+      description: 'Профессия будущего: автоматизируй процессы, создавай AI-ботов и зарабатывай на интеграциях',
       icon: <Sparkles className="w-10 h-10" />,
       duration: '8 недель',
       students: '1,234',
@@ -22,10 +22,10 @@ export default function Courses() {
       lessons: 48,
       inDevelopment: false, // ✅ Доступен
       features: [
-        'Работа с API OpenAI',
-        'Автоматизация бизнес-процессов',
-        'Интеграции с Telegram, Discord',
-        'Создание AI-ассистентов',
+        'GPT-боты и CRM интеграции',
+        'Автоматизация с Make и N8N',
+        'amoCRM, Bitrix24, API',
+        'Упаковка и продвижение услуг',
       ],
     },
     {
@@ -182,7 +182,7 @@ export default function Courses() {
                     )}
                   </div>
                   
-                  <CardTitle className="text-2xl text-white mb-2">{course.title}</CardTitle>
+                  <CardTitle className="text-xl sm:text-2xl text-white mb-2 whitespace-nowrap">{course.title}</CardTitle>
                   <CardDescription className="text-gray-400">
                     {course.description}
                   </CardDescription>

@@ -331,10 +331,18 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
     if (!videoId) return;
 
     let intervalId: NodeJS.Timeout;
+    let hasChecked = false; // ✅ Флаг для однократной проверки
 
     const checkTranscodingStatus = async () => {
       try {
         const response = await api.get(`/api/videos/bunny-status/${videoId}`);
+        
+        console.log('🎬 [VIDEO STATUS]:', {
+          videoId,
+          status: response.status,
+          progress: response.progress,
+          bunnyStatus: response.bunnyStatus
+        });
         
         if (response.status === 'ready') {
           setTranscodingStatus('ready');
@@ -349,18 +357,25 @@ export const SmartVideoPlayer = memo(function SmartVideoPlayer({
           setTranscodingProgress(response.progress || 0);
         }
       } catch (error) {
-        // Если API не отвечает, считаем что видео готово (старые видео)
+        // ✅ ФИКС: Если API не отвечает, считаем что видео готово (старые видео)
+        console.log('⚠️ [VIDEO STATUS] API error, assuming video is ready');
         setTranscodingStatus('ready');
         setTranscodingProgress(100);
         if (intervalId) clearInterval(intervalId);
       }
+      
+      hasChecked = true;
     };
 
-    // Первая проверка сразу
+    // ✅ Первая проверка сразу
     checkTranscodingStatus();
 
-    // Потом каждые 10 секунд
-    intervalId = setInterval(checkTranscodingStatus, 10000);
+    // ✅ Потом каждые 10 секунд (только если не ready)
+    intervalId = setInterval(() => {
+      if (hasChecked) {
+        checkTranscodingStatus();
+      }
+    }, 10000);
 
     return () => {
       if (intervalId) clearInterval(intervalId);

@@ -8,7 +8,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import axios from 'axios';
 
 const router = Router();
@@ -16,13 +16,71 @@ const router = Router();
 const FB_API_VERSION = 'v18.0';
 const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
 
-// Helper to get Supabase client (lazy initialization)
-function getSupabaseClient() {
-  return createClient(
-    process.env.TRIPWIRE_SUPABASE_URL || '',
-    process.env.TRIPWIRE_SERVICE_ROLE_KEY || ''
-  );
-}
+/**
+ * GET /api/traffic-settings/token-status
+ * Проверить статус подключения всех токенов
+ * ⚠️ MUST BE BEFORE /:userId route!
+ */
+router.get('/token-status', async (req: Request, res: Response) => {
+  try {
+    const statuses: Record<string, { connected: boolean; lastChecked: Date; error?: string }> = {
+      facebook: { connected: false, lastChecked: new Date() },
+      youtube: { connected: false, lastChecked: new Date() },
+      tiktok: { connected: false, lastChecked: new Date() },
+      google_ads: { connected: false, lastChecked: new Date() }
+    };
+
+    // Check Facebook token
+    const fbToken = process.env.FB_ACCESS_TOKEN;
+    if (fbToken) {
+      try {
+        await axios.get(`${FB_API_BASE}/me`, {
+          params: { access_token: fbToken },
+          timeout: 5000
+        });
+        statuses.facebook.connected = true;
+      } catch (err: any) {
+        statuses.facebook.connected = false;
+        statuses.facebook.error = err.message;
+      }
+    }
+
+    // Check YouTube token (Google OAuth)
+    const youtubeToken = process.env.GOOGLE_OAUTH_TOKEN || process.env.YOUTUBE_API_KEY;
+    if (youtubeToken) {
+      statuses.youtube.connected = youtubeToken.length > 20;
+    }
+
+    // Check TikTok token
+    const tiktokToken = process.env.TIKTOK_ACCESS_TOKEN;
+    if (tiktokToken) {
+      statuses.tiktok.connected = tiktokToken.length > 20;
+    }
+
+    // Check Google Ads token
+    const googleAdsToken = process.env.GOOGLE_ADS_TOKEN || process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+    if (googleAdsToken) {
+      statuses.google_ads.connected = googleAdsToken.length > 20;
+    }
+
+    res.json({
+      success: true,
+      statuses
+    });
+
+  } catch (error: any) {
+    console.error('❌ Failed to check token statuses:', error);
+    res.json({
+      success: true,
+      statuses: {
+        facebook: { connected: true, lastChecked: new Date() },
+        youtube: { connected: false, lastChecked: new Date() },
+        tiktok: { connected: false, lastChecked: new Date() },
+        google_ads: { connected: false, lastChecked: new Date() }
+      }
+    });
+  }
+});
 
 /**
  * GET /api/traffic-settings/:userId
@@ -32,7 +90,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
-    const supabase = getSupabaseClient();
+    const supabase = trafficAdminSupabase;
     
     const { data, error } = await supabase
       .from('traffic_targetologist_settings')
@@ -46,7 +104,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
     
     // Если настроек нет, создаем пустые
     if (!data) {
-      const supabase = getSupabaseClient();
+      const supabase = trafficAdminSupabase;
       const { data: newSettings, error: createError } = await supabase
         .from('traffic_targetologist_settings')
         .insert({
@@ -91,7 +149,7 @@ router.put('/:userId', async (req: Request, res: Response) => {
     const { userId } = req.params;
     const updateData = req.body;
     
-    const supabase = getSupabaseClient();
+    const supabase = trafficAdminSupabase;
     
     const { data, error } = await supabase
       .from('traffic_targetologist_settings')
@@ -124,7 +182,7 @@ router.get('/:userId/fb-accounts', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
-    const supabase = getSupabaseClient();
+    const supabase = trafficAdminSupabase;
     
     // Получаем токен (сначала персональный, потом общий)
     const { data: settings } = await supabase
@@ -183,7 +241,7 @@ router.get('/:userId/campaigns', async (req: Request, res: Response) => {
     const { userId } = req.params;
     const { adAccountId } = req.query;
     
-    const supabase = getSupabaseClient();
+    const supabase = trafficAdminSupabase;
     
     // Получаем настройки
     const { data: settings } = await supabase
@@ -309,7 +367,7 @@ router.post('/:userId/fb-token', async (req: Request, res: Response) => {
     }
     
     // Сохраняем токен
-    const supabase = getSupabaseClient();
+    const supabase = trafficAdminSupabase;
     
     const { data, error } = await supabase
       .from('traffic_targetologist_settings')
@@ -330,77 +388,6 @@ router.post('/:userId/fb-token', async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: error.message
-    });
-  }
-});
-
-/**
- * GET /api/traffic-settings/token-status
- * Проверить статус подключения всех токенов
- */
-router.get('/token-status', async (req: Request, res: Response) => {
-  try {
-    const statuses: Record<string, { connected: boolean; lastChecked: Date; error?: string }> = {
-      facebook: { connected: false, lastChecked: new Date() },
-      youtube: { connected: false, lastChecked: new Date() },
-      tiktok: { connected: false, lastChecked: new Date() },
-      google_ads: { connected: false, lastChecked: new Date() }
-    };
-
-    // Check Facebook token
-    const fbToken = process.env.FB_ACCESS_TOKEN;
-    if (fbToken) {
-      try {
-        await axios.get(`${FB_API_BASE}/me`, {
-          params: { access_token: fbToken },
-          timeout: 5000
-        });
-        statuses.facebook.connected = true;
-      } catch (err: any) {
-        statuses.facebook.connected = false;
-        statuses.facebook.error = err.message;
-      }
-    }
-
-    // Check YouTube token (Google OAuth)
-    const youtubeToken = process.env.GOOGLE_OAUTH_TOKEN || process.env.YOUTUBE_API_KEY;
-    if (youtubeToken) {
-      try {
-        // Simple check if token exists and is not empty
-        statuses.youtube.connected = youtubeToken.length > 20;
-      } catch (err: any) {
-        statuses.youtube.connected = false;
-        statuses.youtube.error = err.message;
-      }
-    }
-
-    // Check TikTok token
-    const tiktokToken = process.env.TIKTOK_ACCESS_TOKEN;
-    if (tiktokToken) {
-      statuses.tiktok.connected = tiktokToken.length > 20;
-    }
-
-    // Check Google Ads token
-    const googleAdsToken = process.env.GOOGLE_ADS_TOKEN || process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
-    if (googleAdsToken) {
-      statuses.google_ads.connected = googleAdsToken.length > 20;
-    }
-
-    res.json({
-      success: true,
-      statuses
-    });
-
-  } catch (error: any) {
-    console.error('❌ Failed to check token statuses:', error);
-    res.json({
-      success: true,
-      statuses: {
-        facebook: { connected: true, lastChecked: new Date() }, // FB always available
-        youtube: { connected: false, lastChecked: new Date() },
-        tiktok: { connected: false, lastChecked: new Date() },
-        google_ads: { connected: false, lastChecked: new Date() }
-      }
     });
   }
 });

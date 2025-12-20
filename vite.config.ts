@@ -109,9 +109,15 @@ export default defineConfig(({ mode }) => {
       // Alternative: Keep only critical errors (uncomment if needed)
       // pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info', 'console.trace'] : [],
     },
-    // ✅ Поддержка process.env для совместимости (если где-то используется)
+    // ✅ Явно встраиваем env переменные в build (для production)
     define: {
-      'process.env': env,
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
+      'import.meta.env.VITE_TRIPWIRE_SUPABASE_URL': JSON.stringify(env.VITE_TRIPWIRE_SUPABASE_URL),
+      'import.meta.env.VITE_TRIPWIRE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_TRIPWIRE_SUPABASE_ANON_KEY),
+      'import.meta.env.VITE_LANDING_SUPABASE_URL': JSON.stringify(env.VITE_LANDING_SUPABASE_URL),
+      'import.meta.env.VITE_LANDING_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_LANDING_SUPABASE_ANON_KEY),
+      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
     },
   },
   };

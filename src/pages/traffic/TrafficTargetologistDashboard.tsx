@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TrafficCommandDashboard from '../tripwire/TrafficCommandDashboard';
+import MainProductsAnalytics from '@/components/traffic/MainProductsAnalytics';
 import { Button } from '@/components/ui/button';
 import { Users, User, Globe, LogOut, BarChart3, Settings } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -148,12 +149,43 @@ export default function TrafficTargetologistDashboard() {
       </div>
       
       {/* Main Content - with top padding */}
-      <div className="pt-16">
-        <TrafficCommandDashboard 
-          filterTeam={showOnlyMyTeam ? teamName : null}
-          currentUserTeam={teamName}
-          language={language}
-        />
+      <div className="pt-16 px-4">
+        {/* Tabs for Express vs Main Products */}
+        <div className="max-w-[1600px] mx-auto mb-6">
+          <div className="flex gap-2 bg-black/40 p-1 rounded-xl border border-[#00FF88]/10 w-fit">
+            <button
+              onClick={() => setActiveTab('express')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                activeTab === 'express'
+                  ? 'bg-[#00FF88] text-black'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              ⚡ ExpressCourse
+            </button>
+            <button
+              onClick={() => setActiveTab('main-products')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                activeTab === 'main-products'
+                  ? 'bg-[#00FF88] text-black'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              🚀 Основные продукты
+            </button>
+          </div>
+        </div>
+
+        {/* Content based on active tab */}
+        {activeTab === 'express' ? (
+          <TrafficCommandDashboard 
+            filterTeam={showOnlyMyTeam ? teamName : null}
+            currentUserTeam={teamName}
+            language={language}
+          />
+        ) : (
+          <MainProductsAnalytics />
+        )}
       </div>
       
       {/* Security Footer - Simple, not fixed */}

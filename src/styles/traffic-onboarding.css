@@ -1,0 +1,51 @@
+/* Traffic Onboarding Tour - Адаптивные стили */
+
+/* Базовый popover */
+.traffic-onboarding-popover {
+  max-width: 90vw !important;
+  width: auto !important;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .traffic-onboarding-popover {
+    max-width: 500px !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .traffic-onboarding-popover {
+    max-width: 450px !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .traffic-onboarding-popover {
+    max-width: 95vw !important;
+    font-size: 14px !important;
+  }
+  
+  .traffic-onboarding-popover .driver-popover-title {
+    font-size: 16px !important;
+    padding: 12px !important;
+  }
+  
+  .traffic-onboarding-popover .driver-popover-description {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .traffic-onboarding-popover .driver-popover-footer {
+    padding: 10px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  
+  .traffic-onboarding-popover button {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    min-width: auto !important;
+  }
+}

@@ -16,3 +16,4 @@ COMMENT ON COLUMN tripwire_users.onboarding_completed IS 'Прошел ли по
 COMMENT ON COLUMN tripwire_users.onboarding_completed_at IS 'Дата и время завершения onboarding';
 
 -- ✅ Миграция применена: 2025-12-19
+

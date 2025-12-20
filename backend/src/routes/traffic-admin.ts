@@ -6,7 +6,7 @@
 
 import express from 'express';
 import { authenticateToken } from './traffic-auth.js';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ router.get('/settings', authenticateToken, adminOnly, async (req, res) => {
   try {
     console.log('⚙️ Fetching admin settings');
     
-    const { data: settings, error } = await tripwireAdminSupabase
+    const { data: settings, error } = await trafficAdminSupabase
       .from('traffic_admin_settings')
       .select('*')
       .order('setting_key');
@@ -57,7 +57,7 @@ router.put('/settings/:key', authenticateToken, adminOnly, async (req, res) => {
     
     console.log(`📝 Updating setting: ${key}`);
     
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_admin_settings')
       .update({ 
         setting_value: value,
@@ -94,7 +94,7 @@ router.post('/settings', authenticateToken, adminOnly, async (req, res) => {
     
     console.log(`📋 Creating new setting: ${setting_key}`);
     
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_admin_settings')
       .insert({
         setting_key,
@@ -125,7 +125,7 @@ router.get('/users', authenticateToken, adminOnly, async (req, res) => {
   try {
     console.log('👥 Fetching all traffic users');
     
-    const { data: users, error } = await tripwireAdminSupabase
+    const { data: users, error } = await trafficAdminSupabase
       .from('traffic_users')
       .select('id, email, full_name, team_name, role, is_active, last_login_at, created_at')
       .order('team_name')
@@ -161,7 +161,7 @@ router.put('/users/:id', authenticateToken, adminOnly, async (req, res) => {
     if (role !== undefined) updateData.role = role;
     if (is_active !== undefined) updateData.is_active = is_active;
     
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_users')
       .update(updateData)
       .eq('id', id)
@@ -189,22 +189,22 @@ router.get('/dashboard-stats', authenticateToken, adminOnly, async (req, res) =>
     console.log('📊 Fetching dashboard stats');
     
     // Get user counts
-    const { data: users } = await tripwireAdminSupabase
+    const { data: users } = await trafficAdminSupabase
       .from('traffic_users')
       .select('role, is_active');
     
     // Get plan counts
-    const { data: plans } = await tripwireAdminSupabase
+    const { data: plans } = await trafficAdminSupabase
       .from('traffic_weekly_plans')
       .select('status, completion_percentage');
     
     // Get teams count
-    const { data: teams } = await tripwireAdminSupabase
+    const { data: teams } = await trafficAdminSupabase
       .from('traffic_teams')
       .select('id, name');
     
     // Get settings count
-    const { data: settings } = await tripwireAdminSupabase
+    const { data: settings } = await trafficAdminSupabase
       .from('traffic_admin_settings')
       .select('id');
     

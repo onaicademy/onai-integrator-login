@@ -221,3 +221,4 @@ export const OnboardingWelcomeModal: React.FC = () => {
     </AnimatePresence>
   );
 };
+

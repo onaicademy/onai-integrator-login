@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 const router = Router();
 
 // Supabase Tripwire client
-const tripwireSupabase = createClient(
+const trafficSupabase = createClient(
   process.env.TRIPWIRE_SUPABASE_URL || 'https://pjmvxecykysfrzppdcto.supabase.co',
   process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.TRIPWIRE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXZ4ZWN5a3lzZnJ6cHBkY3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzY4NTIsImV4cCI6MjA1MDIxMjg1Mn0.vD7PxK0WYyT-xeD9cJQMcb1tCL5hpBqQzLf3VgWyk'
 );
@@ -38,7 +38,7 @@ router.post('/save', async (req: Request, res: Response) => {
     console.log(`💾 Сохранение отчета за ${report_date}...`);
 
     // Upsert отчет (если уже есть - обновить, если нет - создать)
-    const { data, error } = await tripwireSupabase
+    const { data, error } = await trafficSupabase
       .from('daily_traffic_reports')
       .upsert({
         report_date,
@@ -84,7 +84,7 @@ router.get('/date/:date', async (req: Request, res: Response) => {
 
     console.log(`📊 Получение отчета за ${date}...`);
 
-    const { data, error } = await tripwireSupabase
+    const { data, error } = await trafficSupabase
       .from('daily_traffic_reports')
       .select('*')
       .eq('report_date', date)
@@ -119,7 +119,7 @@ router.get('/range', async (req: Request, res: Response) => {
 
     console.log(`📊 Получение отчетов: ${start} - ${end}`);
 
-    const { data, error } = await tripwireSupabase
+    const { data, error } = await trafficSupabase
       .from('daily_traffic_reports')
       .select('*')
       .gte('report_date', start)
@@ -191,7 +191,7 @@ router.get('/teams-analysis', async (req: Request, res: Response) => {
 
     console.log(`📊 Анализ команд: ${start} - ${end}`);
 
-    const { data: reports, error } = await tripwireSupabase
+    const { data: reports, error } = await trafficSupabase
       .from('daily_traffic_reports')
       .select('report_date, teams_data, usd_to_kzt_rate')
       .gte('report_date', start)

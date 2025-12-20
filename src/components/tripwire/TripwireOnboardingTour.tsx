@@ -87,3 +87,4 @@ export const TripwireOnboardingTour: React.FC = () => {
   // Этот компонент не рендерит UI - он только управляет driver.js
   return null;
 };
+

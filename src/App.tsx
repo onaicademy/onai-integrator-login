@@ -71,6 +71,7 @@ import { TripwireLayout } from "./components/tripwire/TripwireLayout";
 
 // 🚀 Traffic Dashboard (new personal cabinets system)
 const TrafficLogin = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficLogin")));
+const TrafficResetPassword = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficResetPassword")));
 const TrafficCabinetDashboard = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficCabinetDashboard")));
 const TrafficTargetologistDashboard = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficTargetologistDashboard")));
 const TrafficAdminPanel = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficAdminPanel")));
@@ -79,6 +80,7 @@ const TrafficTeamConstructor = lazy(() => retryChunkLoad(() => import("./pages/t
 const UTMSourcesPanel = lazy(() => retryChunkLoad(() => import("./pages/traffic/UTMSourcesPanel")));
 const TrafficDetailedAnalytics = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficDetailedAnalytics")));
 const TrafficSettings = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficSettings")));
+const ReferralGeneratorPage = lazy(() => retryChunkLoad(() => import("./pages/referral/ReferralGeneratorPage"))); // 🎯 Referral System
 // Integrator Admin pages
 import TripwireAdminDashboard from "./pages/tripwire/admin/Dashboard";
 import TripwireAnalytics from "./pages/tripwire/admin/Analytics";
@@ -116,19 +118,27 @@ const AppRoutes = () => {
   const isWelcomePage = location.pathname === '/welcome';
   // ✅ Domain detection for Traffic Dashboard
   const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+  // ✅ Domain detection for Referral System
+  const isReferralDomain = window.location.hostname === 'referral.onai.academy';
 
   return (
     <Suspense fallback={<SuspenseLoader />}>
       <Routes>
       {/* Публичные страницы (без авторизации) */}
       {/* ✅ MAIN PLATFORM LOGIN (only on main domains) */}
-      {!isTrafficDomain && <Route path="/login" element={<Login />} />}
-      {!isTrafficDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
+      {!isTrafficDomain && !isReferralDomain && <Route path="/login" element={<Login />} />}
+      {!isTrafficDomain && !isReferralDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
+      
+      {/* 🎯 REFERRAL DOMAIN: Show referral page at root */}
+      {isReferralDomain && <Route path="/" element={<ReferralGeneratorPage />} />}
       <Route path="/update-password" element={<UpdatePassword />} />
       <Route path="/access-denied" element={<AccessDenied />} />
       
       {/* 🔗 Short link redirect */}
       <Route path="/l/:shortCode" element={<ShortLinkRedirect />} />
+      
+      {/* 🎯 REFERRAL SYSTEM (Public - no auth required) */}
+      {!isReferralDomain && <Route path="/referral" element={<ReferralGeneratorPage />} />}
       
       {/* Welcome - требует авторизацию, но доступна для новых пользователей */}
       <Route path="/welcome" element={
@@ -261,6 +271,7 @@ const AppRoutes = () => {
       {/* ✅ PRODUCTION: subdomain traffic.onai.academy (routes WITHOUT prefix) */}
       {/* ✅ TRAFFIC LOGIN (only on traffic.onai.academy) */}
       {isTrafficDomain && <Route path="/login" element={<TrafficLogin />} />}
+      {isTrafficDomain && <Route path="/reset-password" element={<TrafficResetPassword />} />}
       {isTrafficDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
       
       {/* Personal Cabinet for each targetologist - Simplified NO SIDEBAR */}

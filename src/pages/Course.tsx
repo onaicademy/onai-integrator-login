@@ -739,25 +739,38 @@ const Course = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 text-white font-display leading-tight"
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white font-display leading-tight"
               >
-                Интегратор{" "}
-                <span className="relative inline-block">
-                  <span className="text-[#00FF88] relative z-10">2.0</span>
-                  <motion.span
-                    className="absolute inset-0 bg-[#00FF88] blur-xl opacity-50"
-                    animate={{
-                      opacity: [0.3, 0.6, 0.3],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
+                <span className="whitespace-nowrap">
+                  Интегратор{" "}
+                  <span className="relative inline-block">
+                    <span className="text-[#00FF88] relative z-10">3.0</span>
+                    <motion.span
+                      className="absolute inset-0 bg-[#00FF88] blur-xl opacity-50"
+                      animate={{
+                        opacity: [0.3, 0.6, 0.3],
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  </span>
                 </span>
               </motion.h1>
+
+              {/* Course Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-base sm:text-lg md:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed max-w-2xl"
+              >
+                Профессия будущего: от создания GPT-ботов до автоматизации бизнеса. 
+                Освой Make, N8N, amoCRM и начни зарабатывать на интеграциях уже через 8 недель.
+              </motion.p>
 
               {/* AI Curator Button - PREMIUM */}
               <motion.div
