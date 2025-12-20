@@ -346,3 +346,5 @@ ssh root@207.154.231.30 "pm2 restart onai-backend"
 
 **ТЕСТИРУЙ СТУДЕНТАМИ! СИСТЕМА НА PRODUCTION!** 🚀
 
+
+

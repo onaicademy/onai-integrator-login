@@ -217,3 +217,5 @@ ssh root@207.154.231.30 "chown -R www-data:www-data /var/www/onai.academy/ && sy
 **Дата:** 20 декабря 2025, 09:30 UTC  
 **Статус:** ✅ ГОТОВО К ИСПОЛЬЗОВАНИЮ
 
+
+

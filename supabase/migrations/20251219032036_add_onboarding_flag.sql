@@ -17,3 +17,5 @@ COMMENT ON COLUMN tripwire_users.onboarding_completed_at IS 'Дата и вре�
 
 -- ✅ Миграция применена: 2025-12-19
 
+
+

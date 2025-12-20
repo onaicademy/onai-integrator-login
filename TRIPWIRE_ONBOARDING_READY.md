@@ -300,3 +300,5 @@ localStorage.setItem('onboarding_current_step', currentStep.toString());
 
 Следующий шаг: Запустите dev сервер и протестируйте все сценарии.
 
+
+

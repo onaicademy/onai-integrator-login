@@ -81,7 +81,7 @@ function formatTenge(amount: number): string {
     currency: 'KZT',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).replace('KZT', '₸').trim();
+  }).format(amount).replace('KZT', '₸').trim();
 }
 
 /**

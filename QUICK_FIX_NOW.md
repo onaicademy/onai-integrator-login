@@ -71,3 +71,5 @@ ON traffic_targetologist_settings(user_id);
 
 **ВРЕМЯ: 2 МИНУТЫ | СЛОЖНОСТЬ: ЛЕГКО**
 
+
+

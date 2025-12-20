@@ -133,12 +133,9 @@ export default function ReferralGeneratorPage() {
         >
           <div className="micro-text">/// РЕФЕРАЛЬНАЯ ПРОГРАММА V.4.0</div>
           <h1 className="main-title">
-            ЗАРАБАТЫВАЙ С
-            <span className="gradient-text"> ONAI ACADEMY</span>
+            Партнерская программа
+            <span className="gradient-text"> onAI academy</span>
           </h1>
-          <p className="subtitle">
-            Создавай вирусные ролики, которые ведут на нашу страницу продаж, и получай до <strong>$120</strong> за каждую продажу!
-          </p>
         </motion.div>
       </header>
 
@@ -155,7 +152,7 @@ export default function ReferralGeneratorPage() {
         >
           <div className="card-header">
             <div className="micro-text">/// СИСТЕМА ВЫПЛАТ</div>
-            <h2>💰 Сколько ты заработаешь?</h2>
+            <h2>Система расчета бонусов</h2>
             <p>Чем больше продаж в месяц — тем выше выплата <strong>за каждую</strong> продажу!</p>
           </div>
 

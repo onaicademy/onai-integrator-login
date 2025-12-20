@@ -205,3 +205,5 @@ UPDATE tripwire_users SET onboarding_completed = FALSE WHERE email = 'your-email
 **Готово к тесту**: ✅ Да  
 **Время теста**: ~3 минуты
 
+
+

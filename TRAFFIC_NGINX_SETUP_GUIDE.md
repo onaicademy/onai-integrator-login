@@ -132,3 +132,5 @@ sudo journalctl -u nginx -n 50
 После выполнения всех шагов поддомен `traffic.onai.academy` будет полностью работать!
 
 
+
+

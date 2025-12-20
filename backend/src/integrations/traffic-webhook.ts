@@ -81,7 +81,7 @@ function formatTenge(amount: number): string {
     currency: 'KZT',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).replace('KZT', '₸').trim();
+  }).format(amount).replace('KZT', '₸').trim();
 }
 
 /**
@@ -439,6 +439,35 @@ router.get('/traffic/test', (req: Request, res: Response) => {
     version: '1.0.0',
     pipeline: VAMUS_RM_PIPELINE_ID,
     targetologists: Object.keys(TARGETOLOGIST_MAPPING),
+  });
+});
+
+/**
+ * HEAD /webhook/amocrm/traffic
+ * AmoCRM verification endpoint
+ */
+router.head('/traffic', (req: Request, res: Response) => {
+  res.status(200).end();
+});
+
+/**
+ * HEAD /webhook/amocrm/
+ * AmoCRM verification for base endpoint
+ */
+router.head('/', (req: Request, res: Response) => {
+  res.status(200).end();
+});
+
+/**
+ * GET /webhook/amocrm/
+ * Status check for base endpoint
+ */
+router.get('/', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'AmoCRM webhook endpoints active',
+    endpoints: ['/webhook/amocrm/traffic', '/webhook/amocrm/'],
+    timestamp: new Date().toISOString(),
   });
 });
 
