@@ -144,6 +144,7 @@ import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoC
 import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
 import trafficWebhookRouter from './integrations/traffic-webhook.js'; // 🎯 DEDICATED Traffic Dashboard Webhook
 import adminWebhookLogsRouter from './routes/admin-webhook-logs.js'; // 🔍 Admin Webhook Logs Viewer
+import monitoringRouter from './monitoring/health-extended.js'; // 🏥 Extended Health & Scenario Checks
 import { errorHandler } from './middleware/errorHandler';
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
@@ -477,6 +478,7 @@ app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking 
 app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 DEDICATED Traffic Dashboard Webhook
 app.use('/webhook', amoCRMWebhookRouter); // 🔔 Referral System Webhook (legacy endpoint)
 app.use('/api/admin', adminWebhookLogsRouter); // 🔍 Admin Webhook Logs Viewer
+app.use('/api/monitoring', monitoringRouter); // 🏥 Extended Health & Scenario Monitoring
 // app.use('/webhook', unifiedAmoCRMWebhookRouter); // 🎯 UNIFIED (not used - separate endpoints instead)
 
 // 404 обработка
