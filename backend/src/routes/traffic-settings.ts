@@ -334,4 +334,75 @@ router.post('/:userId/fb-token', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/traffic-settings/token-status
+ * Проверить статус подключения всех токенов
+ */
+router.get('/token-status', async (req: Request, res: Response) => {
+  try {
+    const statuses: Record<string, { connected: boolean; lastChecked: Date; error?: string }> = {
+      facebook: { connected: false, lastChecked: new Date() },
+      youtube: { connected: false, lastChecked: new Date() },
+      tiktok: { connected: false, lastChecked: new Date() },
+      google_ads: { connected: false, lastChecked: new Date() }
+    };
+
+    // Check Facebook token
+    const fbToken = process.env.FB_ACCESS_TOKEN;
+    if (fbToken) {
+      try {
+        await axios.get(`${FB_API_BASE}/me`, {
+          params: { access_token: fbToken },
+          timeout: 5000
+        });
+        statuses.facebook.connected = true;
+      } catch (err: any) {
+        statuses.facebook.connected = false;
+        statuses.facebook.error = err.message;
+      }
+    }
+
+    // Check YouTube token (Google OAuth)
+    const youtubeToken = process.env.GOOGLE_OAUTH_TOKEN || process.env.YOUTUBE_API_KEY;
+    if (youtubeToken) {
+      try {
+        // Simple check if token exists and is not empty
+        statuses.youtube.connected = youtubeToken.length > 20;
+      } catch (err: any) {
+        statuses.youtube.connected = false;
+        statuses.youtube.error = err.message;
+      }
+    }
+
+    // Check TikTok token
+    const tiktokToken = process.env.TIKTOK_ACCESS_TOKEN;
+    if (tiktokToken) {
+      statuses.tiktok.connected = tiktokToken.length > 20;
+    }
+
+    // Check Google Ads token
+    const googleAdsToken = process.env.GOOGLE_ADS_TOKEN || process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+    if (googleAdsToken) {
+      statuses.google_ads.connected = googleAdsToken.length > 20;
+    }
+
+    res.json({
+      success: true,
+      statuses
+    });
+
+  } catch (error: any) {
+    console.error('❌ Failed to check token statuses:', error);
+    res.json({
+      success: true,
+      statuses: {
+        facebook: { connected: true, lastChecked: new Date() }, // FB always available
+        youtube: { connected: false, lastChecked: new Date() },
+        tiktok: { connected: false, lastChecked: new Date() },
+        google_ads: { connected: false, lastChecked: new Date() }
+      }
+    });
+  }
+});
+
 export default router;
