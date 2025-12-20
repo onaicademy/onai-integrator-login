@@ -474,15 +474,14 @@ app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking 
 app.use('/webhook', amoCRMWebhookRouter); // 🔔 AmoCRM Referral Webhooks
 
 // 404 обработка
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
-});
+import { notFoundHandler, errorHandler as enhancedErrorHandler } from './middleware/errorHandler.js';
+app.use(notFoundHandler);
 
 // 🛡️ SENTRY: Error handler (перед custom error handler)
 app.use(sentryErrorHandler());
 
 // Error handler (ДОЛЖЕН быть последний!)
-app.use(errorHandler);
+app.use(enhancedErrorHandler);
 
 // ═══════════════════════════════════════════════════════════════
 // 🛡️ ОБРАБОТКА КРИТИЧЕСКИХ ОШИБОК - ПРЕДОТВРАЩЕНИЕ ПАДЕНИЯ
