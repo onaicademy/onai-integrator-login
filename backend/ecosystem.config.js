@@ -16,7 +16,10 @@ module.exports = {
     max_memory_restart: '500M',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000
+      PORT: 3000,
+      START_WORKER: 'true', // ✅ Enable Tripwire Queue Worker
+      REDIS_HOST: 'localhost',
+      REDIS_PORT: '6379'
     },
     env_development: {
       NODE_ENV: 'development',
