@@ -8,6 +8,10 @@ import '@fontsource/inter/400.css'; // Regular для текста
 
 import "./index.css";
 
+// Initialize production error tracking
+import { initErrorTracking } from './lib/error-tracker';
+initErrorTracking();
+
 // 🛡️ ERROR RECOVERY: Import utilities
 import { retryChunkLoad } from "@/utils/error-recovery";
 

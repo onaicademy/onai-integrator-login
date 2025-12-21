@@ -10,6 +10,46 @@ const AMOCRM_REDIRECT_URI = process.env.AMOCRM_REDIRECT_URI || 'https://api.onai
 
 const TOKEN_CACHE_FILE = path.join(__dirname, '../../data/amocrm-token-cache.json');
 
+// 🔄 Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelay: 1000,
+  maxDelay: 15000
+};
+
+// 🔄 Helper: Retry with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  context: string = 'operation'
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Don't retry on 401 (unauthorized) - token is definitely invalid
+      if (error.response?.status === 401) {
+        throw error;
+      }
+      
+      if (attempt < RETRY_CONFIG.maxRetries - 1) {
+        const delay = Math.min(
+          RETRY_CONFIG.baseDelay * Math.pow(2, attempt),
+          RETRY_CONFIG.maxDelay
+        );
+        
+        console.log(`⏳ [AmoCRM Token] ${context} - Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error(`${context} failed after ${RETRY_CONFIG.maxRetries} attempts`);
+}
+
 interface AmoCRMTokenCache {
   access_token: string;
   refresh_token: string;
@@ -45,13 +85,13 @@ function saveTokensToCache(tokens: AmoCRMTokenCache) {
   }
 }
 
-// 🔑 Refresh access token using refresh_token
+// 🔑 Refresh access token using refresh_token (with retry logic)
 export async function refreshAmoCRMToken(refreshToken: string): Promise<AmoCRMTokenCache> {
-  try {
+  return retryWithBackoff(async () => {
     console.log('🔄 [AmoCRM Token] Refreshing access token...');
     
     if (!AMOCRM_CLIENT_ID || !AMOCRM_CLIENT_SECRET) {
-      throw new Error('AMOCRM_CLIENT_ID or AMOCRM_CLIENT_SECRET not configured');
+      throw new Error('AMOCRM_CLIENT_ID or AMOCRM_CLIENT_SECRET not configured. Add them to .env');
     }
     
     const response = await axios.post(
@@ -67,7 +107,7 @@ export async function refreshAmoCRMToken(refreshToken: string): Promise<AmoCRMTo
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 10000
+        timeout: 15000
       }
     );
     
@@ -88,10 +128,7 @@ export async function refreshAmoCRMToken(refreshToken: string): Promise<AmoCRMTo
     console.log(`✅ [AmoCRM Token] Token refreshed (expires in ${Math.round(expiresIn / 3600)} hours)`);
     
     return tokenCache;
-  } catch (error: any) {
-    console.error('❌ [AmoCRM Token] Refresh failed:', error.response?.data || error.message);
-    throw error;
-  }
+  }, 'Token Refresh');
 }
 
 // 🔍 Validate token
@@ -270,3 +307,10 @@ export async function initializeFromEnv(): Promise<void> {
 }
 
 console.log('✅ [AmoCRM Token Manager] Initialized');
+
+// 🔔 Check if credentials are configured
+if (!AMOCRM_CLIENT_ID || !AMOCRM_CLIENT_SECRET) {
+  console.warn('⚠️ [AmoCRM Token Manager] CLIENT_ID/SECRET not configured - auto-refresh may not work');
+} else {
+  console.log('✅ [AmoCRM Token Manager] OAuth credentials configured');
+}

@@ -103,6 +103,8 @@ import tripwireMaterialsRouter from './routes/tripwire/materials'; // ✅ Tripwi
 import tripwireCertificatesRouter from './routes/tripwire/certificates'; // ✅ Tripwire Certificates (Phase 2)
 import tripwireAiRouter from './routes/tripwire/ai'; // ✅ Tripwire AI Curator (Phase 2)
 import tripwireOnboardingRouter from './routes/tripwire/onboarding'; // ✅ Tripwire Onboarding System
+import tripwireDebugRouter from './routes/tripwire/debug'; // 🚔 Tripwire Debug Panel (Operation Logging)
+import tripwireSystemRouter from './routes/tripwire/system'; // 🚀 Tripwire System Health & Queue Management
 import debugRouter from './routes/debug'; // 🔍 DEBUG: Environment variables check
 import videoUploadRouter from './routes/videoUpload';
 import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW)
@@ -432,6 +434,8 @@ app.use('/api/tripwire', tripwireMaterialsRouter); // ✅ Tripwire Materials (Ph
 app.use('/api/tripwire/certificates', tripwireCertificatesRouter); // ✅ Tripwire Certificates (Phase 2)
 app.use('/api/tripwire/ai', tripwireAiRouter); // ✅ Tripwire AI Curator (Phase 2)
 app.use('/api/tripwire/onboarding', tripwireOnboardingRouter); // ✅ Tripwire Onboarding System
+app.use('/api/tripwire/debug', tripwireDebugRouter); // 🚔 Tripwire Debug Panel (Operation Logging)
+app.use('/api/tripwire/system', tripwireSystemRouter); // 🚀 Tripwire System Health & Queue Management
 app.use('/api/supabase', supabaseRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/tokens', tokensRouter);

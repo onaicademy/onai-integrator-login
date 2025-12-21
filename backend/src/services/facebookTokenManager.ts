@@ -3,10 +3,45 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Facebook App credentials
-const FB_APP_ID = process.env.FACEBOOK_APP_ID || ''; // Нужно добавить в .env
-const FB_APP_SECRET = process.env.FACEBOOK_APP_SECRET || ''; // Нужно добавить в .env
+const FB_APP_ID = process.env.FACEBOOK_APP_ID || '';
+const FB_APP_SECRET = process.env.FACEBOOK_APP_SECRET || '';
 const FB_API_VERSION = 'v21.0';
 const TOKEN_CACHE_FILE = path.join(__dirname, '../../data/facebook-token-cache.json');
+
+// 🔄 Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelay: 1000,
+  maxDelay: 10000
+};
+
+// 🔄 Helper: Retry with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  context: string = 'operation'
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      if (attempt < RETRY_CONFIG.maxRetries - 1) {
+        const delay = Math.min(
+          RETRY_CONFIG.baseDelay * Math.pow(2, attempt),
+          RETRY_CONFIG.maxDelay
+        );
+        
+        console.log(`⏳ [FB Token] ${context} - Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error(`${context} failed after ${RETRY_CONFIG.maxRetries} attempts`);
+}
 
 interface TokenCache {
   access_token: string;
@@ -44,11 +79,11 @@ function saveTokenToCache(token: TokenCache) {
 
 // 🔑 Exchange short-lived token for long-lived token (60 days)
 export async function exchangeForLongLivedToken(shortToken: string): Promise<string> {
-  try {
+  return retryWithBackoff(async () => {
     console.log('🔄 [FB Token] Exchanging short-lived token for long-lived...');
     
     if (!FB_APP_ID || !FB_APP_SECRET) {
-      throw new Error('FACEBOOK_APP_ID or FACEBOOK_APP_SECRET not configured');
+      throw new Error('FACEBOOK_APP_ID or FACEBOOK_APP_SECRET not configured. Add them to .env');
     }
     
     const response = await axios.get(
@@ -60,12 +95,12 @@ export async function exchangeForLongLivedToken(shortToken: string): Promise<str
           client_secret: FB_APP_SECRET,
           fb_exchange_token: shortToken
         },
-        timeout: 10000
+        timeout: 15000
       }
     );
     
     const longLivedToken = response.data.access_token;
-    const expiresIn = response.data.expires_in; // seconds (usually 5184000 = 60 days)
+    const expiresIn = response.data.expires_in || 5184000; // Default 60 days
     
     // Save to cache
     saveTokenToCache({
@@ -78,24 +113,23 @@ export async function exchangeForLongLivedToken(shortToken: string): Promise<str
     console.log(`✅ [FB Token] Long-lived token obtained (expires in ${Math.round(expiresIn / 86400)} days)`);
     
     return longLivedToken;
-  } catch (error: any) {
-    console.error('❌ [FB Token] Exchange failed:', error.message);
-    throw error;
-  }
+  }, 'Token Exchange');
 }
 
-// 🔍 Check if token is valid
+// 🔍 Check if token is valid (with retry)
 export async function validateToken(token: string): Promise<boolean> {
   try {
-    const response = await axios.get(
-      `https://graph.facebook.com/${FB_API_VERSION}/me`,
-      {
-        params: { access_token: token },
-        timeout: 5000
-      }
-    );
-    
-    return !!response.data.id;
+    return await retryWithBackoff(async () => {
+      const response = await axios.get(
+        `https://graph.facebook.com/${FB_API_VERSION}/me`,
+        {
+          params: { access_token: token },
+          timeout: 10000
+        }
+      );
+      
+      return !!response.data.id;
+    }, 'Token Validation');
   } catch (error: any) {
     if (error.response?.status === 190) {
       console.error('❌ [FB Token] Token invalid or expired');
@@ -273,6 +307,13 @@ export function getTokenStatus(): {
     daysUntilExpire,
     isValid: daysUntilExpire ? daysUntilExpire > 0 : true
   };
+}
+
+// 🔔 Check if credentials are configured
+if (!FB_APP_ID || !FB_APP_SECRET) {
+  console.warn('⚠️ [FB Token Manager] FACEBOOK_APP_ID/SECRET not configured - auto-refresh disabled');
+} else {
+  console.log('✅ [FB Token Manager] Initialized with auto-refresh support');
 }
 
 console.log('✅ [FB Token Manager] Initialized');
