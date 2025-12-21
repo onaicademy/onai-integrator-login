@@ -2,6 +2,12 @@ import { Router } from 'express';
 import { authenticateJWT, requireSalesOrAdmin } from '../../middleware/auth';
 import { getDebugStats, getErrorLogs, getAllLogs } from '../../services/debugService';
 import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
+import { 
+  logUserActivity, 
+  getUserActivityLogs, 
+  findTripwireUser, 
+  getUserActivityStats 
+} from '../../services/userActivityLogger';
 
 const router = Router();
 
@@ -114,7 +120,19 @@ router.post('/client-error', authenticateJWT, async (req, res) => {
     const userId = (req as any).user?.sub;
     const userEmail = (req as any).user?.email;
     
-    // Save to system_health_logs
+    // Log to user_activity_logs (if userId exists)
+    if (userId) {
+      await logUserActivity({
+        userId,
+        eventType: 'CLIENT_ERROR',
+        eventCategory: 'error',
+        message: `Client Error: ${message}`,
+        metadata: { stack, userAgent, url, context, userEmail },
+        severity: 'error',
+      });
+    }
+    
+    // Also log to system_health_logs (for general statistics)
     await tripwireAdminSupabase
       .from('system_health_logs')
       .insert({
@@ -135,6 +153,90 @@ router.post('/client-error', authenticateJWT, async (req, res) => {
     res.json({ success: true });
   } catch (error: any) {
     console.error('❌ Error logging client error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/tripwire/debug/search-users?q=email_or_phone
+ * Search Tripwire users by email or phone
+ * Protected: admin or sales role
+ */
+router.get('/search-users', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+  try {
+    const searchTerm = req.query.q as string;
+    
+    if (!searchTerm || searchTerm.length < 3) {
+      return res.status(400).json({ error: 'Search term must be at least 3 characters' });
+    }
+    
+    const users = await findTripwireUser(searchTerm);
+    
+    res.json({ users });
+  } catch (error: any) {
+    console.error('❌ Error searching users:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/tripwire/debug/user-logs/:userId
+ * Get activity logs for specific user
+ * Protected: admin or sales role
+ */
+router.get('/user-logs/:userId', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 100;
+    const eventType = req.query.eventType as string | undefined;
+    
+    const startDate = req.query.startDate 
+      ? new Date(req.query.startDate as string) 
+      : undefined;
+    
+    const endDate = req.query.endDate 
+      ? new Date(req.query.endDate as string) 
+      : undefined;
+    
+    const logs = await getUserActivityLogs(userId, {
+      limit,
+      eventType,
+      startDate,
+      endDate,
+    });
+    
+    // Get user info
+    const { data: user } = await tripwireAdminSupabase
+      .from('tripwire_users')
+      .select('user_id, full_name, email, phone, created_at')
+      .eq('user_id', userId)
+      .single();
+    
+    res.json({ 
+      user,
+      logs,
+      totalLogs: logs.length 
+    });
+  } catch (error: any) {
+    console.error('❌ Error getting user logs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/tripwire/debug/user-stats/:userId
+ * Get error/event statistics for specific user
+ * Protected: admin or sales role
+ */
+router.get('/user-stats/:userId', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const stats = await getUserActivityStats(userId);
+    
+    res.json(stats);
+  } catch (error: any) {
+    console.error('❌ Error getting user stats:', error);
     res.status(500).json({ error: error.message });
   }
 });

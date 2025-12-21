@@ -3,6 +3,7 @@ import { redis } from '../config/redis';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire';
 import { sendWelcomeEmail } from '../services/emailService';
 import { logHealthEvent } from '../services/queueService';
+import { logUserActivity } from '../services/userActivityLogger';
 
 /**
  * Tripwire User Creation Worker
@@ -197,6 +198,24 @@ const worker = new Worker<CreateUserJob>(
       
       const duration = Date.now() - startTime;
       console.log(`✅ [WORKER] Job ${job.id} completed in ${duration}ms`);
+      
+      // Log USER_CREATED event to user_activity_logs
+      await logUserActivity({
+        userId,
+        eventType: 'USER_CREATED',
+        eventCategory: 'activity',
+        message: `User created by ${currentUserName || currentUserEmail}`,
+        metadata: {
+          full_name,
+          email,
+          created_by: currentUserId,
+          manager_name: currentUserName || currentUserEmail,
+          duration_ms: duration,
+          email_sent: emailSent,
+        },
+        severity: 'info',
+      });
+      console.log(`   📝 Logged USER_CREATED event for ${email}`);
       
       // Log success
       await logHealthEvent('INFO', `User created successfully: ${email}`, { 

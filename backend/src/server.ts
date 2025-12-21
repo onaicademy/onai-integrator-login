@@ -150,6 +150,7 @@ import systemHealthRouter from './routes/system-health'; // 🚀 System Health &
 import debugRouter from './routes/debug'; // 🚔 Debug Panel (Operation Logging)
 import { errorHandler } from './middleware/errorHandler';
 import operationLogger from './middleware/operationLogger'; // 🚔 Operation Logger Middleware
+import { userActivityErrorLogger } from './middleware/userActivityMiddleware'; // 📝 User Activity Error Logger
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
 import { startNotificationScheduler } from './services/notificationScheduler.js';
@@ -311,6 +312,7 @@ app.use(requestLogger);
 
 // 🚔 Operation Logger - "The Policeman" (tracks ALL operations)
 app.use(operationLogger);
+app.use(userActivityErrorLogger); // 📝 Log API errors to user_activity_logs
 
 // ✅ Apply Rate Limiting to API routes
 // ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes

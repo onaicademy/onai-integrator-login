@@ -57,7 +57,8 @@ interface RetryConfig {
 
 const HEALTH_LOG_FILE = path.join(__dirname, '../../data/token-health-log.json');
 const TELEGRAM_ALERT_CHAT_ID = process.env.TELEGRAM_ALERT_CHAT_ID || process.env.TELEGRAM_IAE_CHAT_ID;
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_IAE_BOT_TOKEN;
+// 🤖 Use IAE Agent bot (@analisistonaitrafic_bot) for all health alerts
+const TELEGRAM_BOT_TOKEN = process.env.IAE_BOT_TOKEN || process.env.TELEGRAM_IAE_BOT_TOKEN || '8439289933:AAH5eED6m0HOK1ZEUGRO1MYCF93srAfjEF4';
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxRetries: 3,
