@@ -18,7 +18,14 @@
     "db:backup": "ts-node scripts/backup-schema.ts",
     "db:reset": "ts-node scripts/reset-database.ts",
     "db:reset:confirm": "ts-node scripts/reset-database.ts --confirm",
-    "db:reset:full": "ts-node scripts/reset-database.ts --confirm --apply-migrations"
+    "db:reset:full": "ts-node scripts/reset-database.ts --confirm --apply-migrations",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:tripwire": "playwright test tests/e2e/tripwire",
+    "test:landing": "playwright test tests/e2e/landing",
+    "test:dashboard": "playwright test tests/e2e/dashboard"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.31.3",
@@ -88,6 +95,7 @@
     "gsap": "^3.13.0",
     "hls.js": "^1.6.15",
     "input-otp": "^1.4.2",
+    "intro.js": "^8.3.2",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.462.0",
     "motion": "^12.23.24",
@@ -118,8 +126,11 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.19",
+    "@tanstack/react-query-devtools": "^5.91.1",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
@@ -130,7 +141,9 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "lighthouse": "^12.8.2",
     "lovable-tagger": "^1.1.11",
+    "playwright": "^1.57.0",
     "postcss": "^8.5.6",
     "shadcn": "^3.5.0",
     "supabase": "^2.54.11",
