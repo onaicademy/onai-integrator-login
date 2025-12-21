@@ -11,6 +11,7 @@ module.exports = {
     script: 'tsx',
     args: 'src/server.ts',
     instances: 1,
+    exec_mode: 'fork', // ✅ Fork mode для worker
     autorestart: true,
     watch: false,
     max_memory_restart: '500M',
