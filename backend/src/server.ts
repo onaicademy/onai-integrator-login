@@ -144,7 +144,10 @@ import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoC
 import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
 import trafficWebhookRouter from './integrations/traffic-webhook.js'; // 🎯 DEDICATED Traffic Dashboard Webhook
 import adminWebhookLogsRouter from './routes/admin-webhook-logs.js'; // 🔍 Admin Webhook Logs Viewer
+import systemHealthRouter from './routes/system-health'; // 🚀 System Health & Queue Management
+import debugRouter from './routes/debug'; // 🚔 Debug Panel (Operation Logging)
 import { errorHandler } from './middleware/errorHandler';
+import operationLogger from './middleware/operationLogger'; // 🚔 Operation Logger Middleware
 import { startReminderScheduler } from './services/reminderScheduler';
 import { startAIMentorScheduler } from './services/aiMentorScheduler';
 import { startNotificationScheduler } from './services/notificationScheduler.js';
@@ -303,6 +306,9 @@ app.use(corsMonitoringMiddleware);
 import { correlationIdMiddleware, requestLogger } from './middleware/correlationId.js';
 app.use(correlationIdMiddleware);
 app.use(requestLogger);
+
+// 🚔 Operation Logger - "The Policeman" (tracks ALL operations)
+app.use(operationLogger);
 
 // ✅ Apply Rate Limiting to API routes
 // ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes
@@ -474,6 +480,8 @@ app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // �
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
+app.use('/api/admin/system', systemHealthRouter); // 🚀 System Health & Queue Management (Admin only)
+app.use('/api/admin/debug', debugRouter); // 🚔 Debug Panel (Operation Logging - Admin only)
 app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook → /webhook/amocrm/traffic
 app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook → /webhook/amocrm/referral
 app.use('/api/admin', adminWebhookLogsRouter); // 🔍 Admin Webhook Logs Viewer
@@ -529,6 +537,15 @@ process.on('SIGINT', () => {
 async function gracefulShutdown(signal: string) {
   console.log(`🛑 Received ${signal}, shutting down gracefully...`);
   try {
+    // Close Tripwire Worker
+    try {
+      const { default: tripwireWorker } = await import('./workers/tripwire-worker');
+      await tripwireWorker.close();
+      console.log('✅ Tripwire Worker closed');
+    } catch (err) {
+      console.warn('⚠️ Tripwire Worker not running or already closed');
+    }
+    
     await closeTelegramService();
     await closeAmoCRMRedis();
     console.log('✅ All services closed');
@@ -593,7 +610,21 @@ const server = app.listen(PORT, () => {
       startAIAnalyticsScheduler();
       startRecommendationsScheduler(); // 🤖 AI Recommendations (daily at 00:10)
 
-      // 5. Start Token Auto-Refresh (Facebook + AmoCRM)
+      // 🚀 5. Start Tripwire Worker (Queue Processing)
+      if (process.env.START_WORKER !== 'false') {
+        try {
+          console.log('🔄 Starting Tripwire Queue Worker...');
+          await import('./workers/tripwire-worker');
+          console.log('✅ Tripwire Queue Worker started');
+        } catch (error) {
+          console.error('❌ Failed to start Tripwire Worker:', error);
+          // Non-critical - system will fallback to sync mode
+        }
+      } else {
+        console.log('⚠️ Tripwire Worker disabled (START_WORKER=false)');
+      }
+
+      // 7. Start Token Auto-Refresh (Facebook + AmoCRM)
       try {
         const { startTokenAutoRefresh } = await import('./services/tokenAutoRefresh.js');
         await startTokenAutoRefresh(); // Every 2 hours check
@@ -602,7 +633,7 @@ const server = app.listen(PORT, () => {
         console.error('❌ Ошибка инициализации Token auto-refresh:', error);
       }
 
-      // 6. Start IAE Agent schedulers and bot
+      // 8. Start IAE Agent schedulers and bot
       try {
         const { initIAEBot } = await import('./services/iaeAgentBot.js');
         const { startIAESchedulers } = await import('./services/iaeAgentScheduler.js');
@@ -615,7 +646,7 @@ const server = app.listen(PORT, () => {
         console.error('❌ Ошибка инициализации IAE Agent:', error);
       }
 
-      // 7. Start Traffic Dashboard schedulers (Weekly Plans)
+      // 9. Start Traffic Dashboard schedulers (Weekly Plans)
       try {
         const { startTrafficSchedulers } = await import('./jobs/weeklyPlanGenerator.js');
         startTrafficSchedulers(); // Weekly plan generation (Mondays 00:01 Almaty)

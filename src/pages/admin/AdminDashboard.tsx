@@ -290,7 +290,20 @@ export default function AdminDashboard() {
             ]}
           />
 
-          {/* Карточка 8: Транскрибации уроков */}
+          {/* Карточка 8: Debug Panel (Operation Logging) */}
+          <AdminCard
+            title="Debug Panel"
+            description="Полицейский: логирование всех операций, статистика багов"
+            icon={<Activity className="w-8 h-8" />}
+            onClick={() => navigate("/admin/debug")}
+            stats={[
+              { label: "Операций/день", value: "..." },
+              { label: "Ошибок", value: "..." },
+              { label: "Error rate", value: "..." },
+            ]}
+          />
+
+          {/* Карточка 9: Транскрибации уроков */}
           <AdminCard
             title="Транскрибации уроков"
             description="Управление транскрибациями через Groq Whisper"

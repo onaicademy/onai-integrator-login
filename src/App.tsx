@@ -42,6 +42,7 @@ const AICuratorChats = lazy(() => retryChunkLoad(() => import("./pages/admin/AIC
 const TokenUsage = lazy(() => retryChunkLoad(() => import("./pages/admin/TokenUsage")));
 const AdminDashboard = lazy(() => retryChunkLoad(() => import("./pages/admin/AdminDashboard")));
 const SystemHealth = lazy(() => retryChunkLoad(() => import("./pages/admin/SystemHealth")));
+const DebugPanel = lazy(() => retryChunkLoad(() => import("./pages/admin/DebugPanel"))); // 🚔 Debug Panel
 const StudentsActivity = lazy(() => retryChunkLoad(() => import("./pages/admin/StudentsActivity")));
 const AIAnalytics = lazy(() => retryChunkLoad(() => import("./pages/admin/AIAnalytics")));
 const TripwireManager = lazy(() => retryChunkLoad(() => import("./pages/admin/TripwireManager")));
@@ -209,6 +210,7 @@ const AppRoutes = () => {
       <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
       <Route path="/admin/dashboard" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
       <Route path="/admin/system-health" element={<AdminGuard><SystemHealth /></AdminGuard>} />
+      <Route path="/admin/debug" element={<AdminGuard><DebugPanel /></AdminGuard>} />
       <Route path="/admin/analytics" element={<AdminGuard><Analytics /></AdminGuard>} />
       <Route path="/admin/students" element={<AdminGuard><Students /></AdminGuard>} />
       <Route path="/admin/transcriptions" element={<AdminGuard><MainPlatformTranscriptions /></AdminGuard>} />
