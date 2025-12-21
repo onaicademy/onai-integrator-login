@@ -16,6 +16,27 @@ export interface CreateUserJobData {
   currentUserName?: string;
 }
 
+// ===================================
+// 🚀 Config Cache (60s TTL)
+// ===================================
+interface CachedConfig {
+  mode: 'async_queue' | 'sync_direct';
+  timestamp: number;
+}
+
+let configCache: CachedConfig | null = null;
+const CONFIG_CACHE_TTL = 60000; // 60 seconds
+
+function isCacheValid(): boolean {
+  if (!configCache) return false;
+  return (Date.now() - configCache.timestamp) < CONFIG_CACHE_TTL;
+}
+
+function clearCache() {
+  configCache = null;
+  console.log('🔄 [CACHE] Config cache cleared');
+}
+
 // Create BullMQ Queue
 export const userCreationQueue = new Queue<CreateUserJobData>('tripwire-user-creation', {
   connection: redis,
@@ -76,8 +97,14 @@ export async function getQueueMetrics() {
 
 /**
  * Get current system mode (async_queue or sync_direct)
+ * ✅ CACHED: 60s TTL to prevent DB overload
  */
 export async function getSystemMode(): Promise<'async_queue' | 'sync_direct'> {
+  // Check cache first
+  if (isCacheValid() && configCache) {
+    return configCache.mode;
+  }
+  
   try {
     const { data, error } = await tripwireAdminSupabase
       .from('system_config')
@@ -90,7 +117,17 @@ export async function getSystemMode(): Promise<'async_queue' | 'sync_direct'> {
       return 'async_queue'; // Default to queue mode
     }
     
-    return (data?.value as any) || 'async_queue';
+    const mode = (data?.value as any) || 'async_queue';
+    
+    // Update cache
+    configCache = {
+      mode,
+      timestamp: Date.now()
+    };
+    
+    console.log(`✅ [CACHE] System mode cached: ${mode} (valid for ${CONFIG_CACHE_TTL / 1000}s)`);
+    
+    return mode;
   } catch (error) {
     console.error('❌ [QUEUE] Exception getting system mode:', error);
     return 'async_queue';
@@ -99,6 +136,7 @@ export async function getSystemMode(): Promise<'async_queue' | 'sync_direct'> {
 
 /**
  * Set system mode (kill switch)
+ * ✅ Clears cache after mode change
  */
 export async function setSystemMode(
   mode: 'async_queue' | 'sync_direct', 
@@ -117,6 +155,9 @@ export async function setSystemMode(
     
     if (updateError) throw updateError;
     
+    // Clear cache immediately
+    clearCache();
+    
     // Log mode switch
     await logHealthEvent('SWITCH', `System mode changed to: ${mode}`, { 
       changed_by: userId,
@@ -132,9 +173,10 @@ export async function setSystemMode(
 
 /**
  * Log health event to system_health_logs
+ * ✅ CRITICAL/SWITCH events trigger instant Telegram alerts
  */
 export async function logHealthEvent(
-  type: 'INFO' | 'WARNING' | 'ERROR' | 'SWITCH', 
+  type: 'INFO' | 'WARNING' | 'ERROR' | 'SWITCH' | 'CRITICAL', 
   message: string, 
   metadata?: any
 ) {
@@ -146,9 +188,60 @@ export async function logHealthEvent(
         message,
         metadata: metadata ? JSON.parse(JSON.stringify(metadata)) : null
       });
+    
+    // 🚨 Send Telegram alert for critical events
+    if (type === 'CRITICAL' || type === 'SWITCH') {
+      await sendTelegramAlert(type, message, metadata);
+    }
   } catch (error) {
     // Don't throw - logging should never break main flow
     console.error('⚠️ [QUEUE] Failed to log health event:', error);
+  }
+}
+
+/**
+ * Send instant Telegram alert to admin
+ * 🚨 Only for CRITICAL/SWITCH events
+ */
+async function sendTelegramAlert(
+  type: 'CRITICAL' | 'SWITCH',
+  message: string,
+  metadata?: any
+) {
+  try {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+    
+    if (!botToken || !adminChatId) {
+      console.warn('⚠️ [TELEGRAM] Bot token or admin chat ID not configured');
+      return;
+    }
+    
+    const emoji = type === 'CRITICAL' ? '🚨' : '🔄';
+    const alertMessage = `${emoji} **SYSTEM ALERT**\n\n` +
+      `**Type:** ${type}\n` +
+      `**Message:** ${message}\n` +
+      `**Time:** ${new Date().toISOString()}\n` +
+      (metadata ? `\n**Details:**\n\`\`\`json\n${JSON.stringify(metadata, null, 2)}\n\`\`\`` : '');
+    
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: adminChatId,
+        text: alertMessage,
+        parse_mode: 'Markdown'
+      })
+    });
+    
+    if (!response.ok) {
+      console.error('❌ [TELEGRAM] Failed to send alert:', await response.text());
+    } else {
+      console.log(`✅ [TELEGRAM] ${type} alert sent to admin`);
+    }
+  } catch (error) {
+    // Non-critical - don't break main flow
+    console.error('⚠️ [TELEGRAM] Exception sending alert:', error);
   }
 }
 

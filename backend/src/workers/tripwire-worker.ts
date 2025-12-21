@@ -27,7 +27,34 @@ const worker = new Worker<CreateUserJob>(
     const { full_name, email, password, currentUserId, currentUserEmail, currentUserName } = job.data;
     
     try {
-      // Step 1: Check if email already exists
+      // ===================================
+      // 🛡️ IDEMPOTENCY CHECK
+      // Prevent double-processing if job retries
+      // ===================================
+      const idempotencyKey = `job-${job.id}-${email}`;
+      
+      // Check if this exact job was already processed
+      const { data: existingLog, error: logCheckError } = await tripwireAdminSupabase
+        .from('system_health_logs')
+        .select('id')
+        .eq('event_type', 'INFO')
+        .ilike('message', `%User created successfully: ${email}%`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (existingLog && existingLog.length > 0) {
+        const recentLog = existingLog[0];
+        // If processed in last 5 minutes, skip
+        console.warn(`⚠️ [WORKER] Idempotency: User ${email} was recently created, skipping duplicate`);
+        return { 
+          success: true, 
+          skipped: true, 
+          reason: 'Already processed (idempotency check)',
+          email 
+        };
+      }
+      
+      // Step 1: Check if email already exists in auth
       const { data: userData, error: checkError } = await tripwireAdminSupabase.auth.admin.listUsers();
       
       if (checkError) {
@@ -36,7 +63,15 @@ const worker = new Worker<CreateUserJob>(
       
       const existingUser = userData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
       if (existingUser) {
-        throw new Error(`User with email ${email} already exists`);
+        console.warn(`⚠️ [WORKER] User ${email} already exists in auth`);
+        // Not an error - just skip
+        return { 
+          success: true, 
+          skipped: true, 
+          reason: 'User already exists',
+          userId: existingUser.id,
+          email 
+        };
       }
 
       // Step 2: Create auth user
@@ -59,6 +94,27 @@ const worker = new Worker<CreateUserJob>(
       
       const userId = newUser.user.id;
       console.log(`   ✅ User created in auth.users: ${userId}`);
+      
+      // ===================================
+      // 🛡️ DOUBLE-CHECK: Idempotency for DB inserts
+      // In case of retry after auth success
+      // ===================================
+      const { data: existingTripwireUser } = await tripwireAdminSupabase
+        .from('tripwire_users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+      
+      if (existingTripwireUser) {
+        console.warn(`⚠️ [WORKER] User ${userId} already exists in tripwire_users (partial retry), skipping inserts`);
+        return { 
+          success: true, 
+          skipped: true, 
+          reason: 'Already in database (partial retry)',
+          userId,
+          email 
+        };
+      }
       
       // Step 3: Insert into all required tables
       await tripwireAdminSupabase.from('users').insert({

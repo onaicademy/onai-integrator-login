@@ -3,10 +3,12 @@ import * as tripwireManagerService from '../services/tripwireManagerService';
 import { supabase } from '../config/supabase';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire'; // 🔥 TRIPWIRE SUPABASE
 import { tripwirePool } from '../config/tripwire-pool'; // 🔥 DIRECT POSTGRES для stats
+import { getSystemMode, enqueueUserCreation, logHealthEvent } from '../services/queueService'; // 🚀 QUEUE
 
 /**
  * POST /api/admin/tripwire/users
  * Создает нового Tripwire пользователя
+ * 🚀 QUEUE-BASED: Routes through Redis Queue or fallback to sync
  */
 export async function createTripwireUser(req: Request, res: Response) {
   try {
@@ -58,17 +60,63 @@ export async function createTripwireUser(req: Request, res: Response) {
       });
     }
 
-    // Создаем пользователя
+    // 🚀 QUEUE LOGIC: Check system mode
+    const mode = await getSystemMode();
+    console.log(`🔄 [CREATE_USER] System mode: ${mode}`);
+    
+    // ASYNC MODE (default)
+    if (mode === 'async_queue') {
+      try {
+        console.log(`🚀 [QUEUE] Enqueueing user creation for ${email}`);
+        
+        await enqueueUserCreation({
+          full_name,
+          email,
+          password,
+          currentUserId,
+          currentUserEmail,
+          currentUserName,
+        });
+        
+        // 202 Accepted - job queued
+        return res.status(202).json({
+          success: true,
+          message: 'User creation queued',
+          email,
+          status: 'processing',
+          mode: 'async',
+        });
+      } catch (queueError: any) {
+        // AUTOMATIC FALLBACK: If Redis fails, use sync mode
+        console.error('❌ [QUEUE] Redis failed, falling back to sync:', queueError.message);
+        
+        // 🚨 CRITICAL: Log with Telegram alert
+        await logHealthEvent('CRITICAL', `Redis queue failed! Auto-fallback to sync mode for ${email}`, {
+          error: queueError.message,
+          email,
+          stack: queueError.stack
+        });
+        
+        // Continue to sync processing below
+      }
+    }
+    
+    // SYNC MODE (fallback or manual override)
+    console.log(`⚠️ [SYNC] Processing user creation synchronously for ${email}`);
+    
     const result = await tripwireManagerService.createTripwireUser({
       full_name,
       email,
-      password, // Передаем пароль из формы
+      password,
       currentUserId,
       currentUserEmail,
       currentUserName,
     });
 
-    return res.status(201).json(result);
+    return res.status(201).json({
+      ...result,
+      mode: 'sync',
+    });
   } catch (error: any) {
     console.error('❌ Error in createTripwireUser:', error);
 
