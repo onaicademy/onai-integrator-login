@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Brain, Sparkles, DollarSign, TrendingUp, Mic } from "lucide-react";
+import { Users, Brain, Sparkles, DollarSign, TrendingUp, Mic, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { api } from "@/utils/apiClient";
@@ -277,7 +277,20 @@ export default function AdminDashboard() {
             ]}
           />
 
-          {/* Карточка 7: Транскрибации уроков */}
+          {/* Карточка 7: System Health & Queue Management */}
+          <AdminCard
+            title="System Health"
+            description="Мониторинг очереди задач и управление режимами работы"
+            icon={<Activity className="w-8 h-8" />}
+            onClick={() => navigate("/admin/system-health")}
+            stats={[
+              { label: "Статус", value: "✅ Online" },
+              { label: "Режим", value: "Async Queue" },
+              { label: "Jobs", value: "..." },
+            ]}
+          />
+
+          {/* Карточка 8: Транскрибации уроков */}
           <AdminCard
             title="Транскрибации уроков"
             description="Управление транскрибациями через Groq Whisper"
