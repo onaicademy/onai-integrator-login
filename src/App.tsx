@@ -421,19 +421,15 @@ const AppRoutes = () => {
 
       {/* 🚔 DEBUG PANEL: System Health & Operation Logging */}
       <Route path="/integrator/admin/system-health" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <SystemHealth />
-          </TripwireLayout>
-        </TripwireAdminGuard>
+        <SalesGuard>
+          <SystemHealth />
+        </SalesGuard>
       } />
 
       <Route path="/integrator/admin/debug" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <DebugPanel />
-          </TripwireLayout>
-        </TripwireAdminGuard>
+        <SalesGuard>
+          <DebugPanel />
+        </SalesGuard>
       } />
 
       {/* 🛡️ DEBUG: System monitoring dashboard */}
