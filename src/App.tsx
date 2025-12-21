@@ -209,8 +209,6 @@ const AppRoutes = () => {
       {/* ✅ ADMIN ROUTES WITH SIDEBAR */}
       <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
       <Route path="/admin/dashboard" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
-      <Route path="/admin/system-health" element={<AdminGuard><SystemHealth /></AdminGuard>} />
-      <Route path="/admin/debug" element={<AdminGuard><DebugPanel /></AdminGuard>} />
       <Route path="/admin/analytics" element={<AdminGuard><Analytics /></AdminGuard>} />
       <Route path="/admin/students" element={<AdminGuard><Students /></AdminGuard>} />
       <Route path="/admin/transcriptions" element={<AdminGuard><MainPlatformTranscriptions /></AdminGuard>} />
@@ -417,6 +415,23 @@ const AppRoutes = () => {
         <TripwireAdminGuard>
           <TripwireLayout>
             <MassBroadcast />
+          </TripwireLayout>
+        </TripwireAdminGuard>
+      } />
+
+      {/* 🚔 DEBUG PANEL: System Health & Operation Logging */}
+      <Route path="/integrator/admin/system-health" element={
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <SystemHealth />
+          </TripwireLayout>
+        </TripwireAdminGuard>
+      } />
+
+      <Route path="/integrator/admin/debug" element={
+        <TripwireAdminGuard>
+          <TripwireLayout>
+            <DebugPanel />
           </TripwireLayout>
         </TripwireAdminGuard>
       } />

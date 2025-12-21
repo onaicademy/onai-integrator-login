@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 ЖЕСТКАЯ ОЧИСТКА КЭША</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            max-width: 600px;
+        }
+        h1 { font-size: 32px; margin-bottom: 20px; }
+        p { font-size: 18px; margin: 10px 0; }
+        button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #00FF94;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #00CC6A; }
+        .status { margin-top: 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 ЖЕСТКАЯ ОЧИСТКА КЭША</h1>
+        <p>Нажмите кнопку для полной очистки кэша</p>
+        <button onclick="clearEverything()">ОЧИСТИТЬ ВСЁ</button>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        function clearEverything() {
+            const status = document.getElementById('status');
+            status.innerHTML = '⏳ Очистка...';
+            
+            // 1. Clear localStorage
+            localStorage.clear();
+            status.innerHTML += '<br>✅ localStorage cleared';
+            
+            // 2. Clear sessionStorage
+            sessionStorage.clear();
+            status.innerHTML += '<br>✅ sessionStorage cleared';
+            
+            // 3. Clear cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            status.innerHTML += '<br>✅ Cookies cleared';
+            
+            // 4. Unregister service workers
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+                status.innerHTML += '<br>✅ Service workers cleared';
+            }
+            
+            // 5. Clear cache storage
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    names.forEach(function(name) {
+                        caches.delete(name);
+                    });
+                });
+                status.innerHTML += '<br>✅ Cache storage cleared';
+            }
+            
+            status.innerHTML += '<br><br>✅ ВСЁ ОЧИЩЕНО!';
+            status.innerHTML += '<br>🔄 Редирект через 2 секунды...';
+            
+            // 6. Redirect с cache busting
+            setTimeout(() => {
+                window.location.href = '/integrator/sales-manager?nocache=' + Date.now();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,545 @@
+/* ========================================
+   PREMIUM ONBOARDING STYLES
+   ========================================
+   Intro.js custom styling для Traffic Dashboard
+*/
+
+/* ==================== ОСНОВНЫЕ КОНТЕЙНЕРЫ ==================== */
+
+/* Полупрозрачное наложение */
+.introjs-overlay {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  opacity: 0.7 !important;
+  transition: opacity 0.3s ease-in-out !important;
+  z-index: 1000 !important;
+}
+
+/* Слой помощи (помощник) */
+.introjs-helperLayer {
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7) !important;
+  position: relative !important;
+  z-index: 1001 !important;
+}
+
+/* ==================== ЭФФЕКТ ПОДСВЕТКИ ==================== */
+
+/* Пульсирующее свечение вокруг элемента */
+.introjs-helperLayer::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border: 2px solid rgba(0, 255, 136, 0.3);
+  border-radius: 14px;
+  animation: premium-pulse-glow 2.5s infinite ease-in-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes premium-pulse-glow {
+  0% {
+    box-shadow: 
+      0 0 0 0 rgba(0, 255, 136, 0.4),
+      inset 0 0 0 0 rgba(0, 255, 136, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 12px rgba(0, 255, 136, 0),
+      inset 0 0 10px 2px rgba(0, 255, 136, 0.1);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 0 rgba(0, 255, 136, 0),
+      inset 0 0 0 0 rgba(0, 255, 136, 0.2);
+    transform: scale(1);
+  }
+}
+
+/* ==================== TOOLTIP ==================== */
+
+/* Основной контейнер tooltip */
+.introjs-tooltip {
+  background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%) !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(0, 255, 136, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  padding: 0 !important;
+  max-width: 380px !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  overflow: hidden !important;
+}
+
+/* Стрелка tooltip (указатель на элемент) */
+.introjs-arrow {
+  border-bottom-color: #1a2332 !important;
+}
+
+.introjs-tooltip.top .introjs-arrow {
+  border-top-color: #1a2332 !important;
+}
+
+.introjs-tooltip.right .introjs-arrow {
+  border-right-color: #1a2332 !important;
+}
+
+.introjs-tooltip.left .introjs-arrow {
+  border-left-color: #1a2332 !important;
+}
+
+/* ==================== СОДЕРЖИМОЕ ШАГА ==================== */
+
+/* Контейнер шага */
+.premium-step-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  color: #e0e0e0;
+  padding: 0;
+}
+
+/* Заголовок шага */
+.premium-step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+  background: rgba(0, 255, 136, 0.03);
+}
+
+/* Иконка шага */
+.premium-step-icon {
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Счетчик шагов (1/5) */
+.premium-step-counter {
+  font-size: 11px;
+  color: #00ff88;
+  font-weight: bold;
+  background: rgba(0, 255, 136, 0.15);
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Заголовок (название шага) */
+.premium-step-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.2);
+  padding: 16px 20px 8px 20px;
+  line-height: 1.3;
+}
+
+/* Описание шага */
+.premium-step-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #b0b0b0;
+  padding: 0 20px 16px 20px;
+}
+
+/* ==================== КНОПКИ ==================== */
+
+/* Контейнер кнопок */
+.introjs-tooltipbuttons {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px 16px 20px;
+  border-top: 1px solid rgba(0, 255, 136, 0.1);
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Базовый стиль кнопки */
+.introjs-button {
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: none !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Основная кнопка (Далее) */
+.introjs-button.introjs-nextbutton {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%) !important;
+  color: #000 !important;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.25) !important;
+}
+
+.introjs-button.introjs-nextbutton:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 255, 136, 0.35) !important;
+  background: linear-gradient(135deg, #00ff88 0%, #00b84d 100%) !important;
+}
+
+.introjs-button.introjs-nextbutton:active:not(:disabled) {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.2) !important;
+}
+
+/* Вторичная кнопка (Пропустить) */
+.introjs-button.introjs-skipbutton {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #b0b0b0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.introjs-button.introjs-skipbutton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #e0e0e0 !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.introjs-button.introjs-skipbutton:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Кнопка "Назад" */
+.introjs-button.introjs-prevbutton {
+  background: rgba(100, 150, 200, 0.1) !important;
+  color: #70a0d8 !important;
+  border: 1px solid rgba(100, 150, 200, 0.2) !important;
+}
+
+.introjs-button.introjs-prevbutton:hover:not(:disabled) {
+  background: rgba(100, 150, 200, 0.15) !important;
+  border-color: rgba(100, 150, 200, 0.3) !important;
+}
+
+/* Кнопка "Готово" */
+.introjs-button.introjs-donebutton {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%) !important;
+  color: #000 !important;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.25) !important;
+}
+
+.introjs-button.introjs-donebutton:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 255, 136, 0.35) !important;
+}
+
+/* Disabled состояние */
+.introjs-button:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* ==================== PROGRESS BAR ==================== */
+
+/* Контейнер progress */
+.introjs-progress {
+  margin-bottom: 12px !important;
+  padding: 0 20px 12px 20px !important;
+}
+
+/* Фон progress bar */
+.introjs-progressbar {
+  background: rgba(0, 255, 136, 0.15) !important;
+  height: 3px !important;
+  border-radius: 2px !important;
+  overflow: hidden !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Движущая часть progress bar */
+.introjs-progress-bar {
+  background: linear-gradient(90deg, #00ff88 0%, #00cc66 100%) !important;
+  height: 100% !important;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 
+    0 0 10px rgba(0, 255, 136, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ==================== BULLETS (ТОЧКИ НАВИГАЦИИ) ==================== */
+
+/* Контейнер bullets */
+.introjs-bullets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 20px !important;
+  border-top: 1px solid rgba(0, 255, 136, 0.1) !important;
+}
+
+/* Отдельный bullet */
+.introjs-bullets ul li a {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: rgba(0, 255, 136, 0.3) !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  border: 1px solid rgba(0, 255, 136, 0.2) !important;
+}
+
+/* Active bullet */
+.introjs-bullets ul li a.active {
+  background: #00ff88 !important;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4) !important;
+  transform: scale(1.2) !important;
+  border-color: #00ff88 !important;
+}
+
+.introjs-bullets ul li a:hover {
+  background: rgba(0, 255, 136, 0.5) !important;
+}
+
+/* ==================== АДАПТИВНОСТЬ ==================== */
+
+@media (max-width: 768px) {
+  /* Tooltip на мобильных */
+  .introjs-tooltip {
+    max-width: 90vw !important;
+    padding: 0 !important;
+  }
+
+  /* Текст */
+  .premium-step-title {
+    font-size: 16px !important;
+    padding: 12px 16px 6px 16px !important;
+  }
+
+  .premium-step-description {
+    font-size: 13px !important;
+    padding: 0 16px 12px 16px !important;
+  }
+
+  /* Header */
+  .premium-step-header {
+    padding: 12px 16px !important;
+  }
+
+  /* Кнопки */
+  .introjs-tooltipbuttons {
+    flex-direction: column !important;
+    padding: 12px 16px !important;
+  }
+
+  .introjs-button {
+    width: 100% !important;
+    padding: 10px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .introjs-tooltip {
+    max-width: 95vw !important;
+  }
+
+  .premium-step-title {
+    font-size: 15px !important;
+  }
+
+  .premium-step-description {
+    font-size: 12px !important;
+  }
+
+  .premium-step-header {
+    gap: 8px !important;
+  }
+
+  .premium-step-icon {
+    font-size: 20px !important;
+  }
+
+  .premium-step-counter {
+    font-size: 10px !important;
+  }
+}
+
+/* ==================== DARK MODE ==================== */
+
+@media (prefers-color-scheme: dark) {
+  .introjs-tooltip {
+    background: linear-gradient(135deg, #0a0e17 0%, #121a2b 100%) !important;
+    border-color: rgba(0, 255, 136, 0.25) !important;
+  }
+
+  .premium-step-header {
+    background: rgba(0, 255, 136, 0.02) !important;
+  }
+
+  .introjs-tooltipbuttons {
+    background: rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+
+@keyframes intro-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.introjs-tooltip {
+  animation: intro-entrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ==================== ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ ==================== */
+
+/* Для скрытия элементов если нужно */
+.introjs-disabled {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+}
+
+/* Floating button для запуска тура */
+.floating-tour-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.3s ease;
+}
+
+.floating-tour-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 255, 136, 0.4);
+}
+
+.floating-tour-button:active {
+  transform: scale(0.95);
+}
+
+/* ==================== PREMIUM HINT POPUP ==================== */
+
+.premium-onboarding-hint {
+  position: fixed;
+  top: 96px;
+  right: 16px;
+  z-index: 40;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(0, 255, 136, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  max-width: 350px;
+}
+
+.premium-onboarding-hint-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.premium-onboarding-hint-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.premium-onboarding-hint-text {
+  flex: 1;
+}
+
+.premium-onboarding-hint-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00ff88;
+  margin-bottom: 4px;
+}
+
+.premium-onboarding-hint-description {
+  font-size: 12px;
+  color: #b0b0b0;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.premium-onboarding-hint-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.premium-onboarding-hint-start {
+  padding: 6px 16px;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+  color: #000;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.premium-onboarding-hint-start:hover {
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+  transform: translateY(-1px);
+}
+
+.premium-onboarding-hint-later {
+  padding: 6px 16px;
+  background: transparent;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: #b0b0b0;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.premium-onboarding-hint-later:hover {
+  border-color: rgba(0, 255, 136, 0.5);
+  color: #e0e0e0;
+}
+
+.premium-onboarding-hint-close {
+  color: #b0b0b0;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding-top: 2px;
+  transition: color 0.2s ease;
+}
+
+.premium-onboarding-hint-close:hover {
+  color: #e0e0e0;
+}

@@ -7,7 +7,9 @@ import {
   DollarSign,
   TrendingUp,
   Activity,
-  FileText
+  FileText,
+  Shield,
+  Bug
 } from 'lucide-react'
 import { apiRequest } from '@/utils/apiClient'
 
@@ -351,6 +353,80 @@ export default function TripwireAdminDashboard() {
               <div className="pt-6 border-t border-white/5">
                 <p className="text-gray-500 text-sm text-center">
                   Отслеживание заявок и уведомлений
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 6: System Health */}
+          <Link to="/integrator/admin/system-health" className="group relative block">
+            <div className="absolute -inset-0.5 bg-cyan-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500" />
+            
+            <div 
+              className="relative rounded-3xl p-8 border border-white/5 group-hover:border-cyan-500/30 transition-all duration-300"
+              style={{ background: 'rgba(10, 10, 10, 0.6)', backdropFilter: 'blur(32px)' }}
+            >
+              <div className="mb-6">
+                <div 
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(6, 182, 212, 0.05) 100%)',
+                    borderColor: 'rgba(6, 182, 212, 0.2)'
+                  }}
+                >
+                  <Shield size={28} className="text-cyan-400" />
+                </div>
+                <h3 
+                  className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                >
+                  System Health
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Queue метрики и Kill Switch
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-white/5">
+                <p className="text-gray-500 text-sm text-center">
+                  Мониторинг очереди и системных событий
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 7: Debug Panel */}
+          <Link to="/integrator/admin/debug" className="group relative block">
+            <div className="absolute -inset-0.5 bg-orange-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500" />
+            
+            <div 
+              className="relative rounded-3xl p-8 border border-white/5 group-hover:border-orange-500/30 transition-all duration-300"
+              style={{ background: 'rgba(10, 10, 10, 0.6)', backdropFilter: 'blur(32px)' }}
+            >
+              <div className="mb-6">
+                <div 
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0.05) 100%)',
+                    borderColor: 'rgba(249, 115, 22, 0.2)'
+                  }}
+                >
+                  <Bug size={28} className="text-orange-400" />
+                </div>
+                <h3 
+                  className="text-2xl font-bold text-white mb-2 group-hover:text-orange-400 transition-colors"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                >
+                  Debug Panel
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Логирование операций и ошибки
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-white/5">
+                <p className="text-gray-500 text-sm text-center">
+                  Статистика багов и детальные логи
                 </p>
               </div>
             </div>

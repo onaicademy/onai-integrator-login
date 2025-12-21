@@ -12,9 +12,14 @@ import MainProductsAnalytics from '@/components/traffic/MainProductsAnalytics';
 import { Button } from '@/components/ui/button';
 import { Users, User, Globe, LogOut, BarChart3, Settings, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
-import { OnboardingTour } from '@/components/traffic/OnboardingTour';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
 import { AuthManager, AuthUser } from '@/lib/auth';
+import { PremiumOnboarding, createTrafficDashboardOnboarding } from '@/lib/premium-onboarding';
+import 'intro.js/introjs.css';
+import '@/styles/premium-onboarding.css';
+import { DebugPanel } from '@/components/debug/DebugPanel';
+import { useDebugPanel } from '@/hooks/useDebugPanel';
+import { actionLogger } from '@/lib/action-logger';
 
 export default function TrafficTargetologistDashboard() {
   const { team } = useParams<{ team: string }>();
@@ -25,6 +30,13 @@ export default function TrafficTargetologistDashboard() {
   const [showOnlyMyTeam, setShowOnlyMyTeam] = useState(false);
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
+  
+  // Premium Onboarding State
+  const [onboarding, setOnboarding] = useState<PremiumOnboarding | null>(null);
+  const [showOnboardingHint, setShowOnboardingHint] = useState(false);
+  
+  // Debug Panel
+  const debugPanel = useDebugPanel();
   
   // ✅ CRITICAL: Validate authentication on mount
   useEffect(() => {
@@ -88,9 +100,34 @@ export default function TrafficTargetologistDashboard() {
     return () => clearInterval(interval);
   }, []);
   
+  // ✅ Initialize Premium Onboarding
+  useEffect(() => {
+    if (!user || loading) return;
+    
+    try {
+      const tour = createTrafficDashboardOnboarding();
+      tour.initialize();
+      setOnboarding(tour);
+
+      // Show hint if not completed
+      if (!tour.isCompleted()) {
+        const timer = setTimeout(() => {
+          setShowOnboardingHint(true);
+        }, 2000);
+
+        return () => clearTimeout(timer);
+      }
+    } catch (error) {
+      console.error('Error initializing onboarding:', error);
+    }
+  }, [user, loading]);
+  
   const teamName = team?.charAt(0).toUpperCase() + team?.slice(1).toLowerCase() || user?.team;
   
   const handleLogout = () => {
+    // ✅ Log action
+    actionLogger.logClick('logout-button', 'User Logout');
+    
     // ✅ Clear all authentication data
     AuthManager.clearAll();
     
@@ -147,14 +184,47 @@ export default function TrafficTargetologistDashboard() {
   
   return (
     <div className="min-h-screen bg-[#030303] relative">
-      {/* Onboarding Tour */}
-      {user && (
-        <OnboardingTour 
-          userRole={user.role}
-          userId={user.id}
-          userEmail={user.email}
-          userName={user.fullName}
-        />
+      {/* Debug Panel (Ctrl/Cmd + Shift + D) */}
+      <DebugPanel isOpen={debugPanel.isOpen} onClose={debugPanel.close} />
+      
+      {/* Premium Onboarding Hint */}
+      {showOnboardingHint && onboarding && (
+        <div className="fixed top-24 right-4 z-40 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#00ff88]/30 rounded-lg p-4 shadow-xl backdrop-blur-sm">
+          <div className="flex items-start gap-3 max-w-sm">
+            <span className="text-2xl flex-shrink-0">🎯</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-[#00ff88] mb-1">
+                Добро пожаловать!
+              </p>
+              <p className="text-xs text-[#b0b0b0] mb-3">
+                Хотите пройти быструю экскурсию по Dashboard?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setShowOnboardingHint(false);
+                    onboarding.start();
+                  }}
+                  className="px-4 py-1.5 bg-gradient-to-r from-[#00ff88] to-[#00cc66] text-black rounded font-semibold text-xs hover:shadow-lg hover:shadow-[#00ff88]/20 transition-all"
+                >
+                  Начать
+                </button>
+                <button
+                  onClick={() => setShowOnboardingHint(false)}
+                  className="px-4 py-1.5 bg-transparent border border-[#00ff88]/30 text-[#b0b0b0] rounded text-xs hover:border-[#00ff88]/50 hover:text-[#e0e0e0] transition-all"
+                >
+                  Позже
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowOnboardingHint(false)}
+              className="text-[#b0b0b0] hover:text-[#e0e0e0] text-lg flex-shrink-0 pt-1"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       )}
       
       {/* Top Bar - Fixed */}
@@ -194,6 +264,7 @@ export default function TrafficTargetologistDashboard() {
               
               {/* Settings Button */}
               <Button
+                data-tour="settings-button"
                 onClick={() => navigate('/settings')}
                 variant="outline"
                 size="sm"
@@ -205,6 +276,7 @@ export default function TrafficTargetologistDashboard() {
               
               {/* Detailed Analytics Button */}
               <Button
+                data-tour="analytics-button"
                 onClick={() => navigate('/detailed-analytics')}
                 variant="outline"
                 size="sm"
@@ -262,6 +334,7 @@ export default function TrafficTargetologistDashboard() {
         <div className="max-w-[1600px] mx-auto mb-6">
           <div className="flex gap-2 bg-black/40 p-1 rounded-xl border border-[#00FF88]/10 w-fit">
             <button
+              data-tour="express-course-tab"
               onClick={() => setActiveTab('express')}
               className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                 activeTab === 'express'
@@ -272,6 +345,7 @@ export default function TrafficTargetologistDashboard() {
               ⚡ ExpressCourse
             </button>
             <button
+              data-tour="main-products-tab"
               onClick={() => setActiveTab('main-products')}
               className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                 activeTab === 'main-products'
@@ -295,6 +369,24 @@ export default function TrafficTargetologistDashboard() {
           <MainProductsAnalytics />
         )}
       </div>
+      
+      {/* Floating Tour Button */}
+      {onboarding && (
+        <button
+          onClick={() => {
+            onboarding.reset();
+            // Re-initialize after reset
+            const tour = createTrafficDashboardOnboarding();
+            tour.initialize();
+            setOnboarding(tour);
+            setTimeout(() => tour.start(), 100);
+          }}
+          title="Запустить тур заново"
+          className="floating-tour-button"
+        >
+          🎯
+        </button>
+      )}
       
       {/* Security Footer - Simple, not fixed */}
       <div className="bg-black/40 border-t border-gray-800/30 py-3 mt-8">

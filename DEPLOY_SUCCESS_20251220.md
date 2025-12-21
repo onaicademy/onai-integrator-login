@@ -219,3 +219,4 @@ ssh root@207.154.231.30 "chown -R www-data:www-data /var/www/onai.academy/ && sy
 
 
 
+

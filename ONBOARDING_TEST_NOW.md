@@ -207,3 +207,4 @@ UPDATE tripwire_users SET onboarding_completed = FALSE WHERE email = 'your-email
 
 
 
+

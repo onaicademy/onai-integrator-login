@@ -187,7 +187,7 @@
                 if (seconds < 0) {
                     clearInterval(interval);
                     // Hard reload с очисткой кеша
-                    window.location.href = '/integrator?cache=' + Date.now();
+                    window.location.href = '/tripwire/product?cache=' + Date.now();
                     setTimeout(() => {
                         window.location.reload(true);
                     }, 100);
@@ -205,6 +205,7 @@
     </script>
 </body>
 </html>
+
 
 
 

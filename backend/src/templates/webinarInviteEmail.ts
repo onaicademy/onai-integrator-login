@@ -90,3 +90,4 @@ export function webinarInviteEmail(recipientName: string) {
 </html>
   `;
 }
+

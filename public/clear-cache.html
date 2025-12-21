@@ -262,7 +262,7 @@
                 showCountdown(3);
                 
                 setTimeout(() => {
-                    window.location.href = '/integrator/modules?nocache=' + Date.now();
+                    window.location.href = '/tripwire/product?nocache=' + Date.now();
                 }, 3000);
                 
             } catch (error) {
@@ -275,7 +275,7 @@
             statusDiv.innerHTML = '';
             log('⚡ Выполняю жёсткую перезагрузку...', 'info');
             setTimeout(() => {
-                window.location.href = '/integrator/modules?v=' + Date.now();
+                window.location.href = '/tripwire/product?v=' + Date.now();
                 location.reload(true);
             }, 500);
         }

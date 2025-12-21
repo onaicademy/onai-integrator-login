@@ -40,12 +40,35 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
   const [deleteError, setDeleteError] = useState<DeleteError | null>(null); // 🔥 Детальная ошибка
   const limit = 20;
 
-  // 🔥 Load current user email and role
+  // 🔥 Load current user email and role FROM DATABASE (not user_metadata!)
   useEffect(() => {
-    tripwireSupabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUserEmail(session?.user?.email || null);
-      setCurrentUserRole(session?.user?.user_metadata?.role || null);
-    });
+    const loadUserData = async () => {
+      try {
+        const { data: { session } } = await tripwireSupabase.auth.getSession();
+        if (!session?.user) return;
+        
+        setCurrentUserEmail(session.user.email || null);
+        
+        // 🔐 БЕЗОПАСНО: Получаем роль из БД, а не из user_metadata
+        const { data: userData, error } = await tripwireSupabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          console.error('❌ Error fetching user role:', error);
+          return;
+        }
+        
+        setCurrentUserRole(userData?.role || null);
+        console.log('✅ User role loaded from DB:', userData?.role);
+      } catch (error) {
+        console.error('❌ Error loading user data:', error);
+      }
+    };
+    
+    loadUserData();
   }, []);
 
   const statusConfig: Record<
