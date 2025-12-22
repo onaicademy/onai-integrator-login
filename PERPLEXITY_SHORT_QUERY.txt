@@ -1,1 +1,0 @@
-Best practices for implementing Whisper voice transcription + file attachments (PDF, DOCX, images) in React + Node.js AI chat application using Groq Whisper API and OpenAI GPT-4o Vision API. Include code examples for proper frontend-backend flow, state management, error handling, and production-ready architecture patterns for 2024-2025.

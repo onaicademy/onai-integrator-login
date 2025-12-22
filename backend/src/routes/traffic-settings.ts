@@ -150,31 +150,40 @@ router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
       });
     }
 
-    console.log('📘 Fetching Facebook ad accounts...');
+    console.log('📘 Fetching ALL Facebook ad accounts from Business Manager (no user filtering)...');
 
-    // Get user's ad accounts
-    const response = await axios.get(`${FB_API_BASE}/me/adaccounts`, {
+    // 🔥 FIXED: Use Business Manager endpoint instead of /me/adaccounts
+    // Business ID from env or hardcoded
+    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '1425104648731040';
+    
+    console.log(`📊 Using Business Manager ID: ${BUSINESS_ID}`);
+    
+    // Get ALL ad accounts from Business Manager
+    const response = await axios.get(`${FB_API_BASE}/${BUSINESS_ID}/owned_ad_accounts`, {
       params: {
         access_token: fbToken,
-        fields: 'id,name,account_status,currency,timezone_name,amount_spent'
+        fields: 'id,name,account_status,currency,timezone_name,amount_spent',
+        limit: 500  // 🔥 Get ALL accounts
       },
-      timeout: 10000
+      timeout: 15000
     });
 
     const adAccounts = response.data.data.map((acc: any) => ({
       id: acc.id,
       name: acc.name,
-      status: acc.account_status === 1 ? 'active' : 'inactive',
-      currency: acc.currency,
-      timezone: acc.timezone_name,
-      amount_spent: acc.amount_spent
+      status: acc.account_status === 1 ? 'ACTIVE' : 'INACTIVE',
+      currency: acc.currency || 'USD',
+      timezone: acc.timezone_name || 'UTC',
+      amount_spent: acc.amount_spent || '0'
     }));
 
-    console.log(`✅ Loaded ${adAccounts.length} ad accounts`);
+    console.log(`✅ Loaded ${adAccounts.length} ad accounts from Business Manager ${BUSINESS_ID}`);
+    console.log(`📊 ALL targetologists can see ALL ${adAccounts.length} accounts`);
 
     res.json({
       success: true,
-      adAccounts
+      adAccounts,
+      total: adAccounts.length
     });
 
   } catch (error: any) {
@@ -189,15 +198,18 @@ router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
 
 /**
  * GET /api/traffic-settings/facebook/campaigns/:adAccountId
- * Fetch campaigns for a specific ad account
+ * 🔥 Fetch ALL campaigns for a specific ad account
+ * NO FILTERING - show all campaigns to all targetologists
  */
 router.get('/facebook/campaigns/:adAccountId', async (req: Request, res: Response) => {
   try {
     const { adAccountId } = req.params;
     
+    console.log(`📘 [FB API] Fetching ALL campaigns for account ${adAccountId}`);
+    
     // ✅ MOCK MODE для localhost
     if (process.env.MOCK_MODE === 'true') {
-      console.log(`⚠️ [MOCK] Returning mock campaigns for ${adAccountId}`);
+      console.log(`⚠️ [MOCK] Returning ALL mock campaigns for ${adAccountId} (no filtering)`);
       return res.json({
         success: true,
         campaigns: [
@@ -229,6 +241,26 @@ router.get('/facebook/campaigns/:adAccountId', async (req: Request, res: Respons
             spend: '780.00',
             impressions: 25000,
             clicks: 400,
+            ad_account_id: adAccountId
+          },
+          {
+            id: 'camp_444444',
+            name: 'Retargeting - High Intent',
+            status: 'ACTIVE',
+            objective: 'CONVERSIONS',
+            spend: '560.00',
+            impressions: 18000,
+            clicks: 290,
+            ad_account_id: adAccountId
+          },
+          {
+            id: 'camp_555555',
+            name: 'Lookalike Audience Test',
+            status: 'PAUSED',
+            objective: 'REACH',
+            spend: '120.00',
+            impressions: 5000,
+            clicks: 50,
             ad_account_id: adAccountId
           }
         ]
