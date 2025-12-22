@@ -50,7 +50,7 @@ router.get('/facebook/status', async (req: Request, res: Response) => {
       console.log(`✅ [FB STATUS] Token valid for: ${meResponse.data.name} (${meResponse.data.id})`);
 
       // 🔥 Проверяем доступ к Business Manager
-      const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '1425104648731040';
+      const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '627807087089319';
       
       try {
         const bmResponse = await axios.get(`${FB_API_BASE}/${BUSINESS_ID}`, {
@@ -271,7 +271,7 @@ router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
 
     // 🔥 FIXED: Use Business Manager endpoint instead of /me/adaccounts
     // Business ID from env or hardcoded
-    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '1425104648731040';
+    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '627807087089319';
     
     console.log(`📊 Using Business Manager ID: ${BUSINESS_ID}`);
     

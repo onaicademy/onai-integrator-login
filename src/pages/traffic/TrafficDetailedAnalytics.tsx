@@ -111,16 +111,32 @@ export default function TrafficDetailedAnalytics() {
 
       const settings = settingsResponse.data.settings;
 
-      // 🔥 Проверяем есть ли выбранные кампании
-      if (!settings || !settings.tracked_campaigns || settings.tracked_campaigns.length === 0) {
-        console.log('⚠️ No campaigns selected');
+      // 🔥 НОВАЯ ЛОГИКА: Проверяем selectedAccounts и selectedCampaigns
+      const hasAccounts = settings?.selectedAccounts && settings.selectedAccounts.length > 0;
+      const hasCampaigns = settings?.selectedCampaigns && Object.keys(settings.selectedCampaigns).length > 0;
+      
+      console.log('📊 Settings check:', {
+        hasAccounts,
+        accountsCount: settings?.selectedAccounts?.length || 0,
+        hasCampaigns,
+        campaignsKeys: Object.keys(settings?.selectedCampaigns || {}).length
+      });
+
+      // Если нет выбранных кабинетов или кампаний - показываем UI с инструкциями
+      if (!hasAccounts || !hasCampaigns) {
+        console.log('⚠️ No accounts or campaigns selected');
         setCampaigns([]);
         setLoading(false);
-        // Не показываем toast, просто показываем UI с кнопкой "Перейти в настройки"
+        // UI покажет кнопку "Перейти в настройки"
         return;
       }
 
-      console.log(`✅ Found ${settings.tracked_campaigns.length} selected campaigns`);
+      // Подсчет общего количества выбранных кампаний
+      const totalCampaigns = Object.values(settings.selectedCampaigns).reduce((acc: number, campaigns: any) => {
+        return acc + (Array.isArray(campaigns) ? campaigns.length : 0);
+      }, 0);
+      
+      console.log(`✅ Found ${settings.selectedAccounts.length} accounts with ${totalCampaigns} selected campaigns`);
 
       // 🔥 Загружаем аналитику для выбранных кампаний
       const response = await axios.get(`${API_URL}/api/traffic-detailed-analytics`, {

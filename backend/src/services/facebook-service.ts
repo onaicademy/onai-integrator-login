@@ -92,7 +92,7 @@ export async function fetchAllAdAccounts(forceRefresh = false): Promise<{
       throw new Error('Facebook access token not configured');
     }
 
-    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '1425104648731040';
+    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '627807087089319';
 
     // Fetch from multiple endpoints in parallel
     const [ownedRes, clientRes] = await Promise.allSettled([
