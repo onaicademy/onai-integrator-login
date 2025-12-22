@@ -327,6 +327,65 @@ class ErrorTrackingService {
       }
     }) as T;
   }
+  
+  /**
+   * 🚨 NEW: Send CRITICAL/HIGH errors to Telegram
+   */
+  private async sendErrorToTelegram(errorLog: ErrorLog): Promise<void> {
+    try {
+      // ⚠️ ТОЛЬКО @analisistonaitrafic_bot! НЕ использовать Leads bot!
+      const ANALYTICS_BOT_TOKEN = process.env.TELEGRAM_ANALYTICS_BOT_TOKEN;
+      const ANALYTICS_CHAT_ID = process.env.TELEGRAM_ANALYTICS_CHAT_ID;
+      
+      if (!ANALYTICS_BOT_TOKEN || !ANALYTICS_CHAT_ID) {
+        logger.warn('⚠️ Telegram not configured for error notifications');
+        return;
+      }
+      
+      const emoji = this.getSeverityEmoji(errorLog.severity);
+      const categoryEmoji = this.getCategoryEmoji(errorLog.category);
+      
+      let message = `${emoji} *BACKEND ERROR* ${categoryEmoji}\n\n`;
+      message += `🔴 *Severity:* ${errorLog.severity.toUpperCase()}\n`;
+      message += `📂 *Category:* ${errorLog.category}\n`;
+      message += `💬 *Message:* ${errorLog.message}\n\n`;
+      
+      // Context
+      if (errorLog.context) {
+        message += `📋 *Context:*\n`;
+        if (errorLog.context.endpoint) message += `  • Endpoint: ${errorLog.context.endpoint}\n`;
+        if (errorLog.context.method) message += `  • Method: ${errorLog.context.method}\n`;
+        if (errorLog.context.userId) message += `  • User ID: \`${errorLog.context.userId}\`\n`;
+        if (errorLog.context.statusCode) message += `  • Status: ${errorLog.context.statusCode}\n`;
+        message += `\n`;
+      }
+      
+      // Stack trace (first 3 lines)
+      if (errorLog.stack) {
+        const stackLines = errorLog.stack.split('\n').slice(0, 3);
+        message += `📚 *Stack:*\n\`\`\`\n${stackLines.join('\n')}\n\`\`\`\n\n`;
+      }
+      
+      message += `🕐 *Time:* ${new Date(errorLog.timestamp).toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}\n`;
+      message += `🖥️ *Environment:* ${errorLog.environment}\n`;
+      message += `⚡ *Status:* REQUIRES ATTENTION`;
+      
+      await axios.post(
+        `https://api.telegram.org/bot${ANALYTICS_BOT_TOKEN}/sendMessage`,
+        {
+          chat_id: ANALYTICS_CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown'
+        },
+        { timeout: 5000 }
+      );
+      
+      logger.info(`✅ Error notification sent to Telegram: ${errorLog.id}`);
+    } catch (err: any) {
+      logger.error('❌ Failed to send error to Telegram:', err.message);
+      // Don't throw - this is non-critical
+    }
+  }
 }
 
 // Export singleton instance

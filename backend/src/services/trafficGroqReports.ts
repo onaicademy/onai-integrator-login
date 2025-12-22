@@ -1,11 +1,14 @@
 /**
- * 🤖 GROQ AI - УМНЫЕ ОТЧЕТЫ ДЛЯ ТАРГЕТОЛОГОВ
+ * 🤖 GROQ AI — PROFESSIONAL TRAFFIC ANALYTICS REPORTS
  * 
- * Генерирует отчеты с AI-анализом:
- * - Анализ результатов каждой команды
- * - Конкретные рекомендации и задачи
- * - Автоматический расчет KPI (+10% от текущих результатов)
- * - Оценка показателей и план действий
+ * Model: llama-3.3-70b-versatile
+ * 
+ * Generates data-driven reports with:
+ * - Full Facebook Ads metrics analysis (20+ data points)
+ * - 4-stage funnel visualization (Impressions → Clicks → Leads → Sales)
+ * - Team performance benchmarking
+ * - Actionable recommendations (no fluff)
+ * - KPI targets with growth calculations
  */
 
 import Groq from 'groq-sdk';
@@ -17,25 +20,77 @@ const groq = new Groq({
 
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
+// 📊 Full Facebook Ads metrics interface
 interface TeamData {
   team: string;
-  spend: number;
-  revenue: number;
-  roas: number;
-  sales: number;
-  cpa: number;
-  ctr: number;
+  // 💰 Spend & Revenue
+  spend: number;           // USD
+  spendKZT: number;        // KZT
+  revenue: number;         // KZT
+  // 📈 Performance
+  roas: number;            // Revenue / Spend ratio
+  sales: number;           // Completed purchases
+  cpa: number;             // Cost Per Acquisition (USD)
+  ctr: number;             // Click-Through Rate %
+  // 📊 Reach & Frequency
   impressions: number;
   clicks: number;
+  reach: number;           // Unique users reached
+  leads: number;           // Lead form submissions
+  // 🎬 Video Metrics
+  videoMetrics?: {
+    plays: number;         // Video starts
+    thruplay: number;      // 15sec+ or complete views
+    completions: number;   // 100% watched
+    completionRate: number;
+    thruplayRate: number;
+    avgWatchTime: number;  // seconds
+    retention: {
+      '25%': number;
+      '50%': number;
+      '75%': number;
+      '100%': number;
+    };
+  };
+  // 🎯 Top creatives
+  topVideoCreatives?: Array<{
+    name: string;
+    plays: number;
+    thruplay: number;
+    completions: number;
+    completionRate: string;
+    thruplayRate: string;
+    avgWatchTime: string;
+    ctr: string;
+  }>;
+  // 📋 Campaigns
+  campaigns?: Array<{
+    name: string;
+    spend: number;
+    clicks: number;
+    impressions: number;
+    videoPlays: number;
+    videoCompletions: number;
+  }>;
 }
 
 interface AnalyticsData {
   teams: TeamData[];
   totals: {
     spend: number;
+    spendKZT: number;
     revenue: number;
     roas: number;
     sales: number;
+    leads: number;
+    impressions: number;
+    clicks: number;
+    reach: number;
+  };
+  period?: {
+    since: string;
+    until: string;
+    preset: string;
   };
 }
 
@@ -50,7 +105,7 @@ async function fetchAnalytics(preset: string = '24h'): Promise<AnalyticsData | n
   }
 }
 
-// 🤖 Генерация отчета через Groq AI
+// 🤖 Generate AI Report with Professional Analysis
 async function generateAIReport(
   data: AnalyticsData,
   reportType: '10:00' | '16:00' | '22:00' | 'weekly',
@@ -58,153 +113,150 @@ async function generateAIReport(
 ): Promise<string> {
   const reportConfig = {
     '10:00': {
-      title: '🌅 ОТЧЕТ ЗА ВЧЕРА',
-      focus: 'Анализ результатов за вчера, выделение лидеров, план на новый день',
-      tone: 'Энергичный, деловой'
+      title: '🌅 DAILY PERFORMANCE REPORT',
+      focus: 'Yesterday analysis, top performers, action items for today',
+      tone: 'Data-driven, actionable'
     },
     '16:00': {
-      title: '📊 ОБЕДЕННЫЙ СТАТУС',
-      focus: 'Текущее состояние, промежуточные результаты, корректировки стратегии',
-      tone: 'Деловой, с акцентом на текущие возможности'
+      title: '📊 MID-DAY STATUS UPDATE',
+      focus: 'Current performance, pacing to goals, immediate optimizations',
+      tone: 'Analytical, solution-oriented'
     },
     '22:00': {
-      title: '🌙 ВЕЧЕРНИЙ ОТЧЕТ',
-      focus: 'Итоги дня, достижения, рекомендации на завтра, KPI на следующую неделю',
-      tone: 'Подводящий итоги, с благодарностью и планами'
+      title: '🌙 END-OF-DAY SUMMARY',
+      focus: 'Daily results, wins/losses, tomorrow priorities',
+      tone: 'Summary, forward-looking'
     },
     'weekly': {
-      title: '📅 НЕДЕЛЬНЫЙ ОТЧЕТ',
-      focus: 'Итоги недели, топ команд, новые KPI (+10% от текущих)',
-      tone: 'Торжественный, деловой'
+      title: '📅 WEEKLY PERFORMANCE REVIEW',
+      focus: 'Week-over-week analysis, team rankings, next week KPIs (+10%)',
+      tone: 'Strategic, goal-setting'
     }
   };
 
   const config = reportConfig[reportType];
-  
-  // Построить промпт для Groq AI
   const prompt = buildGroqPrompt(data, config, reportType, previousWeekData);
   
   try {
-    console.log(`🤖 [Groq] Генерация ${reportType} отчета...`);
+    console.log(`🤖 [Groq] Generating ${reportType} report...`);
     
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'system',
-          content: `Ты пишешь премиальные отчеты для таргетологов. 
+          content: `You are a Senior Performance Marketing Analyst generating executive reports for a traffic team.
 
 ═══════════════════════════════════════════════════
-ФОРМАТИРОВАНИЕ (ВАЖНО!):
+REPORT STRUCTURE (4-STAGE FUNNEL PYRAMID):
 ═══════════════════════════════════════════════════
 
-1. ЗАГОЛОВКИ - всегда *ЖИРНЫМ*
-2. ВАЖНЫЕ ЦИФРЫ - *жирным* (ROAS, продажи, траты)
-3. НАЗВАНИЯ КОМАНД - *жирным*
-4. Используй пустые строки для отступов
-5. Группируй информацию блоками
+ALWAYS include this visual funnel:
 
-ПРИМЕР ФОРМАТИРОВАНИЯ:
-*💰 ОБЩИЙ ИТОГ*
-Потратили: *$1200* (*₸540,000*)
-Заработали: *₸2,500,000* (*$5555*)
-ROAS: *2.1x* 🟢
-
-*🏆 КОМАНДЫ*
-• *Kenesary* 🏆
-  ROAS *2.5x* | Продажи *15 шт* | CPA *$80*
-  Статус: Огонь! Масштабируй
+┌─────────────────────────────────────┐
+│  👁 IMPRESSIONS: XXX,XXX          │ Stage 1
+└─────────────────────────────────────┘
+   ┌───────────────────────────────┐
+   │  👆 CLICKS: X,XXX (CTR X.X%)   │ Stage 2
+   └───────────────────────────────┘
+      ┌─────────────────────────┐
+      │  📥 LEADS: XXX (CR X.X%)  │ Stage 3
+      └─────────────────────────┘
+         ┌───────────────────┐
+         │ 💰 SALES: XX (X.X%) │ Stage 4
+         └───────────────────┘
 
 ═══════════════════════════════════════════════════
-ВАЛЮТЫ:
+FACEBOOK METRICS TO ANALYZE:
 ═══════════════════════════════════════════════════
 
-ВСЕГДА указывай обе валюты:
-- Траты: *$XXX* (*₸XXX,XXX*)
-- Доход: *₸XXX,XXX* (*$XXX*)
-- CPA: *$XX* (*₸XX,XXX*)
+**Acquisition Metrics:**
+- Spend ($USD / ₸KZT)
+- Impressions & Reach
+- Frequency (how often users see ads)
+- CTR (benchmark: >1.5% = good, <0.8% = needs work)
+- CPC (cost per click)
+- CPM (cost per 1000 impressions)
 
-Курс: примерно 1$ = 450₸
+**Engagement Metrics:**
+- Video Plays (3-sec views)
+- ThruPlay (15-sec or complete)
+- Video Completion Rate (25%, 50%, 75%, 100%)
+- Avg Watch Time
+
+**Conversion Metrics:**
+- Leads (form submissions)
+- Sales (completed purchases)
+- CPA (cost per acquisition)
+- ROAS (return on ad spend)
+- CPL (cost per lead)
 
 ═══════════════════════════════════════════════════
-СТРУКТУРА:
+ANALYSIS FRAMEWORK (BE SPECIFIC!):
 ═══════════════════════════════════════════════════
 
-1. *Заголовок отчета* (жирный)
-2. Пустая строка
-3. *ОБЩИЙ ИТОГ* (блок с главными цифрами)
-4. Пустая строка
-5. *КОМАНДЫ* (каждая команда отдельно с отступом)
-6. Пустая строка  
-7. *ЧТО ДАЛЬШЕ* (конкретные действия)
+1. **Funnel Bottleneck Analysis**
+   - Where is the biggest drop-off?
+   - Impressions→Clicks (CTR issue = creative problem)
+   - Clicks→Leads (Landing page issue)
+   - Leads→Sales (Offer/price issue)
+
+2. **Video Performance Analysis**
+   - ThruPlay rate <10% = Hook is weak (first 3 sec)
+   - 25% retention <40% = Message unclear
+   - Completion rate <5% = Video too long or boring
+
+3. **Team Comparison**
+   - Rank by ROAS (primary KPI)
+   - Note best/worst CTR
+   - Note best/worst CPA
+
+4. **Actionable Recommendations**
+   - ONLY give 2-3 specific actions per team
+   - Format: "Do X to improve Y by Z%"
+   - NO generic advice like "test more creatives"
 
 ═══════════════════════════════════════════════════
-СТИЛЬ:
+FORMATTING RULES:
 ═══════════════════════════════════════════════════
 
-- Короткие предложения (4-6 слов)
-- Простые слова
-- Конкретные цифры
-- Без воды
-
-ЭМОДЗИ для команд:
-🏆 Kenesary, ⚔️ Arystan, 🎯 Muha, 🚀 Traf4
-
-ТОН (МЯГКО, ПОДДЕРЖИВАЮЩЕ!):
-- ROAS < 0.5 → "Есть над чем работать. Тестируем новое"
-- ROAS 0.5-1.0 → "Потенциал большой. Корректируем"
-- ROAS 1.0-1.5 → "Окупаемость есть. Усиливаем"
-- ROAS 1.5-2.0 → "Хорошо идёт. Продолжаем"
-- ROAS > 2.0 → "Огонь! Масштабируем"
-
-ЗАПРЕЩЕНО: "Плохо", "Слабо", "Провал", "Фейл"
-ИСПОЛЬЗУЙ: "Потенциал", "Работаем", "Улучшаем"
+- Use *bold* for important numbers
+- Currency: ALWAYS show both *$XXX* (*₸XXX,XXX*)
+- Team emojis: 👑 Kenesary, ⚔️ Arystan, 🎯 Muha, 🚀 Traf4
+- ROAS indicators: 🔥 >2.0x, 🟢 1.5-2.0x, 🟡 1.0-1.5x, 🟠 0.5-1.0x, 🔴 <0.5x
+- Keep report under 20 lines
+- Use Russian language
+- NO fluff, NO generic statements
 
 ${reportType === 'weekly' ? `
-═══════════════════════════════════════════════════
-НЕДЕЛЬНЫЙ ОТЧЕТ:
-═══════════════════════════════════════════════════
-
-- Посчитай *НОВЫЕ KPI* на неделю (+10%)
-- Для каждой команды укажи:
-  • Цель продаж: *XX шт* (текущие +10%)
-  • Целевой ROAS: *X.Xx* (текущий +10%)
-  • Бюджет: *$XXX* (текущий +10%)
-- Пиши конкретно и жирным
+**WEEKLY REPORT SPECIAL:**
+- Calculate NEW KPI targets (+10% from current)
+- Show week-over-week comparison
+- Set specific goals: Sales target, ROAS target, Budget
 ` : ''}
 
 ${reportType === '22:00' ? `
-═══════════════════════════════════════════════════
-ВЕЧЕРНИЙ ОТЧЕТ:
-═══════════════════════════════════════════════════
-
-- Итоги дня
-- Лучшие и худшие результаты
-- *Конкретные задачи* на завтра для каждой команды
-` : ''}
-
-ЯЗЫК: Русский
-МАКСИМУМ: 16-18 строк (с отступами)`
+**EVENING REPORT SPECIAL:**
+- Summarize day's wins and challenges
+- Give specific tasks for tomorrow
+- Format: "[Team]: Do X tomorrow"
+` : ''}`
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      temperature: 0.7,
-      max_tokens: 1500,
+      temperature: 0.4, // Lower for more consistent, analytical output
+      max_tokens: 2000,
     });
     
-    const report = response.choices[0]?.message?.content || 'Ошибка генерации отчета';
-    
-    console.log(`✅ [Groq] Отчет ${reportType} сгенерирован`);
-    
+    const report = response.choices[0]?.message?.content || 'Report generation failed';
+    console.log(`✅ [Groq] ${reportType} report generated`);
     return report;
     
   } catch (error: any) {
-    console.error(`❌ [Groq] Ошибка генерации отчета:`, error.message);
-    
-    // Fallback: простой отчет без AI
+    console.error(`❌ [Groq] Error:`, error.message);
     return generateSimpleReport(data, config.title);
   }
 }

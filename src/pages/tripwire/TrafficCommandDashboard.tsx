@@ -7,6 +7,7 @@ import { TRAFFIC_API_URL } from '@/config/traffic-api';
 import { useLanguage } from '@/hooks/useLanguage';
 import { SalesFunnel } from '@/components/traffic/SalesFunnel';
 import { OnboardingTour } from '@/components/traffic/OnboardingTour';
+import { WelcomeModal } from '@/components/traffic/WelcomeModal';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
@@ -287,6 +288,7 @@ export default function TrafficCommandDashboard({
   const [loadingRecs, setLoadingRecs] = useState<string | null>(null);
   const [currency, setCurrency] = useState<'USD' | 'KZT'>('USD');
   const [funnelData, setFunnelData] = useState<any>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Fetch AI recommendations for a team
   const fetchRecommendations = async (team: string) => {
@@ -428,8 +430,15 @@ export default function TrafficCommandDashboard({
 
   return (
     <div className="min-h-screen bg-[#030303] text-white antialiased">
+      {/* Welcome Modal */}
+      <WelcomeModal
+        userName={currentUserTeam || 'Admin'}
+        onStart={() => setShowOnboarding(true)}
+        onSkip={() => setShowOnboarding(false)}
+      />
+      
       {/* Onboarding Tour */}
-      {analytics && (
+      {analytics && showOnboarding && (
         <OnboardingTour 
           userRole={currentUserTeam ? 'targetologist' : 'admin'}
           userId={currentUserTeam || 'admin'}

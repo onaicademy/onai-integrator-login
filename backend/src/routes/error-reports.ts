@@ -9,10 +9,15 @@ import axios from 'axios';
 
 const router = Router();
 
-// Telegram bot token for @analisistonaitrafic_bot  
-// Fallback to Leads bot if analytics bot token is invalid
-const ANALYTICS_BOT_TOKEN = process.env.TELEGRAM_ANALYTICS_BOT_TOKEN || process.env.TELEGRAM_LEADS_BOT_TOKEN || process.env.TELEGRAM_MENTOR_BOT_TOKEN;
-const ANALYTICS_CHAT_ID = process.env.TELEGRAM_ANALYTICS_CHAT_ID || process.env.TELEGRAM_LEADS_CHAT_ID;
+// Telegram bot token for @analisistonaitrafic_bot
+// ⚠️ ТОЛЬКО этот бот для ошибок! НЕ использовать Leads bot!
+const ANALYTICS_BOT_TOKEN = process.env.TELEGRAM_ANALYTICS_BOT_TOKEN;
+const ANALYTICS_CHAT_ID = process.env.TELEGRAM_ANALYTICS_CHAT_ID;
+
+if (!ANALYTICS_BOT_TOKEN || !ANALYTICS_CHAT_ID) {
+  console.error('❌ TELEGRAM_ANALYTICS_BOT_TOKEN or TELEGRAM_ANALYTICS_CHAT_ID not configured!');
+  console.error('⚠️ Error reports will NOT be sent to Telegram');
+}
 
 interface ErrorReport {
   error: {

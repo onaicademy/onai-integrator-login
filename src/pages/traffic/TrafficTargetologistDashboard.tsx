@@ -14,9 +14,6 @@ import { Users, User, Globe, LogOut, BarChart3, Settings, AlertCircle } from 'lu
 import { useLanguage } from '@/hooks/useLanguage';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
 import { AuthManager, AuthUser } from '@/lib/auth';
-import { PremiumOnboarding, createTrafficDashboardOnboarding } from '@/lib/premium-onboarding';
-import 'intro.js/introjs.css';
-import '@/styles/premium-onboarding.css';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 import { useDebugPanel } from '@/hooks/useDebugPanel';
 import { actionLogger } from '@/lib/action-logger';
@@ -30,10 +27,6 @@ export default function TrafficTargetologistDashboard() {
   const [showOnlyMyTeam, setShowOnlyMyTeam] = useState(false);
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
-  
-  // Premium Onboarding State
-  const [onboarding, setOnboarding] = useState<PremiumOnboarding | null>(null);
-  const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   
   // Debug Panel
   const debugPanel = useDebugPanel();
@@ -99,28 +92,6 @@ export default function TrafficTargetologistDashboard() {
     
     return () => clearInterval(interval);
   }, []);
-  
-  // ✅ Initialize Premium Onboarding
-  useEffect(() => {
-    if (!user || loading) return;
-    
-    try {
-      const tour = createTrafficDashboardOnboarding();
-      tour.initialize();
-      setOnboarding(tour);
-
-      // Show hint if not completed
-      if (!tour.isCompleted()) {
-        const timer = setTimeout(() => {
-          setShowOnboardingHint(true);
-        }, 2000);
-
-        return () => clearTimeout(timer);
-      }
-    } catch (error) {
-      console.error('Error initializing onboarding:', error);
-    }
-  }, [user, loading]);
   
   const teamName = team?.charAt(0).toUpperCase() + team?.slice(1).toLowerCase() || user?.team;
   
@@ -370,23 +341,6 @@ export default function TrafficTargetologistDashboard() {
         )}
       </div>
       
-      {/* Floating Tour Button */}
-      {onboarding && (
-        <button
-          onClick={() => {
-            onboarding.reset();
-            // Re-initialize after reset
-            const tour = createTrafficDashboardOnboarding();
-            tour.initialize();
-            setOnboarding(tour);
-            setTimeout(() => tour.start(), 100);
-          }}
-          title="Запустить тур заново"
-          className="floating-tour-button"
-        >
-          🎯
-        </button>
-      )}
       
       {/* Security Footer - Simple, not fixed */}
       <div className="bg-black/40 border-t border-gray-800/30 py-3 mt-8">

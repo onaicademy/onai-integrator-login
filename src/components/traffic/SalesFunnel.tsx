@@ -1,167 +1,202 @@
 /**
- * Sales Funnel Component
- * Visual pyramid showing conversion funnel stages
+ * Sales Funnel Component - PYRAMID STYLE
+ * Визуальная воронка продаж как на референсе
  */
 
 import { motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, TrendingUp } from 'lucide-react';
 
 interface SalesFunnelProps {
   data: {
     impressions: number;
+    clicks: number;
     registrations: number;
     expressSales: number;
     mainSales: number;
-    conversionRate1: number;
-    conversionRate2: number;
-    conversionRate3: number;
   };
 }
 
-interface FunnelStage {
-  label: string;
-  sublabel: string;
-  value: number;
-  width: number;
-  color: string;
-  conversion?: number;
-}
-
 export const SalesFunnel = ({ data }: SalesFunnelProps) => {
-  // ENHANCEMENT: Handle empty data
-  const hasData = data.impressions > 0 || data.registrations > 0;
+  // Calculate conversion rates
+  const clickRate = data.impressions > 0 ? (data.clicks / data.impressions) * 100 : 0;
+  const regRate = data.clicks > 0 ? (data.registrations / data.clicks) * 100 : 0;
+  const expressRate = data.registrations > 0 ? (data.expressSales / data.registrations) * 100 : 0;
+  const mainRate = data.expressSales > 0 ? (data.mainSales / data.expressSales) * 100 : 0;
+  
+  const hasData = data.impressions > 0;
   
   if (!hasData) {
     return (
-      <div className="funnel-container py-8 text-center">
-        <h3 className="text-xl font-bold text-white mb-4">Sales Funnel</h3>
-        <p className="text-gray-400">Нет данных за выбранный период</p>
+      <div className="w-full py-12 text-center">
+        <div className="inline-flex items-center gap-2 text-gray-400">
+          <TrendingUp className="w-5 h-5" />
+          <span className="text-sm">Нет данных для воронки</span>
+        </div>
       </div>
     );
   }
-  
-  const stages: FunnelStage[] = [
-    { 
-      label: 'IMPRESSIONS', 
-      sublabel: 'Facebook Ads',
-      value: data.impressions, 
-      width: 100, 
-      color: '#00FF88' 
+
+  const stages = [
+    {
+      label: 'Показы',
+      sublabel: 'Facebook Ads Impressions',
+      value: data.impressions,
+      width: 100,
+      color: 'from-blue-600 to-blue-500',
+      conversionRate: null,
     },
-    { 
-      label: 'REGISTRATIONS', 
-      sublabel: 'Proftest',
-      value: data.registrations, 
-      width: 85, 
-      color: '#00DD70', 
-      conversion: data.conversionRate1 
+    {
+      label: 'Клики',
+      sublabel: 'Переход на сайт',
+      value: data.clicks,
+      width: 80,
+      color: 'from-blue-500 to-blue-400',
+      conversionRate: clickRate,
     },
-    { 
-      label: 'EXPRESS SALES', 
-      sublabel: 'Tripwire',
-      value: data.expressSales, 
-      width: 60, 
-      color: '#00BB58', 
-      conversion: data.conversionRate2 
+    {
+      label: 'Регистрации',
+      sublabel: 'Proftest + UTM',
+      value: data.registrations,
+      width: 60,
+      color: 'from-blue-500 to-blue-400',
+      conversionRate: regRate,
     },
-    { 
-      label: 'MAIN SALES', 
-      sublabel: 'Main Course',
-      value: data.mainSales, 
-      width: 35, 
-      color: '#009940', 
-      conversion: data.conversionRate3 
-    }
+    {
+      label: 'Express Course',
+      sublabel: 'Tripwire Purchase',
+      value: data.expressSales,
+      width: 45,
+      color: 'from-blue-600 to-blue-500',
+      conversionRate: expressRate,
+    },
+    {
+      label: 'Main Course',
+      sublabel: 'Main Product Purchase',
+      value: data.mainSales,
+      width: 30,
+      color: 'from-blue-700 to-blue-600',
+      conversionRate: mainRate,
+    },
   ];
-  
+
   return (
-    <div className="funnel-container py-8 bg-black/40 border border-[#00FF88]/10 rounded-2xl">
-      <h3 className="text-xl font-bold text-white mb-6 text-center px-4">
-        🔄 Sales Funnel
-      </h3>
-      
-      <div className="relative space-y-4 px-4 md:px-8">
-        {stages.map((stage, i) => (
-          <div key={i} className="funnel-stage">
-            {/* Pyramid Stage Block */}
+    <div className="w-full py-8 px-4">
+      {/* Title */}
+      <div className="text-center mb-8">
+        <h3 className="text-2xl font-bold text-white mb-2">
+          Воронка продаж
+        </h3>
+        <p className="text-sm text-gray-400">
+          От показов до покупки основного продукта
+        </p>
+      </div>
+
+      {/* Funnel Pyramid */}
+      <div className="relative max-w-4xl mx-auto space-y-1">
+        {stages.map((stage, index) => (
+          <div key={index} className="relative">
+            {/* Stage Block */}
             <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: `${stage.width}%`, opacity: 1 }}
-              transition={{ duration: 0.8, delay: i * 0.2 }}
-              className="mx-auto relative"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="relative mx-auto"
+              style={{ width: `${stage.width}%` }}
             >
               <div
-                className="h-24 rounded-lg flex flex-col items-center justify-center text-white font-semibold shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                style={{ 
-                  backgroundColor: stage.color,
-                  opacity: 0.9
-                }}
+                className={`
+                  relative h-24 rounded-xl
+                  bg-gradient-to-r ${stage.color}
+                  shadow-lg shadow-blue-500/20
+                  border border-blue-400/30
+                  flex flex-col items-center justify-center
+                  text-white
+                  transition-all duration-300
+                  hover:shadow-xl hover:shadow-blue-500/30
+                  hover:scale-105
+                  cursor-pointer
+                `}
               >
-                <span className="text-xs uppercase tracking-wide opacity-80">
+                {/* Stage Label */}
+                <div className="text-xs font-semibold uppercase tracking-wider opacity-90">
                   {stage.label}
-                </span>
-                <span className="text-2xl font-bold">
+                </div>
+                
+                {/* Stage Value */}
+                <div className="text-3xl font-bold">
                   {stage.value.toLocaleString()}
-                </span>
-                <span className="text-[10px] opacity-70">
+                </div>
+                
+                {/* Sublabel */}
+                <div className="text-[10px] opacity-70 mt-0.5">
                   {stage.sublabel}
-                </span>
+                </div>
               </div>
             </motion.div>
-            
-            {/* Conversion Rate Arrow */}
-            {stage.conversion !== undefined && (
-              <motion.div 
+
+            {/* Conversion Arrow */}
+            {stage.conversionRate !== null && (
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.2 + 0.4 }}
-                className="text-center mt-2 mb-2"
+                transition={{ delay: index * 0.1 + 0.3 }}
+                className="flex items-center justify-center my-2"
               >
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black/60 border border-[#00FF88]/20 rounded-lg">
-                  <ArrowDown className="w-3.5 h-3.5" />
-                  <span 
-                    className={`text-sm font-bold ${
-                      stage.conversion >= 2 ? 'text-green-400' : 'text-orange-400'
-                    }`}
-                  >
-                    {stage.conversion.toFixed(2)}%
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-black/60 border border-blue-500/30 rounded-lg backdrop-blur-sm">
+                  <ArrowDown className="w-4 h-4 text-blue-400" />
+                  <span className={`text-sm font-bold ${
+                    stage.conversionRate >= 10 
+                      ? 'text-green-400' 
+                      : stage.conversionRate >= 5 
+                      ? 'text-yellow-400' 
+                      : 'text-orange-400'
+                  }`}>
+                    {stage.conversionRate.toFixed(2)}%
                   </span>
+                  <span className="text-xs text-gray-400">конверсия</span>
                 </div>
               </motion.div>
             )}
           </div>
         ))}
       </div>
-      
-      {/* Overall Conversion Summary */}
-      <div className="mt-8 pt-6 border-t border-[#00FF88]/10 px-4 md:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <p className="text-xs text-gray-400 uppercase mb-1">Total Conversion</p>
-            <p className="text-lg font-bold text-[#00FF88]">
+
+      {/* Overall Stats */}
+      <div className="mt-10 pt-6 border-t border-gray-800">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center p-4 bg-black/40 border border-gray-800 rounded-xl">
+            <div className="text-xs text-gray-400 uppercase mb-1">Общая конверсия</div>
+            <div className="text-2xl font-bold text-blue-400">
               {data.impressions > 0 
                 ? ((data.mainSales / data.impressions) * 100).toFixed(3)
                 : '0.000'
               }%
-            </p>
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">Показы → Main</div>
           </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase mb-1">Reg Rate</p>
-            <p className="text-lg font-bold text-white">
-              {data.conversionRate1.toFixed(2)}%
-            </p>
+          
+          <div className="text-center p-4 bg-black/40 border border-gray-800 rounded-xl">
+            <div className="text-xs text-gray-400 uppercase mb-1">CTR</div>
+            <div className="text-2xl font-bold text-white">
+              {clickRate.toFixed(2)}%
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">Клик по рекламе</div>
           </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase mb-1">Express Rate</p>
-            <p className="text-lg font-bold text-white">
-              {data.conversionRate2.toFixed(2)}%
-            </p>
+          
+          <div className="text-center p-4 bg-black/40 border border-gray-800 rounded-xl">
+            <div className="text-xs text-gray-400 uppercase mb-1">Reg Rate</div>
+            <div className="text-2xl font-bold text-white">
+              {regRate.toFixed(2)}%
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">Регистраций</div>
           </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase mb-1">Main Rate</p>
-            <p className="text-lg font-bold text-white">
-              {data.conversionRate3.toFixed(2)}%
-            </p>
+          
+          <div className="text-center p-4 bg-black/40 border border-gray-800 rounded-xl">
+            <div className="text-xs text-gray-400 uppercase mb-1">Purchase Rate</div>
+            <div className="text-2xl font-bold text-white">
+              {((expressRate + mainRate) / 2).toFixed(2)}%
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">Средняя покупка</div>
           </div>
         </div>
       </div>
