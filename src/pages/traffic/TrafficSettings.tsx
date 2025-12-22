@@ -192,12 +192,13 @@ export default function TrafficSettings() {
   
   const loadAvailableAccounts = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('traffic_token');
-      const res = await axios.get(`${API_URL}/api/traffic-settings/${user.id}/fb-accounts`, {
+      const res = await axios.get(`${API_URL}/api/traffic-settings/facebook/ad-accounts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const availableAccounts = res.data.accounts || [];
+      const availableAccounts = res.data.adAccounts || [];
       
       const mergedAccounts = availableAccounts.map((acc: FBAccount) => {
         const existing = fbAccounts.find(a => a.id === acc.id);
@@ -220,8 +221,7 @@ export default function TrafficSettings() {
   const loadCampaignsForAccount = async (accountId: string) => {
     try {
       const token = localStorage.getItem('traffic_token');
-      const res = await axios.get(`${API_URL}/api/traffic-settings/${user.id}/campaigns`, {
-        params: { adAccountId: accountId },
+      const res = await axios.get(`${API_URL}/api/traffic-settings/facebook/campaigns/${accountId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
