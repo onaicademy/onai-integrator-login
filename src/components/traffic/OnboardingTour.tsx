@@ -118,6 +118,67 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       ),
       placement: 'center',
     },
+    // 5. НОВЫЙ ШАГ: Настройки
+    {
+      target: '[data-tour="settings-button"]',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            ⚙️ Настройки
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            Перейди в <strong>Настройки</strong> и подключи<br/>
+            рекламные кабинеты Facebook / TikTok / YouTube.
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: '#FF6B6B' }}>
+            ⚠️ Без подключения кампаний ROI не считается!
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    // 6. НОВЫЙ ШАГ: Детальная аналитика
+    {
+      target: '[data-tour="detailed-analytics-button"]',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            📊 Детальная аналитика РК
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            Получи <strong>AI-анализ</strong> своих кампаний:<br/>
+            • Оценка настроек<br/>
+            • Рекомендации по улучшению<br/>
+            • Анализ всех метрик Facebook
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
+            💡 Анализ занимает ~10 секунд
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    // 7. НОВЫЙ ШАГ: Важность выбора кампаний
+    {
+      target: 'body',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#FFD700' }}>
+            💡 Важно: Трекинг кампаний
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>
+            В <strong>Настройках</strong>:<br/>
+            1. Подключи Facebook Ads<br/>
+            2. Выбери Ad Account<br/>
+            3. <strong style={{ color: '#FFD700' }}>Поставь галочки</strong> на активных кампаниях<br/>
+            <br/>
+            При запуске <strong>НОВОЙ кампании</strong> —<br/>
+            обязательно выбери её в настройках!
+          </p>
+        </div>
+      ),
+      placement: 'center',
+    },
   ];
 
   // 🎯 Шаги для админа
