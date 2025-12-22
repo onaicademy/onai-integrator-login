@@ -26,13 +26,13 @@ router.post('/login', async (req, res) => {
     
     console.log(`🔐 Traffic login attempt: ${email}`);
     
-    // Get user from traffic_targetologists table
-    const { data: user, error } = await trafficAdminSupabase
-      .from('traffic_targetologists')
-      .select('*')
-      .eq('email', email.toLowerCase().trim())
-      .eq('is_active', true)
-      .single();
+    // WORKAROUND: Use direct SQL to bypass PostgREST schema cache issue
+    const { data: users, error } = await trafficAdminSupabase
+      .rpc('get_targetologist_by_email', { 
+        p_email: email.toLowerCase().trim() 
+      });
+    
+    const user = users?.[0];
     
     if (error || !user) {
       console.log(`❌ User not found or inactive: ${email}`);
