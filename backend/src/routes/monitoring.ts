@@ -9,7 +9,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { botHealthMonitor, startHealthMonitorScheduler } from '../services/botHealthMonitor';
+import { botHealthMonitor } from '../services/botHealthMonitor';
+import alertQueue from '../services/alertQueue';
 
 const router = Router();
 

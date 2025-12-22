@@ -6,12 +6,12 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { existsSync } from 'fs';
 
-// ✅ CommonJS compatibility
-const __dirname = __filename ? path.dirname(__filename) : process.cwd();
+// ✅ Get directory path (use native __dirname in CommonJS)
+const currentDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
 // ✅ Try multiple paths for env.env
 const possiblePaths = [
-  path.join(__dirname, '..', 'env.env'),
+  path.join(currentDir, '..', 'env.env'),
   path.join(process.cwd(), 'env.env'),
   '/Users/miso/onai-integrator-login/backend/env.env'
 ];
