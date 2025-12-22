@@ -415,7 +415,7 @@ export default function TrafficCommandDashboard({
         const since = customDate || (dateRange === '7d' ? '2024-12-15' : dateRange === '14d' ? '2024-12-08' : '2024-11-22');
         const until = new Date().toISOString().split('T')[0];
         
-        const response = await axios.get(`${API_URL}/api/traffic-stats/funnel/${teamName}`, {
+        const response = await axios.get(`${API_URL}/api/traffic/funnel/${teamName}`, {
           params: { startDate: since, endDate: until }
         });
         

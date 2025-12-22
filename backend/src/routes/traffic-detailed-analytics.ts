@@ -3,12 +3,16 @@
  * 
  * Детальная аналитика по кампаниям, группам объявлений и объявлениям
  * Берет данные из наших кабинетов Facebook Ads напрямую
+ * + AI анализ через GROQ API (llama-3.1-70b-versatile)
  */
 
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
-import { analyzeCampaigns, enrichCampaignData } from '../services/trafficCampaignAnalyzer';
+
+// Rate limiting для GROQ API
+const groqRequestTimestamps: number[] = [];
+const MAX_GROQ_REQUESTS_PER_MINUTE = 10;
 
 const router = Router();
 
@@ -288,11 +292,11 @@ function extractRevenue(actions: any[]): number {
 
 /**
  * POST /api/traffic-detailed-analytics/ai-analysis
- * AI analysis of campaigns using GROQ
+ * AI analysis of campaigns using GROQ (with rate limiting)
  */
 router.post('/ai-analysis', async (req: Request, res: Response) => {
   try {
-    const { campaigns } = req.body;
+    const { campaigns, team, teamRoas } = req.body;
     
     if (!campaigns || campaigns.length === 0) {
       return res.status(400).json({ 
@@ -301,26 +305,197 @@ router.post('/ai-analysis', async (req: Request, res: Response) => {
       });
     }
     
-    console.log(`[AI Analysis] Analyzing ${campaigns.length} campaigns...`);
+    // ✅ Rate Limiting: Check if we exceeded 10 requests per minute
+    const now = Date.now();
+    const oneMinuteAgo = now - 60000;
     
-    // Enrich campaigns with calculated metrics
-    const enrichedCampaigns = campaigns.map(enrichCampaignData);
+    // Clean old timestamps
+    while (groqRequestTimestamps.length > 0 && groqRequestTimestamps[0] < oneMinuteAgo) {
+      groqRequestTimestamps.shift();
+    }
     
-    // Analyze with GROQ (with fallback)
-    const result = await analyzeCampaigns(enrichedCampaigns);
+    if (groqRequestTimestamps.length >= MAX_GROQ_REQUESTS_PER_MINUTE) {
+      return res.status(429).json({
+        success: false,
+        error: 'Rate limit exceeded. Please wait a minute.',
+        retryAfter: 60
+      });
+    }
+    
+    // Add current request timestamp
+    groqRequestTimestamps.push(now);
+    
+    console.log(`[AI Analysis] Analyzing ${campaigns.length} campaigns for ${team}...`);
+    console.log(`[AI Analysis] Rate limit: ${groqRequestTimestamps.length}/${MAX_GROQ_REQUESTS_PER_MINUTE} requests in last minute`);
+    
+    // ✅ Call GROQ AI with proper prompt
+    const analysis = await analyzeWithGROQ(campaigns, team, teamRoas);
     
     res.json({
       success: true,
-      ...result
+      analysis: analysis.content,
+      metadata: {
+        model: 'llama-3.1-70b-versatile',
+        campaigns_analyzed: campaigns.length,
+        timestamp: new Date().toISOString(),
+        rate_limit_remaining: MAX_GROQ_REQUESTS_PER_MINUTE - groqRequestTimestamps.length
+      }
     });
     
   } catch (error: any) {
     console.error('❌ AI analysis error:', error);
     res.status(500).json({ 
       success: false,
-      error: error.message 
+      error: error.message,
+      fallback: generateFallbackAnalysis(req.body.campaigns)
     });
   }
 });
+
+/**
+ * Analyze campaigns with GROQ AI
+ */
+async function analyzeWithGROQ(campaigns: any[], team: string, teamRoas: number): Promise<any> {
+  const GROQ_API_KEY = process.env.GROQ_CAMPAIGN_ANALYZER_KEY || process.env.GROQ_API_KEY;
+  const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+  
+  if (!GROQ_API_KEY) {
+    throw new Error('GROQ API KEY not configured');
+  }
+  
+  // Prepare campaign data
+  const campaignsSummary = campaigns.map(c => ({
+    name: c.name,
+    status: c.status,
+    spend: c.spend,
+    impressions: c.impressions,
+    clicks: c.clicks,
+    ctr: c.ctr,
+    cpc: c.cpc,
+    cpm: c.cpm,
+    frequency: c.frequency,
+    reach: c.reach,
+    conversions: c.conversions || 0,
+    roas: c.roas || 0,
+    quality_ranking: c.quality_ranking,
+    engagement_rate_ranking: c.engagement_rate_ranking
+  }));
+  
+  const prompt = `Ты - профессиональный маркетолог с 10+ годами опыта в Facebook Ads. Анализируешь кампании таргетолога "${team}".
+
+**ДАННЫЕ КОМАНДЫ:**
+- Текущий ROAS: ${teamRoas.toFixed(2)}x
+- Цель: ROAS > 2.0x
+- Количество кампаний: ${campaigns.length}
+
+**КАМПАНИИ:**
+${JSON.stringify(campaignsSummary, null, 2)}
+
+**ЗАДАЧА:** Проанализируй ВСЕ метрики и дай конкретные рекомендации БЕЗ ВОДЫ.
+
+**АНАЛИЗИРУЙ:**
+1. **Delivery Health:** Impressions, Reach, Frequency (оптимум 1.5-2.5)
+2. **Engagement:** CTR (цель >1.5%), Engagement Rate Ranking
+3. **Cost Efficiency:** CPM, CPC, CPA
+4. **Conversion:** ROAS, Conversions
+5. **Quality Signals:** Quality Ranking, Ad Fatigue
+
+**ФОРМАТ ОТВЕТА:**
+
+## 📊 АНАЛИЗ КАМПАНИЙ - ${team}
+
+### 🎯 Общая оценка: X/10
+
+### 🔴 КРИТИЧНЫЕ ПРОБЛЕМЫ:
+1. [Название кампании]: [Проблема] → [Что делать КОНКРЕТНО]
+2. ...
+
+### 🟡 ТРЕБУЮТ ВНИМАНИЯ:
+1. [Кампания]: [Метрика] = [Значение] (ниже/выше нормы) → [Конкретный шаг]
+
+### ✅ ЧТО РАБОТАЕТ ХОРОШО:
+- [Кампания]: [Метрика] показывает отличные результаты
+
+### 💡 ACTIONABLE РЕКОМЕНДАЦИИ (по приоритетам):
+1. **[Название кампании]**: [Конкретное действие] → Прогноз: +X% ROAS
+2. **[Название кампании]**: [Конкретное действие] → Прогноз: -X% CPA
+3. **[Общая стратегия]**: [Что сделать]
+
+### 📈 ПРОГНОЗ ПОСЛЕ ПРИМЕНЕНИЯ:
+- Текущий ROAS: ${teamRoas.toFixed(2)}x
+- После фиксов: [X.XX]x
+- Рост: +[X]%
+- Срок: [N] дней
+
+**ВАЖНО:** Только конкретные действия, никакой воды, никаких общих фраз!`;
+
+  console.log('[AI Analysis] Sending to GROQ...');
+  
+  const response = await axios.post(
+    GROQ_API_URL,
+    {
+      model: 'llama-3.1-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: 'Ты - профессиональный маркетолог. Анализируй только цифры и метрики. Никакой воды.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 3000
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 30000
+    }
+  );
+  
+  console.log('[AI Analysis] ✅ GROQ responded');
+  
+  return {
+    content: response.data.choices[0].message.content,
+    model: 'llama-3.1-70b-versatile',
+    usage: response.data.usage
+  };
+}
+
+/**
+ * Fallback analysis (if GROQ fails)
+ */
+function generateFallbackAnalysis(campaigns: any[]): string {
+  let analysis = '## 📊 БАЗОВЫЙ АНАЛИЗ\n\n';
+  analysis += '*(AI временно недоступен, показываю автоматический анализ)*\n\n';
+  
+  campaigns.forEach((c, i) => {
+    analysis += `### ${i + 1}. ${c.name}\n\n`;
+    
+    const issues: string[] = [];
+    if (c.ctr < 1.5) issues.push('🔴 Низкий CTR (<1.5%)');
+    if (c.frequency > 3) issues.push('🔴 Частота >3 (усталость аудитории)');
+    if (c.roas < 2) issues.push('🔴 ROAS <2.0x (не достигнута цель)');
+    if (c.cpc > 5) issues.push('🔴 Высокий CPC (>$5)');
+    
+    if (issues.length > 0) {
+      analysis += '**Проблемы:**\n' + issues.map(i => `- ${i}`).join('\n') + '\n\n';
+    } else {
+      analysis += '✅ Кампания работает нормально\n\n';
+    }
+    
+    analysis += `**Метрики:**\n`;
+    analysis += `- Расходы: $${c.spend.toFixed(2)}\n`;
+    analysis += `- CTR: ${c.ctr.toFixed(2)}%\n`;
+    analysis += `- CPC: $${c.cpc.toFixed(2)}\n`;
+    analysis += `- ROAS: ${c.roas.toFixed(2)}x\n\n`;
+  });
+  
+  return analysis;
+}
 
 export default router;

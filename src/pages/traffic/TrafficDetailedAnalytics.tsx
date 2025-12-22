@@ -225,18 +225,31 @@ export default function TrafficDetailedAnalytics() {
     
     setAnalyzing(true);
     setCurrentStep(0);
+    setAnalysis(null);
     
     // Simulate steps (10 seconds total)
+    const stepDuration = 2500; // 2.5 seconds per step = 10 seconds total
+    
     for (let i = 0; i < analysisSteps.length; i++) {
       setCurrentStep(i);
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await new Promise(resolve => setTimeout(resolve, stepDuration));
     }
     
     try {
       const token = localStorage.getItem('traffic_token');
+      
+      // Calculate team ROAS from campaigns
+      const totalSpend = filteredCampaigns.reduce((sum, c) => sum + c.spend, 0);
+      const totalRevenue = filteredCampaigns.reduce((sum, c) => sum + c.revenue, 0);
+      const teamRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
+      
       const response = await axios.post(
         `${API_URL}/api/traffic-detailed-analytics/ai-analysis`, 
-        { campaigns: filteredCampaigns },
+        { 
+          campaigns: filteredCampaigns,
+          team: user?.fullName || user?.team || 'Команда',
+          teamRoas: teamRoas
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

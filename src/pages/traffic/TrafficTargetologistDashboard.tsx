@@ -158,46 +158,6 @@ export default function TrafficTargetologistDashboard() {
       {/* Debug Panel (Ctrl/Cmd + Shift + D) */}
       <DebugPanel isOpen={debugPanel.isOpen} onClose={debugPanel.close} />
       
-      {/* Premium Onboarding Hint */}
-      {showOnboardingHint && onboarding && (
-        <div className="fixed top-24 right-4 z-40 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#00ff88]/30 rounded-lg p-4 shadow-xl backdrop-blur-sm">
-          <div className="flex items-start gap-3 max-w-sm">
-            <span className="text-2xl flex-shrink-0">🎯</span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-[#00ff88] mb-1">
-                Добро пожаловать!
-              </p>
-              <p className="text-xs text-[#b0b0b0] mb-3">
-                Хотите пройти быструю экскурсию по Dashboard?
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setShowOnboardingHint(false);
-                    onboarding.start();
-                  }}
-                  className="px-4 py-1.5 bg-gradient-to-r from-[#00ff88] to-[#00cc66] text-black rounded font-semibold text-xs hover:shadow-lg hover:shadow-[#00ff88]/20 transition-all"
-                >
-                  Начать
-                </button>
-                <button
-                  onClick={() => setShowOnboardingHint(false)}
-                  className="px-4 py-1.5 bg-transparent border border-[#00ff88]/30 text-[#b0b0b0] rounded text-xs hover:border-[#00ff88]/50 hover:text-[#e0e0e0] transition-all"
-                >
-                  Позже
-                </button>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowOnboardingHint(false)}
-              className="text-[#b0b0b0] hover:text-[#e0e0e0] text-lg flex-shrink-0 pt-1"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-      
       {/* Top Bar - Fixed */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/60 border-b border-[#00FF88]/10 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3">
