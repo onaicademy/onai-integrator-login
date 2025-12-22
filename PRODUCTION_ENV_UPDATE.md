@@ -28,7 +28,7 @@ TELEGRAM_TRAFFIC_ANALYTICS_CHAT_ID=-1002480099602
 # 🐛 GROQ DEBUGGER API KEY
 # ============================================
 # Для генерации умных отчётов об ошибках
-GROQ_DEBUGGER_API_KEY=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
+GROQ_DEBUGGER_API_KEY=<redacted_for_security>
 ```
 
 ---
