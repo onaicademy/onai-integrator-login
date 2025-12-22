@@ -9,6 +9,7 @@
 
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { database } from '../config/database-layer.js';
 import axios from 'axios';
 
 const router = Router();
@@ -90,45 +91,12 @@ router.get('/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
-    const supabase = trafficAdminSupabase;
-    
-    const { data, error } = await supabase
-      .from('traffic_targetologist_settings')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-    
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
-    
-    // Если настроек нет, создаем пустые
-    if (!data) {
-      const supabase = trafficAdminSupabase;
-      const { data: newSettings, error: createError } = await supabase
-        .from('traffic_targetologist_settings')
-        .insert({
-          user_id: userId,
-          fb_ad_accounts: [],
-          tracked_campaigns: [],
-          utm_source: 'facebook',
-          utm_medium: 'cpc',
-          utm_templates: {}
-        })
-        .select()
-        .single();
-      
-      if (createError) throw createError;
-      
-      return res.json({
-        success: true,
-        settings: newSettings
-      });
-    }
+    // ✅ Используем database layer
+    const settings = await database.getSettings(userId);
     
     res.json({
       success: true,
-      settings: data
+      settings
     });
     
   } catch (error: any) {
@@ -256,20 +224,12 @@ router.put('/:userId', async (req: Request, res: Response) => {
     const { userId } = req.params;
     const updateData = req.body;
     
-    const supabase = trafficAdminSupabase;
-    
-    const { data, error } = await supabase
-      .from('traffic_targetologist_settings')
-      .update(updateData)
-      .eq('user_id', userId)
-      .select()
-      .single();
-    
-    if (error) throw error;
+    // ✅ Используем database layer
+    const settings = await database.updateSettings(userId, updateData);
     
     res.json({
       success: true,
-      settings: data
+      settings
     });
     
   } catch (error: any) {
@@ -289,14 +249,8 @@ router.get('/:userId/fb-accounts', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
-    const supabase = trafficAdminSupabase;
-    
-    // Получаем токен (сначала персональный, потом общий)
-    const { data: settings } = await supabase
-      .from('traffic_targetologist_settings')
-      .select('fb_access_token')
-      .eq('user_id', userId)
-      .single();
+    // ✅ Используем database layer
+    const settings = await database.getSettings(userId);
     
     const accessToken = settings?.fb_access_token || process.env.FB_ACCESS_TOKEN;
     

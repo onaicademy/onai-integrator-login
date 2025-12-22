@@ -6,6 +6,8 @@
 
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { database } from '../config/database-layer.js';
+import { database } from '../config/database-layer.js';
 
 const router = Router();
 
@@ -19,43 +21,10 @@ router.get('/status/:userId', async (req: Request, res: Response) => {
 
     console.log(`[Onboarding] Checking status for userId: ${userId}`);
 
-    // Получить прогресс из БД
-    const { data: progress, error } = await trafficAdminSupabase
-      .from('traffic_onboarding_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    // ✅ Используем database layer (работает на localhost + production)
+    const progress = await database.getOnboardingStatus(userId);
 
-    if (error) {
-      console.log(`[Onboarding] Query error:`, error.code, error.message);
-      
-      // PGRST116 = not found (нормально для первого входа)
-      // 42P01 = table doesn't exist
-      if (error.code === 'PGRST116') {
-        // Первый вход - это OK
-        return res.json({
-          success: true,
-          is_first_login: true,
-          is_completed: false,
-          progress: null
-        });
-      } else if (error.code === '42P01') {
-        // Table doesn't exist - return default
-        console.warn('⚠️ [Onboarding] Table traffic_onboarding_progress does not exist yet');
-        return res.json({
-          success: true,
-          is_first_login: true,
-          is_completed: false,
-          progress: null,
-          warning: 'Onboarding table not initialized'
-        });
-      }
-      
-      throw error;
-    }
-
-    // Если записи нет - это первый вход
-    const isFirstLogin = !progress;
+    const isFirstLogin = !progress || progress.current_step === 0;
     const isCompleted = progress?.is_completed || false;
 
     console.log(`[Onboarding] Status for ${userId}: first=${isFirstLogin}, completed=${isCompleted}`);
@@ -155,40 +124,12 @@ router.post('/progress', async (req: Request, res: Response) => {
       }
     }
 
-    // Обновить прогресс
-    const { data, error } = await trafficAdminSupabase
-      .from('traffic_onboarding_progress')
-      .update(updateData)
-      .eq('user_id', user_id)
-      .select()
-      .single();
-
-    if (error) {
-      // Если записи нет - создать
-      if (error.code === 'PGRST116') {
-        const { data: newData, error: insertError } = await trafficAdminSupabase
-          .from('traffic_onboarding_progress')
-          .insert({
-            user_id,
-            tour_type: tour_type || 'targetologist',
-            ...updateData
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        return res.json({
-          success: true,
-          progress: newData
-        });
-      }
-      throw error;
-    }
+    // ✅ Используем database layer (auto-upsert)
+    const progress = await database.updateOnboardingStatus(user_id, updateData);
 
     res.json({
       success: true,
-      progress: data
+      progress
     });
 
   } catch (error: any) {

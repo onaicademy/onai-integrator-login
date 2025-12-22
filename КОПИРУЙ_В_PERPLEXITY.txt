@@ -1,0 +1,153 @@
+═══════════════════════════════════════════════════════════
+📄 PERPLEXITY SEARCH PROMPT - ГОТОВ!
+═══════════════════════════════════════════════════════════
+
+Дата: 22 декабря 2025 18:10 MSK
+Файл: PERPLEXITY_TRAFFIC_ANALYTICS_FIX.md
+Размер: 466 строк (16 KB)
+
+═══════════════════════════════════════════════════════════
+
+🎯 ЧТО В ПРОМПТЕ:
+
+1. 🔴 PROBLEM 1: Backend 500 Errors
+   - Traffic Settings endpoint не работает
+   - Onboarding endpoint не работает
+   - Schema cache issue на localhost
+   
+2. 🟡 PROBLEM 2: Onboarding Navigation
+   - Multi-page onboarding останавливается после navigate()
+   - Нужно продолжение на новой странице
+   - React Joyride + React Router
+   
+3. 🔴 PROBLEM 3: Analytics Algorithm (ГЛАВНАЯ!)
+   - Неполноценный анализ кампаний
+   - Нужно:
+     • Audience Analysis (overlap, size, demographics)
+     • Creative Analysis (performance по типам)
+     • Budget Optimization (reallocation recommendations)
+     • Timing Analysis (day parting, seasonal patterns)
+     • Competitive Benchmarks (industry standards)
+     • Actionable Recommendations (prioritized, specific)
+
+═══════════════════════════════════════════════════════════
+
+🔍 SEARCH QUERIES В ПРОМПТЕ:
+
+1. "Express TypeScript environment-specific database queries Mock vs Supabase"
+
+2. "React Joyride multi-page onboarding persist state navigation"
+
+3. "Facebook Graph API comprehensive campaign insights audience creative"
+
+4. "Facebook Ads campaign analyzer algorithm best practices"
+
+5. "AI prompt engineering Facebook Ads optimization recommendations"
+
+═══════════════════════════════════════════════════════════
+
+📊 ЧТО PERPLEXITY НАЙДЕТ:
+
+✅ Code examples для Mock Mode всех endpoints
+✅ React Joyride state persistence solutions
+✅ Facebook API endpoints для детального анализа:
+   - /insights (with breakdowns)
+   - /adcreatives
+   - /targeting
+   - /reach_estimate
+✅ Алгоритмы для оценки кампаний
+✅ Industry benchmarks (CTR, CPM, CPC по индустриям)
+✅ AI prompt templates для actionable recommendations
+✅ Best practices от реальных ads analytics tools
+
+═══════════════════════════════════════════════════════════
+
+🚀 КАК ИСПОЛЬЗОВАТЬ:
+
+1. Открой файл в Cursor:
+   PERPLEXITY_TRAFFIC_ANALYTICS_FIX.md
+
+2. Скопируй весь контент (466 строк):
+   Cmd+A → Cmd+C
+
+3. Открой Perplexity Pro:
+   https://www.perplexity.ai/
+
+4. Вставь промпт и запусти поиск
+
+5. Perplexity проанализирует:
+   - Facebook Developers Documentation
+   - GitHub repositories (ads analyzers, onboarding solutions)
+   - Stack Overflow threads
+   - Reddit discussions (r/PPC, r/facebook_ads)
+   - Technical blogs (Medium, Dev.to)
+   - Industry benchmark databases
+
+6. Получишь:
+   - Готовые code examples
+   - Facebook API endpoints для детального анализа
+   - Алгоритм для scoring кампаний
+   - AI prompt для recommendations
+   - Links на best practices
+
+═══════════════════════════════════════════════════════════
+
+💡 СТРУКТУРА ПРОМПТА:
+
+📋 Problem Description (3 main issues)
+🛠️ Technical Stack (Node.js, React, Supabase, Facebook API)
+❌ What We've Tried (attempted solutions)
+✅ What Works on Production
+🎯 What We Need (7 specific deliverables)
+🔍 Search Keywords (по категориям)
+📊 Current Codebase Structure
+💬 Example Search Queries (5 queries)
+📚 Reference Materials (metrics, benchmarks)
+🚀 Priority Order
+🎯 Desired Outcomes
+
+═══════════════════════════════════════════════════════════
+
+📈 EXPECTED RESULTS:
+
+После Perplexity search получим решения для:
+
+1. Mock Mode для ВСЕХ endpoints (не только auth)
+2. Multi-page onboarding с продолжением
+3. COMPREHENSIVE Facebook Ads Analyzer:
+   - Audience insights
+   - Creative performance
+   - Budget optimization
+   - Time patterns
+   - Industry benchmarks
+   - Prioritized recommendations
+
+═══════════════════════════════════════════════════════════
+
+⚡ СЛЕДУЮЩИЕ ШАГИ:
+
+1. Скопируй PERPLEXITY_TRAFFIC_ANALYTICS_FIX.md в Perplexity
+2. Получи решения (~15-20 минут поиска)
+3. Я реализую найденные решения (~2-4 часа)
+4. Протестируем на localhost
+5. Задеплоим на production
+
+═══════════════════════════════════════════════════════════
+
+📁 ФАЙЛЫ:
+
+✅ PERPLEXITY_TRAFFIC_ANALYTICS_FIX.md (466 строк) - НОВЫЙ ПРОМПТ
+✅ PERPLEXITY_SEARCH_PROMPT.md (323 строки) - старый (schema cache)
+✅ SUPABASE-CACHE-FIX.md (363 строки) - решение от Perplexity
+✅ TECHNICAL_ISSUE_REPORT.md (204 строки) - технический отчет
+✅ LOCALHOST_FIXED.md (180 строк) - статус localhost fix
+
+═══════════════════════════════════════════════════════════
+
+🎉 ВСЁ ГОТОВО!
+
+Открывай: PERPLEXITY_TRAFFIC_ANALYTICS_FIX.md
+Копируй в: https://www.perplexity.ai/
+Получай: Решения для всех 3 проблем! 🚀
+
+═══════════════════════════════════════════════════════════

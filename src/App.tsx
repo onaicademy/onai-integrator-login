@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OnboardingProvider } from "@/context/OnboardingContext";
 import { useAuth } from "@/hooks/useAuth";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { AdminGuard as OldAdminGuard } from "./components/AdminGuard";
@@ -548,9 +549,11 @@ const App = () => (
           <Toaster />
           <Sonner />
           <AuthProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
+            <OnboardingProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </OnboardingProvider>
           </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>

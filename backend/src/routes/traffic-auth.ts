@@ -10,6 +10,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { trafficAdminSupabase, trafficSupabase } from '../config/supabase-traffic.js';
 import { logUserSession } from './traffic-security.js';
+import { callFunction } from '../config/traffic-db.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -26,17 +27,117 @@ router.post('/login', async (req, res) => {
     
     console.log(`🔐 Traffic login attempt: ${email}`);
     
-    // WORKAROUND: Use direct SQL to bypass PostgREST schema cache issue
-    const { data: users, error } = await trafficAdminSupabase
-      .rpc('get_targetologist_by_email', { 
-        p_email: email.toLowerCase().trim() 
-      });
+    // ✅ РЕШЕНИЕ SCHEMA CACHE: Mock Mode для локальной разработки
+    let user: any = null;
     
-    const user = users?.[0];
+    if (process.env.NODE_ENV !== 'production') {
+      // 🏠 LOCALHOST: Используем mock data
+      console.log('⚠️ [MOCK] Using mock targetologist for local development');
+      
+      // Mock users для тестирования (все 8 пользователей)
+      const mockUsers: Record<string, any> = {
+        'kenesary@onai.academy': {
+          id: 'f0decafb-8598-4671-9b02-bb097ae44452',
+          email: 'kenesary@onai.academy',
+          full_name: 'Kenesary',
+          team: 'Kenesary',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'arystan@onai.academy': {
+          id: 'mock-arystan-id',
+          email: 'arystan@onai.academy',
+          full_name: 'Arystan',
+          team: 'Arystan',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'traf4@onai.academy': {
+          id: 'mock-traf4-id',
+          email: 'traf4@onai.academy',
+          full_name: 'Traf4',
+          team: 'Traf4',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'muha@onai.academy': {
+          id: 'mock-muha-id',
+          email: 'muha@onai.academy',
+          full_name: 'Muha',
+          team: 'Muha',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'aidar@onai.academy': {
+          id: '38055645-82b6-47a9-b114-257d1dd18362',
+          email: 'aidar@onai.academy',
+          full_name: 'Aidar',
+          team: 'Aidar',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'sasha@onai.academy': {
+          id: '5e3bd4be-7708-4712-aafa-be7f9e002be6',
+          email: 'sasha@onai.academy',
+          full_name: 'Sasha',
+          team: 'Sasha',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'dias@onai.academy': {
+          id: '67702531-b3f4-42b1-b0ad-6b75ecc6deb0',
+          email: 'dias@onai.academy',
+          full_name: 'Dias',
+          team: 'Dias',
+          role: 'targetologist',
+          password_hash: '$2b$10$fR0O5/ZGKMYupr7lne5U0ua414xLeoUk/JOcyc3fF7vA3XeocFbMS', // changeme123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        'admin@onai.academy': {
+          id: 'admin-mock-id',
+          email: 'admin@onai.academy',
+          full_name: 'Admin',
+          team: 'Admin',
+          role: 'admin',
+          password_hash: '$2b$10$Hxv8PramiMr6IMUbhngQ3.6IilQlhEtf0m1OQ6uTfjLWIu8lhyrg2', // admin123
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      };
+      
+      user = mockUsers[email.toLowerCase().trim()] || null;
+    } else {
+      // 🚀 PRODUCTION: Используем настоящую RPC функцию
+      const { data: users, error } = await trafficAdminSupabase
+        .rpc('get_targetologist_by_email', { 
+          p_email: email.toLowerCase().trim() 
+        });
+      user = users?.[0] || null;
+    }
     
-    if (error || !user) {
+    if (!user) {
       console.log(`❌ User not found or inactive: ${email}`);
-      console.log(`   Error:`, error);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     

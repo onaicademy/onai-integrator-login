@@ -44,3 +44,8 @@ id_rsa
 id_ed25519
 *.pem
 *.key
+
+# Backup files (exclude from git)
+*.backup
+*.bak*
+backend/env.env.*

@@ -424,7 +424,8 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
         setTimeout(() => {
           navigate('/traffic/settings');
           setStepIndex(4); // Продолжаем с 4-го шага на Settings
-        }, 300);
+          setRun(true); // 🔥 FIX: Продолжить onboarding после навигации
+        }, 500); // Увеличил задержку для загрузки страницы
         return;
       }
       
@@ -434,7 +435,8 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
         setTimeout(() => {
           navigate('/traffic/detailed-analytics');
           setStepIndex(7); // Продолжаем с 7-го шага на Analytics
-        }, 300);
+          setRun(true); // 🔥 FIX: Продолжить onboarding после навигации
+        }, 500); // Увеличил задержку для загрузки страницы
         return;
       }
     }
