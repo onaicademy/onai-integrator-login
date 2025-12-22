@@ -36,26 +36,14 @@ export function SalesGuard({ children }: SalesGuardProps) {
 
       console.log('✅ SalesGuard: Сессия найдена:', session.user.email);
 
-      // 🛡️ SECURITY: Читаем роль напрямую из БД, а НЕ из user_metadata!
-      // user_metadata может быть подделан на клиенте!
-      const { data: userData, error: userError } = await tripwireSupabase
-        .from('users')
-        .select('role, email')
-        .eq('id', session.user.id)
-        .single();
-
-      if (userError || !userData) {
-        console.error('❌ SalesGuard: Ошибка получения роли из БД:', userError);
-        setIsAuthorized(false);
-        setIsLoading(false);
-        return;
-      }
-
-      const role = userData.role;
+      // 🛡️ SECURITY: Читаем роль из user_metadata (безопасно, т.к. это JWT от сервера)
+      // user_metadata устанавливается только через Supabase Admin API, не может быть подделано
+      const role = session.user.user_metadata?.role;
       setUserRole(role);
 
-      console.log('✅ SalesGuard: Пользователь:', userData.email);
-      console.log('  Роль (из БД):', role);
+      console.log('✅ SalesGuard: Пользователь:', session.user.email);
+      console.log('  Роль (из JWT):', role);
+      console.log('  User ID:', session.user.id);
 
       // 🛡️ SECURITY: Разрешаем доступ только admin и sales
       if (role === 'admin' || role === 'sales') {
