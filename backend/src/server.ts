@@ -668,15 +668,18 @@ const server = app.listen(PORT, () => {
         const { startExchangeRateFetcher } = await import('./jobs/dailyExchangeRateFetcher');
         const { startDailyTrafficReport } = await import('./jobs/dailyTrafficReport');
         const { startWeeklyTrafficReport } = await import('./jobs/weeklyTrafficReport');
-        
-        startExchangeRateFetcher();   // 08:00 Almaty (02:00 UTC)
-        startDailyTrafficReport();    // 08:05 Almaty (02:05 UTC)
-        startWeeklyTrafficReport();   // Monday 08:10 Almaty (02:10 UTC)
-        
+        const { startDailyDebugReportJob } = await import('./jobs/dailyDebugReport');
+
+        startExchangeRateFetcher();     // 08:00 Almaty (02:00 UTC)
+        startDailyTrafficReport();      // 08:05 Almaty (02:05 UTC)
+        startWeeklyTrafficReport();     // Monday 08:10 Almaty (02:10 UTC)
+        startDailyDebugReportJob();     // 23:00 Almaty (17:00 UTC) - Daily Debug Report via GROQ
+
         console.log('✅ Currency & Traffic Reports schedulers initialized');
         console.log('   - Exchange Rate Fetcher: 08:00 Almaty (02:00 UTC)');
         console.log('   - Daily Traffic Report: 08:05 Almaty (02:05 UTC)');
         console.log('   - Weekly Traffic Report: Monday 08:10 Almaty (02:10 UTC)');
+        console.log('   - Daily Debug Report: 23:00 Almaty (17:00 UTC) - GROQ AI Summary');
       } catch (error) {
         console.error('❌ Failed to initialize Currency/Traffic Reports:', error);
       }

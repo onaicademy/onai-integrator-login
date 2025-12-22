@@ -1,136 +1,181 @@
 #!/bin/bash
+# 🚀 Production Deployment Script
+# For Digital Ocean server: 207.154.231.30
 
-# 🚀 PRODUCTION DEPLOYMENT SCRIPT - FIXED VERSION
-# This script ensures nodemon is always installed in the correct location
+set -e  # Exit on error
 
-set -e  # Exit on any error
-
-echo "=========================================="
-echo "🚀 DEPLOYING TO PRODUCTION"
-echo "=========================================="
 echo ""
+echo "🚀 ═══════════════════════════════════════════"
+echo "   PRODUCTION DEPLOYMENT - OnAI Academy"
+echo "═══════════════════════════════════════════"
+echo ""
+
+SERVER="root@207.154.231.30"
+FRONTEND_PATH="/var/www/onai.academy"
+BACKEND_PATH="/var/www/onai-integrator-login-main/backend"
 
 # Colors
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Project paths
-PROJECT_ROOT="/var/www/onai-integrator-login-main"
-BACKEND_DIR="$PROJECT_ROOT/backend"
-
-# Ensure we're in the right directory
-cd "$PROJECT_ROOT" || exit 1
-
-# 1. PULL LATEST CODE
-echo -e "${YELLOW}📥 Pulling latest code from GitHub...${NC}"
-git fetch origin main
-git reset --hard origin/main
-echo -e "${GREEN}✅ Code updated${NC}"
+# ====================================
+# STEP 1: Backup current version
+# ====================================
+echo "📦 Step 1/7: Creating backup..."
+BACKUP_NAME="backup-onai-academy-$(date +%Y%m%d-%H%M).tar.gz"
+ssh $SERVER "tar -czf /root/$BACKUP_NAME /var/www/onai.academy/ 2>/dev/null" || echo "⚠️ Backup warning (ignore)"
+echo -e "${GREEN}✅ Backup created: $BACKUP_NAME${NC}"
 echo ""
 
-# 2. CLEAN OLD NODE_MODULES (if needed)
-echo -e "${YELLOW}🧹 Cleaning old dependencies...${NC}"
-if [ -d "$BACKEND_DIR/node_modules" ]; then
-  # Check if nodemon exists
-  if [ ! -f "$BACKEND_DIR/node_modules/.bin/nodemon" ]; then
-    echo -e "${RED}⚠️ nodemon missing, cleaning node_modules...${NC}"
-    rm -rf "$BACKEND_DIR/node_modules"
-  fi
-fi
+# ====================================
+# STEP 2: Build Frontend
+# ====================================
+echo "🏗️  Step 2/7: Building frontend..."
+rm -rf dist node_modules/.vite
+npm run build
+echo -e "${GREEN}✅ Frontend built successfully${NC}"
 echo ""
 
-# 3. INSTALL ROOT DEPENDENCIES (Frontend)
-echo -e "${YELLOW}📦 Installing frontend dependencies...${NC}"
-npm install --legacy-peer-deps
-echo -e "${GREEN}✅ Frontend dependencies installed${NC}"
+# ====================================
+# STEP 3: Deploy Frontend
+# ====================================
+echo "📤 Step 3/7: Deploying frontend to $SERVER..."
+rsync -avz --delete \
+  --chown=www-data:www-data \
+  dist/ \
+  $SERVER:$FRONTEND_PATH/
+echo -e "${GREEN}✅ Frontend deployed${NC}"
 echo ""
 
-# 4. INSTALL BACKEND DEPENDENCIES (CRITICAL)
-echo -e "${YELLOW}📦 Installing backend dependencies...${NC}"
-cd "$BACKEND_DIR"
+# ====================================
+# STEP 4: Update Backend Code
+# ====================================
+echo "🔄 Step 4/7: Updating backend code..."
 
-# Use --legacy-peer-deps to avoid conflicts
-npm install --legacy-peer-deps
+# Copy new files (jobs, routes, services)
+echo "  - Copying new jobs/dailyDebugReport.ts..."
+scp backend/src/jobs/dailyDebugReport.ts $SERVER:$BACKEND_PATH/src/jobs/
 
-# CRITICAL: Verify nodemon exists
-if [ ! -f "node_modules/.bin/nodemon" ]; then
-  echo -e "${RED}❌ nodemon still missing after npm install!${NC}"
-  echo -e "${YELLOW}🔧 Installing nodemon manually...${NC}"
-  npm install nodemon@^3.1.11 tsx@^4.7.0 --save-dev --legacy-peer-deps
-  
-  # Double-check
-  if [ ! -f "node_modules/.bin/nodemon" ]; then
-    echo -e "${RED}❌ CRITICAL ERROR: Cannot install nodemon${NC}"
-    exit 1
-  fi
-fi
+echo "  - Updating error-reports.ts..."
+scp backend/src/routes/error-reports.ts $SERVER:$BACKEND_PATH/src/routes/
 
-echo -e "${GREEN}✅ Backend dependencies installed${NC}"
-echo -e "${GREEN}✅ nodemon verified at: $BACKEND_DIR/node_modules/.bin/nodemon${NC}"
-cd "$PROJECT_ROOT"
+echo "  - Updating errorTrackingService.ts..."
+scp backend/src/services/errorTrackingService.ts $SERVER:$BACKEND_PATH/src/services/
+
+echo "  - Updating server.ts..."
+scp backend/src/server.ts $SERVER:$BACKEND_PATH/src/
+
+echo -e "${GREEN}✅ Backend code updated${NC}"
 echo ""
 
-# 5. UPDATE PM2 ECOSYSTEM CONFIG
-echo -e "${YELLOW}🔧 Updating PM2 configuration...${NC}"
-if pm2 describe onai-backend &>/dev/null; then
-  # Backend is running, delete it
-  pm2 delete onai-backend
-fi
+# ====================================
+# STEP 5: Update Production ENV
+# ====================================
+echo "⚠️  Step 5/7: ENV variables update required"
+echo ""
+echo "${YELLOW}═══════════════════════════════════════════${NC}"
+echo "${YELLOW}   MANUAL ACTION REQUIRED!${NC}"
+echo "${YELLOW}═══════════════════════════════════════════${NC}"
+echo ""
+echo "SSH to server and add these variables to env.env:"
+echo ""
+echo -e "${YELLOW}ssh $SERVER${NC}"
+echo -e "${YELLOW}cd $BACKEND_PATH${NC}"
+echo -e "${YELLOW}nano env.env${NC}"
+echo ""
+echo "Add these lines:"
+echo ""
+cat << 'EOF'
+# 🤖 Telegram Debugger Bot (@oapdbugger_bot)
+TELEGRAM_ANALYTICS_BOT_TOKEN=8206369316:AAGX278b_TMrWSxjy6hJOzo2DacElC84HK8
+TELEGRAM_ANALYTICS_CHAT_ID=789638302
 
-# Start with ecosystem config (correct cwd)
-pm2 start ecosystem.config.cjs
-pm2 save
-echo -e "${GREEN}✅ PM2 configured and started${NC}"
+# 📊 Traffic Analytics Bot (@analisistonaitrafic_bot)
+TELEGRAM_TRAFFIC_ANALYTICS_BOT_TOKEN=8439289933:AAH5eED6m0HOK1ZEUGRO1MYCF93srAfjEF4
+TELEGRAM_TRAFFIC_ANALYTICS_CHAT_ID=-1002480099602
+
+# 🐛 GROQ Debugger API
+GROQ_DEBUGGER_API_KEY=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
+EOF
+echo ""
+echo "${YELLOW}═══════════════════════════════════════════${NC}"
+echo ""
+read -p "Press ENTER after you've updated env.env on server..."
 echo ""
 
-# 6. WAIT FOR BACKEND TO START
-echo -e "${YELLOW}⏳ Waiting for backend to start (10 seconds)...${NC}"
-sleep 10
+# ====================================
+# STEP 6: Restart Backend
+# ====================================
+echo "♻️  Step 6/7: Restarting backend..."
+ssh $SERVER "pm2 restart onai-backend"
+sleep 3
+ssh $SERVER "pm2 logs onai-backend --lines 20 --nostream"
+echo -e "${GREEN}✅ Backend restarted${NC}"
+echo ""
 
-# 7. CHECK BACKEND STATUS
-echo -e "${YELLOW}📊 Checking backend status...${NC}"
-BACKEND_STATUS=$(pm2 jlist | jq -r '.[] | select(.name=="onai-backend") | .pm2_env.status' 2>/dev/null || echo "unknown")
+# ====================================
+# STEP 7: Reload Nginx
+# ====================================
+echo "🌐 Step 7/7: Reloading Nginx..."
+ssh $SERVER "systemctl reload nginx"
+echo -e "${GREEN}✅ Nginx reloaded${NC}"
+echo ""
 
-if [ "$BACKEND_STATUS" == "online" ]; then
-  echo ""
-  echo "=========================================="
-  echo -e "${GREEN}✅ DEPLOYMENT SUCCESSFUL${NC}"
-  echo "=========================================="
-  echo ""
-  echo -e "${GREEN}Backend Status: ${BACKEND_STATUS}${NC}"
-  echo "API URL: https://api.onai.academy"
-  echo ""
-  echo -e "${BLUE}Recent logs:${NC}"
-  pm2 logs onai-backend --lines 10 --nostream | tail -5
-  
-  # Test API endpoint
-  echo ""
-  echo -e "${YELLOW}🧪 Testing API endpoint...${NC}"
-  if curl -s -f https://api.onai.academy/api/health > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ API is responding${NC}"
-  else
-    echo -e "${RED}⚠️ API not responding yet (may take a minute)${NC}"
-  fi
-  
+# ====================================
+# VERIFICATION
+# ====================================
+echo "🔍 Verification..."
+echo ""
+
+echo "📅 Frontend timestamp:"
+ssh $SERVER "stat -c '%y' $FRONTEND_PATH/index.html"
+echo ""
+
+echo "👤 Frontend owner:"
+ssh $SERVER "ls -la $FRONTEND_PATH/ | head -3"
+echo ""
+
+echo "⚙️  Backend status:"
+ssh $SERVER "pm2 status | grep onai-backend"
+echo ""
+
+echo "🌍 HTTP status:"
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://onai.academy/)
+if [ "$HTTP_STATUS" = "200" ]; then
+  echo -e "${GREEN}✅ Status: $HTTP_STATUS (OK)${NC}"
 else
-  echo ""
-  echo "=========================================="
-  echo -e "${RED}❌ DEPLOYMENT FAILED${NC}"
-  echo "=========================================="
-  echo ""
-  echo -e "${RED}Backend Status: ${BACKEND_STATUS}${NC}"
-  echo ""
-  echo -e "${RED}Error logs (last 30 lines):${NC}"
-  pm2 logs onai-backend --err --lines 30 --nostream
-  echo ""
-  echo -e "${YELLOW}💡 Try running manually:${NC}"
-  echo "   cd $BACKEND_DIR"
-  echo "   npm run dev"
-  exit 1
+  echo -e "${RED}❌ Status: $HTTP_STATUS (ERROR)${NC}"
 fi
-
 echo ""
-echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
+
+echo "🧪 Test error reporting:"
+TEST_RESPONSE=$(curl -s -X POST https://api.onai.academy/api/error-reports/test -H "Content-Type: application/json" -d '{}')
+if echo "$TEST_RESPONSE" | grep -q "success.*true"; then
+  echo -e "${GREEN}✅ Error reporting: Working${NC}"
+else
+  echo -e "${YELLOW}⚠️  Error reporting: Check manually${NC}"
+  echo "   Response: $TEST_RESPONSE"
+fi
+echo ""
+
+# ====================================
+# SUCCESS
+# ====================================
+echo ""
+echo "${GREEN}🎉 ═══════════════════════════════════════════${NC}"
+echo "${GREEN}   DEPLOYMENT SUCCESSFUL!${NC}"
+echo "${GREEN}═══════════════════════════════════════════${NC}"
+echo ""
+echo "📝 Next steps:"
+echo "  1. Check https://onai.academy in Incognito mode"
+echo "  2. Test error reporting (trigger any error)"
+echo "  3. Wait for 23:00 Almaty for first debug report"
+echo "  4. Monitor PM2 logs: pm2 logs onai-backend"
+echo ""
+echo "📋 Rollback (if needed):"
+echo "  ssh $SERVER \"tar -xzf /root/$BACKUP_NAME -C /\""
+echo ""
+echo "✅ Deployment completed at $(date)"
+echo ""
