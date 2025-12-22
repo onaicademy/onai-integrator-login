@@ -19,7 +19,7 @@ import {
   Check, X, Loader2, Search, Key, Power
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
-import { OnAILogo } from '@/components/traffic/OnAILogo';
+import { OnAILogo } from '@/components/OnAILogo';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
