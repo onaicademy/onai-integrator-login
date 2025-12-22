@@ -4,11 +4,14 @@
  * Детальная аналитика по кампаниям, группам объявлений и объявлениям
  * Берет данные из наших кабинетов Facebook Ads напрямую
  * + AI анализ через GROQ API (llama-3.1-70b-versatile)
+ * + 🎯 Comprehensive Analytics Engine (FIX #3)
  */
 
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
+import { analyticsEngine } from '../services/analyticsEngine.js';
+import { analyticsEngine } from '../services/analyticsEngine.js';
 
 // Rate limiting для GROQ API
 const groqRequestTimestamps: number[] = [];
@@ -497,5 +500,73 @@ function generateFallbackAnalysis(campaigns: any[]): string {
   
   return analysis;
 }
+
+/**
+ * 🎯 POST /api/traffic-detailed-analytics/campaign/:campaignId/analyze
+ * Comprehensive AI Analysis с использованием Analytics Engine (FIX #3)
+ * 
+ * Возвращает:
+ * - Score (0-100) и Grade (A+ до F)
+ * - Metrics analysis (CTR, CPM, ROAS scores)
+ * - Industry benchmarks comparison
+ * - Specific issues (audience, creative, budget, timing, bid_strategy)
+ * - AI-powered recommendations (prioritized, actionable)
+ */
+router.post('/campaign/:campaignId/analyze', async (req: Request, res: Response) => {
+  try {
+    const { campaignId } = req.params;
+    const campaignData = req.body;
+
+    console.log(`[Analytics Engine] Analyzing campaign: ${campaignId}`);
+
+    // Validate required fields
+    if (!campaignData.spend || !campaignData.impressions || !campaignData.clicks) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required campaign data (spend, impressions, clicks)'
+      });
+    }
+
+    // Ensure all required fields have default values
+    const enrichedCampaignData = {
+      id: campaignId,
+      name: campaignData.name || 'Unnamed Campaign',
+      spend: parseFloat(campaignData.spend) || 0,
+      impressions: parseInt(campaignData.impressions) || 0,
+      clicks: parseInt(campaignData.clicks) || 0,
+      conversions: parseInt(campaignData.conversions) || 0,
+      reach: parseInt(campaignData.reach) || parseInt(campaignData.impressions) || 0,
+      ctr: parseFloat(campaignData.ctr) || 0,
+      cpm: parseFloat(campaignData.cpm) || 0,
+      cpc: parseFloat(campaignData.cpc) || 0,
+      conversion_rate: parseFloat(campaignData.conversion_rate) || 0,
+      roas: parseFloat(campaignData.roas) || 0,
+      cost_per_result: parseFloat(campaignData.cost_per_result) || 0,
+    };
+
+    // 🎯 Call Analytics Engine
+    const analysis = await analyticsEngine.analyzeCampaign(enrichedCampaignData);
+
+    console.log(`✅ [Analytics Engine] Analysis complete: ${analysis.grade} (${analysis.score}/100)`);
+
+    res.json({
+      success: true,
+      analysis,
+      metadata: {
+        engine: 'comprehensive-analytics-v1',
+        timestamp: new Date().toISOString(),
+        campaign_id: campaignId,
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ [Analytics Engine] Error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: 'Failed to analyze campaign with Analytics Engine'
+    });
+  }
+});
 
 export default router;
