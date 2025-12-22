@@ -1,9 +1,11 @@
 /**
  * Error Tracking Service
  * Централизованная система для отслеживания и логирования ошибок
+ * + Telegram notifications for CRITICAL errors
  */
 import { createClient } from '@supabase/supabase-js';
 import pino from 'pino';
+import axios from 'axios';
 
 // Безопасная инициализация logger с проверкой окружения
 let logger: pino.Logger;
