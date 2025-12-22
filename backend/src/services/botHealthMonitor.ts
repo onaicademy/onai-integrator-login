@@ -476,57 +476,41 @@ class BotHealthMonitor {
   // ═══════════════════════════════════════════════════════════════
 
   private async sendCriticalAlert(failedServices: ServiceStatus[]) {
-    // Rate limiting - max 1 alert per 2 HOURS per service (prevent spam!)
-    const now = Date.now();
-    const cooldownMs = 2 * 60 * 60 * 1000; // 2 hours instead of 30 min
+    // Use AlertQueue instead of direct sending!
+    const { alertQueue } = await import('./alertQueue.js');
     
-    const servicesToAlert = failedServices.filter(s => {
-      const lastAlert = this.alertCooldown.get(s.name) || 0;
-      const canAlert = now - lastAlert > cooldownMs;
-      if (!canAlert) {
-        console.log(`⏳ [Monitor] Skipping alert for ${s.name} (cooldown: ${Math.round((cooldownMs - (now - lastAlert)) / 60000)}min remaining)`);
-      }
-      return canAlert;
-    });
-
-    if (servicesToAlert.length === 0) {
-      console.log('⏸️ [Monitor] All critical alerts are in cooldown period, skipping');
-      return;
-    }
-
-    const message = `
+    for (const service of failedServices) {
+      const message = `
 🚨 *CRITICAL SYSTEM ALERT*
 
-${servicesToAlert.map(s => `❌ *${s.name}*: ${s.message}`).join('\n')}
+❌ *${service.name}*: ${service.message}
 
 ⏰ Time: ${new Date().toLocaleString('ru-KZ', { timeZone: 'Asia/Almaty' })}
 🔧 Action Required: Check API keys and service status
 `.trim();
 
-    try {
       const botToken = this.BOTS.debugger || this.BOTS.traffic;
-      if (botToken) {
-        await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          chat_id: this.ADMIN_CHAT_ID,
-          text: message,
-          parse_mode: 'Markdown',
-        });
-        
-        // Update cooldown
-        servicesToAlert.forEach(s => this.alertCooldown.set(s.name, now));
-        console.log('🚨 [Monitor] Critical alert sent to admin');
+      if (!botToken) continue;
+      
+      const result = await alertQueue.enqueue(
+        message,
+        this.ADMIN_CHAT_ID,
+        botToken,
+        service.name,
+        'critical'
+      );
+      
+      if (result.queued) {
+        console.log(`✅ [Monitor] Alert queued for ${service.name}`);
+      } else {
+        console.log(`⏸️ [Monitor] Alert skipped for ${service.name}: ${result.reason}`);
       }
-    } catch (error) {
-      console.error('❌ [Monitor] Failed to send critical alert:', error);
     }
   }
 
   private async sendFailureAlert(reportName: string, failures: number, error?: string) {
-    const cooldownMs = 60 * 60 * 1000; // 1 hour cooldown per report
-    const now = Date.now();
-    const lastAlert = this.alertCooldown.get(`report:${reportName}`) || 0;
-    
-    if (now - lastAlert < cooldownMs) return;
+    // Use AlertQueue instead of direct sending!
+    const { alertQueue } = await import('./alertQueue.js');
 
     const message = `
 ⚠️ *REPORT DELIVERY FAILED*
@@ -538,19 +522,21 @@ ${servicesToAlert.map(s => `❌ *${s.name}*: ${s.message}`).join('\n')}
 ⏰ Time: ${new Date().toLocaleString('ru-KZ', { timeZone: 'Asia/Almaty' })}
 `.trim();
 
-    try {
-      const botToken = this.BOTS.debugger || this.BOTS.traffic;
-      if (botToken) {
-        await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          chat_id: this.ADMIN_CHAT_ID,
-          text: message,
-          parse_mode: 'Markdown',
-        });
-        this.alertCooldown.set(`report:${reportName}`, now);
-        console.log(`⚠️ [Monitor] Report failure alert sent for: ${reportName}`);
-      }
-    } catch (error) {
-      console.error('❌ [Monitor] Failed to send report failure alert:', error);
+    const botToken = this.BOTS.debugger || this.BOTS.traffic;
+    if (!botToken) return;
+    
+    const result = await alertQueue.enqueue(
+      message,
+      this.ADMIN_CHAT_ID,
+      botToken,
+      `report:${reportName}`,
+      'high'
+    );
+    
+    if (result.queued) {
+      console.log(`✅ [Monitor] Report failure alert queued: ${reportName}`);
+    } else {
+      console.log(`⏸️ [Monitor] Report failure alert skipped: ${result.reason}`);
     }
   }
 

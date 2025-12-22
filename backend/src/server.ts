@@ -13,8 +13,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import * as path from 'path';
 
-// ✅ CommonJS compatibility: __dirname is available in CommonJS
-const __dirname = __filename ? path.dirname(__filename) : process.cwd();
+// ✅ Get current directory (CommonJS already has __dirname)
 
 // ═══════════════════════════════════════════════════════════════
 // 🔍 ДИАГНОСТИКА .ENV VARIABLES
@@ -149,7 +148,6 @@ import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js
 import trafficWebhookRouter from './integrations/traffic-webhook.js'; // 🎯 DEDICATED Traffic Dashboard Webhook
 import adminWebhookLogsRouter from './routes/admin-webhook-logs.js'; // 🔍 Admin Webhook Logs Viewer
 import systemHealthRouter from './routes/system-health'; // 🚀 System Health & Queue Management
-import debugRouter from './routes/debug'; // 🚔 Debug Panel (Operation Logging)
 import monitoringRouter from './routes/monitoring'; // 🏥 Bot Health Monitoring System
 import { errorHandler } from './middleware/errorHandler';
 import operationLogger from './middleware/operationLogger'; // 🚔 Operation Logger Middleware

@@ -282,5 +282,32 @@ router.get('/dashboard', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/monitoring/queue
+ * Get alert queue statistics
+ */
+router.get('/queue', (req: Request, res: Response) => {
+  try {
+    const stats = alertQueue.getStats();
+    
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        description: {
+          pending: 'Alerts waiting to be sent',
+          sent: 'Alerts successfully delivered',
+          failed: 'Alerts that failed after max retries',
+          dedupHashes: 'Unique message hashes in dedup window (2h)',
+          rateLimitedServices: 'Services currently rate limited',
+        }
+      }
+    });
+  } catch (error: any) {
+    console.error('❌ [Monitoring] Queue stats error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
 export { startHealthMonitorScheduler };
