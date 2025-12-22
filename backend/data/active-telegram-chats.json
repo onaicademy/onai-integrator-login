@@ -1,8 +1,9 @@
 [
   {
-    "chatId": -4993365648,
+    "chatId": -1003443946081,
     "chatTitle": "Результаты трафика по командам",
-    "activatedAt": "2025-12-18T16:28:04.243Z",
-    "activatedBy": 789638302
+    "activatedAt": "2025-12-22T03:22:00.000Z",
+    "activatedBy": 789638302,
+    "note": "Migrated from -4993365648 due to supergroup upgrade"
   }
 ]
