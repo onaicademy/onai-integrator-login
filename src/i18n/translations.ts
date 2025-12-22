@@ -78,8 +78,8 @@ export const translations = {
     'ai.poweredBy': 'Groq AI • Llama 3.3 70B',
     
     // Login
-    'login.title': 'Traffic Command',
-    'login.subtitle': 'Dashboard Login',
+    'login.title': 'Командная Панель Трафика',
+    'login.subtitle': 'Вход в систему',
     'login.email': 'Email',
     'login.password': 'Пароль',
     'login.button': 'Войти',
@@ -240,8 +240,8 @@ export const translations = {
     'ai.poweredBy': 'Groq AI • Llama 3.3 70B',
     
     // Login
-    'login.title': 'Traffic Command',
-    'login.subtitle': 'Dashboard Login',
+    'login.title': 'Трафик Командасының Панелі',
+    'login.subtitle': 'Жүйеге кіру',
     'login.email': 'Email',
     'login.password': 'Құпия сөз',
     'login.button': 'Кіру',

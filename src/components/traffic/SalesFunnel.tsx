@@ -124,7 +124,7 @@ export const SalesFunnel = ({ data }: SalesFunnelProps) => {
                 
                 {/* Stage Value */}
                 <div className="text-3xl font-bold">
-                  {stage.value.toLocaleString()}
+                  {(stage.value || 0).toLocaleString()}
                 </div>
                 
                 {/* Sublabel */}

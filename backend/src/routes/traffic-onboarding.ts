@@ -17,6 +17,8 @@ router.get('/status/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
+    console.log(`[Onboarding] Checking status for userId: ${userId}`);
+
     // Получить прогресс из БД
     const { data: progress, error } = await trafficAdminSupabase
       .from('traffic_onboarding_progress')
@@ -24,14 +26,39 @@ router.get('/status/:userId', async (req: Request, res: Response) => {
       .eq('user_id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 = not found
+    if (error) {
+      console.log(`[Onboarding] Query error:`, error.code, error.message);
+      
+      // PGRST116 = not found (нормально для первого входа)
+      // 42P01 = table doesn't exist
+      if (error.code === 'PGRST116') {
+        // Первый вход - это OK
+        return res.json({
+          success: true,
+          is_first_login: true,
+          is_completed: false,
+          progress: null
+        });
+      } else if (error.code === '42P01') {
+        // Table doesn't exist - return default
+        console.warn('⚠️ [Onboarding] Table traffic_onboarding_progress does not exist yet');
+        return res.json({
+          success: true,
+          is_first_login: true,
+          is_completed: false,
+          progress: null,
+          warning: 'Onboarding table not initialized'
+        });
+      }
+      
       throw error;
     }
 
     // Если записи нет - это первый вход
     const isFirstLogin = !progress;
     const isCompleted = progress?.is_completed || false;
+
+    console.log(`[Onboarding] Status for ${userId}: first=${isFirstLogin}, completed=${isCompleted}`);
 
     res.json({
       success: true,

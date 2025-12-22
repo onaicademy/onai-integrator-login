@@ -51,10 +51,19 @@ router.post('/submit', async (req: Request, res: Response) => {
   try {
     const report: ErrorReport = req.body;
     
+    // Validate report structure
+    if (!report || !report.error || !report.userInfo || !report.environment) {
+      console.error('❌ [Error Report] Invalid report structure:', JSON.stringify(req.body).substring(0, 200));
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid report structure' 
+      });
+    }
+    
     console.log('📨 [Error Report] Received:', {
-      error: report.error.name,
-      user: report.userInfo.email || 'anonymous',
-      platform: report.environment.platform
+      error: report.error?.name || 'Unknown',
+      user: report.userInfo?.email || 'anonymous',
+      platform: report.environment?.platform || 'Unknown'
     });
     
     // Format message for Telegram
@@ -62,8 +71,13 @@ router.post('/submit', async (req: Request, res: Response) => {
     
     // Send to Telegram
     if (ANALYTICS_BOT_TOKEN && ANALYTICS_CHAT_ID) {
-      await sendToTelegram(message);
-      console.log('✅ [Error Report] Sent to Telegram analytics group');
+      try {
+        await sendToTelegram(message);
+        console.log('✅ [Error Report] Sent to Telegram analytics group');
+      } catch (telegramError: any) {
+        console.error('❌ [Error Report] Telegram send failed:', telegramError.message);
+        // Don't fail the request if Telegram fails
+      }
     } else {
       console.warn('⚠️ [Error Report] Telegram not configured, logging only');
     }
@@ -75,9 +89,10 @@ router.post('/submit', async (req: Request, res: Response) => {
     
   } catch (error: any) {
     console.error('❌ [Error Report] Failed to process:', error.message);
+    console.error('Stack:', error.stack);
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to send report' 
+      error: error.message || 'Failed to send report' 
     });
   }
 });
@@ -156,25 +171,30 @@ router.post('/test', async (req: Request, res: Response) => {
 function formatErrorReport(report: ErrorReport): string {
   const { error, userInfo, errorInfo, debugLogs, environment } = report;
   
+  // Helper to escape Markdown special chars
+  const escapeMarkdown = (text: string): string => {
+    return text.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
+  };
+  
   let message = `🚨 *ERROR REPORT* 🚨\n\n`;
   
   // Platform
-  message += `📦 *Platform:* ${environment.platform}\n`;
-  message += `🌐 *URL:* \`${environment.url}\`\n`;
-  message += `📄 *Page:* ${userInfo.page}\n\n`;
+  message += `📦 *Platform:* ${environment?.platform || 'Unknown'}\n`;
+  message += `🌐 *URL:* ${escapeMarkdown(environment?.url || 'N/A')}\n`;
+  message += `📄 *Page:* ${escapeMarkdown(userInfo?.page || 'N/A')}\n\n`;
   
   // User info
-  if (userInfo.email) {
-    message += `👤 *User:* ${userInfo.email}\n`;
+  if (userInfo?.email) {
+    message += `👤 *User:* ${escapeMarkdown(userInfo.email)}\n`;
   }
-  if (userInfo.userId) {
-    message += `🆔 *User ID:* \`${userInfo.userId}\`\n`;
+  if (userInfo?.userId) {
+    message += `🆔 *User ID:* ${userInfo.userId}\n`;
   }
-  message += `🕐 *Time:* ${new Date(userInfo.timestamp).toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}\n\n`;
+  message += `🕐 *Time:* ${new Date(userInfo?.timestamp || Date.now()).toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}\n\n`;
   
   // Error details
-  message += `❌ *Error:* \`${error.name}\`\n`;
-  message += `💬 *Message:* ${error.message}\n\n`;
+  message += `❌ *Error:* ${escapeMarkdown(error?.name || 'Unknown')}\n`;
+  message += `💬 *Message:* ${escapeMarkdown(error?.message || 'N/A')}\n\n`;
   
   // Stack trace (first 3 lines)
   if (error.stack) {
