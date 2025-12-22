@@ -1,14 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { sendToAllChats } from '../services/telegramBot';
+import { getExchangeRateForDate } from '../jobs/dailyExchangeRateFetcher.js';
 
 const router = Router();
-
-// Supabase Tripwire client
-const tripwireSupabase = createClient(
-  process.env.TRIPWIRE_SUPABASE_URL || 'https://pjmvxecykysfrzppdcto.supabase.co',
-  process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || process.env.TRIPWIRE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXZ4ZWN5a3lzZnJ6cHBkY3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzY4NTIsImV4cCI6MjA1MDIxMjg1Mn0.vD7PxK0WYyT-xeD9cJQMcb1tCL5hpBqQzLf3VgWyk'
-);
 
 // 🎯 Маппинг UTM кампаний на таргетологов
 const TARGETOLOGIST_MAPPING: Record<string, string[]> = {
@@ -63,7 +58,7 @@ function formatTenge(amount: number): string {
     currency: 'KZT',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).replace('KZT', '₸').trim();
+  }).format(amount).replace('KZT', '₸').trim();
 }
 
 /**
@@ -114,8 +109,12 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
     const targetologist = determineTargetologist(utmCampaign, utmSource);
     console.log(`🎯 Таргетолог определен: ${targetologist} (utm_campaign: ${utmCampaign}, utm_source: ${utmSource})`);
 
+    // Get exchange rate for today
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Almaty' });
+    const exchangeRate = await getExchangeRateForDate(todayDate);
+
     // 1. Сохранить в OLD таблицу (sales_notifications) для обратной совместимости
-    const { data: savedSale, error: saveError } = await tripwireSupabase
+    const { data: savedSale, error: saveError } = await trafficAdminSupabase
       .from('sales_notifications')
       .insert({
         lead_id,
@@ -146,7 +145,7 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
     }
 
     // 2. Сохранить в НОВУЮ таблицу (all_sales_tracking) для расширенной аналитики
-    const { data: savedAllSales, error: allSalesError } = await tripwireSupabase
+    const { data: savedAllSales, error: allSalesError } = await trafficAdminSupabase
       .from('all_sales_tracking')
       .insert({
         lead_id,
@@ -175,7 +174,8 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
         responsible_user_id: responsible_user_id || null,
         responsible_user_name: responsible_user_name || null,
         targetologist, // Будет автоматически определён триггером если null
-        sale_date: new Date().toISOString(),
+        sale_date: todayDate,
+        usd_to_kzt_rate: exchangeRate,
         webhook_received_at: new Date().toISOString(),
         raw_webhook_data: req.body, // Сохраняем полные данные для отладки
       })
@@ -213,7 +213,7 @@ ${emoji} *Таргетолог:* ${targetologist}
 
       // Обновить статус уведомления (только для sales_notifications)
       if (savedSale?.id) {
-        await tripwireSupabase
+        await trafficAdminSupabase
           .from('sales_notifications')
           .update({
             notification_status: 'sent',
@@ -227,7 +227,7 @@ ${emoji} *Таргетолог:* ${targetologist}
 
       // Обновить статус на failed
       if (savedSale?.id) {
-        await tripwireSupabase
+        await trafficAdminSupabase
           .from('sales_notifications')
           .update({ notification_status: 'failed' })
           .eq('id', savedSale.id);
@@ -258,7 +258,7 @@ router.get('/sales-history', async (req: Request, res: Response) => {
   try {
     const { targetologist, start, end } = req.query;
 
-    let query = tripwireSupabase
+    let query = trafficAdminSupabase
       .from('sales_notifications')
       .select('*')
       .order('sale_date', { ascending: false });
@@ -311,7 +311,7 @@ router.get('/sales-stats', async (req: Request, res: Response) => {
   try {
     const { start, end } = req.query;
 
-    let query = tripwireSupabase
+    let query = trafficAdminSupabase
       .from('sales_notifications')
       .select('targetologist, sale_amount, sale_date');
 
