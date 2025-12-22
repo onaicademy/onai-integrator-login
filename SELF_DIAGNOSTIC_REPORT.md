@@ -108,7 +108,7 @@ npm run dev
 **Requirements:**
 ```
 1. ✅ GROQ API key configured
-   GROQ_CAMPAIGN_ANALYZER_KEY=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
+   GROQ_CAMPAIGN_ANALYZER_KEY=gsk_Rcbw...24Qz (configured in env.env)
    
 2. ✅ Backend route exists
    POST /api/traffic-detailed-analytics/ai-analysis
