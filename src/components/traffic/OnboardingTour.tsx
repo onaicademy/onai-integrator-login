@@ -12,7 +12,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import Joyride, { CallBackProps, STATUS, Step, Styles } from 'react-joyride';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Joyride, { CallBackProps, STATUS, Step, Styles, ACTIONS, EVENTS } from 'react-joyride';
 import axios from 'axios';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 
@@ -50,22 +51,31 @@ interface OnboardingTourProps {
 }
 
 export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiCheck = false }: OnboardingTourProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  
+  // 🎯 Multi-page onboarding tracking
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'settings' | 'analytics'>('dashboard');
 
-  // 🎯 Шаги для таргетолога
+  // 🎯 MULTI-PAGE Onboarding для таргетолога
   const targetologistSteps: Step[] = [
+    // ═══════════════════════════════════════════════════════════════
+    // 📍 СТРАНИЦА 1: DASHBOARD (шаги 0-3)
+    // ═══════════════════════════════════════════════════════════════
     {
       target: '[data-tour="metrics-cards"]',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
-            Главные метрики
+            📊 Главная страница — Dashboard
           </h3>
           <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>
-            <strong>Доход</strong> — сколько заработал<br/>
-            <strong>ROAS</strong> — цель больше 2.0x<br/>
-            <strong>CPA</strong> — стоимость продажи
+            Здесь отображаются <strong>главные метрики</strong>:<br/>
+            • <strong>Доход</strong> — сколько заработал<br/>
+            • <strong>ROAS</strong> — эффективность рекламы (цель &gt; 2.0x)<br/>
+            • <strong>CPA</strong> — стоимость одной продажи
           </p>
         </div>
       ),
@@ -77,11 +87,11 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
-            Фильтр "Мои результаты"
+            🎯 Фильтр "Мои результаты"
           </h3>
           <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>
             Нажми чтобы видеть только <strong style={{ color: '#00FF88' }}>свои данные</strong>.<br/>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Повторный клик покажет всех.</span>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Повторный клик покажет результаты всей команды.</span>
           </p>
         </div>
       ),
@@ -92,12 +102,12 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
-            Таблица результатов
+            📋 Таблица результатов
           </h3>
           <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>
-            Результаты всех таргетологов.<br/>
-            <strong style={{ color: '#00FF88' }}>Твоя команда</strong> выделена.<br/>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Доступ к AI только для твоей команды.</span>
+            Результаты всех таргетологов команды.<br/>
+            <strong style={{ color: '#00FF88' }}>Твоя строка</strong> выделена зеленым.<br/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>AI-анализ доступен только для твоих кампаний.</span>
           </p>
         </div>
       ),
@@ -107,73 +117,185 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       target: 'body',
       content: (
         <div>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#FF6B00' }}>
-            ВАЖНО: UTM-метки
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#FFD700' }}>
+            🚀 Далее: Настройки
           </h3>
-          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>
-            <strong style={{ color: '#FF6B00' }}>Всегда используй UTM-метки!</strong><br/>
-            <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px' }}>Без них продажи не отслеживаются.</span>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            Сейчас перейдем в <strong>Настройки</strong>, где ты подключишь:<br/>
+            • Рекламные кабинеты Facebook<br/>
+            • Активные рекламные кампании<br/>
+            <br/>
+            <span style={{ color: '#FF6B6B', fontWeight: '600' }}>⚠️ Без этого ROI не считается!</span>
+          </p>
+          <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
+            💡 Нажми "Далее" → автоматически перейдем на страницу Настройки
           </p>
         </div>
       ),
       placement: 'center',
     },
-    // 5. НОВЫЙ ШАГ: Настройки
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 📍 СТРАНИЦА 2: SETTINGS (шаги 4-6)
+    // ═══════════════════════════════════════════════════════════════
     {
-      target: '[data-tour="settings-button"]',
+      target: 'body',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
-            ⚙️ Настройки
+            ⚙️ Страница Настройки
           </h3>
           <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
-            Перейди в <strong>Настройки</strong> и подключи<br/>
-            рекламные кабинеты Facebook / TikTok / YouTube.
+            Здесь ты подключаешь свои <strong>рекламные кабинеты</strong> и выбираешь <strong>активные кампании</strong> для трекинга.
           </p>
-          <p style={{ margin: '0', fontSize: '13px', color: '#FF6B6B' }}>
-            ⚠️ Без подключения кампаний ROI не считается!
+          <p style={{ margin: '0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+            📌 Сейчас покажу как это сделать пошагово...
           </p>
         </div>
       ),
-      placement: 'bottom',
+      placement: 'center',
     },
-    // 6. НОВЫЙ ШАГ: Детальная аналитика
     {
-      target: '[data-tour="detailed-analytics-button"]',
+      target: '[data-tour="fb-accounts-list"]',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
-            📊 Детальная аналитика РК
+            1️⃣ Выбери Рекламные Кабинеты
           </h3>
           <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
-            Получи <strong>AI-анализ</strong> своих кампаний:<br/>
-            • Оценка настроек<br/>
-            • Рекомендации по улучшению<br/>
-            • Анализ всех метрик Facebook
+            <strong style={{ color: '#FFD700' }}>Поставь галочки</strong> на те ad accounts,<br/>
+            которые ты используешь для рекламы.
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+            💡 Если кабинет отображается серым — он не активен в Facebook
+          </p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-tour="campaigns-list"]',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            2️⃣ Выбери Активные Кампании
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            <strong style={{ color: '#FFD700' }}>Поставь галочки</strong> на кампании,<br/>
+            которые сейчас запущены и приносят продажи.
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: '#FF6B6B', marginBottom: '8px' }}>
+            ⚠️ ВАЖНО: При запуске НОВОЙ кампании —<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;обязательно добавь её сюда!
           </p>
           <p style={{ margin: '0', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
-            💡 Анализ занимает ~10 секунд
+            💡 Иначе её результаты не попадут в Dashboard
           </p>
         </div>
       ),
-      placement: 'bottom',
+      placement: 'right',
     },
-    // 7. НОВЫЙ ШАГ: Важность выбора кампаний
     {
       target: 'body',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#FFD700' }}>
-            💡 Важно: Трекинг кампаний
+            🚀 Далее: Детальная Аналитика
           </h3>
-          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>
-            В <strong>Настройках</strong>:<br/>
-            1. Подключи Facebook Ads<br/>
-            2. Выбери Ad Account<br/>
-            3. <strong style={{ color: '#FFD700' }}>Поставь галочки</strong> на активных кампаниях<br/>
-            <br/>
-            При запуске <strong>НОВОЙ кампании</strong> —<br/>
-            обязательно выбери её в настройках!
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            Отлично! Теперь перейдем к <strong>Анализу РК</strong>, где ты получишь:<br/>
+            • AI-анализ твоих кампаний<br/>
+            • Оценку настроек аудиторий<br/>
+            • Рекомендации по улучшению<br/>
+            • Детальные метрики Facebook Ads
+          </p>
+          <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
+            💡 Нажми "Далее" → перейдем на страницу Анализа
+          </p>
+        </div>
+      ),
+      placement: 'center',
+    },
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 📍 СТРАНИЦА 3: DETAILED ANALYTICS (шаги 7-9)
+    // ═══════════════════════════════════════════════════════════════
+    {
+      target: 'body',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            📊 Детальная Аналитика РК
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            Здесь ты получаешь <strong>AI-анализ</strong> своих рекламных кампаний.
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+            📌 Анализ занимает ~10 секунд
+          </p>
+        </div>
+      ),
+      placement: 'center',
+    },
+    {
+      target: '[data-tour="analyze-button"]',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            🤖 Запуск AI-Анализа
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            <strong>Нажми эту кнопку</strong>, чтобы получить:<br/>
+            • Оценку эффективности кампаний<br/>
+            • Анализ аудиторий и креативов<br/>
+            • Рекомендации по улучшению ROAS<br/>
+            • Предупреждения о проблемах
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+            💡 Анализ обновляется при каждом запуске
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '[data-tour="metrics-details"]',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            📈 Критерии Анализа
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            AI оценивает твои кампании по:<br/>
+            • <strong>CTR</strong> (Click-Through Rate) — кликабельность<br/>
+            • <strong>CPM</strong> (Cost Per Mille) — стоимость 1000 показов<br/>
+            • <strong>CPC</strong> (Cost Per Click) — стоимость клика<br/>
+            • <strong>Conversion Rate</strong> — % продаж от кликов<br/>
+            • <strong>ROAS</strong> — возврат инвестиций
+          </p>
+          <p style={{ margin: '0', fontSize: '13px', color: '#FFD700' }}>
+            ⚡ Цель: CTR &gt; 2%, ROAS &gt; 2.0x, Conversion &gt; 5%
+          </p>
+        </div>
+      ),
+      placement: 'top',
+    },
+    {
+      target: 'body',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#00FF88' }}>
+            🎉 Обучение завершено!
+          </h3>
+          <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+            Теперь ты знаешь как:<br/>
+            ✅ Смотреть свои результаты на Dashboard<br/>
+            ✅ Подключать рекламные кабинеты в Настройках<br/>
+            ✅ Получать AI-анализ кампаний<br/>
+            ✅ Интерпретировать метрики
+          </p>
+          <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: '#FFD700', fontWeight: '600' }}>
+            💡 Совет: Делай анализ 1-2 раза в неделю для отслеживания динамики!
           </p>
         </div>
       ),
@@ -217,6 +339,18 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
   ];
 
   const steps = userRole === 'admin' ? adminSteps : targetologistSteps;
+  
+  // 🎯 Определяем на какой мы сейчас странице
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/settings')) {
+      setCurrentPage('settings');
+    } else if (path.includes('/detailed-analytics')) {
+      setCurrentPage('analytics');
+    } else if (path.includes('/dashboard')) {
+      setCurrentPage('dashboard');
+    }
+  }, [location.pathname]);
 
   // 🎨 PREMIUM СТИЛЬ (как у Stripe/Notion)
   const joyrideStyles: Styles = {
@@ -268,10 +402,44 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
     },
   };
 
-  // 📊 Callback для отслеживания событий
+  // 📊 Callback для отслеживания событий + НАВИГАЦИЯ
   const handleJoyrideCallback = useCallback((data: CallBackProps) => {
-    const { status, type, index, action } = data;
-
+    const { action, index, status, type, step } = data;
+    
+    ObservabilityLogger.log('Joyride Event', {
+      action,
+      index,
+      status,
+      type,
+      currentPage,
+      stepTarget: step?.target
+    });
+    
+    // 🎯 MULTI-PAGE NAVIGATION: Переключение страниц
+    // Когда пользователь нажимает "Next" на определенных шагах
+    if (action === ACTIONS.NEXT && type === EVENTS.STEP_AFTER) {
+      // Dashboard (шаг 3) → переходим на Settings
+      if (index === 3 && currentPage === 'dashboard') {
+        ObservabilityLogger.log('Navigation: Dashboard → Settings');
+        setTimeout(() => {
+          navigate('/traffic/settings');
+          setStepIndex(4); // Продолжаем с 4-го шага на Settings
+        }, 300);
+        return;
+      }
+      
+      // Settings (шаг 6) → переходим на Analytics
+      if (index === 6 && currentPage === 'settings') {
+        ObservabilityLogger.log('Navigation: Settings → Analytics');
+        setTimeout(() => {
+          navigate('/traffic/detailed-analytics');
+          setStepIndex(7); // Продолжаем с 7-го шага на Analytics
+        }, 300);
+        return;
+      }
+    }
+    
+    // Оригинальная логика callback (переменные уже извлечены выше)
     ObservabilityLogger.log('joyride_event', {
       status,
       type,
@@ -295,7 +463,7 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
     if (type === 'step:after') {
       setStepIndex(index + (action === 'prev' ? -1 : 1));
     }
-  }, [userRole, userId, skipApiCheck]);
+  }, [userRole, userId, skipApiCheck, currentPage, navigate]);
 
   // API вызовы
   const saveTourCompletion = async (completed: boolean) => {

@@ -629,7 +629,7 @@ export default function TrafficSettings() {
               {/* FB Accounts */}
               <div className="bg-black/40 border border-[#00FF88]/10 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3" data-tour="fb-accounts-list">
                     <Facebook className="w-6 h-6 text-[#1877F2]" />
                     <div>
                       <h3 className="text-xl font-bold text-white">Рекламные кабинеты</h3>

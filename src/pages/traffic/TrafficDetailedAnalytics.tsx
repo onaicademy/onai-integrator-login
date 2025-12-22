@@ -392,7 +392,7 @@ export default function TrafficDetailedAnalytics() {
           {/* AI Analysis Button */}
           <div className="flex justify-end">
             <Button
-              data-tour="ai-analysis-button"
+              data-tour="analyze-button"
               onClick={handleAIAnalysis}
               disabled={analyzing || filteredCampaigns.length === 0}
               className="bg-gradient-to-r from-[#00FF88] to-[#00DD70] text-black font-semibold hover:shadow-lg hover:shadow-[#00FF88]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -471,7 +471,7 @@ export default function TrafficDetailedAnalytics() {
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3" data-tour="metrics-details">
             {filteredCampaigns.map((campaign) => (
               <div key={campaign.id} className="bg-black/40 border border-[#00FF88]/10 rounded-xl overflow-hidden">
                 {/* Campaign Row */}
