@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -30,6 +30,15 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
   const [error, setError] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [generatedEmail, setGeneratedEmail] = useState('');
+  
+  // 🔥 FIX: Автогенерация пароля при загрузке формы
+  useEffect(() => {
+    if (!password) {
+      const autoPassword = generatePassword();
+      setPassword(autoPassword);
+      console.log('🔐 [CREATE_USER] Auto-generated password:', autoPassword);
+    }
+  }, []); // Empty dependency - run once on mount
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,7 +93,12 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
         throw new Error(data.error || 'Ошибка создания пользователя');
       }
 
-      setGeneratedPassword(data.generated_password);
+      // 🔥 FIX: Используем пароль из response, если есть, иначе показываем отправленный
+      const displayPassword = data.generated_password || password;
+      console.log('✅ [CREATE_USER] Response data:', data);
+      console.log('🔑 [CREATE_USER] Display password:', displayPassword);
+      
+      setGeneratedPassword(displayPassword);
       setGeneratedEmail(data.email);
       setSuccess(true);
       onSuccess();

@@ -201,9 +201,18 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
 </body>
 </html>`;
 
+    // 🔥 FIX: Используем верифицированный FROM адрес от Resend
+    // Если домен onai.academy не верифицирован, используем onboarding@resend.dev
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onAI Academy <onboarding@resend.dev>';
+    
+    console.log('📧 [EMAIL] Sending welcome email...');
+    console.log('   From:', fromEmail);
+    console.log('   To:', params.toEmail);
+    console.log('   Password:', params.password);
+    
     // Отправка email через Resend
     const { data, error } = await getResendClient().emails.send({
-      from: 'onAI Academy <noreply@onai.academy>',
+      from: fromEmail,
       to: params.toEmail,
       subject: '🚀 Добро пожаловать в Интегратор 3.0 — Ваш путь к AI начинается здесь!',
       html: htmlContent,

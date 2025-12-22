@@ -450,7 +450,7 @@ export default function TripwireLanding() {
                   
                   <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 relative w-full aspect-video bg-black/40 rounded-lg border border-white/10 overflow-hidden shadow-lg group-hover:border-[#00FF94]/30 transition-colors">
                     <img 
-                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/Video%203%20(1).gif" 
+                      src="https://xikaiavwqinamgolmtcy.supabase.co/storage/v1/object/public/gif%20public/1213.gif" 
                       alt="Intro Module Preview" 
                       loading="lazy"
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
