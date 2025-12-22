@@ -12,16 +12,25 @@ import { getSupabaseClient } from './supabase-manager';
 import { devLog } from './env-utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-devLog('✅ [supabase-landing.ts] Exporting unified landing client');
+devLog('✅ [supabase-landing.ts] Exporting unified landing client getter');
 
 /**
- * Landing Supabase Client
+ * Landing Supabase Client (Lazy loaded)
  * 
  * ✅ Uses unified auth manager
  * ✅ No duplicate auth listeners
  * ✅ Backward compatible with existing code
  */
-export const landingSupabase = getSupabaseClient('landing');
+let _landingClient: any = null;
+
+export const landingSupabase = new Proxy({} as any, {
+  get(target, prop) {
+    if (!_landingClient) {
+      _landingClient = getSupabaseClient('landing');
+    }
+    return _landingClient[prop];
+  }
+});
 
 /**
  * Get Landing Supabase (for backward compatibility)

@@ -11,16 +11,28 @@
 import { getSupabaseClient } from './supabase-manager';
 import { devLog } from './env-utils';
 
-devLog('✅ [supabase.ts] Exporting unified main client');
+devLog('✅ [supabase.ts] Exporting unified main client getter');
 
 /**
- * Main Supabase Client
+ * Main Supabase Client (Lazy loaded)
  * 
  * ✅ Uses unified auth manager
  * ✅ No duplicate auth listeners
  * ✅ Backward compatible with existing code
+ * 
+ * Note: This is a getter that returns the client when accessed
+ * This ensures manager is initialized before client is accessed
  */
-export const supabase = getSupabaseClient('main');
+let _supabaseClient: any = null;
+
+export const supabase = new Proxy({} as any, {
+  get(target, prop) {
+    if (!_supabaseClient) {
+      _supabaseClient = getSupabaseClient('main');
+    }
+    return _supabaseClient[prop];
+  }
+});
 
 /**
  * Cleanup function (for backward compatibility)

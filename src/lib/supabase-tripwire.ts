@@ -11,16 +11,25 @@
 import { getSupabaseClient } from './supabase-manager';
 import { devLog } from './env-utils';
 
-devLog('✅ [supabase-tripwire.ts] Exporting unified tripwire client');
+devLog('✅ [supabase-tripwire.ts] Exporting unified tripwire client getter');
 
 /**
- * Tripwire Supabase Client
+ * Tripwire Supabase Client (Lazy loaded)
  * 
  * ✅ Uses unified auth manager
  * ✅ No duplicate auth listeners
  * ✅ Backward compatible with existing code
  */
-export const tripwireSupabase = getSupabaseClient('tripwire');
+let _tripwireClient: any = null;
+
+export const tripwireSupabase = new Proxy({} as any, {
+  get(target, prop) {
+    if (!_tripwireClient) {
+      _tripwireClient = getSupabaseClient('tripwire');
+    }
+    return _tripwireClient[prop];
+  }
+});
 
 /**
  * Cleanup function (for backward compatibility)
