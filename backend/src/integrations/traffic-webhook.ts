@@ -3,20 +3,11 @@
 // URL: https://api.onai.academy/webhook/amocrm/traffic
 
 import { Router, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { sendToAllChats } from '../services/telegramBot.js';
 import { getExchangeRateForDate } from '../jobs/dailyExchangeRateFetcher';
 
 const router = Router();
-
-// ═══════════════════════════════════════════════════════════════
-// DATABASE CLIENT
-// ═══════════════════════════════════════════════════════════════
-
-const tripwireSupabase = createClient(
-  process.env.TRIPWIRE_SUPABASE_URL || 'https://pjmvxecykysfrzppdcto.supabase.co',
-  process.env.TRIPWIRE_SERVICE_ROLE_KEY || process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
-);
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -166,7 +157,7 @@ async function logWebhook(payload: {
   targetologist: string;
 }): Promise<void> {
   try {
-    await tripwireSupabase.from('webhook_logs').insert({
+    await trafficAdminSupabase.from('webhook_logs').insert({
       received_at: new Date().toISOString(),
       source: 'amocrm_traffic',
       pipeline_id: payload.pipeline_id,
@@ -290,7 +281,7 @@ router.post('/traffic', async (req: Request, res: Response) => {
           const contactEmail = lead.contact?.email || deal.contact_email;
 
           // 5. Сохранить в sales_notifications (старая таблица)
-          const { error: salesError } = await tripwireSupabase
+          const { error: salesError } = await trafficAdminSupabase
             .from('sales_notifications')
             .insert({
               lead_id: leadId,
@@ -330,7 +321,7 @@ router.post('/traffic', async (req: Request, res: Response) => {
           }
 
           // 6. Сохранить в all_sales_tracking (новая таблица)
-          const { error: trackingError } = await tripwireSupabase
+          const { error: trackingError } = await trafficAdminSupabase
             .from('all_sales_tracking')
             .insert({
               lead_id: leadId,
@@ -383,7 +374,7 @@ ${emoji} *Таргетолог:* ${targetologist}
             console.log('✅ [Traffic Webhook] Telegram notification sent');
 
             // Обновить статус уведомления
-            await tripwireSupabase
+            await trafficAdminSupabase
               .from('sales_notifications')
               .update({
                 notification_status: 'sent',

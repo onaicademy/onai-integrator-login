@@ -6,28 +6,63 @@
 
 import cron from 'node-cron';
 import axios from 'axios';
-import { supabase } from '../config/supabase';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { sendAdminMessage } from '../services/telegramService';
 
-// ENHANCEMENT: Multiple APIs with fallback
+/**
+ * Fetch USD/KZT exchange rate from multiple sources
+ * Priority: Google Finance-based APIs → Central Bank data → Fallback
+ */
 async function fetchExchangeRate(): Promise<{ rate: number; source: string }> {
   const apis = [
+    // 1. ExchangeRate-API (uses Google Finance + ECB + Fed data)
     {
-      name: 'exchangerate-api',
+      name: 'exchangerate-api (Google Finance)',
       url: 'https://api.exchangerate-api.com/v4/latest/USD',
       parser: (data: any) => data.rates.KZT
     },
+    // 2. ExchangeRate.host (aggregates Google Finance + Central Banks)
     {
-      name: 'currencyapi',
-      url: `https://api.currencyapi.com/v3/latest?apikey=${process.env.CURRENCY_API_KEY}&base_currency=USD`,
-      parser: (data: any) => data.data.KZT.value
+      name: 'exchangerate.host (Google+ECB)',
+      url: 'https://api.exchangerate.host/latest?base=USD&symbols=KZT',
+      parser: (data: any) => data.rates.KZT
+    },
+    // 3. Fixer.io (ECB + Google Finance data) - free tier
+    {
+      name: 'fixer.io',
+      url: `https://api.fixer.io/latest?base=USD&symbols=KZT&access_key=${process.env.FIXER_API_KEY}`,
+      parser: (data: any) => data.rates.KZT,
+      requiresKey: true
+    },
+    // 4. Alpha Vantage (official financial data)
+    {
+      name: 'alphavantage',
+      url: `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=KZT&apikey=${process.env.ALPHA_VANTAGE_KEY}`,
+      parser: (data: any) => parseFloat(data['Realtime Currency Exchange Rate']['5. Exchange Rate']),
+      requiresKey: true
     }
   ];
   
   for (const api of apis) {
+    // Skip if API requires key and key is not set
+    if (api.requiresKey && !process.env.FIXER_API_KEY && !process.env.ALPHA_VANTAGE_KEY) {
+      console.log(`⏭️  Skipping ${api.name} (no API key)`);
+      continue;
+    }
+    
     try {
-      const response = await axios.get(api.url, { timeout: 5000 });
+      const response = await axios.get(api.url, { 
+        timeout: 8000,
+        headers: { 'User-Agent': 'OnAI-Traffic-Dashboard/1.0' }
+      });
       const rate = api.parser(response.data);
+      
+      // Validate rate (KZT should be between 400-600)
+      if (rate < 400 || rate > 600) {
+        console.warn(`⚠️ ${api.name} returned suspicious rate: ${rate} KZT`);
+        continue;
+      }
+      
       console.log(`✅ Rate from ${api.name}: ${rate} KZT`);
       return { rate, source: api.name };
     } catch (error: any) {
@@ -56,8 +91,8 @@ export function startExchangeRateFetcher() {
         timeZone: 'Asia/Almaty' 
       });
       
-      // Step 3: Store in database
-      const { data, error } = await supabase
+      // Step 3: Store in Traffic database
+      const { data, error} = await trafficAdminSupabase
         .from('exchange_rates')
         .upsert([
           {
@@ -102,14 +137,14 @@ export function startExchangeRateFetcher() {
 
 // Helper: Get exchange rate for specific date
 export async function getExchangeRateForDate(date: string): Promise<number> {
-  const { data } = await supabase
+  const { data } = await trafficAdminSupabase
     .from('exchange_rates')
     .select('usd_to_kzt')
     .eq('date', date)
     .single();
   
   if (!data) {
-    const { data: latestRate } = await supabase
+    const { data: latestRate } = await trafficAdminSupabase
       .from('exchange_rates')
       .select('usd_to_kzt')
       .order('date', { ascending: false })
