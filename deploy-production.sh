@@ -43,9 +43,11 @@ echo ""
 # ====================================
 echo "📤 Step 3/7: Deploying frontend to $SERVER..."
 rsync -avz --delete \
-  --chown=www-data:www-data \
   dist/ \
   $SERVER:$FRONTEND_PATH/
+
+# Fix permissions on server
+ssh $SERVER "chown -R www-data:www-data $FRONTEND_PATH && chmod -R 755 $FRONTEND_PATH"
 echo -e "${GREEN}✅ Frontend deployed${NC}"
 echo ""
 
