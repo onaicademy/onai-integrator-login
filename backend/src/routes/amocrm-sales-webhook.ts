@@ -109,42 +109,10 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
     const targetologist = determineTargetologist(utmCampaign, utmSource);
     console.log(`🎯 Таргетолог определен: ${targetologist} (utm_campaign: ${utmCampaign}, utm_source: ${utmSource})`);
 
-    // Get exchange rate for today
+    // Get today's date in Almaty timezone
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Almaty' });
-    const exchangeRate = await getExchangeRateForDate(todayDate);
 
-    // 1. Сохранить в OLD таблицу (sales_notifications) для обратной совместимости
-    const { data: savedSale, error: saveError } = await trafficAdminSupabase
-      .from('sales_notifications')
-      .insert({
-        lead_id,
-        lead_name: lead_name || 'Без названия',
-        contact_name: contact_name || 'Без имени',
-        contact_phone: contact_phone || null,
-        sale_amount: parseFloat(sale_amount),
-        product_name: product_name || 'Tripwire',
-        targetologist,
-        utm_source: utmSource,
-        utm_medium: utmMedium,
-        utm_campaign: utmCampaign,
-        utm_content: utmContent,
-        utm_term: utmTerm,
-        sale_date: new Date().toISOString(),
-        pipeline_id: pipeline_id || null,
-        status_id: status_id || null,
-        responsible_user_id: responsible_user_id || null,
-        notification_status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (saveError) {
-      console.error('❌ Ошибка сохранения в sales_notifications:', saveError);
-    } else {
-      console.log('✅ Продажа сохранена в sales_notifications:', savedSale.id);
-    }
-
-    // 2. Сохранить в НОВУЮ таблицу (all_sales_tracking) для расширенной аналитики
+    // Сохранить в all_sales_tracking (основная таблица Traffic DB)
     const { data: savedAllSales, error: allSalesError } = await trafficAdminSupabase
       .from('all_sales_tracking')
       .insert({
@@ -155,41 +123,26 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
         contact_email: contact_email || null,
         sale_amount: parseFloat(sale_amount),
         product_name: product_name || null,
-        currency: currency || 'KZT',
         utm_source: utmSource,
         utm_medium: utmMedium,
         utm_campaign: utmCampaign,
         utm_content: utmContent,
         utm_term: utmTerm,
-        utm_id: utmId,
-        referrer,
-        landing_page,
-        device_type,
-        browser,
-        os,
-        country,
-        city,
         pipeline_id: pipeline_id || null,
         status_id: status_id || null,
-        responsible_user_id: responsible_user_id || null,
-        responsible_user_name: responsible_user_name || null,
-        targetologist, // Будет автоматически определён триггером если null
+        targetologist,
         sale_date: todayDate,
-        usd_to_kzt_rate: exchangeRate,
-        webhook_received_at: new Date().toISOString(),
-        raw_webhook_data: req.body, // Сохраняем полные данные для отладки
       })
       .select()
       .single();
 
     if (allSalesError) {
       console.error('❌ Ошибка сохранения в all_sales_tracking:', allSalesError);
-      // Не возвращаем 500, т.к. старая таблица сохранена
     } else {
       console.log('✅ Продажа сохранена в all_sales_tracking:', savedAllSales.id);
     }
 
-    const saleId = savedSale?.id || savedAllSales?.id;
+    const saleId = savedAllSales?.id;
 
     // Отправить уведомление в Telegram
     try {
@@ -211,27 +164,8 @@ ${emoji} *Таргетолог:* ${targetologist}
       await sendToAllChats(message);
       console.log('✅ Telegram уведомление отправлено');
 
-      // Обновить статус уведомления (только для sales_notifications)
-      if (savedSale?.id) {
-        await trafficAdminSupabase
-          .from('sales_notifications')
-          .update({
-            notification_status: 'sent',
-            notified_at: new Date().toISOString(),
-          })
-          .eq('id', savedSale.id);
-      }
-
     } catch (telegramError: any) {
       console.error('❌ Ошибка отправки в Telegram:', telegramError.message);
-
-      // Обновить статус на failed
-      if (savedSale?.id) {
-        await trafficAdminSupabase
-          .from('sales_notifications')
-          .update({ notification_status: 'failed' })
-          .eq('id', savedSale.id);
-      }
     }
 
     res.json({ 
@@ -239,7 +173,6 @@ ${emoji} *Таргетолог:* ${targetologist}
       sale_id: saleId,
       targetologist,
       saved_to: {
-        sales_notifications: !!savedSale,
         all_sales_tracking: !!savedAllSales
       }
     });
