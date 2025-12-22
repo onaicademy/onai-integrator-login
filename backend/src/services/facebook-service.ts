@@ -92,40 +92,51 @@ export async function fetchAllAdAccounts(forceRefresh = false): Promise<{
       throw new Error('Facebook access token not configured');
     }
 
-    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '627807087089319';
+    // 🔥 МНОЖЕСТВЕННЫЕ Business Managers
+    const BUSINESS_IDS = [
+      process.env.FACEBOOK_BUSINESS_ID || '627807087089319',
+      '109908023605532' // Второй BM
+    ];
 
-    // Fetch from multiple endpoints in parallel
-    const [ownedRes, clientRes] = await Promise.allSettled([
-      // 1. Owned ad accounts
-      axios.get(`${FB_API_BASE}/${BUSINESS_ID}/owned_ad_accounts`, {
+    console.log(`📊 [Facebook Service] Fetching from ${BUSINESS_IDS.length} Business Managers...`);
+
+    // Fetch from ALL Business Managers in parallel
+    const allRequests = BUSINESS_IDS.flatMap(businessId => [
+      // Owned accounts
+      axios.get(`${FB_API_BASE}/${businessId}/owned_ad_accounts`, {
         params: {
           access_token: fbToken,
           fields: 'id,name,account_status,currency,timezone_name,amount_spent',
           limit: 500
         },
         timeout: 15000
-      }),
+      }).catch(err => ({ data: { data: [] } })),
       
-      // 2. Client ad accounts
-      axios.get(`${FB_API_BASE}/${BUSINESS_ID}/client_ad_accounts`, {
+      // Client accounts
+      axios.get(`${FB_API_BASE}/${businessId}/client_ad_accounts`, {
         params: {
           access_token: fbToken,
           fields: 'id,name,account_status,currency,timezone_name,amount_spent',
           limit: 500
         },
         timeout: 15000
-      })
+      }).catch(err => ({ data: { data: [] } }))
     ]);
 
-    // Extract successful results
-    const ownedAccounts = ownedRes.status === 'fulfilled' ? (ownedRes.value.data.data || []) : [];
-    const clientAccounts = clientRes.status === 'fulfilled' ? (clientRes.value.data.data || []) : [];
+    const results = await Promise.allSettled(allRequests);
 
-    console.log(`📊 [Facebook Service] Found ${ownedAccounts.length} owned accounts`);
-    console.log(`📊 [Facebook Service] Found ${clientAccounts.length} client accounts`);
+    // Extract ALL successful results from all BMs
+    const allAccounts: FacebookAdAccount[] = [];
+    
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        const accounts = result.value.data?.data || [];
+        allAccounts.push(...accounts);
+        console.log(`📊 [Facebook Service] BM ${Math.floor(index / 2) + 1} (${index % 2 === 0 ? 'owned' : 'client'}): ${accounts.length} accounts`);
+      }
+    });
 
-    // Merge all accounts
-    const allAccounts = [...ownedAccounts, ...clientAccounts];
+    console.log(`📊 [Facebook Service] Total accounts before dedup: ${allAccounts.length}`);
 
     // Deduplicate by ID
     const uniqueAccounts = Array.from(
