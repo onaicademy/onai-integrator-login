@@ -40,6 +40,10 @@ interface Campaign {
   spend?: number;
   impressions?: number;
   clicks?: number;
+  // 🔥 NEW: Targetologist detection
+  targetologist?: string | null;
+  detectionMethod?: 'database' | 'utm' | 'pattern' | 'manual';
+  detectionConfidence?: 'high' | 'medium' | 'low';
 }
 
 export default function TrafficSettings() {
@@ -709,6 +713,30 @@ export default function TrafficSettings() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
                                     <h4 className="text-sm font-medium text-white">{campaign.name}</h4>
+                                    
+                                    {/* 🔥 Targetologist Badge */}
+                                    {campaign.targetologist && (
+                                      <span className={`
+                                        px-2 py-0.5 rounded text-xs font-semibold
+                                        ${campaign.detectionMethod === 'database' ? 'bg-green-500/20 text-green-400 border border-green-500/40' : ''}
+                                        ${campaign.detectionMethod === 'utm' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' : ''}
+                                        ${campaign.detectionMethod === 'pattern' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : ''}
+                                        ${campaign.detectionMethod === 'manual' ? 'bg-gray-500/20 text-gray-400 border border-gray-500/40' : ''}
+                                      `}>
+                                        {campaign.detectionMethod === 'database' && '✅ '}
+                                        {campaign.detectionMethod === 'utm' && '🔗 '}
+                                        {campaign.detectionMethod === 'pattern' && '🎯 '}
+                                        {campaign.detectionMethod === 'manual' && '📝 '}
+                                        {campaign.targetologist}
+                                      </span>
+                                    )}
+                                    
+                                    {/* ❓ Needs Manual Assignment */}
+                                    {!campaign.targetologist && campaign.detectionMethod === 'manual' && (
+                                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/40">
+                                        ❓ Не определен
+                                      </span>
+                                    )}
                                     {selectedCampaignIds.includes(campaign.id) && (
                                       <CheckCircle2 className="w-3 h-3 text-[#00FF88]" />
                                     )}
