@@ -32,89 +32,177 @@ function getSupabaseClient() {
 
 /**
  * GET /api/traffic-detailed-analytics
- * Получить все кампании для команды из их FB кабинета
+ * Получить аналитику по ВЫБРАННЫМ кампаниям из traffic_targetologist_settings
+ * 
+ * ✅ НОВАЯ ЛОГИКА:
+ * 1. Получаем userId из query
+ * 2. Загружаем settings пользователя из БД
+ * 3. Берем ТОЛЬКО выбранные кампании (tracked_campaigns)
+ * 4. Для каждой кампании загружаем аналитику из Facebook API
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { team, dateRange = '7d', status = 'all' } = req.query;
+    const { userId, dateRange = '7d', status = 'all' } = req.query;
     
-    if (!team) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        error: 'team parameter is required'
+        error: 'userId parameter is required'
       });
     }
     
-    // Получаем FB Ad Account ID из БД traffic_teams
-    const supabase = getSupabaseClient();
-    
-    const { data: teamData, error: teamError } = await supabase
-      .from('traffic_teams')
-      .select('fb_ad_account_id')
-      .eq('name', team)
-      .single();
-    
-    if (teamError || !teamData || !teamData.fb_ad_account_id) {
-      // Возвращаем пустой массив вместо ошибки
+    // 🔥 MOCK MODE для localhost
+    if (process.env.MOCK_MODE === 'true') {
+      console.log(`⚠️ [MOCK] Returning mock analytics for userId: ${userId}`);
       return res.json({
         success: true,
-        campaigns: []
+        campaigns: [
+          {
+            id: 'camp_111111',
+            name: 'Lead Generation - Winter 2025',
+            status: 'ACTIVE',
+            objective: 'LEAD_GENERATION',
+            spend: 450.00,
+            impressions: 15000,
+            clicks: 225,
+            ctr: 1.5,
+            cpc: 2.0,
+            cpm: 30.0,
+            conversions: 15,
+            revenue: 1500,
+            roas: 3.33
+          },
+          {
+            id: 'camp_222222',
+            name: 'Brand Awareness - Q4',
+            status: 'ACTIVE',
+            objective: 'BRAND_AWARENESS',
+            spend: 320.00,
+            impressions: 12000,
+            clicks: 180,
+            ctr: 1.5,
+            cpc: 1.78,
+            cpm: 26.67,
+            conversions: 8,
+            revenue: 800,
+            roas: 2.5
+          }
+        ]
       });
     }
     
-    const adAccountId = teamData.fb_ad_account_id;
+    // 🔥 PRODUCTION: Читаем из traffic_targetologist_settings
+    const { database } = await import('../config/database-layer.js');
+    const settings = await database.getSettings(userId as string);
+    
+    if (!settings || !settings.tracked_campaigns || settings.tracked_campaigns.length === 0) {
+      // Нет выбранных кампаний - возвращаем пустой массив
+      return res.json({
+        success: true,
+        campaigns: [],
+        message: 'No campaigns selected. Please go to Settings to select campaigns.'
+      });
+    }
+    
+    // Получаем выбранные ad accounts и campaigns
+    const selectedAccounts = settings.fb_ad_accounts || [];
+    const selectedCampaigns = settings.tracked_campaigns || [];
     
     // Получаем токен доступа
-    const accessToken = process.env.FB_ACCESS_TOKEN;
+    const accessToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
     if (!accessToken) {
       return res.json({
         success: true,
-        campaigns: []
+        campaigns: [],
+        message: 'Facebook token not configured'
       });
     }
     
-    // Calculate date range
-    const since = getDateRange(dateRange as string);
-    
-    // Fetch campaigns из кабинета команды (basic data only)
-    const campaignsResponse = await axios.get(
-      `${FB_API_BASE}/act_${adAccountId}/campaigns`,
-      {
-        params: {
-          access_token: accessToken,
-          fields: 'id,name,status,objective',
-          date_preset: dateRange === '14d' ? 'last_14d' : dateRange === '30d' ? 'last_30d' : dateRange === '90d' ? 'last_90d' : 'last_7d',
-          limit: 100
+    // 🔥 Загружаем аналитику ТОЛЬКО для выбранных кампаний
+    const campaignsWithAnalytics = await Promise.all(
+      selectedCampaigns.map(async (camp: any) => {
+        try {
+          // Получаем insights для кампании
+          const insightsResponse = await axios.get(
+            `${FB_API_BASE}/${camp.id}/insights`,
+            {
+              params: {
+                access_token: accessToken,
+                fields: 'spend,impressions,clicks,ctr,cpc,cpm,conversions,actions',
+                date_preset: dateRange === '14d' ? 'last_14d' : dateRange === '30d' ? 'last_30d' : dateRange === '90d' ? 'last_90d' : 'last_7d',
+                time_increment: 1
+              },
+              timeout: 10000
+            }
+          );
+          
+          const insights = insightsResponse.data.data[0] || {};
+          
+          // Считаем метрики
+          const spend = parseFloat(insights.spend || '0');
+          const impressions = parseInt(insights.impressions || '0');
+          const clicks = parseInt(insights.clicks || '0');
+          const conversions = parseInt(insights.conversions || insights.actions?.find((a: any) => a.action_type === 'purchase')?.value || '0');
+          
+          // Считаем revenue (предполагаем, что у нас есть средний чек)
+          const averageOrderValue = 100; // TODO: Get from DB
+          const revenue = conversions * averageOrderValue;
+          
+          // Рассчитываем метрики
+          const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+          const cpc = clicks > 0 ? spend / clicks : 0;
+          const cpm = impressions > 0 ? (spend / impressions) * 1000 : 0;
+          const roas = spend > 0 ? revenue / spend : 0;
+          
+          return {
+            id: camp.id,
+            name: camp.name,
+            status: camp.status,
+            objective: camp.objective,
+            spend: Math.round(spend * 100) / 100,
+            impressions: impressions,
+            clicks: clicks,
+            ctr: Math.round(ctr * 100) / 100,
+            cpc: Math.round(cpc * 100) / 100,
+            cpm: Math.round(cpm * 100) / 100,
+            conversions: conversions,
+            revenue: Math.round(revenue * 100) / 100,
+            roas: Math.round(roas * 100) / 100
+          };
+        } catch (error: any) {
+          console.error(`Failed to load insights for campaign ${camp.id}:`, error.message);
+          
+          // Возвращаем кампанию без аналитики
+          return {
+            id: camp.id,
+            name: camp.name,
+            status: camp.status || 'UNKNOWN',
+            objective: camp.objective || 'UNKNOWN',
+            spend: 0,
+            impressions: 0,
+            clicks: 0,
+            ctr: 0,
+            cpc: 0,
+            cpm: 0,
+            conversions: 0,
+            revenue: 0,
+            roas: 0
+          };
         }
-      }
+      })
     );
-    
-    const campaigns = (campaignsResponse.data.data || []).map((campaign: any) => {
-      return {
-        id: campaign.id,
-        name: campaign.name,
-        status: campaign.status,
-        objective: campaign.objective,
-        spend: 0, // TODO: Get from insights
-        impressions: 0,
-        clicks: 0,
-        ctr: 0,
-        cpc: 0,
-        cpm: 0,
-        conversions: 0,
-        revenue: 0,
-        roas: 0
-      };
-    });
     
     // Filter by status if needed
     const filteredCampaigns = status === 'all' 
-      ? campaigns 
-      : campaigns.filter((c: any) => c.status.toLowerCase() === status);
+      ? campaignsWithAnalytics 
+      : campaignsWithAnalytics.filter((c: any) => c.status.toLowerCase() === status);
+    
+    console.log(`✅ Loaded analytics for ${filteredCampaigns.length} campaigns`);
     
     res.json({
       success: true,
-      campaigns: filteredCampaigns
+      campaigns: filteredCampaigns,
+      total: filteredCampaigns.length
     });
     
   } catch (error: any) {

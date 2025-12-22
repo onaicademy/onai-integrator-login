@@ -79,7 +79,12 @@ export default function TrafficSettings() {
     
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
-    loadSettings(parsedUser.id);
+    
+    // 🔥 СНАЧАЛА загружаем настройки из БД
+    loadSettings(parsedUser.id).then(() => {
+      // 🔥 ПОТОМ автоматически загружаем доступные кабинеты из Facebook API
+      loadAvailableAccounts();
+    });
   }, []);
 
   // ═══════════════════════════════════════════════════════════════
@@ -145,18 +150,36 @@ export default function TrafficSettings() {
       
       const accounts = res.data.adAccounts || [];
       
-      // Merge с уже выбранными
-      const merged = accounts.map((acc: FBAccount) => {
-        const isSelected = selectedAccountIds.includes(acc.id);
-        return { ...acc, enabled: isSelected };
+      // 🔥 MERGE: Новые из API + уже выбранные из БД
+      const existingIds = selectedAccountIds;
+      
+      // Создаем Map для быстрого поиска
+      const accountsMap = new Map(accounts.map((acc: FBAccount) => [acc.id, acc]));
+      
+      // Добавляем уже выбранные (из БД), которых нет в новом списке
+      availableAccounts.forEach(existing => {
+        if (existingIds.includes(existing.id) && !accountsMap.has(existing.id)) {
+          accountsMap.set(existing.id, existing);
+        }
       });
       
+      const merged = Array.from(accountsMap.values());
+      
       setAvailableAccounts(merged);
-      toast.success(`✅ Загружено ${accounts.length} кабинетов`);
+      
+      // 🔥 Показываем toast только если загрузили НОВЫЕ кабинеты (не при первой загрузке)
+      if (availableAccounts.length > 0) {
+        toast.success(`✅ Обновлено: ${merged.length} кабинетов`);
+      } else {
+        console.log(`✅ Loaded ${merged.length} accounts from Facebook`);
+      }
       
     } catch (error: any) {
       console.error('Failed to load FB accounts:', error);
-      toast.error('❌ Ошибка загрузки кабинетов');
+      // Не показываем ошибку при первой автоматической загрузке
+      if (availableAccounts.length > 0) {
+        toast.error('❌ Ошибка загрузки кабинетов');
+      }
     } finally {
       setLoadingAccounts(false);
     }

@@ -92,43 +92,60 @@ export default function TrafficDetailedAnalytics() {
   useEffect(() => {
     const userData = localStorage.getItem('traffic_user');
     if (userData) {
-      setUser(JSON.parse(userData));
-      fetchDetailedAnalytics(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      fetchDetailedAnalytics(parsedUser);
     }
   }, [dateRange, statusFilter]);
   
   const fetchDetailedAnalytics = async (userData: any) => {
+    console.log('🔍 Fetching analytics for user:', userData.id);
     try {
       setLoading(true);
       const token = localStorage.getItem('traffic_token');
-      
-      // First check if user has configured ad accounts
-      const settingsResponse = await axios.get(`${API_URL}/api/traffic-settings/${userData.team}`, {
+
+      // 🔥 НОВАЯ ЛОГИКА: Проверяем settings по userId
+      const settingsResponse = await axios.get(`${API_URL}/api/traffic-settings/${userData.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       const settings = settingsResponse.data.settings;
-      
-      // If no ad accounts configured, show message
-      if (!settings || !settings.fb_ad_accounts || settings.fb_ad_accounts.length === 0) {
-        toast.error('Пожалуйста, настройте рекламные кабинеты в разделе Настройки');
+
+      // 🔥 Проверяем есть ли выбранные кампании
+      if (!settings || !settings.tracked_campaigns || settings.tracked_campaigns.length === 0) {
+        console.log('⚠️ No campaigns selected');
+        setCampaigns([]);
         setLoading(false);
+        // Не показываем toast, просто показываем UI с кнопкой "Перейти в настройки"
         return;
       }
-      
+
+      console.log(`✅ Found ${settings.tracked_campaigns.length} selected campaigns`);
+
+      // 🔥 Загружаем аналитику для выбранных кампаний
       const response = await axios.get(`${API_URL}/api/traffic-detailed-analytics`, {
         params: {
-          team: userData.team,
+          userId: userData.id,
           dateRange,
-          statusFilter
+          status: statusFilter
         },
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      const campaigns = response.data.campaigns || [];
+      console.log(`✅ Loaded analytics for ${campaigns.length} campaigns`);
       
-      setCampaigns(response.data.campaigns || []);
+      setCampaigns(campaigns);
+      
+      // Показываем сообщение если нет данных
+      if (campaigns.length === 0 && response.data.message) {
+        toast.info(response.data.message);
+      }
+      
     } catch (error: any) {
       console.error('Failed to fetch analytics:', error);
       toast.error('Ошибка загрузки аналитики');
+      setCampaigns([]);
     } finally {
       setLoading(false);
     }
