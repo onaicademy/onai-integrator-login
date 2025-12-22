@@ -331,14 +331,18 @@ router.post('/test-sale-notification', async (req: Request, res: Response) => {
 
     const emoji = getTargetologistEmoji(targetologist);
     const amount = formatTenge(parseFloat(sale_amount));
+    
+    // Экранируем спецсимволы Markdown
+    const safeContactName = escapeMarkdown(contact_name);
+    const safeProductName = escapeMarkdown(product_name);
 
     const message = `
 🎉 *НОВАЯ ПРОДАЖА!* (ТЕСТ)
 
 ${emoji} *Таргетолог:* ${targetologist}
-👤 *Клиент:* ${contact_name}
+👤 *Клиент:* ${safeContactName}
 💰 *Сумма:* ${amount}
-📦 *Продукт:* ${product_name}
+📦 *Продукт:* ${safeProductName}
 
 *${targetologist}, ПОЗДРАВЛЯЕМ! ПО ВАМ СДЕЛАЛИ ПРОДАЖУ!* 🔥
 

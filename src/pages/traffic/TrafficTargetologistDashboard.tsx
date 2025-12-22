@@ -12,7 +12,7 @@ import MainProductsAnalytics from '@/components/traffic/MainProductsAnalytics';
 import { Button } from '@/components/ui/button';
 import { Users, User, Globe, LogOut, BarChart3, Settings, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
-import { OnAILogo } from '@/components/traffic/OnAILogo';
+import { OnAILogo } from '@/components/OnAILogo';
 import { AuthManager, AuthUser } from '@/lib/auth';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 import { useDebugPanel } from '@/hooks/useDebugPanel';
