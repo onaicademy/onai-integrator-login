@@ -11,9 +11,17 @@ import '@fontsource/inter/400.css'; // Regular для текста
 
 import "./index.css";
 
+// 🚀 Initialize Unified Supabase Manager (BEFORE App)
+import { initializeSupabase } from './lib/supabase-manager';
+
 // Initialize production error tracking
 import { initErrorTracking } from './lib/error-tracker';
 initErrorTracking();
+
+// 🔥 Initialize Supabase clients ONCE
+console.log('🚀 [Main] Initializing Supabase Manager...');
+initializeSupabase();
+console.log('✅ [Main] Supabase Manager initialized');
 
 // 🛡️ ERROR RECOVERY: Import utilities
 import { retryChunkLoad } from "@/utils/error-recovery";
