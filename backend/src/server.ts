@@ -143,6 +143,7 @@ import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targ
 import trafficFacebookApiRouter from './routes/traffic-facebook-api.js'; // 📘 NEW: Facebook Ads API (with caching)
 import targetologistAssignmentRouter from './routes/targetologist-assignment.js'; // 🎯 Targetologist Assignment (manual + auto)
 import trafficFunnelApiRouter from './routes/traffic-funnel-api.js'; // 📊 Sales Funnel Visualization
+import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 🔔 AmoCRM → Funnel Webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
@@ -492,6 +493,7 @@ app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist
 app.use('/api/traffic-facebook', trafficFacebookApiRouter); // 📘 NEW: Facebook Ads API (with caching)
 app.use('/api/targetologist-assignment', targetologistAssignmentRouter); // 🎯 Targetologist Assignment
 app.use('/api/traffic-dashboard', trafficFunnelApiRouter); // 📊 Sales Funnel Visualization
+app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 🔔 AmoCRM → Funnel Webhook
 app.use('/api/error-reports', errorReportsRouter); // 🚨 Error Reports → Telegram @analisistonaitrafic_bot
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
