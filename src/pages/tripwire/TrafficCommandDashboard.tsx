@@ -288,31 +288,6 @@ export default function TrafficCommandDashboard({
   const [currency, setCurrency] = useState<'USD' | 'KZT'>('USD');
   const [funnelData, setFunnelData] = useState<any>(null);
 
-  // Fetch funnel data
-  useEffect(() => {
-    const fetchFunnelData = async () => {
-      if (!analytics?.teams || analytics.teams.length === 0) return;
-      
-      const teamName = selectedTeam || analytics.teams[0]?.team;
-      if (!teamName) return;
-      
-      try {
-        const since = customDate || (dateRange === '7d' ? '2024-12-15' : dateRange === '14d' ? '2024-12-08' : '2024-11-22');
-        const until = new Date().toISOString().split('T')[0];
-        
-        const response = await axios.get(`${API_URL}/api/traffic-stats/funnel/${teamName}`, {
-          params: { startDate: since, endDate: until }
-        });
-        
-        setFunnelData(response.data);
-      } catch (error) {
-        console.error('Failed to fetch funnel data:', error);
-      }
-    };
-    
-    fetchFunnelData();
-  }, [analytics, selectedTeam, dateRange, customDate]);
-
   // Fetch AI recommendations for a team
   const fetchRecommendations = async (team: string) => {
     if (recommendations[team]) {
@@ -425,6 +400,31 @@ export default function TrafficCommandDashboard({
     if (!analytics?.teams) return null;
     return [...analytics.teams].sort((a, b) => b.sales - a.sales)[0];
   }, [analytics?.teams]);
+
+  // Fetch funnel data (AFTER analytics is declared)
+  useEffect(() => {
+    const fetchFunnelData = async () => {
+      if (!analytics?.teams || analytics.teams.length === 0) return;
+      
+      const teamName = selectedTeam || analytics.teams[0]?.team;
+      if (!teamName) return;
+      
+      try {
+        const since = customDate || (dateRange === '7d' ? '2024-12-15' : dateRange === '14d' ? '2024-12-08' : '2024-11-22');
+        const until = new Date().toISOString().split('T')[0];
+        
+        const response = await axios.get(`${API_URL}/api/traffic-stats/funnel/${teamName}`, {
+          params: { startDate: since, endDate: until }
+        });
+        
+        setFunnelData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch funnel data:', error);
+      }
+    };
+    
+    fetchFunnelData();
+  }, [analytics, selectedTeam, dateRange, customDate]);
 
   return (
     <div className="min-h-screen bg-[#030303] text-white antialiased">

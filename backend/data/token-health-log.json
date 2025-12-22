@@ -1,5 +1,1687 @@
 [
   {
+    "timestamp": "2025-12-22T06:35:19.007Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:15.931Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:16.840Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:17.695Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:18.034Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:35:11.212Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:08.242Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:09.037Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:09.741Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:10.114Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:35:11.159Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:08.178Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:09.164Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:09.794Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:10.132Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:35:04.007Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:01.029Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:35:01.850Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:02.559Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:35:02.959Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:53.173Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:50.802Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:51.510Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:51.819Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:52.196Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:48.633Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:46.061Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:46.773Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:47.165Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:47.657Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:38.582Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:35.973Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:36.846Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:37.228Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:37.590Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:33.563Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:31.042Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:31.840Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:32.152Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:32.487Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:29.069Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:25.932Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:26.703Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:27.070Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:27.559Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:22.394Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:20.063Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:20.754Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:21.083Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:21.432Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:17.549Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:15.067Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:15.785Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:16.233Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:16.585Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:13.386Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:10.588Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:11.360Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:12.071Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:12.436Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:08.984Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:06.202Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:07.111Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:07.658Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:08.010Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:04.545Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:02.012Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:34:02.736Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:03.287Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:34:03.592Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:34:00.143Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:57.634Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:58.445Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:58.790Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:59.173Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:54.376Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:52.012Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:52.758Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:53.109Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:53.429Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:48.451Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:45.929Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:46.813Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:47.191Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:47.496Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:43.305Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:40.863Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:41.732Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:42.030Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:42.339Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:38.097Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:35.519Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:36.352Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:36.715Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:37.054Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:32.529Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:30.099Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:30.935Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:31.247Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:31.595Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:27.387Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:24.995Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:25.824Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:26.142Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:26.429Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:20.621Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:17.860Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:18.609Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:18.928Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:19.490Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:15.335Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:13.001Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:13.721Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:14.066Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:14.369Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:10.805Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:08.327Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:09.046Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:09.520Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:09.872Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:06.330Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:03.446Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:33:04.405Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:04.942Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:05.335Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:33:01.646Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:59.023Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:59.905Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:00.349Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:33:00.695Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:32:57.432Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:54.979Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:55.818Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:32:56.160Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:32:56.482Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:32:52.944Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:50.167Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:50.995Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:32:51.442Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:32:51.945Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
+    "timestamp": "2025-12-22T06:32:52.933Z",
+    "overallHealth": "critical",
+    "tokens": {
+      "facebook": {
+        "name": "facebook",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:50.182Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "(#4) Application request limit reached",
+        "status": "error"
+      },
+      "amocrm": {
+        "name": "amocrm",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Unknown",
+        "lastCheck": "2025-12-22T06:32:51.049Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "unknown"
+      },
+      "openai": {
+        "name": "openai",
+        "isValid": false,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:32:51.355Z",
+        "lastRefresh": null,
+        "errorCount": 1,
+        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "status": "error"
+      },
+      "supabase": {
+        "name": "supabase",
+        "isValid": true,
+        "expiresAt": null,
+        "timeUntilExpire": "Never",
+        "lastCheck": "2025-12-22T06:32:51.913Z",
+        "lastRefresh": null,
+        "errorCount": 0,
+        "lastError": null,
+        "status": "healthy"
+      }
+    },
+    "alerts": [
+      "🚨 Facebook token is error: (#4) Application request limit reached",
+      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
+    ],
+    "recommendations": [
+      "Immediately update Facebook token in .env",
+      "Update OPENAI_API_KEY in .env"
+    ]
+  },
+  {
     "timestamp": "2025-12-22T06:32:48.522Z",
     "overallHealth": "critical",
     "tokens": {
@@ -4102,1688 +5784,6 @@
         "expiresAt": null,
         "timeUntilExpire": "Never",
         "lastCheck": "2025-12-22T06:28:03.892Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:50.705Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:47.928Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:48.880Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:49.445Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:49.749Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:43.334Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:40.855Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:41.783Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:42.109Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:42.417Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:36.464Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:33.770Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:34.678Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:35.083Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:35.437Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:36.395Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:33.867Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:34.723Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:35.130Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:35.450Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:17.908Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:15.234Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:16.187Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:16.588Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:16.963Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:09.912Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:07.291Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:08.015Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:08.425Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:08.832Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:09.734Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:07.260Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:07.994Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:08.382Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:08.711Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:27:04.274Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:01.705Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:27:02.505Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:02.968Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:27:03.353Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:55.970Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:53.542Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:54.245Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:54.696Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:55.052Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:51.422Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:49.044Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:49.752Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:50.100Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:50.421Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:46.525Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:44.163Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:44.944Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:45.309Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:45.593Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:41.857Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:38.743Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:39.716Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:40.089Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:40.451Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:35.474Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:32.813Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:33.635Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:34.037Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:34.444Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:28.016Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:25.481Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:26.264Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:26.571Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:26.916Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:22.885Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:20.363Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:21.148Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:21.545Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:21.920Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:22.866Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:20.413Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:21.106Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:21.451Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:21.857Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:17.421Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:15.049Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:15.787Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:16.115Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:16.475Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:13.068Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:10.508Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:11.479Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:11.794Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:12.140Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:08.370Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:05.896Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:06.672Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:06.988Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:07.432Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:26:01.995Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:59.605Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:26:00.345Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:00.692Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:26:01.000Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:57.822Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:53.966Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:55.679Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:56.020Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:56.382Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:57.811Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:53.962Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:54.798Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:55.225Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:56.816Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:50.528Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:48.051Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:48.847Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:49.234Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:49.584Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:43.819Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:40.514Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:41.503Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:41.961Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:42.555Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:38.248Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:35.835Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:36.652Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:36.995Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:37.281Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:33.873Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:30.820Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:31.765Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:32.271Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:32.808Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:27.569Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:24.464Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:25.573Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:25.983Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:26.370Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:27.465Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:24.489Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:25.442Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:25.980Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:26.342Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "healthy"
-      }
-    },
-    "alerts": [
-      "🚨 Facebook token is error: (#4) Application request limit reached",
-      "🚨 OpenAI API key is invalid: Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys."
-    ],
-    "recommendations": [
-      "Immediately update Facebook token in .env",
-      "Update OPENAI_API_KEY in .env"
-    ]
-  },
-  {
-    "timestamp": "2025-12-22T06:25:27.297Z",
-    "overallHealth": "critical",
-    "tokens": {
-      "facebook": {
-        "name": "facebook",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:24.654Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "(#4) Application request limit reached",
-        "status": "error"
-      },
-      "amocrm": {
-        "name": "amocrm",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:25:25.552Z",
-        "lastRefresh": null,
-        "errorCount": 0,
-        "lastError": null,
-        "status": "unknown"
-      },
-      "openai": {
-        "name": "openai",
-        "isValid": false,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:25.990Z",
-        "lastRefresh": null,
-        "errorCount": 1,
-        "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
-        "status": "error"
-      },
-      "supabase": {
-        "name": "supabase",
-        "isValid": true,
-        "expiresAt": null,
-        "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:25:26.308Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
