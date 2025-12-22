@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { trafficAdminSupabase } from '../config/supabase.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { parseUserAgent, generateDeviceFingerprint } from '../utils/deviceParser.js';
 
 const router = Router();

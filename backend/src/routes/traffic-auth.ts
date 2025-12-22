@@ -26,9 +26,9 @@ router.post('/login', async (req, res) => {
     
     console.log(`🔐 Traffic login attempt: ${email}`);
     
-    // Get user from traffic_users table
+    // Get user from traffic_targetologists table
     const { data: user, error } = await trafficAdminSupabase
-      .from('traffic_users')
+      .from('traffic_targetologists')
       .select('*')
       .eq('email', email.toLowerCase().trim())
       .eq('is_active', true)
@@ -48,14 +48,14 @@ router.post('/login', async (req, res) => {
     
     // Update last login timestamp
     await trafficAdminSupabase
-      .from('traffic_users')
-      .update({ last_login_at: new Date().toISOString() })
+      .from('traffic_targetologists')
+      .update({ updated_at: new Date().toISOString() })
       .eq('id', user.id);
     
     // 🔒 Log user session (IP, device, browser)
     await logUserSession(req, user.id, {
       email: user.email,
-      team: user.team_name,
+      team: user.team,
       role: user.role
     });
     
@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
       { 
         userId: user.id,
         email: user.email,
-        team: user.team_name,
+        team: user.team,
         role: user.role
       },
       JWT_SECRET,
@@ -80,9 +80,8 @@ router.post('/login', async (req, res) => {
         id: user.id,
         email: user.email,
         fullName: user.full_name,
-        team: user.team_name,
-        role: user.role,
-        avatarUrl: user.avatar_url
+        team: user.team,
+        role: user.role
       }
     });
   } catch (error) {
@@ -156,8 +155,8 @@ router.post('/refresh', async (req, res) => {
 // 👤 GET /api/traffic-auth/me
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const { data: user, error } = await tripwireAdminSupabase
-      .from('traffic_users')
+    const { data: user, error } = await trafficAdminSupabase
+      .from('traffic_targetologists')
       .select('id, email, full_name, team_name, role, avatar_url, last_login_at')
       .eq('id', req.user.userId)
       .single();
@@ -197,8 +196,8 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     }
     
     // Get user with password hash
-    const { data: user, error } = await tripwireAdminSupabase
-      .from('traffic_users')
+    const { data: user, error } = await trafficAdminSupabase
+      .from('traffic_targetologists')
       .select('password_hash')
       .eq('id', req.user.userId)
       .single();
