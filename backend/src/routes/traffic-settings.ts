@@ -141,6 +141,113 @@ router.get('/:userId', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/traffic-settings/facebook/ad-accounts
+ * Fetch available Facebook ad accounts using permanent token
+ */
+router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
+  try {
+    const fbToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
+    
+    if (!fbToken) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Facebook token not configured' 
+      });
+    }
+
+    console.log('📘 Fetching Facebook ad accounts...');
+
+    // Get user's ad accounts
+    const response = await axios.get(`${FB_API_BASE}/me/adaccounts`, {
+      params: {
+        access_token: fbToken,
+        fields: 'id,name,account_status,currency,timezone_name,amount_spent'
+      },
+      timeout: 10000
+    });
+
+    const adAccounts = response.data.data.map((acc: any) => ({
+      id: acc.id,
+      name: acc.name,
+      status: acc.account_status === 1 ? 'active' : 'inactive',
+      currency: acc.currency,
+      timezone: acc.timezone_name,
+      amount_spent: acc.amount_spent
+    }));
+
+    console.log(`✅ Loaded ${adAccounts.length} ad accounts`);
+
+    res.json({
+      success: true,
+      adAccounts
+    });
+
+  } catch (error: any) {
+    console.error('❌ Failed to fetch FB ad accounts:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.response?.data
+    });
+  }
+});
+
+/**
+ * GET /api/traffic-settings/facebook/campaigns/:adAccountId
+ * Fetch campaigns for a specific ad account
+ */
+router.get('/facebook/campaigns/:adAccountId', async (req: Request, res: Response) => {
+  try {
+    const { adAccountId } = req.params;
+    const fbToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
+
+    if (!fbToken) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Facebook token not configured' 
+      });
+    }
+
+    console.log(`📘 Fetching campaigns for ad account: ${adAccountId}`);
+
+    const response = await axios.get(`${FB_API_BASE}/${adAccountId}/campaigns`, {
+      params: {
+        access_token: fbToken,
+        fields: 'id,name,status,objective,effective_status,spend,impressions,clicks',
+        limit: 100
+      },
+      timeout: 10000
+    });
+
+    const campaigns = response.data.data.map((camp: any) => ({
+      id: camp.id,
+      name: camp.name,
+      status: camp.effective_status,
+      objective: camp.objective,
+      spend: camp.spend,
+      impressions: camp.impressions,
+      clicks: camp.clicks,
+      ad_account_id: adAccountId
+    }));
+
+    console.log(`✅ Loaded ${campaigns.length} campaigns for ${adAccountId}`);
+
+    res.json({
+      success: true,
+      campaigns
+    });
+
+  } catch (error: any) {
+    console.error(`❌ Failed to fetch campaigns for ${req.params.adAccountId}:`, error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.response?.data
+    });
+  }
+});
+
+/**
  * PUT /api/traffic-settings/:userId
  * Обновить настройки таргетолога
  */
