@@ -142,7 +142,7 @@ export default function TrafficLogin() {
         <div className="relative bg-gradient-to-b from-black/80 to-black/60 border border-[#00FF88]/30 rounded-2xl p-10 backdrop-blur-2xl shadow-2xl shadow-[#00FF88]/20">
           {/* Logo Header */}
           <div className="flex flex-col items-center mb-10">
-            <OnAILogo width={180} height={50} className="mb-6" />
+            <OnAILogo className="h-12 w-auto mb-6" />
             <div className="text-center">
               <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
                 {t('login.title')}

@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { sendToAllChats } from '../services/telegramBot';
-import { getExchangeRateForDate } from '../jobs/dailyExchangeRateFetcher.js';
 
 const router = Router();
 
@@ -192,7 +191,7 @@ router.get('/sales-history', async (req: Request, res: Response) => {
     const { targetologist, start, end } = req.query;
 
     let query = trafficAdminSupabase
-      .from('sales_notifications')
+      .from('all_sales_tracking')
       .select('*')
       .order('sale_date', { ascending: false });
 
@@ -245,7 +244,7 @@ router.get('/sales-stats', async (req: Request, res: Response) => {
     const { start, end } = req.query;
 
     let query = trafficAdminSupabase
-      .from('sales_notifications')
+      .from('all_sales_tracking')
       .select('targetologist, sale_amount, sale_date');
 
     if (start) {
