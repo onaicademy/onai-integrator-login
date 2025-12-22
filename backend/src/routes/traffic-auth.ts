@@ -36,11 +36,17 @@ router.post('/login', async (req, res) => {
     
     if (error || !user) {
       console.log(`❌ User not found or inactive: ${email}`);
+      console.log(`   Error:`, error);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
+    console.log(`✅ User found: ${user.email}, Team: ${user.team}`);
+    console.log(`   Password hash from DB: ${user.password_hash?.substring(0, 20)}...`);
+    
     // Verify password with bcrypt
     const isValid = await bcrypt.compare(password, user.password_hash);
+    console.log(`   Password verification: ${isValid}`);
+    
     if (!isValid) {
       console.log(`❌ Invalid password for: ${email}`);
       return res.status(401).json({ error: 'Invalid credentials' });
