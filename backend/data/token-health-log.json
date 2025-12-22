@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2025-12-22T06:35:19.007Z",
+    "timestamp": "2025-12-22T06:43:41.842Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -8,7 +8,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:15.931Z",
+        "lastCheck": "2025-12-22T06:43:39.386Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -19,7 +19,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:16.840Z",
+        "lastCheck": "2025-12-22T06:43:40.057Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -30,7 +30,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:17.695Z",
+        "lastCheck": "2025-12-22T06:43:40.467Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -41,7 +41,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:18.034Z",
+        "lastCheck": "2025-12-22T06:43:40.863Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -58,7 +58,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:35:11.212Z",
+    "timestamp": "2025-12-22T06:43:41.774Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -66,7 +66,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:08.242Z",
+        "lastCheck": "2025-12-22T06:43:39.389Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -77,7 +77,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:09.037Z",
+        "lastCheck": "2025-12-22T06:43:40.100Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -88,7 +88,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:09.741Z",
+        "lastCheck": "2025-12-22T06:43:40.478Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -99,7 +99,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:10.114Z",
+        "lastCheck": "2025-12-22T06:43:40.818Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -116,7 +116,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:35:11.159Z",
+    "timestamp": "2025-12-22T06:43:34.065Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -124,7 +124,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:08.178Z",
+        "lastCheck": "2025-12-22T06:43:31.424Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -135,7 +135,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:09.164Z",
+        "lastCheck": "2025-12-22T06:43:32.331Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -146,7 +146,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:09.794Z",
+        "lastCheck": "2025-12-22T06:43:32.707Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -157,7 +157,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:10.132Z",
+        "lastCheck": "2025-12-22T06:43:33.103Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -174,7 +174,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:35:04.007Z",
+    "timestamp": "2025-12-22T06:43:33.895Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -182,7 +182,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:01.029Z",
+        "lastCheck": "2025-12-22T06:43:31.423Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -193,7 +193,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:35:01.850Z",
+        "lastCheck": "2025-12-22T06:43:32.263Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -204,7 +204,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:02.559Z",
+        "lastCheck": "2025-12-22T06:43:32.615Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -215,7 +215,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:35:02.959Z",
+        "lastCheck": "2025-12-22T06:43:32.942Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -232,7 +232,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:53.173Z",
+    "timestamp": "2025-12-22T06:43:22.849Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -240,7 +240,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:50.802Z",
+        "lastCheck": "2025-12-22T06:43:20.280Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -251,7 +251,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:51.510Z",
+        "lastCheck": "2025-12-22T06:43:21.047Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -262,7 +262,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:51.819Z",
+        "lastCheck": "2025-12-22T06:43:21.368Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -273,7 +273,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:52.196Z",
+        "lastCheck": "2025-12-22T06:43:21.788Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -290,7 +290,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:48.633Z",
+    "timestamp": "2025-12-22T06:43:22.832Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -298,7 +298,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:46.061Z",
+        "lastCheck": "2025-12-22T06:43:20.135Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -309,7 +309,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:46.773Z",
+        "lastCheck": "2025-12-22T06:43:20.852Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -320,7 +320,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:47.165Z",
+        "lastCheck": "2025-12-22T06:43:21.246Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -331,7 +331,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:47.657Z",
+        "lastCheck": "2025-12-22T06:43:21.598Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -348,7 +348,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:38.582Z",
+    "timestamp": "2025-12-22T06:43:13.966Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -356,7 +356,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:35.973Z",
+        "lastCheck": "2025-12-22T06:43:11.415Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -367,7 +367,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:36.846Z",
+        "lastCheck": "2025-12-22T06:43:12.242Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -378,7 +378,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:37.228Z",
+        "lastCheck": "2025-12-22T06:43:12.683Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -389,7 +389,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:37.590Z",
+        "lastCheck": "2025-12-22T06:43:13.057Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -406,7 +406,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:33.563Z",
+    "timestamp": "2025-12-22T06:43:07.724Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -414,7 +414,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:31.042Z",
+        "lastCheck": "2025-12-22T06:43:05.319Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -425,7 +425,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:31.840Z",
+        "lastCheck": "2025-12-22T06:43:06.047Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -436,7 +436,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:32.152Z",
+        "lastCheck": "2025-12-22T06:43:06.461Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -447,7 +447,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:32.487Z",
+        "lastCheck": "2025-12-22T06:43:06.820Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -464,7 +464,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:29.069Z",
+    "timestamp": "2025-12-22T06:43:01.246Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -472,7 +472,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:25.932Z",
+        "lastCheck": "2025-12-22T06:42:58.860Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -483,7 +483,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:26.703Z",
+        "lastCheck": "2025-12-22T06:42:59.516Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -494,7 +494,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:27.070Z",
+        "lastCheck": "2025-12-22T06:42:59.845Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -505,7 +505,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:27.559Z",
+        "lastCheck": "2025-12-22T06:43:00.226Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -522,7 +522,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:22.394Z",
+    "timestamp": "2025-12-22T06:43:01.222Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -530,7 +530,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:20.063Z",
+        "lastCheck": "2025-12-22T06:42:58.858Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -541,7 +541,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:20.754Z",
+        "lastCheck": "2025-12-22T06:42:59.534Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -552,7 +552,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:21.083Z",
+        "lastCheck": "2025-12-22T06:42:59.920Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -563,7 +563,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:21.432Z",
+        "lastCheck": "2025-12-22T06:43:00.294Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -580,7 +580,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:17.549Z",
+    "timestamp": "2025-12-22T06:42:54.508Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -588,7 +588,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:15.067Z",
+        "lastCheck": "2025-12-22T06:42:52.032Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -599,7 +599,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:15.785Z",
+        "lastCheck": "2025-12-22T06:42:52.786Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -610,7 +610,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:16.233Z",
+        "lastCheck": "2025-12-22T06:42:53.195Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -621,7 +621,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:16.585Z",
+        "lastCheck": "2025-12-22T06:42:53.524Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -638,7 +638,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:13.386Z",
+    "timestamp": "2025-12-22T06:42:43.678Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -646,7 +646,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:10.588Z",
+        "lastCheck": "2025-12-22T06:42:40.762Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -657,7 +657,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:11.360Z",
+        "lastCheck": "2025-12-22T06:42:41.617Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -668,7 +668,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:12.071Z",
+        "lastCheck": "2025-12-22T06:42:41.947Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -679,7 +679,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:12.436Z",
+        "lastCheck": "2025-12-22T06:42:42.317Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -696,7 +696,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:08.984Z",
+    "timestamp": "2025-12-22T06:42:43.207Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -704,7 +704,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:06.202Z",
+        "lastCheck": "2025-12-22T06:42:40.841Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -715,7 +715,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:07.111Z",
+        "lastCheck": "2025-12-22T06:42:41.522Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -726,7 +726,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:07.658Z",
+        "lastCheck": "2025-12-22T06:42:41.854Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -737,7 +737,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:08.010Z",
+        "lastCheck": "2025-12-22T06:42:42.186Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -754,7 +754,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:04.545Z",
+    "timestamp": "2025-12-22T06:42:36.035Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -762,7 +762,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:02.012Z",
+        "lastCheck": "2025-12-22T06:42:32.567Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -773,7 +773,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:34:02.736Z",
+        "lastCheck": "2025-12-22T06:42:33.568Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -784,7 +784,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:03.287Z",
+        "lastCheck": "2025-12-22T06:42:33.974Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -795,7 +795,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:34:03.592Z",
+        "lastCheck": "2025-12-22T06:42:34.834Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -812,7 +812,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:34:00.143Z",
+    "timestamp": "2025-12-22T06:42:35.846Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -820,7 +820,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:57.634Z",
+        "lastCheck": "2025-12-22T06:42:32.626Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -831,7 +831,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:58.445Z",
+        "lastCheck": "2025-12-22T06:42:33.547Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -842,7 +842,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:58.790Z",
+        "lastCheck": "2025-12-22T06:42:33.939Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -853,7 +853,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:59.173Z",
+        "lastCheck": "2025-12-22T06:42:34.383Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -870,7 +870,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:54.376Z",
+    "timestamp": "2025-12-22T06:42:35.806Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -878,7 +878,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:52.012Z",
+        "lastCheck": "2025-12-22T06:42:32.662Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -889,7 +889,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:52.758Z",
+        "lastCheck": "2025-12-22T06:42:33.567Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -900,7 +900,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:53.109Z",
+        "lastCheck": "2025-12-22T06:42:33.952Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -911,7 +911,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:53.429Z",
+        "lastCheck": "2025-12-22T06:42:34.379Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -928,7 +928,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:48.451Z",
+    "timestamp": "2025-12-22T06:42:28.649Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -936,7 +936,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:45.929Z",
+        "lastCheck": "2025-12-22T06:42:26.053Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -947,7 +947,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:46.813Z",
+        "lastCheck": "2025-12-22T06:42:26.852Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -958,7 +958,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:47.191Z",
+        "lastCheck": "2025-12-22T06:42:27.163Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -969,7 +969,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:47.496Z",
+        "lastCheck": "2025-12-22T06:42:27.579Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -986,7 +986,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:43.305Z",
+    "timestamp": "2025-12-22T06:42:28.606Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -994,7 +994,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:40.863Z",
+        "lastCheck": "2025-12-22T06:42:26.024Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1005,7 +1005,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:41.732Z",
+        "lastCheck": "2025-12-22T06:42:26.796Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1016,7 +1016,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:42.030Z",
+        "lastCheck": "2025-12-22T06:42:27.178Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1027,7 +1027,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:42.339Z",
+        "lastCheck": "2025-12-22T06:42:27.555Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1044,7 +1044,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:38.097Z",
+    "timestamp": "2025-12-22T06:42:23.589Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1052,7 +1052,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:35.519Z",
+        "lastCheck": "2025-12-22T06:42:20.793Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1063,7 +1063,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:36.352Z",
+        "lastCheck": "2025-12-22T06:42:21.557Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1074,7 +1074,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:36.715Z",
+        "lastCheck": "2025-12-22T06:42:21.921Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1085,7 +1085,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:37.054Z",
+        "lastCheck": "2025-12-22T06:42:22.472Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1102,7 +1102,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:32.529Z",
+    "timestamp": "2025-12-22T06:42:23.535Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1110,7 +1110,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:30.099Z",
+        "lastCheck": "2025-12-22T06:42:20.788Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1121,7 +1121,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:30.935Z",
+        "lastCheck": "2025-12-22T06:42:21.623Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1132,7 +1132,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:31.247Z",
+        "lastCheck": "2025-12-22T06:42:21.972Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1143,7 +1143,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:31.595Z",
+        "lastCheck": "2025-12-22T06:42:22.472Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1160,7 +1160,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:27.387Z",
+    "timestamp": "2025-12-22T06:42:15.800Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1168,7 +1168,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:24.995Z",
+        "lastCheck": "2025-12-22T06:42:12.668Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1179,7 +1179,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:25.824Z",
+        "lastCheck": "2025-12-22T06:42:13.607Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1190,7 +1190,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:26.142Z",
+        "lastCheck": "2025-12-22T06:42:14.092Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1201,7 +1201,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:26.429Z",
+        "lastCheck": "2025-12-22T06:42:14.583Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1218,7 +1218,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:20.621Z",
+    "timestamp": "2025-12-22T06:42:15.766Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1226,7 +1226,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:17.860Z",
+        "lastCheck": "2025-12-22T06:42:12.642Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1237,7 +1237,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:18.609Z",
+        "lastCheck": "2025-12-22T06:42:13.540Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1248,7 +1248,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:18.928Z",
+        "lastCheck": "2025-12-22T06:42:14.056Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1259,7 +1259,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:19.490Z",
+        "lastCheck": "2025-12-22T06:42:14.418Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1276,7 +1276,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:15.335Z",
+    "timestamp": "2025-12-22T06:42:15.725Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1284,7 +1284,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:13.001Z",
+        "lastCheck": "2025-12-22T06:42:12.669Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1295,7 +1295,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:13.721Z",
+        "lastCheck": "2025-12-22T06:42:13.623Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1306,7 +1306,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:14.066Z",
+        "lastCheck": "2025-12-22T06:42:14.073Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1317,7 +1317,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:14.369Z",
+        "lastCheck": "2025-12-22T06:42:14.613Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1334,7 +1334,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:10.805Z",
+    "timestamp": "2025-12-22T06:42:08.635Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1342,7 +1342,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:08.327Z",
+        "lastCheck": "2025-12-22T06:42:04.782Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1353,7 +1353,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:09.046Z",
+        "lastCheck": "2025-12-22T06:42:05.545Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1364,7 +1364,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:09.520Z",
+        "lastCheck": "2025-12-22T06:42:06.975Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1375,7 +1375,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:09.872Z",
+        "lastCheck": "2025-12-22T06:42:07.494Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1392,7 +1392,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:06.330Z",
+    "timestamp": "2025-12-22T06:42:08.415Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1400,7 +1400,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:03.446Z",
+        "lastCheck": "2025-12-22T06:42:04.781Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1411,7 +1411,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:33:04.405Z",
+        "lastCheck": "2025-12-22T06:42:05.498Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1422,7 +1422,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:04.942Z",
+        "lastCheck": "2025-12-22T06:42:06.962Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1433,7 +1433,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:05.335Z",
+        "lastCheck": "2025-12-22T06:42:07.472Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1450,7 +1450,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:33:01.646Z",
+    "timestamp": "2025-12-22T06:42:02.022Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1458,7 +1458,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:59.023Z",
+        "lastCheck": "2025-12-22T06:41:59.528Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1469,7 +1469,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:59.905Z",
+        "lastCheck": "2025-12-22T06:42:00.282Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1480,7 +1480,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:00.349Z",
+        "lastCheck": "2025-12-22T06:42:00.651Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1491,7 +1491,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:33:00.695Z",
+        "lastCheck": "2025-12-22T06:42:00.984Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1508,7 +1508,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:57.432Z",
+    "timestamp": "2025-12-22T06:41:55.483Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1516,7 +1516,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:54.979Z",
+        "lastCheck": "2025-12-22T06:41:52.736Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1527,7 +1527,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:55.818Z",
+        "lastCheck": "2025-12-22T06:41:53.598Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1538,7 +1538,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:56.160Z",
+        "lastCheck": "2025-12-22T06:41:53.925Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1549,7 +1549,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:56.482Z",
+        "lastCheck": "2025-12-22T06:41:54.279Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1566,7 +1566,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:52.944Z",
+    "timestamp": "2025-12-22T06:41:55.435Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1574,7 +1574,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:50.167Z",
+        "lastCheck": "2025-12-22T06:41:52.783Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1585,7 +1585,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:50.995Z",
+        "lastCheck": "2025-12-22T06:41:53.588Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1596,7 +1596,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:51.442Z",
+        "lastCheck": "2025-12-22T06:41:53.934Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1607,7 +1607,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:51.945Z",
+        "lastCheck": "2025-12-22T06:41:54.235Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1624,7 +1624,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:52.933Z",
+    "timestamp": "2025-12-22T06:41:55.262Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1632,7 +1632,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:50.182Z",
+        "lastCheck": "2025-12-22T06:41:52.715Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1643,7 +1643,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:51.049Z",
+        "lastCheck": "2025-12-22T06:41:53.429Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1654,7 +1654,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:51.355Z",
+        "lastCheck": "2025-12-22T06:41:53.807Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1665,7 +1665,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:51.913Z",
+        "lastCheck": "2025-12-22T06:41:54.161Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1682,7 +1682,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:48.522Z",
+    "timestamp": "2025-12-22T06:41:55.218Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1690,7 +1690,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:45.798Z",
+        "lastCheck": "2025-12-22T06:41:52.756Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1701,7 +1701,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:46.672Z",
+        "lastCheck": "2025-12-22T06:41:53.463Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1712,7 +1712,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:47.233Z",
+        "lastCheck": "2025-12-22T06:41:53.832Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1723,7 +1723,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:47.587Z",
+        "lastCheck": "2025-12-22T06:41:54.160Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1740,7 +1740,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:44.206Z",
+    "timestamp": "2025-12-22T06:41:48.991Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1748,7 +1748,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:41.840Z",
+        "lastCheck": "2025-12-22T06:41:46.365Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1759,7 +1759,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:42.556Z",
+        "lastCheck": "2025-12-22T06:41:47.161Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1770,7 +1770,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:43.003Z",
+        "lastCheck": "2025-12-22T06:41:47.514Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1781,7 +1781,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:43.298Z",
+        "lastCheck": "2025-12-22T06:41:47.971Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1798,7 +1798,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:40.234Z",
+    "timestamp": "2025-12-22T06:41:48.970Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1806,7 +1806,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:37.729Z",
+        "lastCheck": "2025-12-22T06:41:46.378Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1817,7 +1817,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:38.594Z",
+        "lastCheck": "2025-12-22T06:41:47.148Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1828,7 +1828,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:38.953Z",
+        "lastCheck": "2025-12-22T06:41:47.513Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1839,7 +1839,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:39.302Z",
+        "lastCheck": "2025-12-22T06:41:47.875Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1856,7 +1856,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:36.128Z",
+    "timestamp": "2025-12-22T06:41:48.937Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1864,7 +1864,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:33.672Z",
+        "lastCheck": "2025-12-22T06:41:46.394Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1875,7 +1875,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:34.519Z",
+        "lastCheck": "2025-12-22T06:41:47.235Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1886,7 +1886,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:34.847Z",
+        "lastCheck": "2025-12-22T06:41:47.549Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1897,7 +1897,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:35.181Z",
+        "lastCheck": "2025-12-22T06:41:47.934Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1914,7 +1914,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:32.051Z",
+    "timestamp": "2025-12-22T06:41:35.371Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1922,7 +1922,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:29.616Z",
+        "lastCheck": "2025-12-22T06:41:31.971Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1933,7 +1933,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:30.416Z",
+        "lastCheck": "2025-12-22T06:41:32.869Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1944,7 +1944,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:30.734Z",
+        "lastCheck": "2025-12-22T06:41:33.240Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -1955,7 +1955,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:31.089Z",
+        "lastCheck": "2025-12-22T06:41:33.644Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -1972,7 +1972,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:28.004Z",
+    "timestamp": "2025-12-22T06:41:35.316Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -1980,7 +1980,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:25.266Z",
+        "lastCheck": "2025-12-22T06:41:31.975Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -1991,7 +1991,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:25.999Z",
+        "lastCheck": "2025-12-22T06:41:32.677Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2002,7 +2002,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:26.335Z",
+        "lastCheck": "2025-12-22T06:41:33.077Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2013,7 +2013,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:27.065Z",
+        "lastCheck": "2025-12-22T06:41:33.449Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2030,7 +2030,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:23.577Z",
+    "timestamp": "2025-12-22T06:41:34.973Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2038,7 +2038,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:21.218Z",
+        "lastCheck": "2025-12-22T06:41:31.976Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2049,7 +2049,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:21.935Z",
+        "lastCheck": "2025-12-22T06:41:32.834Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2060,7 +2060,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:22.310Z",
+        "lastCheck": "2025-12-22T06:41:33.289Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2071,7 +2071,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:22.634Z",
+        "lastCheck": "2025-12-22T06:41:33.644Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2088,7 +2088,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:19.459Z",
+    "timestamp": "2025-12-22T06:41:28.455Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2096,7 +2096,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:16.728Z",
+        "lastCheck": "2025-12-22T06:41:26.100Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2107,7 +2107,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:17.700Z",
+        "lastCheck": "2025-12-22T06:41:26.824Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2118,7 +2118,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:18.112Z",
+        "lastCheck": "2025-12-22T06:41:27.153Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2129,7 +2129,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:18.463Z",
+        "lastCheck": "2025-12-22T06:41:27.533Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2146,7 +2146,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:15.029Z",
+    "timestamp": "2025-12-22T06:41:23.796Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2154,7 +2154,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:12.471Z",
+        "lastCheck": "2025-12-22T06:41:21.572Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2165,7 +2165,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:13.235Z",
+        "lastCheck": "2025-12-22T06:41:22.236Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2176,7 +2176,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:13.680Z",
+        "lastCheck": "2025-12-22T06:41:22.538Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2187,7 +2187,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:14.060Z",
+        "lastCheck": "2025-12-22T06:41:22.875Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2204,7 +2204,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:10.958Z",
+    "timestamp": "2025-12-22T06:41:19.175Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2212,7 +2212,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:08.277Z",
+        "lastCheck": "2025-12-22T06:41:16.303Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2223,7 +2223,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:09.061Z",
+        "lastCheck": "2025-12-22T06:41:16.972Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2234,7 +2234,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:09.637Z",
+        "lastCheck": "2025-12-22T06:41:17.379Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2245,7 +2245,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:09.955Z",
+        "lastCheck": "2025-12-22T06:41:17.768Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2262,7 +2262,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:06.675Z",
+    "timestamp": "2025-12-22T06:41:19.153Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2270,7 +2270,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:03.931Z",
+        "lastCheck": "2025-12-22T06:41:16.302Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2281,7 +2281,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:04.707Z",
+        "lastCheck": "2025-12-22T06:41:16.959Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2292,7 +2292,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:05.294Z",
+        "lastCheck": "2025-12-22T06:41:17.338Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2303,7 +2303,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:05.647Z",
+        "lastCheck": "2025-12-22T06:41:18.186Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2320,7 +2320,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:32:01.951Z",
+    "timestamp": "2025-12-22T06:41:14.579Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2328,7 +2328,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:59.451Z",
+        "lastCheck": "2025-12-22T06:41:12.080Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2339,7 +2339,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:32:00.237Z",
+        "lastCheck": "2025-12-22T06:41:12.907Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2350,7 +2350,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:00.552Z",
+        "lastCheck": "2025-12-22T06:41:13.252Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2361,7 +2361,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:32:01.024Z",
+        "lastCheck": "2025-12-22T06:41:13.599Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2378,7 +2378,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:57.790Z",
+    "timestamp": "2025-12-22T06:41:09.984Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2386,7 +2386,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:55.391Z",
+        "lastCheck": "2025-12-22T06:41:07.343Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2397,7 +2397,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:56.072Z",
+        "lastCheck": "2025-12-22T06:41:08.029Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2408,7 +2408,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:56.421Z",
+        "lastCheck": "2025-12-22T06:41:08.620Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2419,7 +2419,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:56.795Z",
+        "lastCheck": "2025-12-22T06:41:08.988Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2436,7 +2436,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:53.794Z",
+    "timestamp": "2025-12-22T06:41:05.441Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2444,7 +2444,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:51.250Z",
+        "lastCheck": "2025-12-22T06:41:01.894Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2455,7 +2455,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:52.144Z",
+        "lastCheck": "2025-12-22T06:41:02.594Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2466,7 +2466,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:52.436Z",
+        "lastCheck": "2025-12-22T06:41:03.133Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2477,7 +2477,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:52.866Z",
+        "lastCheck": "2025-12-22T06:41:04.428Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2494,7 +2494,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:49.437Z",
+    "timestamp": "2025-12-22T06:41:04.425Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2502,7 +2502,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:47.006Z",
+        "lastCheck": "2025-12-22T06:41:01.862Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2513,7 +2513,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:47.813Z",
+        "lastCheck": "2025-12-22T06:41:02.576Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2524,7 +2524,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:48.132Z",
+        "lastCheck": "2025-12-22T06:41:03.113Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2535,7 +2535,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:48.455Z",
+        "lastCheck": "2025-12-22T06:41:03.507Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2552,7 +2552,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:45.059Z",
+    "timestamp": "2025-12-22T06:40:59.908Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2560,7 +2560,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:42.474Z",
+        "lastCheck": "2025-12-22T06:40:57.332Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2571,7 +2571,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:43.281Z",
+        "lastCheck": "2025-12-22T06:40:58.263Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2582,7 +2582,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:43.772Z",
+        "lastCheck": "2025-12-22T06:40:58.579Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2593,7 +2593,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:44.103Z",
+        "lastCheck": "2025-12-22T06:40:58.930Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2610,7 +2610,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:40.214Z",
+    "timestamp": "2025-12-22T06:40:59.807Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2618,7 +2618,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:37.495Z",
+        "lastCheck": "2025-12-22T06:40:57.359Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2629,7 +2629,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:38.553Z",
+        "lastCheck": "2025-12-22T06:40:58.107Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2640,7 +2640,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:38.873Z",
+        "lastCheck": "2025-12-22T06:40:58.552Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2651,7 +2651,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:39.230Z",
+        "lastCheck": "2025-12-22T06:40:58.864Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2668,7 +2668,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:34.802Z",
+    "timestamp": "2025-12-22T06:40:55.669Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2676,7 +2676,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:32.189Z",
+        "lastCheck": "2025-12-22T06:40:53.353Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2687,7 +2687,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:33.145Z",
+        "lastCheck": "2025-12-22T06:40:54.030Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2698,7 +2698,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:33.517Z",
+        "lastCheck": "2025-12-22T06:40:54.356Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2709,7 +2709,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:33.811Z",
+        "lastCheck": "2025-12-22T06:40:54.679Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2726,7 +2726,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:34.786Z",
+    "timestamp": "2025-12-22T06:40:51.724Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2734,7 +2734,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:32.141Z",
+        "lastCheck": "2025-12-22T06:40:49.364Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2745,7 +2745,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:33.084Z",
+        "lastCheck": "2025-12-22T06:40:50.037Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2756,7 +2756,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:33.464Z",
+        "lastCheck": "2025-12-22T06:40:50.399Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2767,7 +2767,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:33.832Z",
+        "lastCheck": "2025-12-22T06:40:50.761Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2784,7 +2784,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:28.802Z",
+    "timestamp": "2025-12-22T06:40:47.774Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2792,7 +2792,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:26.297Z",
+        "lastCheck": "2025-12-22T06:40:45.389Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2803,7 +2803,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:27.048Z",
+        "lastCheck": "2025-12-22T06:40:46.071Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2814,7 +2814,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:27.350Z",
+        "lastCheck": "2025-12-22T06:40:46.382Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2825,7 +2825,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:27.765Z",
+        "lastCheck": "2025-12-22T06:40:46.739Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2842,7 +2842,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:23.703Z",
+    "timestamp": "2025-12-22T06:40:47.715Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2850,7 +2850,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:21.356Z",
+        "lastCheck": "2025-12-22T06:40:45.446Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2861,7 +2861,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:22.083Z",
+        "lastCheck": "2025-12-22T06:40:46.120Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2872,7 +2872,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:22.405Z",
+        "lastCheck": "2025-12-22T06:40:46.434Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2883,7 +2883,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:22.779Z",
+        "lastCheck": "2025-12-22T06:40:46.730Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2900,7 +2900,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:18.188Z",
+    "timestamp": "2025-12-22T06:40:43.480Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2908,7 +2908,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:15.030Z",
+        "lastCheck": "2025-12-22T06:40:41.116Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2919,7 +2919,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:16.315Z",
+        "lastCheck": "2025-12-22T06:40:41.842Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2930,7 +2930,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:16.752Z",
+        "lastCheck": "2025-12-22T06:40:42.172Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2941,7 +2941,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:17.076Z",
+        "lastCheck": "2025-12-22T06:40:42.492Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2958,7 +2958,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:18.150Z",
+    "timestamp": "2025-12-22T06:40:43.449Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -2966,7 +2966,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:15.047Z",
+        "lastCheck": "2025-12-22T06:40:41.144Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -2977,7 +2977,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:16.326Z",
+        "lastCheck": "2025-12-22T06:40:41.812Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -2988,7 +2988,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:16.768Z",
+        "lastCheck": "2025-12-22T06:40:42.124Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -2999,7 +2999,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:17.157Z",
+        "lastCheck": "2025-12-22T06:40:42.455Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3016,7 +3016,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:09.300Z",
+    "timestamp": "2025-12-22T06:40:39.450Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3024,7 +3024,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:07.014Z",
+        "lastCheck": "2025-12-22T06:40:36.838Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3035,7 +3035,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:07.734Z",
+        "lastCheck": "2025-12-22T06:40:37.667Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3046,7 +3046,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:08.069Z",
+        "lastCheck": "2025-12-22T06:40:38.036Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3057,7 +3057,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:08.381Z",
+        "lastCheck": "2025-12-22T06:40:38.386Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3074,7 +3074,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:05.219Z",
+    "timestamp": "2025-12-22T06:40:35.127Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3082,7 +3082,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:02.602Z",
+        "lastCheck": "2025-12-22T06:40:32.742Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3093,7 +3093,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:31:03.455Z",
+        "lastCheck": "2025-12-22T06:40:33.412Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3104,7 +3104,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:03.927Z",
+        "lastCheck": "2025-12-22T06:40:33.821Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3115,7 +3115,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:31:04.230Z",
+        "lastCheck": "2025-12-22T06:40:34.150Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3132,7 +3132,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:31:00.440Z",
+    "timestamp": "2025-12-22T06:40:34.991Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3140,7 +3140,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:58.011Z",
+        "lastCheck": "2025-12-22T06:40:32.668Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3151,7 +3151,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:58.799Z",
+        "lastCheck": "2025-12-22T06:40:33.364Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3162,7 +3162,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:59.157Z",
+        "lastCheck": "2025-12-22T06:40:33.695Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3173,7 +3173,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:59.491Z",
+        "lastCheck": "2025-12-22T06:40:34.030Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3190,7 +3190,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:55.367Z",
+    "timestamp": "2025-12-22T06:40:30.304Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3198,7 +3198,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:52.376Z",
+        "lastCheck": "2025-12-22T06:40:27.760Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3209,7 +3209,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:53.245Z",
+        "lastCheck": "2025-12-22T06:40:28.517Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3220,7 +3220,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:53.599Z",
+        "lastCheck": "2025-12-22T06:40:28.903Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3231,7 +3231,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:53.896Z",
+        "lastCheck": "2025-12-22T06:40:29.301Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3248,7 +3248,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:50.667Z",
+    "timestamp": "2025-12-22T06:40:30.182Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3256,7 +3256,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:48.102Z",
+        "lastCheck": "2025-12-22T06:40:27.753Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3267,7 +3267,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:49.011Z",
+        "lastCheck": "2025-12-22T06:40:28.462Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3278,7 +3278,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:49.448Z",
+        "lastCheck": "2025-12-22T06:40:28.914Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3289,7 +3289,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:49.738Z",
+        "lastCheck": "2025-12-22T06:40:29.223Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3306,7 +3306,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:46.360Z",
+    "timestamp": "2025-12-22T06:40:25.857Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3314,7 +3314,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:43.886Z",
+        "lastCheck": "2025-12-22T06:40:23.539Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3325,7 +3325,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:44.659Z",
+        "lastCheck": "2025-12-22T06:40:24.216Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3336,7 +3336,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:45.029Z",
+        "lastCheck": "2025-12-22T06:40:28.914Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3347,7 +3347,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:45.427Z",
+        "lastCheck": "2025-12-22T06:40:29.223Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3364,7 +3364,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:42.230Z",
+    "timestamp": "2025-12-22T06:40:25.857Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3372,7 +3372,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:39.813Z",
+        "lastCheck": "2025-12-22T06:40:23.539Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3383,7 +3383,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:40.556Z",
+        "lastCheck": "2025-12-22T06:40:24.216Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3394,7 +3394,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:40.919Z",
+        "lastCheck": "2025-12-22T06:40:24.555Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3405,7 +3405,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:41.293Z",
+        "lastCheck": "2025-12-22T06:40:24.895Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3422,7 +3422,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:37.905Z",
+    "timestamp": "2025-12-22T06:40:21.822Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3430,7 +3430,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:35.290Z",
+        "lastCheck": "2025-12-22T06:40:19.296Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3441,7 +3441,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:36.338Z",
+        "lastCheck": "2025-12-22T06:40:19.988Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3452,7 +3452,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:36.670Z",
+        "lastCheck": "2025-12-22T06:40:20.308Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3463,7 +3463,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:36.989Z",
+        "lastCheck": "2025-12-22T06:40:20.704Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3480,7 +3480,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:33.579Z",
+    "timestamp": "2025-12-22T06:40:17.437Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3488,7 +3488,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:30.762Z",
+        "lastCheck": "2025-12-22T06:40:15.017Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3499,7 +3499,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:31.679Z",
+        "lastCheck": "2025-12-22T06:40:15.709Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3510,7 +3510,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:32.124Z",
+        "lastCheck": "2025-12-22T06:40:16.114Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3521,7 +3521,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:32.459Z",
+        "lastCheck": "2025-12-22T06:40:16.430Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3538,7 +3538,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:33.474Z",
+    "timestamp": "2025-12-22T06:40:17.411Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3546,7 +3546,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:30.748Z",
+        "lastCheck": "2025-12-22T06:40:14.967Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3557,7 +3557,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:31.823Z",
+        "lastCheck": "2025-12-22T06:40:15.657Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3568,7 +3568,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:32.199Z",
+        "lastCheck": "2025-12-22T06:40:16.131Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3579,7 +3579,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:32.556Z",
+        "lastCheck": "2025-12-22T06:40:16.444Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3596,7 +3596,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:28.055Z",
+    "timestamp": "2025-12-22T06:40:13.406Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3604,7 +3604,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:25.346Z",
+        "lastCheck": "2025-12-22T06:40:10.720Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3615,7 +3615,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:26.195Z",
+        "lastCheck": "2025-12-22T06:40:11.449Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3626,7 +3626,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:26.563Z",
+        "lastCheck": "2025-12-22T06:40:12.067Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3637,7 +3637,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:27.076Z",
+        "lastCheck": "2025-12-22T06:40:12.409Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3654,7 +3654,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:27.996Z",
+    "timestamp": "2025-12-22T06:40:09.110Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3662,7 +3662,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:25.389Z",
+        "lastCheck": "2025-12-22T06:40:06.325Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3673,7 +3673,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:26.388Z",
+        "lastCheck": "2025-12-22T06:40:06.973Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3684,7 +3684,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:26.739Z",
+        "lastCheck": "2025-12-22T06:40:07.751Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3695,7 +3695,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:27.084Z",
+        "lastCheck": "2025-12-22T06:40:08.111Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3712,7 +3712,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:23.242Z",
+    "timestamp": "2025-12-22T06:40:04.549Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3720,7 +3720,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:20.739Z",
+        "lastCheck": "2025-12-22T06:40:01.443Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3731,7 +3731,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:21.530Z",
+        "lastCheck": "2025-12-22T06:40:02.168Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3742,7 +3742,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:21.978Z",
+        "lastCheck": "2025-12-22T06:40:02.803Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3753,7 +3753,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:22.280Z",
+        "lastCheck": "2025-12-22T06:40:03.126Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3770,7 +3770,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:18.482Z",
+    "timestamp": "2025-12-22T06:39:59.955Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3778,7 +3778,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:15.867Z",
+        "lastCheck": "2025-12-22T06:39:57.349Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3789,7 +3789,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:16.752Z",
+        "lastCheck": "2025-12-22T06:39:58.028Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3800,7 +3800,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:17.273Z",
+        "lastCheck": "2025-12-22T06:39:58.646Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3811,7 +3811,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:17.571Z",
+        "lastCheck": "2025-12-22T06:39:58.983Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3828,7 +3828,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:13.410Z",
+    "timestamp": "2025-12-22T06:39:55.314Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3836,7 +3836,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:10.415Z",
+        "lastCheck": "2025-12-22T06:39:52.942Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3847,7 +3847,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:11.397Z",
+        "lastCheck": "2025-12-22T06:39:53.650Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3858,7 +3858,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:12.111Z",
+        "lastCheck": "2025-12-22T06:39:53.994Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3869,7 +3869,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:12.433Z",
+        "lastCheck": "2025-12-22T06:39:54.337Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3886,7 +3886,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:13.397Z",
+    "timestamp": "2025-12-22T06:39:51.460Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3894,7 +3894,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:10.409Z",
+        "lastCheck": "2025-12-22T06:39:48.974Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3905,7 +3905,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:11.439Z",
+        "lastCheck": "2025-12-22T06:39:49.668Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3916,7 +3916,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:12.006Z",
+        "lastCheck": "2025-12-22T06:39:49.964Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3927,7 +3927,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:12.383Z",
+        "lastCheck": "2025-12-22T06:39:50.304Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3944,7 +3944,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:08.705Z",
+    "timestamp": "2025-12-22T06:39:46.085Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -3952,7 +3952,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:06.000Z",
+        "lastCheck": "2025-12-22T06:39:43.724Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -3963,7 +3963,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:06.861Z",
+        "lastCheck": "2025-12-22T06:39:44.440Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -3974,7 +3974,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:07.481Z",
+        "lastCheck": "2025-12-22T06:39:44.814Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -3985,7 +3985,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:07.804Z",
+        "lastCheck": "2025-12-22T06:39:45.147Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4002,7 +4002,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:03.576Z",
+    "timestamp": "2025-12-22T06:39:41.402Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4010,9 +4010,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:00.235Z",
+        "lastCheck": "2025-12-22T06:39:38.984Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
         "status": "error"
       },
@@ -4021,7 +4021,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:01.068Z",
+        "lastCheck": "2025-12-22T06:39:39.799Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4032,9 +4032,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:01.600Z",
+        "lastCheck": "2025-12-22T06:39:40.135Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
         "status": "error"
       },
@@ -4043,7 +4043,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:01.957Z",
+        "lastCheck": "2025-12-22T06:39:40.470Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4060,7 +4060,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:03.525Z",
+    "timestamp": "2025-12-22T06:39:35.358Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4068,9 +4068,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:00.246Z",
+        "lastCheck": "2025-12-22T06:39:32.497Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
         "status": "error"
       },
@@ -4079,7 +4079,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:01.200Z",
+        "lastCheck": "2025-12-22T06:39:33.229Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4090,9 +4090,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:01.667Z",
+        "lastCheck": "2025-12-22T06:39:33.689Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
         "status": "error"
       },
@@ -4101,7 +4101,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:02.055Z",
+        "lastCheck": "2025-12-22T06:39:34.168Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4118,7 +4118,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:02.857Z",
+    "timestamp": "2025-12-22T06:39:30.975Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4126,9 +4126,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:00.235Z",
+        "lastCheck": "2025-12-22T06:39:28.574Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
         "status": "error"
       },
@@ -4137,7 +4137,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:01.068Z",
+        "lastCheck": "2025-12-22T06:39:29.266Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4148,9 +4148,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:01.600Z",
+        "lastCheck": "2025-12-22T06:39:29.638Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
         "status": "error"
       },
@@ -4159,7 +4159,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:01.957Z",
+        "lastCheck": "2025-12-22T06:39:30.020Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4176,7 +4176,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:02.628Z",
+    "timestamp": "2025-12-22T06:39:30.937Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4184,9 +4184,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:00.246Z",
+        "lastCheck": "2025-12-22T06:39:28.597Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
         "status": "error"
       },
@@ -4195,7 +4195,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:01.200Z",
+        "lastCheck": "2025-12-22T06:39:29.282Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4206,9 +4206,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:01.667Z",
+        "lastCheck": "2025-12-22T06:39:29.644Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
         "status": "error"
       },
@@ -4217,7 +4217,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:02.055Z",
+        "lastCheck": "2025-12-22T06:39:29.987Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4234,7 +4234,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:30:02.163Z",
+    "timestamp": "2025-12-22T06:39:26.478Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4242,9 +4242,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:00.632Z",
+        "lastCheck": "2025-12-22T06:39:24.121Z",
         "lastRefresh": null,
-        "errorCount": 3,
+        "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
         "status": "error"
       },
@@ -4253,7 +4253,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:30:01.502Z",
+        "lastCheck": "2025-12-22T06:39:24.841Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4264,9 +4264,9 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:02.087Z",
+        "lastCheck": "2025-12-22T06:39:25.176Z",
         "lastRefresh": null,
-        "errorCount": 2,
+        "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
         "status": "error"
       },
@@ -4275,7 +4275,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:30:02.010Z",
+        "lastCheck": "2025-12-22T06:39:25.522Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4292,7 +4292,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:57.723Z",
+    "timestamp": "2025-12-22T06:39:22.653Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4300,7 +4300,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:54.861Z",
+        "lastCheck": "2025-12-22T06:39:20.124Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4311,7 +4311,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:55.590Z",
+        "lastCheck": "2025-12-22T06:39:20.808Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4322,7 +4322,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:55.965Z",
+        "lastCheck": "2025-12-22T06:39:21.343Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4333,7 +4333,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:56.780Z",
+        "lastCheck": "2025-12-22T06:39:21.687Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4350,7 +4350,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:53.053Z",
+    "timestamp": "2025-12-22T06:39:17.450Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4358,7 +4358,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:50.316Z",
+        "lastCheck": "2025-12-22T06:39:15.139Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4369,7 +4369,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:51.219Z",
+        "lastCheck": "2025-12-22T06:39:15.774Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4380,7 +4380,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:51.704Z",
+        "lastCheck": "2025-12-22T06:39:16.172Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4391,7 +4391,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:52.046Z",
+        "lastCheck": "2025-12-22T06:39:16.495Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4408,7 +4408,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:48.683Z",
+    "timestamp": "2025-12-22T06:39:11.491Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4416,7 +4416,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:46.239Z",
+        "lastCheck": "2025-12-22T06:39:08.615Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4427,7 +4427,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:46.978Z",
+        "lastCheck": "2025-12-22T06:39:09.406Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4438,7 +4438,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:47.292Z",
+        "lastCheck": "2025-12-22T06:39:10.045Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4449,7 +4449,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:47.711Z",
+        "lastCheck": "2025-12-22T06:39:10.493Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4466,7 +4466,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:44.228Z",
+    "timestamp": "2025-12-22T06:39:11.388Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4474,7 +4474,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:41.420Z",
+        "lastCheck": "2025-12-22T06:39:08.657Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4485,7 +4485,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:42.192Z",
+        "lastCheck": "2025-12-22T06:39:09.405Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4496,7 +4496,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:42.492Z",
+        "lastCheck": "2025-12-22T06:39:10.035Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4507,7 +4507,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:43.296Z",
+        "lastCheck": "2025-12-22T06:39:10.381Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4524,7 +4524,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:39.733Z",
+    "timestamp": "2025-12-22T06:39:05.000Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4532,7 +4532,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:36.834Z",
+        "lastCheck": "2025-12-22T06:39:02.280Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4543,7 +4543,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:37.662Z",
+        "lastCheck": "2025-12-22T06:39:03.159Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4554,7 +4554,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:37.971Z",
+        "lastCheck": "2025-12-22T06:39:03.656Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4565,7 +4565,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:38.750Z",
+        "lastCheck": "2025-12-22T06:39:04.000Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4582,7 +4582,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:35.246Z",
+    "timestamp": "2025-12-22T06:39:04.987Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4590,7 +4590,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:32.780Z",
+        "lastCheck": "2025-12-22T06:39:02.495Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4601,7 +4601,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:33.498Z",
+        "lastCheck": "2025-12-22T06:39:03.141Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4612,7 +4612,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:33.811Z",
+        "lastCheck": "2025-12-22T06:39:03.577Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4623,7 +4623,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:34.292Z",
+        "lastCheck": "2025-12-22T06:39:04.018Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4640,7 +4640,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:31.144Z",
+    "timestamp": "2025-12-22T06:39:04.896Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4648,7 +4648,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:27.982Z",
+        "lastCheck": "2025-12-22T06:39:02.464Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4659,7 +4659,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:28.944Z",
+        "lastCheck": "2025-12-22T06:39:03.160Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4670,7 +4670,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:29.277Z",
+        "lastCheck": "2025-12-22T06:39:03.586Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4681,7 +4681,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:30.210Z",
+        "lastCheck": "2025-12-22T06:39:03.946Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4698,7 +4698,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:26.418Z",
+    "timestamp": "2025-12-22T06:38:59.707Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4706,7 +4706,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:23.495Z",
+        "lastCheck": "2025-12-22T06:38:57.336Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4717,7 +4717,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:24.355Z",
+        "lastCheck": "2025-12-22T06:38:58.032Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4728,7 +4728,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:24.712Z",
+        "lastCheck": "2025-12-22T06:38:58.356Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4739,7 +4739,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:25.483Z",
+        "lastCheck": "2025-12-22T06:38:58.695Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4756,7 +4756,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:21.688Z",
+    "timestamp": "2025-12-22T06:38:54.120Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4764,7 +4764,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:19.180Z",
+        "lastCheck": "2025-12-22T06:38:51.204Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4775,7 +4775,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:19.967Z",
+        "lastCheck": "2025-12-22T06:38:52.054Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4786,7 +4786,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:20.315Z",
+        "lastCheck": "2025-12-22T06:38:52.398Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4797,7 +4797,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:20.735Z",
+        "lastCheck": "2025-12-22T06:38:53.141Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4814,7 +4814,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:17.222Z",
+    "timestamp": "2025-12-22T06:38:48.098Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4822,7 +4822,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:14.780Z",
+        "lastCheck": "2025-12-22T06:38:45.666Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4833,7 +4833,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:15.533Z",
+        "lastCheck": "2025-12-22T06:38:46.408Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4844,7 +4844,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:15.896Z",
+        "lastCheck": "2025-12-22T06:38:46.760Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4855,7 +4855,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:16.294Z",
+        "lastCheck": "2025-12-22T06:38:47.132Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4872,7 +4872,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:10.488Z",
+    "timestamp": "2025-12-22T06:38:43.951Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4880,7 +4880,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:07.927Z",
+        "lastCheck": "2025-12-22T06:38:41.414Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4891,7 +4891,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:08.761Z",
+        "lastCheck": "2025-12-22T06:38:42.294Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4902,7 +4902,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:09.168Z",
+        "lastCheck": "2025-12-22T06:38:42.660Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4913,7 +4913,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:09.539Z",
+        "lastCheck": "2025-12-22T06:38:43.019Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4930,7 +4930,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:29:04.736Z",
+    "timestamp": "2025-12-22T06:38:39.624Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4938,7 +4938,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:02.397Z",
+        "lastCheck": "2025-12-22T06:38:37.170Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -4949,7 +4949,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:29:03.068Z",
+        "lastCheck": "2025-12-22T06:38:37.980Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4960,7 +4960,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:03.471Z",
+        "lastCheck": "2025-12-22T06:38:38.272Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -4971,7 +4971,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:29:03.786Z",
+        "lastCheck": "2025-12-22T06:38:38.634Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -4988,7 +4988,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:59.401Z",
+    "timestamp": "2025-12-22T06:38:34.268Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -4996,7 +4996,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:56.639Z",
+        "lastCheck": "2025-12-22T06:38:31.815Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5007,7 +5007,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:57.553Z",
+        "lastCheck": "2025-12-22T06:38:32.574Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5018,7 +5018,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:57.875Z",
+        "lastCheck": "2025-12-22T06:38:32.955Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5029,7 +5029,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:58.479Z",
+        "lastCheck": "2025-12-22T06:38:33.318Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5046,7 +5046,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:54.746Z",
+    "timestamp": "2025-12-22T06:38:26.799Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5054,7 +5054,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:52.021Z",
+        "lastCheck": "2025-12-22T06:38:23.769Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5065,7 +5065,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:52.942Z",
+        "lastCheck": "2025-12-22T06:38:24.537Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5076,7 +5076,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:53.372Z",
+        "lastCheck": "2025-12-22T06:38:24.896Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5087,7 +5087,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:53.813Z",
+        "lastCheck": "2025-12-22T06:38:25.224Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5104,7 +5104,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:47.642Z",
+    "timestamp": "2025-12-22T06:38:26.790Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5112,7 +5112,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:45.092Z",
+        "lastCheck": "2025-12-22T06:38:23.893Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5123,7 +5123,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:45.792Z",
+        "lastCheck": "2025-12-22T06:38:24.649Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5134,7 +5134,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:46.072Z",
+        "lastCheck": "2025-12-22T06:38:25.010Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5145,7 +5145,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:46.453Z",
+        "lastCheck": "2025-12-22T06:38:25.362Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5162,7 +5162,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:42.542Z",
+    "timestamp": "2025-12-22T06:38:17.691Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5170,7 +5170,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:39.983Z",
+        "lastCheck": "2025-12-22T06:38:15.141Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5181,7 +5181,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:40.889Z",
+        "lastCheck": "2025-12-22T06:38:16.010Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5192,7 +5192,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:41.237Z",
+        "lastCheck": "2025-12-22T06:38:16.323Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5203,7 +5203,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:41.594Z",
+        "lastCheck": "2025-12-22T06:38:16.684Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5220,7 +5220,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:38.083Z",
+    "timestamp": "2025-12-22T06:38:13.537Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5228,7 +5228,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:35.655Z",
+        "lastCheck": "2025-12-22T06:38:10.984Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5239,7 +5239,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:36.464Z",
+        "lastCheck": "2025-12-22T06:38:11.689Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5250,7 +5250,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:36.830Z",
+        "lastCheck": "2025-12-22T06:38:12.234Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5261,7 +5261,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:37.148Z",
+        "lastCheck": "2025-12-22T06:38:12.534Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5278,7 +5278,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:33.862Z",
+    "timestamp": "2025-12-22T06:38:09.399Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5286,7 +5286,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:31.616Z",
+        "lastCheck": "2025-12-22T06:38:06.908Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5297,7 +5297,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:32.294Z",
+        "lastCheck": "2025-12-22T06:38:07.646Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5308,7 +5308,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:32.642Z",
+        "lastCheck": "2025-12-22T06:38:08.040Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5319,7 +5319,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:32.945Z",
+        "lastCheck": "2025-12-22T06:38:08.398Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5336,7 +5336,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:29.755Z",
+    "timestamp": "2025-12-22T06:38:04.217Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5344,7 +5344,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:27.401Z",
+        "lastCheck": "2025-12-22T06:38:01.566Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5355,7 +5355,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:28.116Z",
+        "lastCheck": "2025-12-22T06:38:02.312Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5366,7 +5366,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:28.471Z",
+        "lastCheck": "2025-12-22T06:38:02.905Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5377,7 +5377,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:28.818Z",
+        "lastCheck": "2025-12-22T06:38:03.202Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5394,7 +5394,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:24.911Z",
+    "timestamp": "2025-12-22T06:38:04.192Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5402,7 +5402,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:21.430Z",
+        "lastCheck": "2025-12-22T06:38:01.614Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5413,7 +5413,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:22.688Z",
+        "lastCheck": "2025-12-22T06:38:02.287Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5424,7 +5424,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:23.049Z",
+        "lastCheck": "2025-12-22T06:38:02.783Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5435,7 +5435,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:23.852Z",
+        "lastCheck": "2025-12-22T06:38:03.190Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5452,7 +5452,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:24.877Z",
+    "timestamp": "2025-12-22T06:37:59.096Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5460,7 +5460,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:21.451Z",
+        "lastCheck": "2025-12-22T06:37:56.792Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5471,7 +5471,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:22.389Z",
+        "lastCheck": "2025-12-22T06:37:57.487Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5482,7 +5482,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:22.799Z",
+        "lastCheck": "2025-12-22T06:37:57.783Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5493,7 +5493,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:23.898Z",
+        "lastCheck": "2025-12-22T06:37:58.150Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5510,7 +5510,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:24.821Z",
+    "timestamp": "2025-12-22T06:37:55.219Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5518,7 +5518,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:21.416Z",
+        "lastCheck": "2025-12-22T06:37:52.780Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5529,7 +5529,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:22.237Z",
+        "lastCheck": "2025-12-22T06:37:53.529Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5540,7 +5540,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:22.627Z",
+        "lastCheck": "2025-12-22T06:37:53.888Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5551,7 +5551,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:23.833Z",
+        "lastCheck": "2025-12-22T06:37:54.241Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5568,7 +5568,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:18.895Z",
+    "timestamp": "2025-12-22T06:37:50.766Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5576,7 +5576,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:16.345Z",
+        "lastCheck": "2025-12-22T06:37:48.059Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5587,7 +5587,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:17.155Z",
+        "lastCheck": "2025-12-22T06:37:48.852Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5598,7 +5598,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:17.543Z",
+        "lastCheck": "2025-12-22T06:37:49.263Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5609,7 +5609,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:17.910Z",
+        "lastCheck": "2025-12-22T06:37:49.797Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5626,7 +5626,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:18.818Z",
+    "timestamp": "2025-12-22T06:37:46.458Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5634,7 +5634,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:16.378Z",
+        "lastCheck": "2025-12-22T06:37:44.089Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5645,7 +5645,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:17.082Z",
+        "lastCheck": "2025-12-22T06:37:44.777Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5656,7 +5656,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:17.484Z",
+        "lastCheck": "2025-12-22T06:37:45.127Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5667,7 +5667,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:17.837Z",
+        "lastCheck": "2025-12-22T06:37:45.480Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5684,7 +5684,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:10.360Z",
+    "timestamp": "2025-12-22T06:37:42.585Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5692,7 +5692,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:07.405Z",
+        "lastCheck": "2025-12-22T06:37:39.997Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5703,7 +5703,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:08.123Z",
+        "lastCheck": "2025-12-22T06:37:40.914Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5714,7 +5714,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:08.492Z",
+        "lastCheck": "2025-12-22T06:37:41.241Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5725,7 +5725,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:08.862Z",
+        "lastCheck": "2025-12-22T06:37:41.584Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5742,7 +5742,7 @@
     ]
   },
   {
-    "timestamp": "2025-12-22T06:28:04.924Z",
+    "timestamp": "2025-12-22T06:37:37.150Z",
     "overallHealth": "critical",
     "tokens": {
       "facebook": {
@@ -5750,7 +5750,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:02.000Z",
+        "lastCheck": "2025-12-22T06:37:34.504Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "(#4) Application request limit reached",
@@ -5761,7 +5761,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Unknown",
-        "lastCheck": "2025-12-22T06:28:02.755Z",
+        "lastCheck": "2025-12-22T06:37:35.213Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,
@@ -5772,7 +5772,7 @@
         "isValid": false,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:03.198Z",
+        "lastCheck": "2025-12-22T06:37:35.530Z",
         "lastRefresh": null,
         "errorCount": 1,
         "lastError": "Incorrect API key provided: sk-proj-********************************************************************************************************************************************************WTkA. You can find your API key at https://platform.openai.com/account/api-keys.",
@@ -5783,7 +5783,7 @@
         "isValid": true,
         "expiresAt": null,
         "timeUntilExpire": "Never",
-        "lastCheck": "2025-12-22T06:28:03.892Z",
+        "lastCheck": "2025-12-22T06:37:36.181Z",
         "lastRefresh": null,
         "errorCount": 0,
         "lastError": null,

@@ -1,3 +1,6 @@
+// Initialize debug logger FIRST (before any other imports)
+import './utils/debug-logger';
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 

@@ -91,24 +91,89 @@ export class ErrorBoundary extends React.Component<Props, State> {
     window.location.href = '/';
   };
 
-  // 🛡️ NEW: Показать форму feedback от Sentry
-  handleReportFeedback = () => {
-    if (this.state.eventId) {
-      Sentry.showReportDialog({ 
-        eventId: this.state.eventId,
-        title: 'Сообщить об ошибке',
-        subtitle: 'Опишите, что вы делали когда произошла ошибка',
-        subtitle2: 'Мы получим информацию и исправим проблему',
-        labelName: 'Имя',
-        labelEmail: 'Email',
-        labelComments: 'Что произошло?',
-        labelClose: 'Закрыть',
-        labelSubmit: 'Отправить',
-        errorGeneric: 'Произошла ошибка при отправке. Попробуйте еще раз.',
-        errorFormEntry: 'Некоторые поля не заполнены. Пожалуйста, исправьте ошибки и попробуйте снова.',
-        successMessage: 'Спасибо за отзыв! Мы получили информацию.',
+  // 🛡️ NEW: Отправить отчет об ошибке в Telegram
+  handleReportFeedback = async () => {
+    try {
+      // Collect debug logs from console
+      const debugLogs = this.collectDebugLogs();
+      
+      // Prepare error report
+      const errorReport = {
+        error: {
+          name: this.state.error?.name || 'Unknown',
+          message: this.state.error?.message || 'No message',
+          stack: this.state.error?.stack
+        },
+        errorInfo: {
+          componentStack: this.state.errorInfo?.componentStack
+        },
+        userInfo: {
+          email: localStorage.getItem('user_email') || undefined,
+          userId: localStorage.getItem('user_id') || undefined,
+          page: window.location.pathname,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        },
+        debugLogs: debugLogs,
+        environment: {
+          platform: this.detectPlatform(),
+          url: window.location.href,
+          viewport: `${window.innerWidth}x${window.innerHeight}`
+        }
+      };
+      
+      // Send to backend API
+      const API_URL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000' 
+        : 'https://api.onai.academy';
+        
+      const response = await fetch(`${API_URL}/api/error-reports/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorReport)
       });
+      
+      if (response.ok) {
+        alert('✅ Отчет отправлен! Спасибо за помощь 🙏');
+      } else {
+        throw new Error('Failed to send report');
+      }
+    } catch (error) {
+      console.error('Failed to send error report:', error);
+      alert('❌ Не удалось отправить отчет. Попробуйте еще раз.');
     }
+  };
+  
+  // Collect debug logs from console
+  collectDebugLogs = (): string[] => {
+    // Try to get logs from performance entries or local storage
+    const logs: string[] = [];
+    
+    // Check if we have debug logs in sessionStorage
+    const debugLogsKey = 'debug_logs';
+    const storedLogs = sessionStorage.getItem(debugLogsKey);
+    if (storedLogs) {
+      try {
+        return JSON.parse(storedLogs);
+      } catch (e) {
+        // ignore
+      }
+    }
+    
+    // Fallback: create basic log from error info
+    logs.push(`[ERROR] ${this.state.error?.name}: ${this.state.error?.message}`);
+    logs.push(`[DEBUG] Page: ${window.location.pathname}`);
+    logs.push(`[DEBUG] Timestamp: ${new Date().toISOString()}`);
+    
+    return logs;
+  };
+  
+  // Detect platform (Tripwire, Traffic, Landing)
+  detectPlatform = (): 'Tripwire' | 'Traffic' | 'Landing' => {
+    const path = window.location.pathname;
+    if (path.includes('/tripwire') || path.includes('/lessons')) return 'Tripwire';
+    if (path.includes('/traffic') || path.includes('/cabinet')) return 'Traffic';
+    return 'Landing';
   };
 
   handleReload = () => {
