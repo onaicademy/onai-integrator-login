@@ -1,44 +1,22 @@
-/**
- * Supabase Landing Configuration
- * 
- * 🎯 LANDING DATABASE - для лидов с лендингов (proftest, expresscourse)
- * 
- * Эта база данных используется для:
- * - Хранения лидов с лендингов
- * - Отправки лидов в AmoCRM
- * - Хранения токенов интеграций (AmoCRM, Mobizon)
- * - Unified Lead Tracking
- */
-
 import { createClient } from '@supabase/supabase-js';
 
-const landingSupabaseUrl = process.env.LANDING_SUPABASE_URL!;
-const landingServiceRoleKey = process.env.LANDING_SUPABASE_SERVICE_KEY!;
+const LANDING_SUPABASE_URL = process.env.LANDING_SUPABASE_URL;
+const LANDING_SERVICE_ROLE_KEY = process.env.LANDING_SUPABASE_SERVICE_KEY; // ⚠️ Note: SERVICE_KEY not SERVICE_ROLE_KEY
 
-if (!landingSupabaseUrl || !landingServiceRoleKey) {
-  throw new Error('Missing LANDING_SUPABASE_URL or LANDING_SUPABASE_SERVICE_KEY');
+if (!LANDING_SUPABASE_URL || !LANDING_SERVICE_ROLE_KEY) {
+  throw new Error('❌ Missing LANDING_SUPABASE_URL or LANDING_SUPABASE_SERVICE_KEY in env.env');
 }
 
-/**
- * Landing Supabase Client
- * 
- * ✅ Используется для работы с лидами
- * ✅ Хранит токены AmoCRM
- * ✅ Unified Lead Tracking
- */
-export const landingSupabase = createClient(landingSupabaseUrl, landingServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  global: {
-    headers: {
-      Authorization: `Bearer ${landingServiceRoleKey}`
-    }
+export const landingSupabase = createClient(
+  LANDING_SUPABASE_URL,
+  LANDING_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    },
+    db: { schema: 'public' }
   }
-});
+);
 
-console.log('✅ Landing Supabase client initialized');
-console.log('   URL:', landingSupabaseUrl);
-console.log('   Authorization: Bearer ***' + landingServiceRoleKey.slice(-8));
-
+console.log('✅ Landing Supabase client initialized:', LANDING_SUPABASE_URL.substring(0, 30) + '...');

@@ -1,32 +1,28 @@
 /**
- * Funnel Service - ONAI Academy Sales Funnel
+ * Funnel Service - ONAI Academy Sales Funnel (Landing DB Only)
  * 
- * Воронка продаж:
+ * Воронка продаж (3 этапа):
  * 1. ProfTest (🧪) - тестирование профессии
- * 2. ExpressCourse Landing (📚) - интерес к экспресс-курсу
- * 3. Payment (💳) - покупка ExpressCourse
- * 4. Tripwire (🎁) - основная воронка
- * 5. Main Product (🏆) - покупка основного продукта 490k
+ * 2. ExpressCourse Landing (📚) - просмотр оффера
+ * 3. Payment (💳) - оплата экспресс-курса 5K
  * 
- * Метрики в реальном времени из Supabase + AmoCRM
+ * Production-ready: кэширование, error handling, query optimization
  */
 
-import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { landingSupabase } from '../config/supabase-landing.js';
+import { getCachedOrFresh } from './cache-service.js';
+
+// Date filter: last 30 days
+const THIRTY_DAYS_AGO = new Date();
+THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
 
 export interface FunnelMetrics {
   visitors?: number;
   passed?: number;
   views?: number;
-  addedCart?: number;
   purchases?: number;
   revenue?: number;
-  completed?: number;
-  deals?: number;
-  upsells?: number;
-  active?: number;
-  avgTime?: number;
   avgValue?: number;
-  conversions?: number;
 }
 
 export interface FunnelStage {
@@ -36,7 +32,6 @@ export interface FunnelStage {
   metrics: FunnelMetrics;
   conversionRate: number;
   status: 'success' | 'warning' | 'danger' | 'neutral';
-  churnRisk?: number;
   description?: string;
 }
 
@@ -50,313 +45,220 @@ export interface FunnelResponse {
 }
 
 /**
- * Получить все метрики воронки продаж
- */
-export async function getFunnelMetrics(): Promise<FunnelResponse> {
-  console.log('[Funnel Service] Getting funnel metrics...');
-
-  const stages: FunnelStage[] = [
-    // ═══════════════════════════════════════════════════════════════
-    // STAGE 1: PROFTEST (🧪)
-    // ═══════════════════════════════════════════════════════════════
-    {
-      id: 'proftest',
-      title: 'ProfTest',
-      emoji: '🧪',
-      description: 'Тестирование профессии - первый контакт',
-      metrics: await getProfTestMetrics(),
-      conversionRate: 69.4,
-      status: 'success'
-    },
-
-    // ═══════════════════════════════════════════════════════════════
-    // STAGE 2: EXPRESS COURSE LANDING (📚)
-    // ═══════════════════════════════════════════════════════════════
-    {
-      id: 'express',
-      title: 'ExpressCourse Landing',
-      emoji: '📚',
-      description: 'Просмотр оффера экспресс-курса',
-      metrics: await getExpressCourseMetrics(),
-      conversionRate: 36.4,
-      status: 'warning'
-    },
-
-    // ═══════════════════════════════════════════════════════════════
-    // STAGE 3: PAYMENT (💳)
-    // ═══════════════════════════════════════════════════════════════
-    {
-      id: 'payment',
-      title: 'Paid ExpressCourse',
-      emoji: '💳',
-      description: 'Оплата экспресс-курса',
-      metrics: await getPaymentMetrics(),
-      conversionRate: 89.1,
-      status: 'success',
-      churnRisk: 12
-    },
-
-    // ═══════════════════════════════════════════════════════════════
-    // STAGE 4: TRIPWIRE (🎁)
-    // ═══════════════════════════════════════════════════════════════
-    {
-      id: 'tripwire',
-      title: 'Tripwire (Main Funnel)',
-      emoji: '🎁',
-      description: 'Прохождение основной воронки',
-      metrics: await getTripwireMetrics(),
-      conversionRate: 56.1,
-      status: 'warning'
-    },
-
-    // ═══════════════════════════════════════════════════════════════
-    // STAGE 5: MAIN PRODUCT (🏆)
-    // ═══════════════════════════════════════════════════════════════
-    {
-      id: 'main',
-      title: 'Main Product (490k)',
-      emoji: '🏆',
-      description: 'Покупка основного продукта 490,000 KZT',
-      metrics: await getMainProductMetrics(),
-      conversionRate: 100,
-      status: 'success'
-    }
-  ];
-
-  // Calculate totals
-  const totalRevenue = stages.reduce((sum, stage) => {
-    return sum + (stage.metrics.revenue || 0);
-  }, 0);
-
-  const firstStageInput = stages[0]?.metrics.visitors || 0;
-  const lastStageOutput = stages[stages.length - 1]?.metrics.conversions || 0;
-  const overallConversionRate = firstStageInput > 0 
-    ? (lastStageOutput / firstStageInput) * 100 
-    : 0;
-
-  console.log(`[Funnel Service] ✅ Funnel calculated: ${stages.length} stages, ${totalRevenue.toLocaleString()} KZT total`);
-
-  return {
-    success: true,
-    stages,
-    totalRevenue,
-    totalConversions: lastStageOutput,
-    overallConversionRate: parseFloat(overallConversionRate.toFixed(2)),
-    timestamp: new Date().toISOString()
-  };
-}
-
-/**
  * STAGE 1: ProfTest Metrics
- * - Посещения landing page
- * - Завершенные тесты
- * - Среднее время прохождения
+ * Источник: landing_leads WHERE source LIKE 'proftest%'
  */
 async function getProfTestMetrics(): Promise<FunnelMetrics> {
-  try {
-    // TODO: Connect to real analytics
-    // For now, return mock data based on requirements
-    
-    // Query example:
-    // const { data: visits } = await trafficAdminSupabase
-    //   .from('page_views')
-    //   .select('count')
-    //   .eq('page', 'proftest')
-    //   .gte('created_at', getDateRange());
-    
-    // const { data: completed } = await trafficAdminSupabase
-    //   .from('proftest_results')
-    //   .select('count')
-    //   .eq('status', 'completed')
-    //   .gte('created_at', getDateRange());
-
-    return {
-      visitors: 1234,
-      passed: 856,
-      avgTime: 12 // minutes
-    };
-  } catch (error) {
-    console.error('[Funnel Service] Error in getProfTestMetrics:', error);
-    return {
-      visitors: 0,
-      passed: 0,
-      avgTime: 0
-    };
-  }
+  return getCachedOrFresh('funnel:proftest', async () => {
+    try {
+      console.log('[Funnel] Fetching ProfTest metrics from Landing DB...');
+      
+      const { data, error } = await landingSupabase
+        .from('landing_leads')
+        .select('id, created_at')
+        .like('source', 'proftest%') // source = 'proftest_arystan', 'proftest_aruzhan', etc
+        .gte('created_at', THIRTY_DAYS_AGO.toISOString())
+        .limit(10000)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('[Funnel] ProfTest error:', error.message);
+        throw error;
+      }
+      
+      const visitors = data?.length || 0;
+      
+      console.log(`[Funnel] ✅ ProfTest: ${visitors} visitors`);
+      
+      return {
+        visitors: visitors,
+        passed: visitors // все кто посетил = прошли тест
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getProfTestMetrics failed:', error.message);
+      // Fallback: return zero metrics on error
+      return { visitors: 0, passed: 0 };
+    }
+  }, 300); // TTL 5 мин
 }
 
 /**
- * STAGE 2: ExpressCourse Landing Metrics
- * - Просмотры landing page
- * - Добавления в корзину
- * - Средняя стоимость
+ * STAGE 2: Express Course Landing Metrics
+ * Источник: landing_leads WHERE email_sent=true (получили оффер)
  */
 async function getExpressCourseMetrics(): Promise<FunnelMetrics> {
-  try {
-    // TODO: Connect to real analytics
-    
-    // Query example:
-    // const { data: views } = await trafficAdminSupabase
-    //   .from('page_views')
-    //   .select('count')
-    //   .eq('page', 'express_course')
-    //   .gte('created_at', getDateRange());
-    
-    // const { data: cart } = await trafficAdminSupabase
-    //   .from('cart_events')
-    //   .select('count')
-    //   .eq('product', 'express_course')
-    //   .eq('action', 'add')
-    //   .gte('created_at', getDateRange());
-
-    return {
-      views: 856,
-      addedCart: 312,
-      avgValue: 8500 // KZT
-    };
-  } catch (error) {
-    console.error('[Funnel Service] Error in getExpressCourseMetrics:', error);
-    return {
-      views: 0,
-      addedCart: 0,
-      avgValue: 0
-    };
-  }
+  return getCachedOrFresh('funnel:express', async () => {
+    try {
+      console.log('[Funnel] Fetching Express Course metrics from Landing DB...');
+      
+      const { data, error } = await landingSupabase
+        .from('landing_leads')
+        .select('id')
+        .eq('email_sent', true) // Получили email с оффером = посмотрели лендинг
+        .gte('created_at', THIRTY_DAYS_AGO.toISOString())
+        .limit(10000);
+      
+      if (error) {
+        console.error('[Funnel] Express error:', error.message);
+        throw error;
+      }
+      
+      const views = data?.length || 0;
+      
+      console.log(`[Funnel] ✅ Express Course: ${views} views`);
+      
+      return {
+        views: views,
+        avgValue: 5000 // Express курс = 5K KZT
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getExpressCourseMetrics failed:', error.message);
+      return { views: 0, avgValue: 0 };
+    }
+  }, 300);
 }
 
 /**
- * STAGE 3: Payment Metrics
- * - Оплаченные курсы
- * - Выручка
- * - Риск оттока
+ * STAGE 3: Payment Metrics (5K Express Course)
+ * Источник: landing_leads WHERE email_clicked=true (индикатор оплаты)
+ * ⚠️ Note: Проверяем разные варианты полей для payment status
  */
 async function getPaymentMetrics(): Promise<FunnelMetrics> {
-  try {
-    // TODO: Connect to payment system (AmoCRM/Supabase)
-    
-    // Query example:
-    // const { data: payments } = await trafficAdminSupabase
-    //   .from('payments')
-    //   .select('*')
-    //   .eq('product', 'express_course')
-    //   .eq('status', 'completed')
-    //   .gte('created_at', getDateRange());
-    
-    // const revenue = payments.reduce((sum, p) => sum + p.amount, 0);
-
-    return {
-      purchases: 278,
-      revenue: 2_370_000, // KZT
-    };
-  } catch (error) {
-    console.error('[Funnel Service] Error in getPaymentMetrics:', error);
-    return {
-      purchases: 0,
-      revenue: 0
-    };
-  }
+  return getCachedOrFresh('funnel:payment', async () => {
+    try {
+      console.log('[Funnel] Fetching Payment metrics from Landing DB...');
+      
+      // Вариант 1: email_clicked = true (основной индикатор покупки)
+      const { data, error } = await landingSupabase
+        .from('landing_leads')
+        .select('id')
+        .eq('email_clicked', true)
+        .gte('created_at', THIRTY_DAYS_AGO.toISOString())
+        .limit(10000);
+      
+      if (error) {
+        console.error('[Funnel] Payment error:', error.message);
+        
+        // Fallback: попробовать payment_status='completed'
+        console.log('[Funnel] Trying fallback: payment_status=completed');
+        const { data: fallbackData, error: fallbackError } = await landingSupabase
+          .from('landing_leads')
+          .select('id')
+          .eq('payment_status', 'completed')
+          .gte('created_at', THIRTY_DAYS_AGO.toISOString())
+          .limit(10000);
+        
+        if (fallbackError) {
+          console.error('[Funnel] Fallback also failed:', fallbackError.message);
+          throw fallbackError;
+        }
+        
+        const purchases = fallbackData?.length || 0;
+        const revenue = purchases * 5000;
+        
+        console.log(`[Funnel] ✅ Payment (fallback): ${purchases} purchases, ${revenue} KZT`);
+        
+        return { purchases, revenue };
+      }
+      
+      const purchases = data?.length || 0;
+      const revenue = purchases * 5000; // 5K за каждый курс
+      
+      console.log(`[Funnel] ✅ Payment: ${purchases} purchases, ${revenue} KZT`);
+      
+      return {
+        purchases: purchases,
+        revenue: revenue
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getPaymentMetrics failed:', error.message);
+      return { purchases: 0, revenue: 0 };
+    }
+  }, 300);
 }
 
 /**
- * STAGE 4: Tripwire Metrics
- * - Активные студенты
- * - Завершившие курс
- * - Закрытые сделки
+ * Главная функция - получить все метрики воронки
+ * Загружает ВСЕ 3 этапа ПАРАЛЛЕЛЬНО
  */
-async function getTripwireMetrics(): Promise<FunnelMetrics> {
+export async function getFunnelMetrics(): Promise<FunnelResponse> {
+  console.log('[Funnel Service] 🚀 Getting funnel metrics from Landing DB...');
+
   try {
-    // TODO: Connect to Tripwire database
-    
-    // Query example:
-    // const { data: active } = await supabaseTripwire
-    //   .from('students')
-    //   .select('count')
-    //   .eq('status', 'active')
-    //   .gte('enrolled_at', getDateRange());
-    
-    // const { data: completed } = await supabaseTripwire
-    //   .from('students')
-    //   .select('count')
-    //   .eq('status', 'completed')
-    //   .gte('enrolled_at', getDateRange());
-    
-    // const { data: deals } = await supabaseTripwire
-    //   .from('deals')
-    //   .select('count')
-    //   .eq('status', 'closed_won')
-    //   .gte('created_at', getDateRange());
+    // 🚀 Параллельная загрузка всех 3 этапов
+    const [proftest, express, payment] = await Promise.all([
+      getProfTestMetrics(),
+      getExpressCourseMetrics(),
+      getPaymentMetrics()
+    ]);
+
+    // Рассчитываем conversion rates
+    const expressConversion = proftest.visitors && proftest.visitors > 0
+      ? Math.round((express.views! / proftest.visitors) * 100) 
+      : 0;
+
+    const paymentConversion = express.views && express.views > 0
+      ? Math.round((payment.purchases! / express.views) * 100) 
+      : 0;
+
+    const stages: FunnelStage[] = [
+      {
+        id: 'proftest',
+        title: 'ProfTest',
+        emoji: '🧪',
+        description: 'Тестирование профессии - первый контакт',
+        metrics: proftest,
+        conversionRate: 100,
+        status: 'success'
+      },
+      {
+        id: 'express',
+        title: 'Express Course Landing',
+        emoji: '📚',
+        description: 'Просмотр оффера экспресс-курса',
+        metrics: express,
+        conversionRate: expressConversion,
+        status: expressConversion > 30 ? 'success' : 'warning'
+      },
+      {
+        id: 'payment',
+        title: 'Paid Express Course (5K)',
+        emoji: '💳',
+        description: 'Оплата экспресс-курса',
+        metrics: payment,
+        conversionRate: paymentConversion,
+        status: paymentConversion > 20 ? 'success' : 'warning'
+      }
+    ];
+
+    const totalRevenue = payment.revenue || 0;
+    const totalConversions = payment.purchases || 0;
+    const firstInput = proftest.visitors || 0;
+    const overallConversion = firstInput > 0 
+      ? (totalConversions / firstInput) * 100 
+      : 0;
+
+    console.log(`[Funnel Service] ✅ Success: 3 stages, ${totalRevenue.toLocaleString()} KZT, ${totalConversions} conversions`);
 
     return {
-      active: 278,
-      completed: 156,
-      deals: 142
+      success: true,
+      stages,
+      totalRevenue,
+      totalConversions,
+      overallConversionRate: parseFloat(overallConversion.toFixed(2)),
+      timestamp: new Date().toISOString()
     };
-  } catch (error) {
-    console.error('[Funnel Service] Error in getTripwireMetrics:', error);
-    return {
-      active: 0,
-      completed: 0,
-      deals: 0
-    };
-  }
-}
-
-/**
- * STAGE 5: Main Product Metrics
- * - Конверсии в основной продукт
- * - Выручка
- * - Апсейлы
- */
-async function getMainProductMetrics(): Promise<FunnelMetrics> {
-  try {
-    // 🔥 REAL DATA: Query from funnel_sales table (AmoCRM webhook)
-    const { data: sales, error } = await trafficAdminSupabase
-      .from('funnel_sales')
-      .select('*')
-      .eq('product', 'main_490k')
-      .eq('funnel_stage', 'main')
-      .gte('created_at', getDateRange());
+  } catch (error: any) {
+    console.error('[Funnel Service] ❌ FATAL ERROR:', error.message);
     
-    if (error) {
-      console.error('[Funnel Service] Error querying funnel_sales:', error);
-      // Fallback to mock data
-      return {
-        conversions: 142,
-        revenue: 69_580_000,
-        upsells: 34
-      };
-    }
-
-    if (!sales || sales.length === 0) {
-      // No real data yet, return mock data
-      console.log('[Funnel Service] No sales data yet, using mock');
-      return {
-        conversions: 142,
-        revenue: 69_580_000,
-        upsells: 34
-      };
-    }
-
-    // Calculate real metrics
-    const revenue = sales.reduce((sum, s) => sum + (s.amount || 0), 0);
-    const conversions = sales.length;
-    
-    // TODO: Add upsell detection logic
-    const upsells = 34; // Mock for now
-
-    console.log(`[Funnel Service] ✅ Real main product data: ${conversions} conversions, ${revenue} KZT`);
-
+    // Return empty funnel on fatal error
     return {
-      conversions,
-      revenue,
-      upsells
-    };
-  } catch (error) {
-    console.error('[Funnel Service] Error in getMainProductMetrics:', error);
-    return {
-      conversions: 0,
-      revenue: 0,
-      upsells: 0
+      success: false,
+      stages: [],
+      totalRevenue: 0,
+      totalConversions: 0,
+      overallConversionRate: 0,
+      timestamp: new Date().toISOString()
     };
   }
 }
@@ -375,18 +277,5 @@ export async function getFunnelStageDetails(stageId: string): Promise<FunnelStag
     return null;
   }
 
-  // Add additional detailed metrics here if needed
-  return {
-    ...stage,
-    // Add drill-down data
-  };
-}
-
-/**
- * Helper: Get date range for queries (default: last 30 days)
- */
-function getDateRange(days: number = 30): string {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  return date.toISOString();
+  return stage;
 }

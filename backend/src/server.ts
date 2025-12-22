@@ -5,6 +5,10 @@ import './load-env.js';
 import { validateEnvironment } from './config/env.js';
 validateEnvironment();
 
+// ✅ Validate Supabase environment variables
+import { validateSupabaseEnv } from './config/validate-env.js';
+validateSupabaseEnv();
+
 // 🛡️ SENTRY: Initialize BEFORE creating Express app
 import { initSentry, sentryErrorHandler, trackAPIPerformance } from './config/sentry.js';
 
@@ -759,6 +763,18 @@ if (process.send) {
   process.send('ready');
   console.log('✅ PM2 ready signal отправлен');
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 🔄 CACHE CLEANUP (Funnel metrics every 5 minutes)
+// ═══════════════════════════════════════════════════════════════
+import { clearCache } from './services/cache-service.js';
+
+setInterval(() => {
+  clearCache('funnel:');
+  console.log('🔄 Funnel cache cleared');
+}, 5 * 60 * 1000); // каждые 5 минут
+
+console.log('✅ Cache cleanup scheduled (every 5 minutes)');
 
 export default app;
 
