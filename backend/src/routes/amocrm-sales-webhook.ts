@@ -4,6 +4,14 @@ import { sendToAllChats } from '../services/telegramBot';
 
 const router = Router();
 
+/**
+ * Экранирование спецсимволов Markdown
+ */
+function escapeMarkdown(text: string | null | undefined): string {
+  if (!text) return 'N/A';
+  return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
+}
+
 // 🎯 Маппинг UTM кампаний на таргетологов
 const TARGETOLOGIST_MAPPING: Record<string, string[]> = {
   'Kenesary': ['tripwire', 'nutcab'],
@@ -147,15 +155,20 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
     try {
       const emoji = getTargetologistEmoji(targetologist);
       const amount = formatTenge(parseFloat(sale_amount));
+      
+      // Экранируем спецсимволы Markdown
+      const safeContactName = escapeMarkdown(contact_name) || 'Без имени';
+      const safeProductName = escapeMarkdown(product_name) || 'Tripwire';
+      const safeCampaign = escapeMarkdown(utmCampaign);
 
       const message = `
 🎉 *НОВАЯ ПРОДАЖА!*
 
 ${emoji} *Таргетолог:* ${targetologist}
-👤 *Клиент:* ${contact_name || 'Без имени'}
+👤 *Клиент:* ${safeContactName}
 💰 *Сумма:* ${amount}
-📦 *Продукт:* ${product_name || 'Tripwire'}
-🏷️ *Кампания:* ${utmCampaign || 'N/A'}
+📦 *Продукт:* ${safeProductName}
+🏷️ *Кампания:* ${safeCampaign}
 
 *${targetologist}, ПОЗДРАВЛЯЕМ! ПО ВАМ СДЕЛАЛИ ПРОДАЖУ!* 🔥
 `.trim();

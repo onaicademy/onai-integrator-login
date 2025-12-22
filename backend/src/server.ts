@@ -115,6 +115,7 @@ import aiLessonGeneratorRouter from './routes/ai-lesson-generator'; // ✅ AI De
 import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & Analytics
 import landingRouter from './routes/landing'; // ✅ Landing Page Leads (New DB + AmoCRM)
 import landingSyncRouter from './routes/landing-sync-amocrm'; // ✅ Landing AmoCRM Sync (Admin)
+import amocrmLocksAdminRouter from './routes/amocrm-locks-admin'; // 🔒 AmoCRM Locks Management (Admin)
 import leadTrackingRouter from './routes/lead-tracking'; // ✅ Lead Tracking Dashboard (Email/SMS Status)
 import unifiedTrackingRouter from './routes/unified-tracking'; // 🎯 Unified Tracking (Email + SMS + UTM)
 import facebookConversionRouter from './routes/facebook-conversion'; // ✅ Facebook Conversion API
@@ -464,6 +465,7 @@ app.use('/api/webhooks', webhooksRouter); // 🔗 BunnyCDN & External Webhooks (
 app.use('/api/admin', adminResetPasswordRouter); // 🔑 TEMPORARY: Admin Password Reset
 app.use('/api/landing', landingRouter); // 🎯 Landing Page Leads (New DB + AmoCRM)
 app.use('/api/admin/landing', landingSyncRouter); // 🔄 Landing AmoCRM Sync (Admin Only)
+app.use('/api/admin', amocrmLocksAdminRouter); // 🔒 AmoCRM Locks Management (Admin Only)
 app.use('/api/lead-tracking', leadTrackingRouter); // 📊 Lead Tracking Dashboard (Email/SMS)
 app.use('/api/unified-tracking', unifiedTrackingRouter); // 🎯 Unified Tracking (Email + SMS + UTM)
 app.use('/api', facebookConversionRouter); // 📊 Facebook Conversion API

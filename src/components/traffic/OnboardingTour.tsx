@@ -298,20 +298,24 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       steps={steps}
       run={run}
       stepIndex={stepIndex}
-      continuous
-      showProgress
-      showSkipButton
-      disableScrolling
-      disableOverlayClose
-      spotlightClicks
+      continuous={true}
+      showProgress={true}
+      showSkipButton={true}
+      disableScrolling={true}
+      disableOverlayClose={true}
+      spotlightClicks={true}
       styles={joyrideStyles}
       callback={handleJoyrideCallback}
       locale={{
         back: 'Назад',
         close: 'Закрыть',
-        last: 'Понятно',
+        last: 'Завершить',
         next: 'Далее',
+        open: 'Открыть',
         skip: 'Пропустить',
+      }}
+      floaterProps={{
+        disableAnimation: false,
       }}
     />
   );

@@ -95,6 +95,9 @@ async function findExistingContact(email?: string, phone?: string): Promise<numb
 
   try {
     const searchQuery = email || phone || '';
+    const searchStartTime = Date.now();
+    
+    console.log(`      → AmoCRM API: Searching contact by "${searchQuery}"...`);
     
     const contactsResponse = await fetchWithTimeout(
       `https://${AMOCRM_DOMAIN}.amocrm.ru/api/v4/contacts?query=${encodeURIComponent(searchQuery)}`,
@@ -106,12 +109,17 @@ async function findExistingContact(email?: string, phone?: string): Promise<numb
       }
     );
 
-    if (!contactsResponse.ok) return null;
+    const apiDuration = Date.now() - searchStartTime;
+
+    if (!contactsResponse.ok) {
+      console.log(`      ✗ AmoCRM API returned ${contactsResponse.status} (${apiDuration}ms)`);
+      return null;
+    }
 
     // Check if response has content before parsing
     const contentLength = contactsResponse.headers.get('content-length');
     if (contentLength === '0' || !contactsResponse.body) {
-      console.log(`🔍 Empty response from AmoCRM for: ${searchQuery}`);
+      console.log(`      ✗ Empty response from AmoCRM (${apiDuration}ms)`);
       return null;
     }
 
@@ -119,15 +127,15 @@ async function findExistingContact(email?: string, phone?: string): Promise<numb
     const contacts = contactsData._embedded?.contacts || [];
 
     if (contacts.length === 0) {
-      console.log(`🔍 No existing contact found for: ${searchQuery}`);
+      console.log(`      ✗ No contact found (${apiDuration}ms)`);
       return null;
     }
 
     const contactId = contacts[0].id;
-    console.log(`👤 Found contact: ID ${contactId}`);
+    console.log(`      ✓ Contact found: ID ${contactId} (${apiDuration}ms)`);
     return contactId;
-  } catch (error) {
-    console.error('Error searching for contact:', error);
+  } catch (error: any) {
+    console.error(`      ✗ Error searching for contact:`, error.message);
     return null;
   }
 }
@@ -202,13 +210,22 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
 
     const activeLead = leads.find((lead: any) => !CLOSED_STAGES.includes(lead.status_id));
 
+    const searchDuration = Date.now() - searchStartTime;
+
     if (!activeLead) {
-      console.log(`🔍 No ACTIVE leads found for contact ${contactId} in pipeline ${AMOCRM_CONFIG.PIPELINE_ID} (all leads are closed)`);
+      console.log(`   ⚠️ All ${leads.length} leads are CLOSED (Успешно реализовано or Закрыто)`);
+      console.log(`✅ [DEDUP] No ACTIVE lead found (${searchDuration}ms) → Will create NEW lead`);
       return null; // Создастся новая сделка
     }
 
     // Return the most recently updated ACTIVE lead
-    console.log(`✅ Found ACTIVE lead: ID ${activeLead.id}, Stage: ${getStageName(activeLead.status_id)}, Contact: ${contactId}, Pipeline: ${activeLead.pipeline_id}`);
+    console.log(`   ✅ Found ACTIVE lead:`);
+    console.log(`      Lead ID: ${activeLead.id}`);
+    console.log(`      Lead Name: ${activeLead.name}`);
+    console.log(`      Stage: ${getStageName(activeLead.status_id)} (ID: ${activeLead.status_id})`);
+    console.log(`      Pipeline: ${activeLead.pipeline_id}`);
+    console.log(`      Contact: ${contactId}`);
+    console.log(`🔄 [DEDUP] Existing ACTIVE lead found (${searchDuration}ms) → Will UPDATE existing lead`);
 
     return {
       id: activeLead.id,
@@ -217,8 +234,9 @@ async function findExistingLead(email?: string, phone?: string): Promise<Existin
       pipeline_id: activeLead.pipeline_id,
       contactId, // Включаем найденный contactId
     };
-  } catch (error) {
-    console.error('Error searching for lead:', error);
+  } catch (error: any) {
+    const searchDuration = Date.now() - searchStartTime;
+    console.error(`❌ [DEDUP] Error searching for lead (${searchDuration}ms):`, error.message);
     return null;
   }
 }
@@ -472,11 +490,20 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
   console.log(`✨ Creating new lead in stage: ${getStageName(targetStage)}`);
 
   // Try to find existing contact first, if not found - create new
+  console.log(`🔍 Checking for existing contact before creating lead...`);
   let contactId = await findExistingContact(data.email, data.phone);
   
   if (!contactId) {
     console.log(`🆕 Creating new contact for: ${data.name}`);
+    const createStartTime = Date.now();
     contactId = await createContact(data);
+    const createDuration = Date.now() - createStartTime;
+    
+    if (contactId) {
+      console.log(`✅ Contact created: ID ${contactId} (${createDuration}ms)`);
+    } else {
+      console.error(`❌ Failed to create contact (${createDuration}ms)`);
+    }
   } else {
     console.log(`✅ Using existing contact: ID ${contactId}`);
   }
