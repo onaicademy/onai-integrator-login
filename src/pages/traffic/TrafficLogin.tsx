@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, AlertCircle, Globe } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { OnAILogo } from '@/components/traffic/OnAILogo';
+import { OnAILogo } from '@/components/OnAILogo';
 import { useLanguage } from '@/hooks/useLanguage';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 import { AuthManager } from '@/lib/auth';

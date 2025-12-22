@@ -1,5 +1,6 @@
 import { AMOCRM_CONFIG, getStageByPaymentMethod } from '../config/amocrm-config.js';
 import axios, { AxiosRequestConfig } from 'axios';
+import { withAmoCrmLock } from './amocrmLock.js';
 
 const AMOCRM_DOMAIN = process.env.AMOCRM_DOMAIN || 'onaiagencykz';
 const AMOCRM_TOKEN = process.env.AMOCRM_ACCESS_TOKEN;
@@ -136,15 +137,29 @@ async function findExistingContact(email?: string, phone?: string): Promise<numb
  * Uses contacts API for more reliable deduplication
  */
 async function findExistingLead(email?: string, phone?: string): Promise<ExistingLead | null> {
-  if (!AMOCRM_TOKEN || (!email && !phone)) return null;
+  if (!AMOCRM_TOKEN || (!email && !phone)) {
+    console.log(`⚠️ [DEDUP] Cannot search: No token or no email/phone provided`);
+    return null;
+  }
+
+  console.log(`🔍 [DEDUP] Starting duplicate check:`);
+  console.log(`   Email: ${email || 'N/A'}`);
+  console.log(`   Phone: ${phone || 'N/A'}`);
+  const searchStartTime = Date.now();
 
   try {
     // Step 1: Search for contact by email OR phone
+    console.log(`   → Searching for existing contact...`);
     const contactId = await findExistingContact(email, phone);
     
     if (!contactId) {
+      const searchDuration = Date.now() - searchStartTime;
+      console.log(`✅ [DEDUP] No existing contact found (${searchDuration}ms) → Will create NEW lead`);
       return null;
     }
+    
+    console.log(`   ✅ Found contact ID: ${contactId}`);
+    console.log(`   → Searching for leads associated with this contact...`);
 
     // Step 2: Get contact WITH embedded leads (more reliable than filtering leads endpoint)
     console.log(`🔍 Fetching contact ${contactId} with embedded leads...`);
@@ -282,6 +297,8 @@ async function addLeadNote(leadId: number, note: string): Promise<void> {
 
 /**
  * Create or update lead in AmoCRM
+ * 
+ * 🔒 PROTECTED BY DISTRIBUTED LOCK to prevent race conditions and duplicate leads
  */
 export async function createOrUpdateLead(data: LeadData): Promise<{
   leadId: number;
@@ -292,8 +309,22 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
     throw new Error('AmoCRM credentials not configured');
   }
 
-  // 1. Search for existing lead
-  const existingLead = await findExistingLead(data.email, data.phone);
+  console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(`🚀 [AmoCRM] Starting lead creation/update`);
+  console.log(`   Email: ${data.email || 'N/A'}`);
+  console.log(`   Phone: ${data.phone || 'N/A'}`);
+  console.log(`   Name: ${data.name}`);
+  console.log(`   Payment: ${data.paymentMethod || 'N/A'}`);
+  console.log(`   Campaign: ${data.campaignSlug || 'N/A'}`);
+  console.log(`   UTM Source: ${data.utmParams?.utm_source || 'N/A'}`);
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+
+  // 🔒 WRAP ENTIRE OPERATION IN DISTRIBUTED LOCK
+  return withAmoCrmLock(data.email, data.phone, async () => {
+    console.log(`🔍 [AmoCRM] Lock acquired, searching for existing lead...`);
+
+    // 1. Search for existing lead
+    const existingLead = await findExistingLead(data.email, data.phone);
 
   // Determine target stage
   const targetStage = data.paymentMethod
@@ -554,5 +585,6 @@ export async function createOrUpdateLead(data: LeadData): Promise<{
     isNew: true,
     action: 'created',
   };
+  }); // END OF withAmoCrmLock
 }
 
