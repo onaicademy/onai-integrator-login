@@ -173,11 +173,21 @@ export default function TrafficSettings() {
       
       const settings = settingsRes.data.settings;
       if (settings) {
+        // ✅ Load ad accounts from DB (already configured)
         const accounts = (settings.fb_ad_accounts || []).map((acc: any) => ({
           ...acc,
-          connectionStatus: acc.enabled ? 'connected' : 'idle'
+          connectionStatus: 'connected',
+          enabled: true // Mark as already selected
         }));
         setFbAccounts(accounts);
+        
+        // ✅ Pre-select all ad accounts that were loaded from DB
+        if (accounts.length > 0) {
+          setSelectedAccounts(accounts.map((a: any) => a.id));
+          console.log(`✅ Загружено ${accounts.length} ad accounts из БД`);
+        }
+        
+        // ✅ Load tracked campaigns
         setCampaigns(settings.tracked_campaigns || []);
         setPersonalUtmSource(settings.personal_utm_source || `fb_${user?.team?.toLowerCase() || 'default'}`);
       }
