@@ -98,6 +98,7 @@ const TRAFFIC_SOURCES: TrafficSourceConfig[] = [
 ];
 
 export default function TrafficSettings() {
+  const { t } = useLanguage(); // ✅ FIX: Translation function
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
