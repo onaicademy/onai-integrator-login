@@ -408,7 +408,7 @@ export default function TrafficSettings() {
             
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => navigate('/traffic/dashboard')}
+                onClick={() => navigate(`/traffic/cabinet/${user?.team?.toLowerCase() || 'dashboard'}`)}
                 variant="outline"
                 className="border-white/20 hover:border-[#00FF88] text-white"
               >
@@ -718,7 +718,7 @@ export default function TrafficSettings() {
           {/* ═══════════════════════════════════════════════════════════════ */}
           <div className="flex justify-end gap-3">
             <Button
-              onClick={() => navigate('/traffic/dashboard')}
+              onClick={() => navigate(`/traffic/cabinet/${user?.team?.toLowerCase() || 'dashboard'}`)}
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10"
             >
