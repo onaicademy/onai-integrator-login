@@ -4,7 +4,7 @@
  * Webhook для приема данных о продажах из AmoCRM
  * Этап: "Успешно реализована" (490,000 KZT основной продукт)
  * 
- * Webhook URL: http://api.onai.academy/api/amocrm/funnel-sale
+ * Webhook URL: https://onai.academy/api/amocrm/funnel-sale
  * 
  * Интеграция:
  * 1. Принимает данные о сделке из AmoCRM
@@ -15,10 +15,14 @@
  */
 
 import { Router, Request, Response } from 'express';
+import express from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
-import trafficPgPool from '../config/traffic-pg-direct.js';
 
 const router = Router();
+
+// ✅ ВАЖНО: AmoCRM отправляет данные в формате application/x-www-form-urlencoded
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json()); // На всякий случай поддерживаем и JSON
 
 interface AmoCRMFunnelSale {
   leads: {
@@ -42,121 +46,101 @@ interface AmoCRMFunnelSale {
  * POST /api/amocrm/funnel-sale
  * 
  * Webhook для приема данных о продажах "Успешно реализована"
- * 
- * Body (от AmoCRM):
- * {
- *   "leads": {
- *     "status": [{
- *       "id": 123456,
- *       "status_id": 142, // Успешно реализована
- *       "pipeline_id": 1,
- *       "custom_fields": [
- *         { "id": 123, "name": "UTM Source", "values": [{"value": "fb_kenesary"}] },
- *         { "id": 124, "name": "UTM Campaign", "values": [{"value": "nutrients_test"}] },
- *         // ...
- *       ]
- *     }]
- *   }
- * }
  */
 router.post('/funnel-sale', async (req: Request, res: Response) => {
   try {
-    console.log('[AmoCRM Funnel Webhook] Received sale data');
-    console.log('[AmoCRM Funnel Webhook] Body:', JSON.stringify(req.body, null, 2));
+    console.log('[AmoCRM Funnel Webhook] 📥 Received webhook');
+    console.log('[AmoCRM Funnel Webhook] Content-Type:', req.headers['content-type']);
+    console.log('[AmoCRM Funnel Webhook] Raw body:', JSON.stringify(req.body, null, 2));
 
-    const data: AmoCRMFunnelSale = req.body;
+    let data: AmoCRMFunnelSale;
+
+    // AmoCRM может отправлять данные в разных форматах
+    if (typeof req.body === 'string') {
+      // Если пришла строка, парсим как JSON
+      data = JSON.parse(req.body);
+    } else if (req.body.leads) {
+      // Уже распарсенный объект
+      data = req.body;
+    } else {
+      // Попытка найти leads в urlencoded формате
+      console.log('[AmoCRM Funnel Webhook] ⚠️ Unexpected format, trying to parse...');
+      data = req.body;
+    }
 
     // Validate request
     if (!data.leads || !data.leads.status || data.leads.status.length === 0) {
-      console.warn('[AmoCRM Funnel Webhook] Invalid request body');
+      console.warn('[AmoCRM Funnel Webhook] ❌ Invalid request body');
       return res.status(400).json({
         success: false,
         error: 'Invalid request body'
       });
     }
 
+    let savedCount = 0;
+
     // Process each lead
     for (const lead of data.leads.status) {
-      console.log(`[AmoCRM Funnel Webhook] Processing lead ${lead.id}`);
+      console.log(`[AmoCRM Funnel Webhook] 🔍 Processing lead ${lead.id}`);
 
       // Extract UTM data from custom fields
       const utmData = extractUTMData(lead.custom_fields || []);
-      console.log('[AmoCRM Funnel Webhook] UTM Data:', utmData);
+      console.log('[AmoCRM Funnel Webhook] 🏷️ UTM Data:', utmData);
 
       // Determine targetologist based on UTM
       const targetologist = determineTargetologistFromUTM(utmData);
-      console.log('[AmoCRM Funnel Webhook] Targetologist:', targetologist);
+      console.log('[AmoCRM Funnel Webhook] 🎯 Targetologist:', targetologist || 'Unknown');
 
-      // Save sale to Supabase
+      // Prepare sale data
       const saleData = {
         amocrm_lead_id: lead.id,
         status_id: lead.status_id,
         pipeline_id: lead.pipeline_id,
         targetologist: targetologist || 'Unknown',
-        utm_source: utmData.utm_source,
-        utm_campaign: utmData.utm_campaign,
-        utm_medium: utmData.utm_medium,
-        utm_content: utmData.utm_content,
-        utm_term: utmData.utm_term,
+        utm_source: utmData.utm_source || null,
+        utm_campaign: utmData.utm_campaign || null,
+        utm_medium: utmData.utm_medium || null,
+        utm_content: utmData.utm_content || null,
+        utm_term: utmData.utm_term || null,
         product: 'main_490k', // Main product
         amount: 490000, // KZT
         funnel_stage: 'main', // Этап воронки
-        created_at: new Date().toISOString()
       };
 
-      // Save to funnel_sales table using direct PG connection
-      // WORKAROUND: PostgREST schema cache не обновился после миграции
-      console.log('[AmoCRM Funnel Webhook] Attempting to save to funnel_sales:', JSON.stringify(saleData, null, 2));
-      
+      console.log('[AmoCRM Funnel Webhook] 💾 Saving to DB:', JSON.stringify(saleData, null, 2));
+
+      // Save to Supabase (PostgREST schema cache теперь обновлён!)
       try {
-        const query = `
-          INSERT INTO funnel_sales (
-            amocrm_lead_id, status_id, pipeline_id, targetologist,
-            utm_source, utm_campaign, utm_medium, utm_content, utm_term,
-            product, amount, funnel_stage, created_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-          ON CONFLICT (amocrm_lead_id) DO UPDATE SET
-            status_id = EXCLUDED.status_id,
-            targetologist = EXCLUDED.targetologist,
-            updated_at = NOW()
-          RETURNING *
-        `;
-        
-        const values = [
-          saleData.amocrm_lead_id,
-          saleData.status_id,
-          saleData.pipeline_id,
-          saleData.targetologist,
-          saleData.utm_source,
-          saleData.utm_campaign,
-          saleData.utm_medium,
-          saleData.utm_content,
-          saleData.utm_term,
-          saleData.product,
-          saleData.amount,
-          saleData.funnel_stage,
-          saleData.created_at
-        ];
-        
-        const result = await trafficPgPool.query(query, values);
-        
-        console.log(`[AmoCRM Funnel Webhook] ✅ Sale saved to DB: Lead ${lead.id} → ${targetologist}`);
-        console.log('[AmoCRM Funnel Webhook] Saved data:', JSON.stringify(result.rows[0], null, 2));
-        
-      } catch (pgError: any) {
-        console.error('[AmoCRM Funnel Webhook] ❌ PG Error saving sale:', pgError.message);
-        console.error('[AmoCRM Funnel Webhook] Error stack:', pgError.stack);
+        const { data: savedData, error } = await trafficAdminSupabase
+          .from('funnel_sales')
+          .upsert(saleData, {
+            onConflict: 'amocrm_lead_id'
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('[AmoCRM Funnel Webhook] ❌ Supabase Error:', error.message);
+          console.error('[AmoCRM Funnel Webhook] Error details:', JSON.stringify(error, null, 2));
+        } else {
+          console.log(`[AmoCRM Funnel Webhook] ✅ Sale saved: Lead ${lead.id} → ${targetologist}`);
+          console.log('[AmoCRM Funnel Webhook] Saved data:', JSON.stringify(savedData, null, 2));
+          savedCount++;
+        }
+      } catch (saveError: any) {
+        console.error('[AmoCRM Funnel Webhook] ❌ Exception:', saveError.message);
       }
     }
 
     return res.json({
       success: true,
       message: 'Funnel sale processed',
-      leads_processed: data.leads.status.length
+      leads_processed: data.leads.status.length,
+      leads_saved: savedCount
     });
 
   } catch (error: any) {
-    console.error('[AmoCRM Funnel Webhook] Error:', error);
+    console.error('[AmoCRM Funnel Webhook] ❌ Fatal error:', error);
     return res.status(500).json({
       success: false,
       error: error.message
@@ -190,7 +174,7 @@ function extractUTMData(customFields: any[]): {
 } {
   const utmData: any = {};
 
-  const utmFieldNames = {
+  const utmFieldNames: Record<string, string> = {
     'UTM Source': 'utm_source',
     'utm_source': 'utm_source',
     'UTM Campaign': 'utm_campaign',
