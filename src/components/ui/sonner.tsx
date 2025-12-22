@@ -1,34 +1,33 @@
-import { Toaster as Sonner, toast } from "sonner";
+import { useTheme } from "next-themes"
+import { Toaster as Sonner } from "sonner"
 
-type ToasterProps = React.ComponentProps<typeof Sonner>;
+type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { theme = "system" } = useTheme()
+
   return (
     <Sonner
-      theme="dark"
-      position="top-center"
-      gap={12}
+      theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      position="top-right"
       toastOptions={{
-        unstyled: true,
         classNames: {
           toast:
-            "group toast w-full sm:max-w-[420px] md:max-w-[500px] flex items-center gap-3 p-4 rounded-xl border backdrop-blur-xl font-mono text-sm shadow-2xl",
-          title: "font-bold uppercase tracking-wider text-white",
-          description: "text-xs text-white/70 mt-1",
-          success:
-            "bg-[#0A0A0A]/95 border-[#00FF88]/30 shadow-[0_0_30px_rgba(0,255,136,0.2)]",
-          error:
-            "bg-[#0A0A0A]/95 border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.2)]",
-          warning:
-            "bg-[#0A0A0A]/95 border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.2)]",
-          info:
-            "bg-[#0A0A0A]/95 border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.2)]",
+            "group toast group-[.toaster]:bg-white group-[.toaster]:text-gray-900 group-[.toaster]:border-gray-200 group-[.toaster]:shadow-2xl group-[.toaster]:rounded-2xl group-[.toaster]:backdrop-blur-xl dark:group-[.toaster]:bg-gray-900 dark:group-[.toaster]:text-white dark:group-[.toaster]:border-gray-700",
+          description: "group-[.toast]:text-gray-600 dark:group-[.toast]:text-gray-400",
+          actionButton:
+            "group-[.toast]:bg-gradient-to-r group-[.toast]:from-blue-500 group-[.toast]:to-indigo-600 group-[.toast]:text-white group-[.toast]:rounded-lg group-[.toast]:px-4 group-[.toast]:py-2 group-[.toast]:font-medium group-[.toast]:shadow-lg hover:group-[.toast]:from-blue-600 hover:group-[.toast]:to-indigo-700 group-[.toast]:transition-all",
+          cancelButton:
+            "group-[.toast]:bg-gray-100 group-[.toast]:text-gray-700 group-[.toast]:rounded-lg group-[.toast]:px-4 group-[.toast]:py-2 hover:group-[.toast]:bg-gray-200 dark:group-[.toast]:bg-gray-800 dark:group-[.toast]:text-gray-300 dark:hover:group-[.toast]:bg-gray-700 group-[.toast]:transition-all",
+        },
+        style: {
+          fontFamily: 'system-ui, -apple-system, sans-serif',
         },
       }}
       {...props}
     />
-  );
-};
+  )
+}
 
-export { Toaster, toast };
+export { Toaster }
