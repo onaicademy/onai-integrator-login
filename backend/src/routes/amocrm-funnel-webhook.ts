@@ -16,6 +16,7 @@
 
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import trafficPgPool from '../config/traffic-pg-direct.js';
 
 const router = Router();
 
@@ -103,15 +104,48 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
         created_at: new Date().toISOString()
       };
 
-      // Save to funnel_sales table
-      const { error: saveError } = await trafficAdminSupabase
-        .from('funnel_sales')
-        .insert(saleData);
-
-      if (saveError) {
-        console.error('[AmoCRM Funnel Webhook] Error saving sale:', saveError);
-      } else {
-        console.log(`[AmoCRM Funnel Webhook] ✅ Sale saved: Lead ${lead.id} → ${targetologist}`);
+      // Save to funnel_sales table using direct PG connection
+      // WORKAROUND: PostgREST schema cache не обновился после миграции
+      console.log('[AmoCRM Funnel Webhook] Attempting to save to funnel_sales:', JSON.stringify(saleData, null, 2));
+      
+      try {
+        const query = `
+          INSERT INTO funnel_sales (
+            amocrm_lead_id, status_id, pipeline_id, targetologist,
+            utm_source, utm_campaign, utm_medium, utm_content, utm_term,
+            product, amount, funnel_stage, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          ON CONFLICT (amocrm_lead_id) DO UPDATE SET
+            status_id = EXCLUDED.status_id,
+            targetologist = EXCLUDED.targetologist,
+            updated_at = NOW()
+          RETURNING *
+        `;
+        
+        const values = [
+          saleData.amocrm_lead_id,
+          saleData.status_id,
+          saleData.pipeline_id,
+          saleData.targetologist,
+          saleData.utm_source,
+          saleData.utm_campaign,
+          saleData.utm_medium,
+          saleData.utm_content,
+          saleData.utm_term,
+          saleData.product,
+          saleData.amount,
+          saleData.funnel_stage,
+          saleData.created_at
+        ];
+        
+        const result = await trafficPgPool.query(query, values);
+        
+        console.log(`[AmoCRM Funnel Webhook] ✅ Sale saved to DB: Lead ${lead.id} → ${targetologist}`);
+        console.log('[AmoCRM Funnel Webhook] Saved data:', JSON.stringify(result.rows[0], null, 2));
+        
+      } catch (pgError: any) {
+        console.error('[AmoCRM Funnel Webhook] ❌ PG Error saving sale:', pgError.message);
+        console.error('[AmoCRM Funnel Webhook] Error stack:', pgError.stack);
       }
     }
 
