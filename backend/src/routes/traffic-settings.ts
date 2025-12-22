@@ -374,31 +374,76 @@ router.get('/facebook/campaigns/:adAccountId', async (req: Request, res: Respons
 
     console.log(`📘 Fetching campaigns for ad account: ${adAccountId}`);
 
-    const response = await axios.get(`${FB_API_BASE}/${adAccountId}/campaigns`, {
+    // 1️⃣ Get campaigns list
+    const campaignsResponse = await axios.get(`${FB_API_BASE}/${adAccountId}/campaigns`, {
       params: {
         access_token: fbToken,
-        fields: 'id,name,status,objective,effective_status,spend,impressions,clicks',
+        fields: 'id,name,status,objective,effective_status',
         limit: 100
       },
       timeout: 10000
     });
 
-    const campaigns = response.data.data.map((camp: any) => ({
-      id: camp.id,
-      name: camp.name,
-      status: camp.effective_status,
-      objective: camp.objective,
-      spend: camp.spend,
-      impressions: camp.impressions,
-      clicks: camp.clicks,
-      ad_account_id: adAccountId
-    }));
+    const rawCampaigns = campaignsResponse.data.data || [];
+    console.log(`📊 Found ${rawCampaigns.length} campaigns`);
 
-    console.log(`✅ Loaded ${campaigns.length} campaigns for ${adAccountId}`);
+    // 2️⃣ Get insights for each campaign
+    const campaignsWithInsights = await Promise.all(
+      rawCampaigns.map(async (camp: any) => {
+        try {
+          const insightsResponse = await axios.get(`${FB_API_BASE}/${camp.id}/insights`, {
+            params: {
+              access_token: fbToken,
+              fields: 'spend,impressions,clicks,reach,actions',
+              date_preset: 'last_30d'
+            },
+            timeout: 8000
+          });
+
+          const insights = insightsResponse.data.data?.[0] || {};
+          
+          // Extract conversions from actions
+          const actions = insights.actions || [];
+          const leads = actions.find((a: any) => a.action_type === 'lead')?.value || 0;
+          const registrations = actions.find((a: any) => a.action_type === 'complete_registration')?.value || 0;
+
+          return {
+            id: camp.id,
+            name: camp.name,
+            status: camp.effective_status || camp.status,
+            objective: camp.objective,
+            ad_account_id: adAccountId,
+            // Insights (last 30 days)
+            spend: parseFloat(insights.spend || '0'),
+            impressions: parseInt(insights.impressions || '0', 10),
+            clicks: parseInt(insights.clicks || '0', 10),
+            reach: parseInt(insights.reach || '0', 10),
+            conversions: parseInt(leads, 10) + parseInt(registrations, 10)
+          };
+        } catch (insightsError: any) {
+          console.log(`⚠️ Could not get insights for campaign ${camp.id}:`, insightsError.message);
+          // Return campaign without insights
+          return {
+            id: camp.id,
+            name: camp.name,
+            status: camp.effective_status || camp.status,
+            objective: camp.objective,
+            ad_account_id: adAccountId,
+            spend: 0,
+            impressions: 0,
+            clicks: 0,
+            reach: 0,
+            conversions: 0
+          };
+        }
+      })
+    );
+
+    console.log(`✅ Loaded ${campaignsWithInsights.length} campaigns with insights for ${adAccountId}`);
 
     res.json({
       success: true,
-      campaigns
+      campaigns: campaignsWithInsights
     });
 
   } catch (error: any) {
