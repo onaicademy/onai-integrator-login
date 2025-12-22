@@ -73,6 +73,7 @@ import { TripwireLayout } from "./components/tripwire/TripwireLayout";
 
 // 🚀 Traffic Dashboard (new personal cabinets system)
 const TrafficLogin = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficLogin")));
+const OnboardingTestPage = lazy(() => retryChunkLoad(() => import("./pages/traffic/OnboardingTestPage")));
 const TrafficResetPassword = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficResetPassword")));
 const TrafficCabinetDashboard = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficCabinetDashboard")));
 const TrafficTargetologistDashboard = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficTargetologistDashboard")));
@@ -304,6 +305,11 @@ const AppRoutes = () => {
       {/* ✅ DEVELOPMENT: /traffic prefix routes for localhost testing */}
       <Route path="/traffic/login" element={<TrafficLogin />} />
       <Route path="/traffic/reset-password" element={<TrafficResetPassword />} />
+      
+      {/* 🧪 TESTING: Onboarding Test Page (локальное тестирование) */}
+      <Route path="/traffic/onboarding-test" element={<OnboardingTestPage />} />
+      <Route path="/onboarding-test" element={<OnboardingTestPage />} />
+      
       <Route path="/traffic/cabinet/:team" element={<TrafficTargetologistDashboard />} />
       <Route path="/traffic/detailed-analytics" element={<TrafficDetailedAnalytics />} />
       <Route path="/traffic/settings" element={<TrafficSettings />} />

@@ -5,6 +5,7 @@
 import { Router, Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { sendToAllChats } from '../services/telegramBot.js';
+import { getExchangeRateForDate } from '../jobs/dailyExchangeRateFetcher';
 
 const router = Router();
 
@@ -270,6 +271,16 @@ router.post('/traffic', async (req: Request, res: Response) => {
           const targetologist = determineTargetologist(utmData.utm_campaign, utmData.utm_source);
           console.log(`🎯 [Traffic Webhook] Targetologist: ${targetologist}`);
 
+          // ENHANCEMENT: Get exchange rate for today
+          const todayDate = new Date().toLocaleDateString('en-CA', { 
+            timeZone: 'Asia/Almaty' 
+          });
+          const exchangeRate = await getExchangeRateForDate(todayDate);
+          console.log(`💱 [Traffic Webhook] Exchange rate: 1 USD = ${exchangeRate} KZT`);
+
+          // ENHANCEMENT: Handle missing UTM (assign to "Organic")
+          const finalUtmSource = utmData.utm_source || 'organic';
+
           // 4. Извлечь данные о продаже
           const leadId = deal.id;
           const dealValue = deal.price || 0;
@@ -289,12 +300,13 @@ router.post('/traffic', async (req: Request, res: Response) => {
               sale_amount: dealValue,
               product_name: 'Main Product (AmoCRM)',
               targetologist,
-              utm_source: utmData.utm_source,
+              utm_source: finalUtmSource,
               utm_medium: utmData.utm_medium,
               utm_campaign: utmData.utm_campaign,
               utm_content: utmData.utm_content,
               utm_term: utmData.utm_term,
-              sale_date: new Date().toISOString(),
+              sale_date: todayDate,
+              usd_to_kzt_rate: exchangeRate,
               pipeline_id: pipelineId || VAMUS_RM_PIPELINE_ID,
               status_id: statusId || null,
               responsible_user_id: deal.responsible_user_id || null,
@@ -329,7 +341,7 @@ router.post('/traffic', async (req: Request, res: Response) => {
               sale_amount: dealValue,
               product_name: 'Main Product (AmoCRM)',
               currency: 'KZT',
-              utm_source: utmData.utm_source,
+              utm_source: finalUtmSource,
               utm_medium: utmData.utm_medium,
               utm_campaign: utmData.utm_campaign,
               utm_content: utmData.utm_content,
@@ -340,7 +352,8 @@ router.post('/traffic', async (req: Request, res: Response) => {
               responsible_user_id: deal.responsible_user_id || null,
               responsible_user_name: deal.responsible_user_name || null,
               targetologist,
-              sale_date: new Date().toISOString(),
+              sale_date: todayDate,
+              usd_to_kzt_rate: exchangeRate,
               webhook_received_at: new Date().toISOString(),
               raw_webhook_data: deal,
             });

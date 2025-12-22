@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { AMOCRM_CONFIG } from '../config/amocrm-config.js';
+import { supabase } from '../config/supabase';
 
 const router = Router();
 
@@ -1089,5 +1090,130 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     });
   }
 });
+
+/**
+ * GET /api/traffic-stats/funnel/:teamId
+ * Get sales funnel data for a team
+ */
+router.get('/funnel/:teamId', async (req: Request, res: Response) => {
+  try {
+    const { teamId } = req.params;
+    const { startDate, endDate } = req.query;
+    
+    console.log(`[Funnel API] Fetching funnel data for team: ${teamId}`);
+    
+    // ENHANCEMENT: Implement getFacebookImpressions
+    const impressions = await getFacebookImpressions(
+      teamId, 
+      startDate as string, 
+      endDate as string
+    );
+    
+    // Get registrations from AmoCRM by UTM
+    const { data: registrations } = await supabase
+      .from('amocrm_leads')
+      .select('id')
+      .ilike('custom_fields->>utm_source', `%${teamId}%`)
+      .gte('created_at', startDate)
+      .lte('created_at', endDate);
+    
+    // Get express sales
+    const { data: expressSales } = await supabase
+      .from('amocrm_sales')
+      .select('id')
+      .eq('product_type', 'express')
+      .ilike('custom_fields->>utm_source', `%${teamId}%`)
+      .gte('sale_date', startDate)
+      .lte('sale_date', endDate);
+    
+    // Get main course sales
+    const { data: mainSales } = await supabase
+      .from('amocrm_sales')
+      .select('id')
+      .eq('product_type', 'main_course')
+      .ilike('custom_fields->>utm_source', `%${teamId}%`)
+      .gte('sale_date', startDate)
+      .lte('sale_date', endDate);
+    
+    const regCount = registrations?.length || 0;
+    const expressCount = expressSales?.length || 0;
+    const mainCount = mainSales?.length || 0;
+    
+    const funnelData = {
+      impressions,
+      registrations: regCount,
+      expressSales: expressCount,
+      mainSales: mainCount,
+      conversionRate1: impressions > 0 ? (regCount / impressions) * 100 : 0,
+      conversionRate2: regCount > 0 ? (expressCount / regCount) * 100 : 0,
+      conversionRate3: expressCount > 0 ? (mainCount / expressCount) * 100 : 0
+    };
+    
+    console.log(`[Funnel API] ✅ Data:`, funnelData);
+    res.json(funnelData);
+    
+  } catch (error: any) {
+    console.error('❌ Funnel API error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get Facebook impressions for a team
+ * ENHANCEMENT: Implementation with fallback options
+ */
+async function getFacebookImpressions(
+  teamId: string, 
+  startDate: string, 
+  endDate: string
+): Promise<number> {
+  try {
+    // Option 1: From traffic_stats table (if FB data already synced)
+    const { data } = await supabase
+      .from('traffic_stats')
+      .select('impressions')
+      .eq('team_id', teamId)
+      .gte('transaction_date', startDate)
+      .lte('transaction_date', endDate);
+    
+    if (data && data.length > 0) {
+      const total = data.reduce((sum, row) => sum + (row.impressions || 0), 0);
+      console.log(`[Impressions] From traffic_stats: ${total}`);
+      return total;
+    }
+    
+    // Option 2: Fetch directly from Facebook Ads API
+    console.log(`[Impressions] No data in traffic_stats, fetching from Facebook API...`);
+    
+    const teamConfig = AD_ACCOUNTS[teamId as keyof typeof AD_ACCOUNTS];
+    if (!teamConfig) {
+      console.warn(`[Impressions] No FB account config for team: ${teamId}`);
+      return 0;
+    }
+    
+    const response = await axios.get(
+      `${FB_BASE_URL}/${teamConfig.id}/insights`,
+      {
+        params: {
+          access_token: FB_ACCESS_TOKEN,
+          fields: 'impressions',
+          time_range: JSON.stringify({
+            since: startDate,
+            until: endDate
+          })
+        },
+        timeout: 10000
+      }
+    );
+    
+    const impressions = response.data?.data?.[0]?.impressions || 0;
+    console.log(`[Impressions] From Facebook API: ${impressions}`);
+    return impressions;
+    
+  } catch (error: any) {
+    console.error(`[Impressions] Error:`, error.message);
+    return 0; // Fallback
+  }
+}
 
 export default router;

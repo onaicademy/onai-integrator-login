@@ -8,6 +8,7 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
+import { analyzeCampaigns, enrichCampaignData } from '../services/trafficCampaignAnalyzer';
 
 const router = Router();
 
@@ -284,5 +285,42 @@ function extractRevenue(actions: any[]): number {
   
   return revenueAction ? parseFloat(revenueAction.value) : 0;
 }
+
+/**
+ * POST /api/traffic-detailed-analytics/ai-analysis
+ * AI analysis of campaigns using GROQ
+ */
+router.post('/ai-analysis', async (req: Request, res: Response) => {
+  try {
+    const { campaigns } = req.body;
+    
+    if (!campaigns || campaigns.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'No campaigns provided' 
+      });
+    }
+    
+    console.log(`[AI Analysis] Analyzing ${campaigns.length} campaigns...`);
+    
+    // Enrich campaigns with calculated metrics
+    const enrichedCampaigns = campaigns.map(enrichCampaignData);
+    
+    // Analyze with GROQ (with fallback)
+    const result = await analyzeCampaigns(enrichedCampaigns);
+    
+    res.json({
+      success: true,
+      ...result
+    });
+    
+  } catch (error: any) {
+    console.error('❌ AI analysis error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
 
 export default router;

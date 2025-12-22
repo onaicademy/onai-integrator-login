@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Globe, LogOut, Search, ChevronDown, ChevronRight, 
   TrendingUp, DollarSign, Target, Eye, MousePointerClick,
-  BarChart3, Calendar, RefreshCw, Download
+  BarChart3, Calendar, RefreshCw, Download, Sparkles, Loader2, Check, X
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { OnAILogo } from '@/components/traffic/OnAILogo';
@@ -74,8 +74,20 @@ export default function TrafficDetailedAnalytics() {
   const [dateRange, setDateRange] = useState('7d');
   const [statusFilter, setStatusFilter] = useState('all');
   
+  // AI Analysis state
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
+  
+  const analysisSteps = [
+    'Loading Facebook metrics',
+    'Calculating benchmarks',
+    'Identifying optimization opportunities',
+    'Generating recommendations'
+  ];
   
   useEffect(() => {
     const userData = localStorage.getItem('traffic_user');
@@ -204,6 +216,40 @@ export default function TrafficDetailedAnalytics() {
     (statusFilter === 'all' || c.status.toLowerCase() === statusFilter.toLowerCase())
   );
   
+  // AI Analysis handler
+  const handleAIAnalysis = async () => {
+    if (filteredCampaigns.length === 0) {
+      toast.error('Нет кампаний для анализа');
+      return;
+    }
+    
+    setAnalyzing(true);
+    setCurrentStep(0);
+    
+    // Simulate steps (10 seconds total)
+    for (let i = 0; i < analysisSteps.length; i++) {
+      setCurrentStep(i);
+      await new Promise(resolve => setTimeout(resolve, 2500));
+    }
+    
+    try {
+      const token = localStorage.getItem('traffic_token');
+      const response = await axios.post(
+        `${API_URL}/api/traffic-detailed-analytics/ai-analysis`, 
+        { campaigns: filteredCampaigns },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setAnalysis(response.data.analysis);
+      toast.success('AI анализ завершен');
+    } catch (error: any) {
+      console.error('AI analysis failed:', error);
+      toast.error('Ошибка AI анализа');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-[#030303] relative">
       {/* Top Bar */}
@@ -271,9 +317,9 @@ export default function TrafficDetailedAnalytics() {
           </p>
         </div>
         
-        {/* Filters */}
+        {/* Filters & AI Analysis */}
         <div className="mb-6 bg-black/40 border border-[#00FF88]/10 rounded-xl p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             {/* Search */}
             <div className="md:col-span-2">
               <div className="relative">
@@ -314,6 +360,18 @@ export default function TrafficDetailedAnalytics() {
                 <option value="archived">{t('detailedAnalytics.archived')}</option>
               </select>
             </div>
+          </div>
+          
+          {/* AI Analysis Button */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleAIAnalysis}
+              disabled={analyzing || filteredCampaigns.length === 0}
+              className="bg-gradient-to-r from-[#00FF88] to-[#00DD70] text-black font-semibold hover:shadow-lg hover:shadow-[#00FF88]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI Analysis
+            </Button>
           </div>
         </div>
         
@@ -546,6 +604,79 @@ export default function TrafficDetailedAnalytics() {
           </p>
         </div>
       </div>
+      
+      {/* AI Analysis Loader Modal */}
+      {analyzing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-black/95 border border-[#00FF88]/30 rounded-2xl p-8 max-w-md w-full text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-[#00FF88] mx-auto mb-4" />
+            <p className="text-lg font-semibold text-white mb-2">Analyzing campaigns...</p>
+            <p className="text-sm text-gray-400 mb-6">This will take about 10 seconds</p>
+            <div className="space-y-2">
+              {analysisSteps.map((step, i) => (
+                <div key={i} className="flex items-center gap-2 justify-center text-sm">
+                  {i < currentStep ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : i === currentStep ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-[#00FF88]" />
+                  ) : (
+                    <div className="w-4 h-4 border-2 border-gray-600 rounded-full" />
+                  )}
+                  <span className={i <= currentStep ? 'text-white' : 'text-gray-500'}>
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* AI Analysis Results Modal */}
+      {analysis && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-black/95 border border-[#00FF88]/30 rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#00FF88]/20 bg-[#00FF88]/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#00FF88]/20 flex items-center justify-center border border-[#00FF88]/30">
+                  <Sparkles className="w-5 h-5 text-[#00FF88]" />
+                </div>
+                <h2 className="text-xl font-bold text-white">AI Campaign Analysis</h2>
+              </div>
+              <button
+                onClick={() => setAnalysis(null)}
+                className="p-2 hover:bg-[#00FF88]/10 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5 text-gray-400 hover:text-white" />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="px-6 py-6 max-h-[60vh] overflow-y-auto">
+              <div className="prose prose-invert prose-sm max-w-none">
+                <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed bg-black/50 p-4 rounded-lg border border-[#00FF88]/10">
+                  {analysis}
+                </pre>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#00FF88]/20 bg-[#00FF88]/5 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <Sparkles className="w-4 h-4 text-[#00FF88]/60" />
+                <span>Groq AI • Llama 3.1 70B Versatile</span>
+              </div>
+              <Button
+                onClick={() => setAnalysis(null)}
+                className="bg-[#00FF88] text-black font-semibold hover:bg-[#00DD70]"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

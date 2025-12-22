@@ -661,6 +661,24 @@ const server = app.listen(PORT, () => {
         console.error('❌ Ошибка инициализации Traffic schedulers:', error);
       }
 
+      // 10. Start Currency Exchange & Traffic Reports (NEW)
+      try {
+        const { startExchangeRateFetcher } = await import('./jobs/dailyExchangeRateFetcher');
+        const { startDailyTrafficReport } = await import('./jobs/dailyTrafficReport');
+        const { startWeeklyTrafficReport } = await import('./jobs/weeklyTrafficReport');
+        
+        startExchangeRateFetcher();   // 08:00 Almaty (02:00 UTC)
+        startDailyTrafficReport();    // 08:05 Almaty (02:05 UTC)
+        startWeeklyTrafficReport();   // Monday 08:10 Almaty (02:10 UTC)
+        
+        console.log('✅ Currency & Traffic Reports schedulers initialized');
+        console.log('   - Exchange Rate Fetcher: 08:00 Almaty (02:00 UTC)');
+        console.log('   - Daily Traffic Report: 08:05 Almaty (02:05 UTC)');
+        console.log('   - Weekly Traffic Report: Monday 08:10 Almaty (02:10 UTC)');
+      } catch (error) {
+        console.error('❌ Failed to initialize Currency/Traffic Reports:', error);
+      }
+
       console.log('✅ All background services initialized');
 
     } catch (err: any) {

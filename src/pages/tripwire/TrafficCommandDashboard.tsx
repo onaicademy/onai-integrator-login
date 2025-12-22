@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { landingSupabase } from '@/lib/supabase-landing';
 import axios from 'axios';
 import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
 import { TRAFFIC_API_URL } from '@/config/traffic-api';
 import { useLanguage } from '@/hooks/useLanguage';
+import { SalesFunnel } from '@/components/traffic/SalesFunnel';
+import { OnboardingTour } from '@/components/traffic/OnboardingTour';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, Target, 
   BarChart3, RefreshCw, ChevronDown, Sparkles, ArrowUpRight,
@@ -284,6 +286,32 @@ export default function TrafficCommandDashboard({
   const [recommendations, setRecommendations] = useState<Record<string, string>>({});
   const [loadingRecs, setLoadingRecs] = useState<string | null>(null);
   const [currency, setCurrency] = useState<'USD' | 'KZT'>('USD');
+  const [funnelData, setFunnelData] = useState<any>(null);
+
+  // Fetch funnel data
+  useEffect(() => {
+    const fetchFunnelData = async () => {
+      if (!analytics?.teams || analytics.teams.length === 0) return;
+      
+      const teamName = selectedTeam || analytics.teams[0]?.team;
+      if (!teamName) return;
+      
+      try {
+        const since = customDate || (dateRange === '7d' ? '2024-12-15' : dateRange === '14d' ? '2024-12-08' : '2024-11-22');
+        const until = new Date().toISOString().split('T')[0];
+        
+        const response = await axios.get(`${API_URL}/api/traffic-stats/funnel/${teamName}`, {
+          params: { startDate: since, endDate: until }
+        });
+        
+        setFunnelData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch funnel data:', error);
+      }
+    };
+    
+    fetchFunnelData();
+  }, [analytics, selectedTeam, dateRange, customDate]);
 
   // Fetch AI recommendations for a team
   const fetchRecommendations = async (team: string) => {
@@ -400,6 +428,16 @@ export default function TrafficCommandDashboard({
 
   return (
     <div className="min-h-screen bg-[#030303] text-white antialiased">
+      {/* Onboarding Tour */}
+      {analytics && (
+        <OnboardingTour 
+          userRole={currentUserTeam ? 'targetologist' : 'admin'}
+          userId={currentUserTeam || 'admin'}
+          userEmail=""
+          userName={currentUserTeam || 'Admin'}
+        />
+      )}
+      
       {/* 🎨 TRIPWIRE Фирменный фон */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#00FF88]/5 via-transparent to-transparent" />
@@ -1015,6 +1053,13 @@ export default function TrafficCommandDashboard({
                   );
                 })}
               </div>
+
+              {/* Sales Funnel */}
+              {funnelData && (
+                <div className="mb-4 sm:mb-6 md:mb-8">
+                  <SalesFunnel data={funnelData} />
+                </div>
+              )}
 
               {/* 🏷️ ТОП UTM МЕТОК - 3 секции */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
