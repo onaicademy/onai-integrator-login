@@ -114,6 +114,33 @@ router.get('/:userId', async (req: Request, res: Response) => {
  */
 router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
   try {
+    // ✅ MOCK MODE для localhost
+    if (process.env.MOCK_MODE === 'true') {
+      console.log('⚠️ [MOCK] Returning mock Facebook ad accounts');
+      return res.json({
+        success: true,
+        adAccounts: [
+          {
+            id: 'act_123456789',
+            name: 'OnAI Academy - Main Account',
+            status: 'active',
+            currency: 'USD',
+            timezone: 'Asia/Almaty',
+            amount_spent: '1500.00'
+          },
+          {
+            id: 'act_987654321',
+            name: 'OnAI Academy - Test Account',
+            status: 'active',
+            currency: 'USD',
+            timezone: 'Asia/Almaty',
+            amount_spent: '850.00'
+          }
+        ]
+      });
+    }
+
+    // PRODUCTION MODE
     const fbToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
     
     if (!fbToken) {

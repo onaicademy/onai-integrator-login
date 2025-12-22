@@ -16,6 +16,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Joyride, { CallBackProps, STATUS, Step, Styles, ACTIONS, EVENTS } from 'react-joyride';
 import axios from 'axios';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 // 📊 Observability Logger
 const ObservabilityLogger = {
@@ -53,8 +54,17 @@ interface OnboardingTourProps {
 export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiCheck = false }: OnboardingTourProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // ✅ Используем OnboardingContext вместо локального state
+  const { 
+    isOnboardingActive, 
+    currentStepIndex, 
+    handleJoyrideCallback: contextCallback,
+    startOnboarding,
+    stopOnboarding 
+  } = useOnboarding();
+  
   const [run, setRun] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
   
   // 🎯 Multi-page onboarding tracking
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'settings' | 'analytics'>('dashboard');
@@ -415,6 +425,9 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       stepTarget: step?.target
     });
     
+    // ✅ Вызываем context callback для сохранения state
+    contextCallback(data);
+
     // 🎯 MULTI-PAGE NAVIGATION: Переключение страниц
     // Когда пользователь нажимает "Next" на определенных шагах
     if (action === ACTIONS.NEXT && type === EVENTS.STEP_AFTER) {
@@ -423,9 +436,12 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
         ObservabilityLogger.log('Navigation: Dashboard → Settings');
         setTimeout(() => {
           navigate('/traffic/settings');
-          setStepIndex(4); // Продолжаем с 4-го шага на Settings
-          setRun(true); // 🔥 FIX: Продолжить onboarding после навигации
-        }, 500); // Увеличил задержку для загрузки страницы
+          setCurrentPage('settings');
+          // Продолжить onboarding после загрузки страницы
+          setTimeout(() => {
+            setRun(true); // Context уже обновлен через contextCallback
+          }, 600);
+        }, 300);
         return;
       }
       
@@ -434,9 +450,11 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
         ObservabilityLogger.log('Navigation: Settings → Analytics');
         setTimeout(() => {
           navigate('/traffic/detailed-analytics');
-          setStepIndex(7); // Продолжаем с 7-го шага на Analytics
-          setRun(true); // 🔥 FIX: Продолжить onboarding после навигации
-        }, 500); // Увеличил задержку для загрузки страницы
+          setCurrentPage('analytics');
+          setTimeout(() => {
+            setRun(true); // Context уже обновлен
+          }, 600);
+        }, 300);
         return;
       }
     }
@@ -459,13 +477,13 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
       if (!skipApiCheck) {
         saveTourCompletion(true);
       }
+      
+      // ✅ Останавливаем через context
+      if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+        stopOnboarding();
+      }
     }
-
-    // Обновляем индекс для observability
-    if (type === 'step:after') {
-      setStepIndex(index + (action === 'prev' ? -1 : 1));
-    }
-  }, [userRole, userId, skipApiCheck, currentPage, navigate]);
+  }, [userRole, userId, skipApiCheck, currentPage, navigate, contextCallback, stopOnboarding]);
 
   // API вызовы
   const saveTourCompletion = async (completed: boolean) => {
@@ -528,7 +546,7 @@ export function OnboardingTour({ userRole, userId, userEmail, userName, skipApiC
     <Joyride
       steps={steps}
       run={run}
-      stepIndex={stepIndex}
+      stepIndex={currentStepIndex} // ✅ Используем из context
       continuous={true}
       showProgress={true}
       showSkipButton={true}
