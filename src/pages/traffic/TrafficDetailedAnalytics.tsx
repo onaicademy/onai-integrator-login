@@ -102,11 +102,25 @@ export default function TrafficDetailedAnalytics() {
       setLoading(true);
       const token = localStorage.getItem('traffic_token');
       
+      // First check if user has configured ad accounts
+      const settingsResponse = await axios.get(`${API_URL}/api/traffic-settings/${userData.team}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const settings = settingsResponse.data.settings;
+      
+      // If no ad accounts configured, show message
+      if (!settings || !settings.fb_ad_accounts || settings.fb_ad_accounts.length === 0) {
+        toast.error('Пожалуйста, настройте рекламные кабинеты в разделе Настройки');
+        setLoading(false);
+        return;
+      }
+      
       const response = await axios.get(`${API_URL}/api/traffic-detailed-analytics`, {
         params: {
           team: userData.team,
           dateRange,
-          status: statusFilter
+          statusFilter
         },
         headers: { Authorization: `Bearer ${token}` }
       });
