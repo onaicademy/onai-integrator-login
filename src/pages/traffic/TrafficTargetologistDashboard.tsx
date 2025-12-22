@@ -207,7 +207,7 @@ export default function TrafficTargetologistDashboard() {
               
               {/* Detailed Analytics Button */}
               <Button
-                data-tour="analytics-button"
+                data-tour="detailed-analytics-button"
                 onClick={() => navigate('/detailed-analytics')}
                 variant="outline"
                 size="sm"
