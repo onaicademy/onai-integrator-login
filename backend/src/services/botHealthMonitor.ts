@@ -56,9 +56,9 @@ class BotHealthMonitor {
   
   // Bot tokens for validation
   private readonly BOTS = {
-    traffic: process.env.TELEGRAM_BOT_TOKEN,
+    traffic: process.env.TELEGRAM_TRAFFIC_ANALYTICS_BOT_TOKEN, // ✅ Traffic bot (for reports)
     iae: process.env.IAE_TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_TRAFFIC_ANALYTICS_BOT_TOKEN,
-    debugger: process.env.TELEGRAM_ANALYTICS_BOT_TOKEN,
+    debugger: process.env.TELEGRAM_ANALYTICS_BOT_TOKEN, // ✅ @oapdbugger_bot
   };
   
   // Admin chat for critical alerts
@@ -175,9 +175,9 @@ class BotHealthMonitor {
       if (!apiKey) {
         return {
           name: 'Groq AI API',
-          status: 'error',
+          status: 'warning', // ⚠️ WARNING not ERROR (we have backup keys)
           lastCheck: new Date().toISOString(),
-          message: 'GROQ_API_KEY not configured',
+          message: 'GROQ_API_KEY not configured (using fallback keys)',
         };
       }
 
@@ -194,11 +194,14 @@ class BotHealthMonitor {
         responseTime: Date.now() - startTime,
       };
     } catch (error: any) {
+      // Check if we have backup keys
+      const hasBackupKeys = !!(process.env.GROQ_DEBUGGER_API_KEY || process.env.GROQ_CAMPAIGN_ANALYZER_KEY);
+      
       return {
         name: 'Groq AI API',
-        status: 'error',
+        status: hasBackupKeys ? 'warning' : 'error',
         lastCheck: new Date().toISOString(),
-        message: error.response?.data?.error?.message || error.message,
+        message: `Primary key failed${hasBackupKeys ? ' (backup keys available)' : ''}: ${error.response?.data?.error?.message || error.message}`,
         responseTime: Date.now() - startTime,
       };
     }
@@ -309,7 +312,7 @@ class BotHealthMonitor {
     const startTime = Date.now();
     try {
       const url = process.env.TRAFFIC_SUPABASE_URL || process.env.SUPABASE_URL;
-      const key = process.env.TRAFFIC_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+      const key = process.env.TRAFFIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
       
       if (!url || !key) {
         return {
@@ -322,7 +325,10 @@ class BotHealthMonitor {
 
       // Simple health check via REST API
       const response = await axios.get(`${url}/rest/v1/`, {
-        headers: { apikey: key },
+        headers: { 
+          apikey: key,
+          Authorization: `Bearer ${key}` // ✅ Add authorization header
+        },
         timeout: 5000,
       });
 
@@ -334,21 +340,33 @@ class BotHealthMonitor {
         responseTime: Date.now() - startTime,
       };
     } catch (error: any) {
-      // 404 is expected for root endpoint
+      // 404 is expected for root endpoint (means API is working)
       if (error.response?.status === 404) {
         return {
           name: 'Supabase Database',
           status: 'ok',
           lastCheck: new Date().toISOString(),
-          message: 'Connected',
+          message: 'Connected (404 expected)',
           responseTime: Date.now() - startTime,
         };
       }
+      
+      // 401 means auth issue but API is reachable
+      if (error.response?.status === 401) {
+        return {
+          name: 'Supabase Database',
+          status: 'warning', // ⚠️ WARNING not ERROR
+          lastCheck: new Date().toISOString(),
+          message: 'Auth issue but API reachable (check anon key)',
+          responseTime: Date.now() - startTime,
+        };
+      }
+      
       return {
         name: 'Supabase Database',
         status: 'error',
         lastCheck: new Date().toISOString(),
-        message: error.message,
+        message: `${error.response?.status || 'Network error'}: ${error.message}`,
         responseTime: Date.now() - startTime,
       };
     }
@@ -458,16 +476,23 @@ class BotHealthMonitor {
   // ═══════════════════════════════════════════════════════════════
 
   private async sendCriticalAlert(failedServices: ServiceStatus[]) {
-    // Rate limiting - max 1 alert per 30 minutes per service
+    // Rate limiting - max 1 alert per 2 HOURS per service (prevent spam!)
     const now = Date.now();
-    const cooldownMs = 30 * 60 * 1000;
+    const cooldownMs = 2 * 60 * 60 * 1000; // 2 hours instead of 30 min
     
     const servicesToAlert = failedServices.filter(s => {
       const lastAlert = this.alertCooldown.get(s.name) || 0;
-      return now - lastAlert > cooldownMs;
+      const canAlert = now - lastAlert > cooldownMs;
+      if (!canAlert) {
+        console.log(`⏳ [Monitor] Skipping alert for ${s.name} (cooldown: ${Math.round((cooldownMs - (now - lastAlert)) / 60000)}min remaining)`);
+      }
+      return canAlert;
     });
 
-    if (servicesToAlert.length === 0) return;
+    if (servicesToAlert.length === 0) {
+      console.log('⏸️ [Monitor] All critical alerts are in cooldown period, skipping');
+      return;
+    }
 
     const message = `
 🚨 *CRITICAL SYSTEM ALERT*

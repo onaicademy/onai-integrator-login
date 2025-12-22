@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { sendToAllChats } from './telegramBot';
+import { botHealthMonitor } from './botHealthMonitor';
 // 🤖 AI-POWERED REPORTS (with Groq)
 import {
   generateYesterdayReportAI,
@@ -17,8 +18,10 @@ export function scheduleYesterdayReport() {
       const report = await generateYesterdayReportAI();
       await sendToAllChats(report, 'Markdown');
       console.log('✅ [10:00] AI-отчет за вчера отправлен');
-    } catch (error) {
+      botHealthMonitor.recordReportDelivery('10:00 Yesterday AI Report', true);
+    } catch (error: any) {
       console.error('❌ [10:00] Ошибка отправки AI-отчета:', error);
+      botHealthMonitor.recordReportDelivery('10:00 Yesterday AI Report', false, error.message);
     }
   }, {
     timezone: 'Asia/Almaty'
@@ -35,8 +38,10 @@ export function scheduleCurrentStatusReport() {
       const report = await generateCurrentStatusReportAI();
       await sendToAllChats(report, 'Markdown');
       console.log('✅ [16:00] AI-статус отправлен');
-    } catch (error) {
+      botHealthMonitor.recordReportDelivery('16:00 Current Status AI', true);
+    } catch (error: any) {
       console.error('❌ [16:00] Ошибка отправки AI-статуса:', error);
+      botHealthMonitor.recordReportDelivery('16:00 Current Status AI', false, error.message);
     }
   }, {
     timezone: 'Asia/Almaty'
@@ -53,8 +58,10 @@ export function scheduleDailyReport() {
       const report = await generateDailyReportAI();
       await sendToAllChats(report, 'Markdown');
       console.log('✅ [22:00] AI дневной отчет отправлен');
-    } catch (error) {
+      botHealthMonitor.recordReportDelivery('22:00 Daily AI Summary', true);
+    } catch (error: any) {
       console.error('❌ [22:00] Ошибка отправки AI-отчета:', error);
+      botHealthMonitor.recordReportDelivery('22:00 Daily AI Summary', false, error.message);
     }
   }, {
     timezone: 'Asia/Almaty'
@@ -71,8 +78,10 @@ export function scheduleWeeklyReport() {
       const report = await generateWeeklyReportAI();
       await sendToAllChats(report, 'Markdown');
       console.log('✅ [Понедельник 10:00] AI недельный отчет отправлен (KPI +10%)');
-    } catch (error) {
+      botHealthMonitor.recordReportDelivery('Monday 10:00 Weekly Report', true);
+    } catch (error: any) {
       console.error('❌ [Понедельник 10:00] Ошибка отправки AI-отчета:', error);
+      botHealthMonitor.recordReportDelivery('Monday 10:00 Weekly Report', false, error.message);
     }
   }, {
     timezone: 'Asia/Almaty'
