@@ -194,6 +194,48 @@ router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
 router.get('/facebook/campaigns/:adAccountId', async (req: Request, res: Response) => {
   try {
     const { adAccountId } = req.params;
+    
+    // ✅ MOCK MODE для localhost
+    if (process.env.MOCK_MODE === 'true') {
+      console.log(`⚠️ [MOCK] Returning mock campaigns for ${adAccountId}`);
+      return res.json({
+        success: true,
+        campaigns: [
+          {
+            id: 'camp_111111',
+            name: 'Lead Generation - Winter 2025',
+            status: 'ACTIVE',
+            objective: 'LEAD_GENERATION',
+            spend: '450.00',
+            impressions: 15000,
+            clicks: 225,
+            ad_account_id: adAccountId
+          },
+          {
+            id: 'camp_222222',
+            name: 'Brand Awareness - Q4',
+            status: 'ACTIVE',
+            objective: 'BRAND_AWARENESS',
+            spend: '320.00',
+            impressions: 12000,
+            clicks: 180,
+            ad_account_id: adAccountId
+          },
+          {
+            id: 'camp_333333',
+            name: 'Conversions - AI Course',
+            status: 'ACTIVE',
+            objective: 'CONVERSIONS',
+            spend: '780.00',
+            impressions: 25000,
+            clicks: 400,
+            ad_account_id: adAccountId
+          }
+        ]
+      });
+    }
+
+    // PRODUCTION MODE
     const fbToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
 
     if (!fbToken) {
