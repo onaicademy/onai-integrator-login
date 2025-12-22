@@ -13,6 +13,13 @@ interface SalesFunnelProps {
     registrations: number;
     expressSales: number;
     mainSales: number;
+    // 💰 Деньги на каждом этапе
+    spent_on_ads?: number;        // Потрачено на рекламу
+    revenue_express?: number;      // Заработано с Express
+    revenue_main?: number;         // Заработано с Main Course
+    total_revenue?: number;        // Общий доход
+    total_spent?: number;          // Общие затраты
+    roi?: number;                  // ROI %
   };
 }
 
@@ -39,42 +46,52 @@ export const SalesFunnel = ({ data }: SalesFunnelProps) => {
   const stages = [
     {
       label: 'Показы',
-      sublabel: 'Facebook Ads Impressions',
+      sublabel: 'Facebook Ads',
       value: data.impressions,
+      money: data.spent_on_ads || 0,
+      moneyLabel: 'Потрачено',
       width: 100,
       color: 'from-blue-600 to-blue-500',
       conversionRate: null,
     },
     {
       label: 'Клики',
-      sublabel: 'Переход на сайт',
+      sublabel: 'Переходы',
       value: data.clicks,
+      money: null,
+      moneyLabel: '',
       width: 80,
       color: 'from-blue-500 to-blue-400',
       conversionRate: clickRate,
     },
     {
       label: 'Регистрации',
-      sublabel: 'Proftest + UTM',
+      sublabel: 'Proftest',
       value: data.registrations,
+      money: null,
+      moneyLabel: '',
       width: 60,
       color: 'from-blue-500 to-blue-400',
       conversionRate: regRate,
     },
     {
-      label: 'Express Course',
-      sublabel: 'Tripwire Purchase',
+      label: 'Express',
+      sublabel: 'Tripwire',
       value: data.expressSales,
+      money: data.revenue_express || 0,
+      moneyLabel: 'Заработано',
       width: 45,
-      color: 'from-blue-600 to-blue-500',
+      color: 'from-green-600 to-green-500',
       conversionRate: expressRate,
     },
     {
       label: 'Main Course',
-      sublabel: 'Main Product Purchase',
+      sublabel: 'Основной',
       value: data.mainSales,
+      money: data.revenue_main || 0,
+      moneyLabel: 'Заработано',
       width: 30,
-      color: 'from-blue-700 to-blue-600',
+      color: 'from-green-700 to-green-600',
       conversionRate: mainRate,
     },
   ];
@@ -126,6 +143,16 @@ export const SalesFunnel = ({ data }: SalesFunnelProps) => {
                 <div className="text-3xl font-bold">
                   {(stage.value || 0).toLocaleString()}
                 </div>
+                
+                {/* Money Info */}
+                {stage.money !== null && stage.money > 0 && (
+                  <div className="text-xs opacity-80 mt-2 border-t border-white/20 pt-2">
+                    <div className="font-semibold">{stage.moneyLabel}</div>
+                    <div className="text-lg font-bold text-[#00FF88]">
+                      ${stage.money.toLocaleString()}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Sublabel */}
                 <div className="text-[10px] opacity-70 mt-0.5">

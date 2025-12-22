@@ -1139,6 +1139,26 @@ router.get('/funnel/:teamId', async (req: Request, res: Response) => {
     const expressCount = expressSales?.length || 0;
     const mainCount = mainSales?.length || 0;
     
+    // 💰 Get money data
+    // Spent on ads
+    const { data: adSpendData } = await supabase
+      .from('traffic_stats')
+      .select('spend_usd')
+      .ilike('team_id', `%${teamId}%`)
+      .gte('transaction_date', startDate)
+      .lte('transaction_date', endDate);
+    
+    const spentOnAds = adSpendData?.reduce((sum, row) => sum + (row.spend_usd || 0), 0) || 0;
+    
+    // Revenue from Express sales
+    const revenueExpress = expressSales?.reduce((sum: number, sale: any) => sum + (parseFloat(sale.amount_usd) || 0), 0) || 0;
+    
+    // Revenue from Main course sales  
+    const revenueMain = mainSales?.reduce((sum: number, sale: any) => sum + (parseFloat(sale.amount_usd) || 0), 0) || 0;
+    
+    const totalRevenue = revenueExpress + revenueMain;
+    const roi = spentOnAds > 0 ? ((totalRevenue - spentOnAds) / spentOnAds) * 100 : 0;
+    
     const funnelData = {
       impressions,
       registrations: regCount,
@@ -1146,10 +1166,17 @@ router.get('/funnel/:teamId', async (req: Request, res: Response) => {
       mainSales: mainCount,
       conversionRate1: impressions > 0 ? (regCount / impressions) * 100 : 0,
       conversionRate2: regCount > 0 ? (expressCount / regCount) * 100 : 0,
-      conversionRate3: expressCount > 0 ? (mainCount / expressCount) * 100 : 0
+      conversionRate3: expressCount > 0 ? (mainCount / expressCount) * 100 : 0,
+      // 💰 Money data
+      spent_on_ads: spentOnAds,
+      revenue_express: revenueExpress,
+      revenue_main: revenueMain,
+      total_revenue: totalRevenue,
+      total_spent: spentOnAds,
+      roi: roi
     };
     
-    console.log(`[Funnel API] ✅ Data:`, funnelData);
+    console.log(`[Funnel API] ✅ Data with money:`, funnelData);
     res.json(funnelData);
     
   } catch (error: any) {
