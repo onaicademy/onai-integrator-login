@@ -65,6 +65,18 @@ export default function TrafficSettings() {
 
   // UTM метка
   const [personalUtmSource, setPersonalUtmSource] = useState('');
+  
+  // 🔥 Facebook Connection Status
+  const [fbStatus, setFbStatus] = useState<{
+    connected: boolean;
+    checking: boolean;
+    error?: string;
+    lastChecked?: string;
+    tokenInfo?: any;
+  }>({
+    connected: false,
+    checking: true
+  });
 
   // ═══════════════════════════════════════════════════════════════
   // INITIALIZATION
@@ -80,12 +92,44 @@ export default function TrafficSettings() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
     
-    // 🔥 СНАЧАЛА загружаем настройки из БД
-    loadSettings(parsedUser.id).then(() => {
-      // 🔥 ПОТОМ автоматически загружаем доступные кабинеты из Facebook API
-      loadAvailableAccounts();
+    // 🔥 СНАЧАЛА проверяем статус Facebook токена
+    checkFacebookStatus().then(() => {
+      // 🔥 ПОТОМ загружаем настройки из БД
+      loadSettings(parsedUser.id).then(() => {
+        // 🔥 И автоматически загружаем доступные кабинеты
+        loadAvailableAccounts();
+      });
     });
   }, []);
+
+  // ═══════════════════════════════════════════════════════════════
+  // CHECK FACEBOOK TOKEN STATUS
+  // ═══════════════════════════════════════════════════════════════
+  
+  const checkFacebookStatus = async () => {
+    try {
+      setFbStatus(prev => ({ ...prev, checking: true, error: undefined }));
+      
+      const res = await axios.get(`${API_URL}/api/traffic-settings/facebook/status`);
+      
+      setFbStatus({
+        connected: res.data.connected,
+        checking: false,
+        lastChecked: new Date().toLocaleString('ru-RU'),
+        tokenInfo: res.data.tokenInfo,
+        error: undefined
+      });
+      
+    } catch (error: any) {
+      console.error('Failed to check Facebook status:', error);
+      setFbStatus({
+        connected: false,
+        checking: false,
+        error: error.response?.data?.error || 'Ошибка проверки токена',
+        lastChecked: new Date().toLocaleString('ru-RU')
+      });
+    }
+  };
 
   // ═══════════════════════════════════════════════════════════════
   // LOAD SETTINGS FROM DB
@@ -390,6 +434,91 @@ export default function TrafficSettings() {
       {/* ═══════════════════════════════════════════════════════════════ */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid gap-6">
+          
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* FACEBOOK CONNECTION STATUS */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <div className="bg-gradient-to-r from-[#1877F2]/10 to-purple-500/10 backdrop-blur-sm rounded-xl border border-white/10 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`
+                  w-12 h-12 rounded-xl flex items-center justify-center
+                  ${fbStatus.connected 
+                    ? 'bg-[#00FF88]/20 text-[#00FF88]' 
+                    : fbStatus.checking 
+                    ? 'bg-yellow-500/20 text-yellow-500'
+                    : 'bg-red-500/20 text-red-500'
+                  }
+                `}>
+                  {fbStatus.checking ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : fbStatus.connected ? (
+                    <CheckCircle2 className="w-6 h-6" />
+                  ) : (
+                    <XCircle className="w-6 h-6" />
+                  )}
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    Facebook Ads API
+                    {fbStatus.connected && (
+                      <span className="px-2 py-0.5 bg-[#00FF88]/20 text-[#00FF88] text-xs rounded-full font-semibold">
+                        ПОДКЛЮЧЕНО
+                      </span>
+                    )}
+                    {fbStatus.error && (
+                      <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full font-semibold">
+                        ОШИБКА
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-sm text-white/60">
+                    {fbStatus.checking 
+                      ? 'Проверка подключения...'
+                      : fbStatus.connected
+                      ? `Последняя проверка: ${fbStatus.lastChecked}`
+                      : fbStatus.error || 'Токен не подключен'
+                    }
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-6">
+                {/* Счетчики */}
+                <div className="flex items-center gap-6 px-6 py-3 bg-white/5 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{selectedAccountIds.length}</div>
+                    <div className="text-xs text-white/60">Кабинетов</div>
+                  </div>
+                  <div className="w-px h-8 bg-white/20"></div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{selectedCampaignIds.length}</div>
+                    <div className="text-xs text-white/60">Кампаний</div>
+                  </div>
+                  <div className="w-px h-8 bg-white/20"></div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{availableAccounts.length}</div>
+                    <div className="text-xs text-white/60">Доступно</div>
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={checkFacebookStatus}
+                  disabled={fbStatus.checking}
+                  variant="outline"
+                  className="border-white/20 hover:border-[#00FF88] text-white"
+                >
+                  {fbStatus.checking ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  )}
+                  Проверить
+                </Button>
+              </div>
+            </div>
+          </div>
           
           {/* ═══════════════════════════════════════════════════════════════ */}
           {/* FACEBOOK AD ACCOUNTS SECTION */}

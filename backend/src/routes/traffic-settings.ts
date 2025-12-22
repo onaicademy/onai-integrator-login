@@ -18,6 +18,101 @@ const FB_API_VERSION = 'v18.0';
 const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
 
 /**
+ * GET /api/traffic-settings/facebook/status
+ * 🔥 Проверить статус Facebook токена (РЕАЛЬНАЯ ПРОВЕРКА)
+ * ⚠️ MUST BE BEFORE /:userId route!
+ */
+router.get('/facebook/status', async (req: Request, res: Response) => {
+  try {
+    console.log('🔍 [FB STATUS] Checking Facebook token status...');
+    
+    const fbToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
+    
+    if (!fbToken) {
+      console.log('❌ [FB STATUS] No token found in environment');
+      return res.json({
+        connected: false,
+        error: 'Facebook токен не настроен',
+        lastChecked: new Date().toISOString()
+      });
+    }
+
+    // 🔥 Проверяем токен через /me endpoint
+    try {
+      const meResponse = await axios.get(`${FB_API_BASE}/me`, {
+        params: { 
+          access_token: fbToken,
+          fields: 'id,name'
+        },
+        timeout: 10000
+      });
+
+      console.log(`✅ [FB STATUS] Token valid for: ${meResponse.data.name} (${meResponse.data.id})`);
+
+      // 🔥 Проверяем доступ к Business Manager
+      const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '1425104648731040';
+      
+      try {
+        const bmResponse = await axios.get(`${FB_API_BASE}/${BUSINESS_ID}`, {
+          params: {
+            access_token: fbToken,
+            fields: 'id,name'
+          },
+          timeout: 10000
+        });
+
+        console.log(`✅ [FB STATUS] Business Manager access OK: ${bmResponse.data.name}`);
+
+        return res.json({
+          connected: true,
+          lastChecked: new Date().toISOString(),
+          tokenInfo: {
+            type: meResponse.data.id.startsWith('627804847089543') ? 'Page Token' : 'User/System Token',
+            name: meResponse.data.name,
+            id: meResponse.data.id,
+            business: {
+              id: bmResponse.data.id,
+              name: bmResponse.data.name
+            }
+          }
+        });
+
+      } catch (bmError: any) {
+        console.log('⚠️ [FB STATUS] Business Manager access limited:', bmError.response?.data);
+        
+        return res.json({
+          connected: true,
+          warning: 'Токен работает, но доступ к Business Manager ограничен',
+          lastChecked: new Date().toISOString(),
+          tokenInfo: {
+            name: meResponse.data.name,
+            id: meResponse.data.id
+          }
+        });
+      }
+
+    } catch (tokenError: any) {
+      console.error('❌ [FB STATUS] Token validation failed:', tokenError.response?.data || tokenError.message);
+      
+      return res.json({
+        connected: false,
+        error: tokenError.response?.data?.error?.message || 'Токен недействителен',
+        details: tokenError.response?.data,
+        lastChecked: new Date().toISOString()
+      });
+    }
+
+  } catch (error: any) {
+    console.error('❌ [FB STATUS] Unexpected error:', error);
+    res.status(500).json({
+      connected: false,
+      error: 'Ошибка проверки статуса',
+      lastChecked: new Date().toISOString()
+    });
+  }
+});
+
+/**
  * GET /api/traffic-settings/token-status
  * Проверить статус подключения всех токенов
  * ⚠️ MUST BE BEFORE /:userId route!
