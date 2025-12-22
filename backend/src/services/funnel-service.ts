@@ -120,51 +120,41 @@ async function getExpressCourseMetrics(): Promise<FunnelMetrics> {
 
 /**
  * STAGE 3: Payment Metrics (5K Express Course)
- * Источник: landing_leads WHERE email_clicked=true (индикатор оплаты)
- * ⚠️ Note: Проверяем разные варианты полей для payment status
+ * Источник: landing_leads WHERE sms_clicked=true (индикатор оплаты)
+ * ✅ sms_clicked = пользователь перешёл по SMS-ссылке = купил курс
  */
 async function getPaymentMetrics(): Promise<FunnelMetrics> {
   return getCachedOrFresh('funnel:payment', async () => {
     try {
       console.log('[Funnel] Fetching Payment metrics from Landing DB...');
       
-      // Вариант 1: email_clicked = true (основной индикатор покупки)
+      // ✅ Правильный индикатор: sms_clicked = true (переход по SMS = покупка)
       const { data, error } = await landingSupabase
         .from('landing_leads')
-        .select('id')
-        .eq('email_clicked', true)
+        .select('id, source')
+        .eq('sms_clicked', true)
         .gte('created_at', THIRTY_DAYS_AGO.toISOString())
         .limit(10000);
       
       if (error) {
         console.error('[Funnel] Payment error:', error.message);
-        
-        // Fallback: попробовать payment_status='completed'
-        console.log('[Funnel] Trying fallback: payment_status=completed');
-        const { data: fallbackData, error: fallbackError } = await landingSupabase
-          .from('landing_leads')
-          .select('id')
-          .eq('payment_status', 'completed')
-          .gte('created_at', THIRTY_DAYS_AGO.toISOString())
-          .limit(10000);
-        
-        if (fallbackError) {
-          console.error('[Funnel] Fallback also failed:', fallbackError.message);
-          throw fallbackError;
-        }
-        
-        const purchases = fallbackData?.length || 0;
-        const revenue = purchases * 5000;
-        
-        console.log(`[Funnel] ✅ Payment (fallback): ${purchases} purchases, ${revenue} KZT`);
-        
-        return { purchases, revenue };
+        throw error;
       }
       
       const purchases = data?.length || 0;
       const revenue = purchases * 5000; // 5K за каждый курс
       
       console.log(`[Funnel] ✅ Payment: ${purchases} purchases, ${revenue} KZT`);
+      
+      // Debug: показать распределение по таргетологам
+      if (data && data.length > 0) {
+        const byTargetologist = data.reduce((acc: any, lead: any) => {
+          const source = lead.source || 'unknown';
+          acc[source] = (acc[source] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('[Funnel] 📊 Payment by targetologist:', byTargetologist);
+      }
       
       return {
         purchases: purchases,
