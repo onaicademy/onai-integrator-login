@@ -187,12 +187,13 @@ export default function TrafficSettings() {
     try {
       setLoadingAccounts(true);
       const token = localStorage.getItem('traffic_token');
-      
-      const res = await axios.get(`${API_URL}/api/traffic-settings/facebook/ad-accounts`, {
+
+      // 🔥 NEW: Use new Facebook API endpoint with caching
+      const res = await axios.get(`${API_URL}/api/traffic-facebook/accounts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
-      const accounts = res.data.adAccounts || [];
+
+      const accounts = res.data.accounts || [];
       
       // 🔥 MERGE: Новые из API + уже выбранные из БД
       const existingIds = selectedAccountIds;
@@ -230,6 +231,36 @@ export default function TrafficSettings() {
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // REFRESH AD ACCOUNTS (FORCE REFRESH - CLEAR CACHE)
+  // ═══════════════════════════════════════════════════════════════
+
+  const refreshAccounts = async () => {
+    try {
+      setLoadingAccounts(true);
+      const token = localStorage.getItem('traffic_token');
+
+      // 🔥 NEW: Use POST /refresh endpoint to clear cache and fetch fresh data
+      const res = await axios.post(`${API_URL}/api/traffic-facebook/refresh`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const accounts = res.data.accounts || [];
+
+      // Update available accounts
+      setAvailableAccounts(accounts);
+
+      console.log('✅ Refreshed', accounts.length, 'accounts from Facebook (cache cleared)');
+      toast.success(`Обновлено ${accounts.length} кабинетов (кэш очищен)`);
+      
+    } catch (error: any) {
+      console.error('Failed to refresh ad accounts:', error);
+      toast.error('❌ Ошибка обновления рекламных кабинетов');
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
   // LOAD CAMPAIGNS FOR SPECIFIC AD ACCOUNT
   // ═══════════════════════════════════════════════════════════════
   
@@ -237,11 +268,12 @@ export default function TrafficSettings() {
     try {
       setLoadingCampaigns(prev => ({ ...prev, [accountId]: true }));
       const token = localStorage.getItem('traffic_token');
-      
-      const res = await axios.get(`${API_URL}/api/traffic-settings/facebook/campaigns/${accountId}`, {
+
+      // 🔥 NEW: Use new Facebook API endpoint with caching
+      const res = await axios.get(`${API_URL}/api/traffic-facebook/campaigns/${accountId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       const campaigns = res.data.campaigns || [];
       
       setAvailableCampaigns(prev => ({
@@ -544,7 +576,7 @@ export default function TrafficSettings() {
               </div>
               
               <Button
-                onClick={loadAvailableAccounts}
+                onClick={refreshAccounts}
                 disabled={loadingAccounts}
                 className="bg-[#00FF88] hover:bg-[#00DD77] text-black font-semibold"
                 data-tour="refresh-accounts-btn"

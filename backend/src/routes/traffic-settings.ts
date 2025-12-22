@@ -186,8 +186,23 @@ router.get('/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
+    console.log(`📋 [Traffic Settings] Fetching settings for user: ${userId}`);
+    
     // ✅ Используем database layer
     const settings = await database.getSettings(userId);
+    
+    // ✅ If no settings found, return empty defaults instead of 500
+    if (!settings) {
+      console.log(`⚠️ [Traffic Settings] No settings found for user ${userId}, returning defaults`);
+      return res.json({
+        success: true,
+        settings: {
+          selectedAccounts: [],
+          selectedCampaigns: {},
+          utmTags: []
+        }
+      });
+    }
     
     res.json({
       success: true,
@@ -196,9 +211,16 @@ router.get('/:userId', async (req: Request, res: Response) => {
     
   } catch (error: any) {
     console.error('❌ Failed to fetch settings:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
+    
+    // ✅ Even on error, return empty defaults (graceful degradation)
+    console.log('⚠️ [Traffic Settings] Error fetching settings, returning defaults');
+    res.json({
+      success: true,
+      settings: {
+        selectedAccounts: [],
+        selectedCampaigns: {},
+        utmTags: []
+      }
     });
   }
 });

@@ -140,6 +140,7 @@ import trafficOnboardingRouter from './routes/traffic-onboarding.js'; // 🎓 Tr
 import trafficConstructorRouter from './routes/traffic-team-constructor.js'; // 🏗️ Team Constructor (Admin)
 import trafficDetailedAnalyticsRouter from './routes/traffic-detailed-analytics.js'; // 📊 Detailed Analytics (Campaigns/AdSets/Ads)
 import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targetologist Settings
+import trafficFacebookApiRouter from './routes/traffic-facebook-api.js'; // 📘 NEW: Facebook Ads API (with caching)
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
@@ -486,6 +487,7 @@ app.use('/api/traffic-onboarding', trafficOnboardingRouter); // 🎓 Traffic Onb
 app.use('/api/traffic-constructor', trafficConstructorRouter); // 🏗️ Team Constructor (Admin)
 app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // 📊 Detailed Analytics
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
+app.use('/api/traffic-facebook', trafficFacebookApiRouter); // 📘 NEW: Facebook Ads API (with caching)
 app.use('/api/error-reports', errorReportsRouter); // 🚨 Error Reports → Telegram @analisistonaitrafic_bot
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
@@ -592,6 +594,15 @@ const server = app.listen(PORT, () => {
 
       // 1. Initialize AmoCRM Redis (for BullMQ)
       await initAmoCRMRedis();
+
+      // 1.1 Initialize Redis for Facebook API caching (optional - uses memory fallback if unavailable)
+      try {
+        const { initRedis } = await import('./config/redis.js');
+        await initRedis();
+        console.log('✅ Redis cache initialized (Facebook API caching)');
+      } catch (error: any) {
+        console.warn('⚠️ Redis cache initialization failed, using memory fallback:', error.message);
+      }
 
       // 2. Initialize Telegram (independent from Redis)
       // ⚠️ ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ОТЛАДКИ 409
