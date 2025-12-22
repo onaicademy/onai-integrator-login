@@ -15,6 +15,7 @@
 
 import axios from 'axios';
 import { cacheGet, cacheSet, cacheClear } from '../config/redis.js';
+import { detectTargetologist, type Targetologist, type DetectionMethod, type DetectionConfidence } from './targetologist-detector.js';
 
 const FB_API_VERSION = 'v18.0';
 const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
@@ -44,6 +45,10 @@ interface FacebookCampaign {
   conversions?: number;
   ctr?: string;
   cpc?: string;
+  // 🔥 NEW: Targetologist detection
+  targetologist?: Targetologist;
+  detectionMethod?: DetectionMethod;
+  detectionConfidence?: DetectionConfidence;
 }
 
 /**
@@ -285,6 +290,14 @@ export async function fetchCampaignsForAccount(
         const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : '0.00';
         const cpc = clicks > 0 ? (spend / clicks).toFixed(2) : '0.00';
 
+        // 🔥 Detect targetologist for this campaign
+        const detection = await detectTargetologist(
+          campaign.id,
+          campaign.name,
+          accountId,
+          undefined // UTM params not available from Facebook API directly
+        );
+
         campaignsWithInsights.push({
           ...campaign,
           spend: insights.spend || '0',
@@ -293,12 +306,24 @@ export async function fetchCampaignsForAccount(
           reach: insights.reach || '0',
           conversions,
           ctr,
-          cpc
+          cpc,
+          // 🔥 Add targetologist detection results
+          targetologist: detection.targetologist,
+          detectionMethod: detection.method,
+          detectionConfidence: detection.confidence
         });
 
       } catch (insightsError: any) {
         console.warn(`⚠️ [Facebook Service] Failed to fetch insights for campaign ${campaign.id}:`, insightsError.message);
-        
+
+        // 🔥 Detect targetologist even for campaigns without insights
+        const detection = await detectTargetologist(
+          campaign.id,
+          campaign.name,
+          accountId,
+          undefined
+        );
+
         // Include campaign without insights
         campaignsWithInsights.push({
           ...campaign,
@@ -308,7 +333,11 @@ export async function fetchCampaignsForAccount(
           reach: '0',
           conversions: 0,
           ctr: '0.00',
-          cpc: '0.00'
+          cpc: '0.00',
+          // 🔥 Add targetologist detection results
+          targetologist: detection.targetologist,
+          detectionMethod: detection.method,
+          detectionConfidence: detection.confidence
         });
       }
     }
