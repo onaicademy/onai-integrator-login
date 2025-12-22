@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { TrafficCabinetLayout } from '@/components/traffic/TrafficCabinetLayout';
 import TrafficCommandDashboard from '../tripwire/TrafficCommandDashboard';
+import ConversionFunnel from '@/components/ConversionFunnel';
 import { Button } from '@/components/ui/button';
 import { Users, User, Globe } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -96,7 +97,16 @@ export default function TrafficCabinetDashboard() {
         </Button>
       </div>
       
-      {/* Original Traffic Dashboard (без Weekly KPI Widget) */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* CONVERSION FUNNEL - ВОРОНКА ПРОДАЖ */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      <div className="mb-8">
+        <ConversionFunnel />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* ORIGINAL TRAFFIC DASHBOARD */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
       <div>
         <TrafficCommandDashboard 
           filterTeam={showOnlyMyTeam ? teamName : null}
