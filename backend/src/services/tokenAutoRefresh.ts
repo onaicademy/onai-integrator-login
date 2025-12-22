@@ -1,6 +1,7 @@
 import * as cron from 'node-cron';
 import { refreshFacebookTokenIfNeeded, getTokenStatus as getFBTokenStatus, getValidFacebookToken } from './facebookTokenManager.js';
 import { refreshAmoCRMTokenIfNeeded, getAmoCRMTokenStatus, initializeFromEnv, getValidAmoCRMToken } from './amocrmTokenManager.js';
+import { initializeOpenAIKey, refreshOpenAITokenIfNeeded, getOpenAITokenStatus } from './openaiTokenManager.js';
 import { startTokenHealthMonitoring, runTokenHealthCheck, getTokenHealthStatus } from './tokenHealthMonitor.js';
 
 // 🔔 Alert sent tracking (prevent spam)
@@ -75,6 +76,22 @@ async function runCombinedTokenCheck(): Promise<void> {
     logAlert(`AmoCRM token check failed: ${error.message}`, 'error');
   }
   
+  // 3. Check and validate OpenAI token
+  try {
+    await refreshOpenAITokenIfNeeded();
+    const openaiStatus = getOpenAITokenStatus();
+    
+    if (openaiStatus.isValid) {
+      console.log(`✅ [OpenAI Token] Valid (checked: ${openaiStatus.lastChecked?.toLocaleString() || 'N/A'})`);
+    } else {
+      console.error('❌ [OpenAI Token] INVALID!');
+      logAlert(`OpenAI token is invalid: ${openaiStatus.errorMessage}`, 'error');
+    }
+  } catch (error: any) {
+    console.error('❌ [OpenAI Token] Check error:', error.message);
+    logAlert(`OpenAI token check failed: ${error.message}`, 'error');
+  }
+  
   console.log(`\n✅ [Token Refresh] Check complete\n`);
 }
 
@@ -86,6 +103,9 @@ export async function startTokenAutoRefresh() {
   
   // 1. Initialize AmoCRM from env if available
   await initializeFromEnv();
+  
+  // 1.5. Initialize OpenAI key from env
+  initializeOpenAIKey();
   
   // 2. Schedule periodic checks
   scheduleTokenRefreshCheck();

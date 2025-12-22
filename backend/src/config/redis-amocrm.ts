@@ -22,8 +22,17 @@ const amocrmRedis: RedisForAmoCRM = {
  * - Strict retry limits (3 attempts only)
  * - Doesn't block server startup
  * - NON-BLOCKING initialization
+ * - OPTIONAL: Disabled if REDIS_ENABLED=false
  */
 export async function initAmoCRMRedis(): Promise<void> {
+    // Check if Redis is enabled
+    const REDIS_ENABLED = process.env.REDIS_ENABLED === 'true';
+    
+    if (!REDIS_ENABLED) {
+        logger.info('ℹ️ Redis for AmoCRM disabled (REDIS_ENABLED=false)');
+        return Promise.resolve();
+    }
+    
     return new Promise((resolve) => {
         // Defer to next event loop tick
         setImmediate(async () => {
