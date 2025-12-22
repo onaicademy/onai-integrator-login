@@ -378,6 +378,7 @@ export default function TrafficDetailedAnalytics() {
           {/* AI Analysis Button */}
           <div className="flex justify-end">
             <Button
+              data-tour="ai-analysis-button"
               onClick={handleAIAnalysis}
               disabled={analyzing || filteredCampaigns.length === 0}
               className="bg-gradient-to-r from-[#00FF88] to-[#00DD70] text-black font-semibold hover:shadow-lg hover:shadow-[#00FF88]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
