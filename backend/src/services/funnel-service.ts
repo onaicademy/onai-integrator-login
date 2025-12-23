@@ -20,6 +20,23 @@ import { landingSupabase } from '../config/supabase-landing.js';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { getCachedOrFresh } from './cache-service.js';
 
+// ════════════════════════════════════════════════════════════════════════
+// TEAM MAPPING (team name → utm_source в БД)
+// ════════════════════════════════════════════════════════════════════════
+const TEAM_UTM_MAPPING: Record<string, string[]> = {
+  'kenesary': ['kenjifb', 'kenesary'],
+  'arystan': ['fbarystan', 'arystan'],
+  'muha': ['facebook', 'muha'],
+  'traf4': ['alex_FB', 'TF4', 'traf4', 'alexinst', 'alex_inst']
+};
+
+// Получить utm_source из team name
+function getUtmSourcesForTeam(teamName?: string): string[] | null {
+  if (!teamName) return null;
+  const normalized = teamName.toLowerCase();
+  return TEAM_UTM_MAPPING[normalized] || [normalized];
+}
+
 // Date filter: last 30 days
 function getThirtyDaysAgo(): string {
   const date = new Date();
@@ -144,18 +161,23 @@ async function getProfTestMetrics(teamFilter?: string): Promise<FunnelMetrics> {
         throw error;
       }
       
-      // Фильтр по utm_source из metadata (JSON поле)
+      // Фильтр по utm_source с учетом mapping команд
       let filteredData = data || [];
       if (teamFilter) {
-        filteredData = filteredData.filter(lead => {
-          const utmSource = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
-          return utmSource?.toLowerCase() === teamFilter.toLowerCase();
-        });
+        const allowedUtmSources = getUtmSourcesForTeam(teamFilter);
+        if (allowedUtmSources) {
+          filteredData = filteredData.filter(lead => {
+            const utmSource = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source || lead.utm_source;
+            return utmSource && allowedUtmSources.some(allowed => 
+              utmSource.toLowerCase().includes(allowed.toLowerCase())
+            );
+          });
+        }
       }
       
       const proftest_leads = filteredData.length;
       
-      console.log(`[Funnel] ✅ ProfTest: ${proftest_leads} leads (total: ${data?.length}, filtered: ${teamFilter || 'all'})`);
+      console.log(`[Funnel] ✅ ProfTest: ${proftest_leads} leads (total: ${data?.length}, filtered: ${teamFilter || 'all'}, utm: ${allowedUtmSources?.join(', ') || 'all'})`);
       
       return { proftest_leads };
     } catch (error: any) {
