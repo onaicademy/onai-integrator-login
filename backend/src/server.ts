@@ -132,6 +132,7 @@ import trafficStatsRouter from './routes/traffic-stats'; // 📊 Traffic Command
 import trafficReportsRouter from './routes/traffic-reports'; // 📊 Traffic Reports (Суп history & ROI analysis)
 import amocrmSalesWebhookRouter from './routes/amocrm-sales-webhook'; // 🎉 AmoCRM Sales Webhook (real-time продажи)
 import facebookAdsRouter from './routes/facebook-ads'; // 📊 Facebook Ads API Integration
+import facebookAdsLoaderRouter from './routes/facebook-ads-loader-api.js'; // 📥 Facebook Ads Data Loader
 import iaeAgentRouter from './routes/iae-agent.js'; // 🤖 IAE Agent (Intelligence Analytics Engine)
 import tokenManagerRouter from './routes/token-manager.js'; // 🔑 Token Auto-Refresh Manager
 import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
@@ -509,6 +510,7 @@ app.use('/api/amocrm', amocrmSalesWebhookRouter); // 🎉 AmoCRM Sales Webhook (
 app.use('/api/iae-agent', iaeAgentRouter); // 🤖 IAE Agent (Intelligence Analytics Engine - система проверки аналитики)
 app.use('/api/tokens', tokenManagerRouter); // 🔑 Token Auto-Refresh Manager (FB Ads + AmoCRM)
 app.use('/api/facebook-ads', facebookAdsRouter); // 📊 Facebook Ads API Integration (ROAS, recommendations)
+app.use('/api/facebook-ads-loader', facebookAdsLoaderRouter); // 📥 Facebook Ads Data Loader (manual trigger)
 app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (мануальная отправка отчетов)
 app.use('/api/traffic-auth', trafficAuthRouter); // 🚀 Traffic Dashboard Auth (JWT + bcrypt)
 app.use('/api/traffic-plans', trafficPlansRouter); // 📊 Traffic Weekly Plans (Groq AI)
@@ -689,16 +691,27 @@ const server = app.listen(PORT, () => {
         console.error('❌ Ошибка инициализации Token auto-refresh:', error);
       }
 
-      // 7.5. Start Facebook Ads Sync Cron (только production)
-      if (process.env.NODE_ENV === 'production') {
-        try {
-          const { facebookAdsSyncJob } = await import('./cron/facebook-ads-sync.js');
-          facebookAdsSyncJob.start();
-          console.log('✅ Facebook Ads sync cron started (hourly sync Traffic DB → Landing DB)');
-        } catch (error: any) {
-          console.error('❌ Failed to start Facebook Ads sync:', error.message);
-        }
-      }
+            // 7.5. Start Facebook Ads Loader Cron (загрузка из FB API → Traffic DB)
+            if (process.env.NODE_ENV === 'production') {
+              try {
+                const { facebookAdsLoaderJob } = await import('./cron/facebook-ads-loader.js');
+                facebookAdsLoaderJob.start();
+                console.log('✅ Facebook Ads loader cron started (every 6h: FB API → Traffic DB)');
+              } catch (error: any) {
+                console.error('❌ Failed to start Facebook Ads loader:', error.message);
+              }
+            }
+            
+            // 7.6. Start Facebook Ads Sync Cron (синхронизация Traffic DB → Landing DB)
+            if (process.env.NODE_ENV === 'production') {
+              try {
+                const { facebookAdsSyncJob } = await import('./cron/facebook-ads-sync.js');
+                facebookAdsSyncJob.start();
+                console.log('✅ Facebook Ads sync cron started (hourly sync Traffic DB → Landing DB)');
+              } catch (error: any) {
+                console.error('❌ Failed to start Facebook Ads sync:', error.message);
+              }
+            }
 
       // 8. Start IAE Agent schedulers and bot
       try {
