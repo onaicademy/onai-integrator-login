@@ -18,7 +18,19 @@
 
 import { landingSupabase } from '../config/supabase-landing.js';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
 import { getCachedOrFresh } from './cache-service.js';
+
+// ════════════════════════════════════════════════════════════════════════
+// EXCLUDED USERS (admin + sales managers)
+// ════════════════════════════════════════════════════════════════════════
+const EXCLUDED_EMAILS = [
+  'smmmcwin@gmail.com',       // Admin (Alexander CEO)
+  'rakhat@onaiacademy.kz',    // Sales Manager 1
+  'amina@onaiacademy.kz',     // Sales Manager 2
+  'aselya@onaiacademy.kz',    // Sales Manager 3
+  'ayaulym@onaiacademy.kz',   // Sales Manager 4
+];
 
 // ════════════════════════════════════════════════════════════════════════
 // TEAM MAPPING (team name → utm_source в БД)
@@ -61,11 +73,17 @@ export interface FunnelMetrics {
   // Stage 2: ProfTest
   proftest_leads?: number;
   
-  // Stage 3: Express Course
-  express_purchases?: number;
-  express_revenue?: number;
+  // Stage 3: Direct Leads (no UTM)
+  direct_leads?: number;
   
-  // Stage 4: Main Product (Integrator Flagman)
+  // Stage 4: Express Course (Real Students from Tripwire DB)
+  express_students?: number;
+  express_purchases?: number; // alias for backward compatibility
+  express_revenue?: number;
+  active_students?: number;
+  completed_students?: number;
+  
+  // Stage 5: Main Product (Integrator Flagman)
   main_purchases?: number;
   main_revenue?: number;
 }
@@ -151,7 +169,7 @@ async function getProfTestMetrics(teamFilter?: string): Promise<FunnelMetrics> {
       // PRODUCTION: Используем СУЩЕСТВУЮЩУЮ таблицу landing_leads (692 записи!)
       let query = landingSupabase
         .from('landing_leads')
-        .select('id, source, metadata')
+        .select('id, source, metadata, utm_source')
         .like('source', 'proftest%');
       
       const { data, error } = await query;
@@ -199,63 +217,150 @@ async function getProfTestMetrics(teamFilter?: string): Promise<FunnelMetrics> {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// STAGE 3: EXPRESS COURSE (Покупки 5K KZT)
+// STAGE 3: DIRECT LEADS (Напрямую с сайта - БЕЗ UTM)
 // ════════════════════════════════════════════════════════════════════════
-async function getExpressCourseMetrics(teamFilter?: string): Promise<FunnelMetrics> {
-  const cacheKey = `funnel:express:${teamFilter || 'all'}`;
+async function getDirectLeadsMetrics(teamFilter?: string): Promise<FunnelMetrics> {
+  const cacheKey = `funnel:direct:${teamFilter || 'all'}`;
   
   return getCachedOrFresh(cacheKey, async () => {
     try {
-      console.log('[Funnel] Fetching Express Course metrics from Landing DB...');
+      console.log('[Funnel] Fetching Direct Leads (no UTM) from Landing DB...');
       console.log('[Funnel] PRODUCTION: Reading from landing_leads table (source=expresscourse)');
       
-      // PRODUCTION: express_course_sales НЕ СУЩЕСТВУЕТ!
-      // Читаем покупателей Express из landing_leads где source='expresscourse'
+      // ⚠️ source='expresscourse' - это НЕ покупки, а лиды БЕЗ UTM (пришли напрямую на сайт)
       let query = landingSupabase
         .from('landing_leads')
-        .select('id, metadata, created_at, source')
+        .select('id, email, phone, metadata, created_at, source')
         .eq('source', 'expresscourse');
-      
-      // Фильтр по utm_source
-      if (teamFilter) {
-        query = query.eq('utm_source', teamFilter.toLowerCase());
-      }
       
       const { data, error } = await query;
       
-      console.log('[Funnel] Express Course raw data:', JSON.stringify(data, null, 2));
-      console.log('[Funnel] Express Course error:', error);
-      
       if (error) {
-        console.error('[Funnel] Express Course error:', error.message);
+        console.error('[Funnel] Direct Leads error:', error.message);
         throw error;
       }
       
-      // Фильтр по utm_source из metadata
-      let filteredData = data || [];
-      if (teamFilter) {
-        filteredData = filteredData.filter(lead => {
-          const utmSource = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
-          return utmSource?.toLowerCase() === teamFilter.toLowerCase();
-        });
-      }
+      // ⚠️ НЕ ФИЛЬТРУЕМ ПО UTM! Эти лиды БЕЗ UTM (пришли напрямую)
+      const direct_leads = data?.length || 0;
       
-      const express_purchases = filteredData.length;
-      // Express Course стоит 5000 KZT
-      const express_revenue = express_purchases * 5000;
+      console.log(`[Funnel] ✅ Direct Leads (no UTM): ${direct_leads} leads`);
       
-      console.log(`[Funnel] ✅ Express Course: ${express_purchases} purchases (total: ${data?.length}), ${express_revenue} KZT`);
-      
-      return { express_purchases, express_revenue };
+      return { direct_leads };
     } catch (error: any) {
-      console.error('[Funnel] getExpressCourseMetrics failed:', error.message);
-      return { express_purchases: 0, express_revenue: 0 };
+      console.error('[Funnel] getDirectLeadsMetrics failed:', error.message);
+      return { direct_leads: 0 };
     }
   }, 300);
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// STAGE 4: MAIN PRODUCT (Integrator Flagman - 490K KZT)
+// STAGE 4: EXPRESS COURSE 5K (Реальные покупки из Tripwire DB)
+// ════════════════════════════════════════════════════════════════════════
+async function getExpressCourseRealStudents(teamFilter?: string): Promise<FunnelMetrics> {
+  const cacheKey = `funnel:express_real:${teamFilter || 'all'}`;
+  
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching Express Course REAL STUDENTS from Tripwire DB...');
+      
+      // ШАГ 1: Получить исключенных пользователей (admin/sales)
+      const { data: excludedUsers } = await tripwireAdminSupabase
+        .from('tripwire_users')
+        .select('user_id')
+        .in('email', EXCLUDED_EMAILS)
+        .not('user_id', 'is', null);
+      
+      const excludedUserIds = excludedUsers?.map(u => u.user_id) || [];
+      console.log(`[Funnel] Excluding ${excludedUserIds.length} admin/sales users`);
+      
+      // ШАГ 2: Получить реальных студентов из tripwire_user_profile
+      let query = tripwireAdminSupabase
+        .from('tripwire_user_profile')
+        .select('user_id, modules_completed, total_modules');
+      
+      // Исключаем admin и sales менеджеров
+      if (excludedUserIds.length > 0) {
+        query = query.not('user_id', 'in', `(${excludedUserIds.join(',')})`);
+      }
+      
+      const { data: profiles, error } = await query;
+      
+      if (error) {
+        console.error('[Funnel] Express Real Students error:', error.message);
+        throw error;
+      }
+      
+      let filteredProfiles = profiles || [];
+      
+      // ШАГ 3: Фильтр по команде (если указан)
+      if (teamFilter) {
+        console.log(`[Funnel] Filtering Express students by team: ${teamFilter}`);
+        
+        // Получить emails студентов из tripwire_users
+        const userIds = filteredProfiles.map(p => p.user_id);
+        const { data: tripwireUsers } = await tripwireAdminSupabase
+          .from('tripwire_users')
+          .select('user_id, email')
+          .in('user_id', userIds);
+        
+        const emails = tripwireUsers?.map(u => u.email) || [];
+        
+        // Найти соответствующие ProfTest лиды по email
+        const allowedUtmSources = getUtmSourcesForTeam(teamFilter);
+        if (allowedUtmSources) {
+          const { data: teamLeads } = await landingSupabase
+            .from('landing_leads')
+            .select('email, utm_source, metadata')
+            .in('email', emails)
+            .like('source', 'proftest%');
+          
+          // Фильтровать по utm_source
+          const teamEmails = teamLeads?.filter(lead => {
+            const utmFromMetadata = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
+            const utmFromColumn = lead.utm_source;
+            const utmSource = utmFromColumn || utmFromMetadata;
+            return utmSource && allowedUtmSources.some(allowed => 
+              utmSource.toLowerCase().includes(allowed.toLowerCase())
+            );
+          }).map(l => l.email) || [];
+          
+          // Оставить только студентов из этой команды
+          const teamUserIds = tripwireUsers?.filter(u => teamEmails.includes(u.email)).map(u => u.user_id) || [];
+          filteredProfiles = filteredProfiles.filter(p => teamUserIds.includes(p.user_id));
+        }
+      }
+      
+      const express_students = filteredProfiles.length;
+      const express_revenue = express_students * 5000; // 5,000 KZT per student
+      const active_students = filteredProfiles.filter(p => 
+        p.modules_completed < p.total_modules
+      ).length;
+      const completed_students = filteredProfiles.filter(p => 
+        p.modules_completed >= p.total_modules
+      ).length;
+      
+      console.log(`[Funnel] ✅ Express Course REAL: ${express_students} students (${completed_students} completed, ${active_students} active), ${express_revenue} KZT`);
+      
+      return { 
+        express_students, 
+        express_revenue,
+        active_students,
+        completed_students
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getExpressCourseRealStudents failed:', error.message);
+      return { 
+        express_students: 0, 
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// STAGE 5: MAIN PRODUCT (Integrator Flagman - 490K KZT)
 // ════════════════════════════════════════════════════════════════════════
 async function getMainProductMetrics(teamFilter?: string): Promise<FunnelMetrics> {
   const cacheKey = `funnel:main:${teamFilter || 'all'}`;
@@ -311,11 +416,12 @@ export async function getFunnelMetrics(teamFilter?: string): Promise<FunnelRespo
   console.log('[Funnel Service] Team filter:', teamFilter || 'all teams');
 
   try {
-    // 🚀 Параллельная загрузка всех 4 этапов
-    const [facebook, proftest, express, main] = await Promise.all([
+    // 🚀 Параллельная загрузка всех 5 этапов
+    const [facebook, proftest, direct, expressReal, main] = await Promise.all([
       getFacebookAdsMetrics(teamFilter),
       getProfTestMetrics(teamFilter),
-      getExpressCourseMetrics(teamFilter),
+      getDirectLeadsMetrics(teamFilter),
+      getExpressCourseRealStudents(teamFilter),
       getMainProductMetrics(teamFilter)
     ]);
 
@@ -326,12 +432,16 @@ export async function getFunnelMetrics(teamFilter?: string): Promise<FunnelRespo
       ? ((proftest.proftest_leads! / facebook.impressions) * 100)
       : 0;
 
-    const conv_proftest_to_express = proftest.proftest_leads && proftest.proftest_leads > 0
-      ? ((express.express_purchases! / proftest.proftest_leads) * 100)
+    const conv_proftest_to_direct = proftest.proftest_leads && proftest.proftest_leads > 0
+      ? ((direct.direct_leads! / proftest.proftest_leads) * 100)
       : 0;
 
-    const conv_express_to_main = express.express_purchases && express.express_purchases > 0
-      ? ((main.main_purchases! / express.express_purchases) * 100)
+    const conv_direct_to_express = direct.direct_leads && direct.direct_leads > 0
+      ? ((expressReal.express_students! / direct.direct_leads) * 100)
+      : 0;
+
+    const conv_express_to_main = expressReal.express_students && expressReal.express_students > 0
+      ? ((main.main_purchases! / expressReal.express_students) * 100)
       : 0;
 
     const conv_overall = facebook.impressions && facebook.impressions > 0
@@ -341,14 +451,14 @@ export async function getFunnelMetrics(teamFilter?: string): Promise<FunnelRespo
     // ════════════════════════════════════════════════════════════════
     // CALCULATE ROI
     // ════════════════════════════════════════════════════════════════
-    const totalRevenue = (express.express_revenue || 0) + (main.main_revenue || 0);
+    const totalRevenue = (expressReal.express_revenue || 0) + (main.main_revenue || 0);
     const totalSpend = facebook.spend_kzt || 0;
     const roi = totalSpend > 0 
       ? ((totalRevenue - totalSpend) / totalSpend * 100) 
       : 0;
 
     // ════════════════════════════════════════════════════════════════
-    // BUILD STAGES
+    // BUILD STAGES (5 этапов)
     // ════════════════════════════════════════════════════════════════
     const stages: FunnelStage[] = [
       {
@@ -370,19 +480,31 @@ export async function getFunnelMetrics(teamFilter?: string): Promise<FunnelRespo
         status: conv_impressions_to_proftest > 1 ? 'success' : 'warning'
       },
       {
+        id: 'direct',
+        title: 'Напрямую с сайта',
+        emoji: '🌐',
+        description: 'Лиды без UTM (прямой трафик)',
+        metrics: direct,
+        conversionRate: parseFloat(conv_proftest_to_direct.toFixed(2)),
+        status: conv_proftest_to_direct > 10 ? 'success' : 'warning'
+      },
+      {
         id: 'express',
-        title: 'Express Course',
+        title: 'Express Course (5,000₸)',
         emoji: '📚',
-        description: 'Покупки экспресс-курса (5K KZT)',
-        metrics: express,
-        conversionRate: parseFloat(conv_proftest_to_express.toFixed(2)),
-        status: conv_proftest_to_express > 5 ? 'success' : 'warning'
+        description: 'Реальные студенты Tripwire',
+        metrics: {
+          ...expressReal,
+          express_purchases: expressReal.express_students // для обратной совместимости
+        },
+        conversionRate: parseFloat(conv_direct_to_express.toFixed(2)),
+        status: conv_direct_to_express > 20 ? 'success' : 'warning'
       },
       {
         id: 'main',
-        title: 'Integrator Flagman',
+        title: 'Integrator Flagman (490,000₸)',
         emoji: '🏆',
-        description: 'Покупки основного продукта (490K KZT)',
+        description: 'Покупки основного продукта',
         metrics: main,
         conversionRate: parseFloat(conv_express_to_main.toFixed(2)),
         status: conv_express_to_main > 2 ? 'success' : 'warning'
@@ -391,9 +513,10 @@ export async function getFunnelMetrics(teamFilter?: string): Promise<FunnelRespo
 
     const totalConversions = main.main_purchases || 0;
 
-    console.log(`[Funnel Service] ✅ Success: 4 stages`);
+    console.log(`[Funnel Service] ✅ Success: 5 stages (UPDATED)`);
     console.log(`[Funnel Service] 💰 Revenue: ${totalRevenue.toLocaleString()} KZT`);
-    console.log(`[Funnel Service] 🎯 Conversions: ${totalConversions}`);
+    console.log(`[Funnel Service] 🎯 Express Students: ${expressReal.express_students} (${expressReal.completed_students} completed)`);
+    console.log(`[Funnel Service] 🎯 Main Purchases: ${totalConversions}`);
     console.log(`[Funnel Service] 📊 ROI: ${roi.toFixed(2)}%`);
 
     return {
