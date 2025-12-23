@@ -317,78 +317,62 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
                 )}
               </button>
 
-              {/* 🚀 ПРОГРЕСС-БАР */}
+              {/* 🚀 ЛИНЕЙНЫЙ ПРОГРЕСС-БАР */}
               {loading && creationStatuses.length > 0 && (
-                <div className="space-y-4 pt-6 border-t-2 border-gray-800/50">
-                  <h3 className="text-sm font-['JetBrains_Mono'] text-[#9CA3AF] uppercase tracking-wider">
-                    📊 ПРОГРЕСС СОЗДАНИЯ
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {CHECKPOINTS.map((checkpoint, index) => {
-                      const status = creationStatuses.find(s => s.status === checkpoint.key);
-                      const isCompleted = status && !status.error;
-                      const isError = status?.error;
-                      const isCurrent = currentStep === checkpoint.key;
-                      const isPending = !status;
-
-                      return (
-                        <div
-                          key={checkpoint.key}
-                          className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all
-                            ${isCompleted ? 'bg-[#00FF94]/10 border-[#00FF94]/50' : ''}
-                            ${isError ? 'bg-red-500/10 border-red-500/50' : ''}
-                            ${isCurrent ? 'bg-yellow-500/10 border-yellow-500/50 animate-pulse' : ''}
-                            ${isPending ? 'bg-gray-900/50 border-gray-800' : ''}
-                          `}
-                        >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                            ${isCompleted ? 'bg-[#00FF94]/20 border-2 border-[#00FF94]' : ''}
-                            ${isError ? 'bg-red-500/20 border-2 border-red-500' : ''}
-                            ${isCurrent ? 'bg-yellow-500/20 border-2 border-yellow-500' : ''}
-                            ${isPending ? 'bg-gray-800 border-2 border-gray-700' : ''}
-                          `}>
-                            {isCompleted && <Check className="w-5 h-5 text-[#00FF94]" />}
-                            {isError && <AlertCircle className="w-5 h-5 text-red-500" />}
-                            {isCurrent && <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />}
-                            {isPending && <span className="text-gray-600 text-sm">{index + 1}</span>}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{checkpoint.icon}</span>
-                              <p className={`font-['JetBrains_Mono'] text-sm font-semibold
-                                ${isCompleted ? 'text-[#00FF94]' : ''}
-                                ${isError ? 'text-red-500' : ''}
-                                ${isCurrent ? 'text-yellow-500' : ''}
-                                ${isPending ? 'text-gray-600' : ''}
-                              `}>
-                                {checkpoint.label}
-                              </p>
-                            </div>
-                            
-                            {status && (
-                              <p className={`text-xs mt-1 font-['JetBrains_Mono']
-                                ${isError ? 'text-red-400' : 'text-gray-400'}
-                              `}>
-                                {status.error || status.message}
-                              </p>
-                            )}
-
-                            {/* Суб-статусы */}
-                            {creationStatuses
-                              .filter(s => s.status.startsWith(checkpoint.key + '_'))
-                              .map((subStatus, i) => (
-                                <p key={i} className="text-xs mt-1 text-gray-500 font-['JetBrains_Mono'] ml-2">
-                                  {subStatus.message}
-                                </p>
-                              ))
-                            }
-                          </div>
-                        </div>
-                      );
-                    })}
+                <div className="space-y-3 pt-4">
+                  {/* Прогресс-бар */}
+                  <div className="relative">
+                    {/* Background */}
+                    <div className="h-2 bg-gray-800/50 rounded-full overflow-hidden">
+                      {/* Progress fill */}
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#00FF94] to-[#00CC6A] transition-all duration-500 ease-out relative"
+                        style={{ 
+                          width: `${(CHECKPOINTS.findIndex(c => c.key === currentStep) + 1) * (100 / CHECKPOINTS.length)}%` 
+                        }}
+                      >
+                        {/* Glow effect */}
+                        <div className="absolute inset-0 bg-[#00FF94] blur-sm opacity-50"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Percentage */}
+                    <div className="absolute -top-6 right-0">
+                      <span className="text-[#00FF94] font-['JetBrains_Mono'] text-sm font-bold">
+                        {Math.round((CHECKPOINTS.findIndex(c => c.key === currentStep) + 1) * (100 / CHECKPOINTS.length))}%
+                      </span>
+                    </div>
                   </div>
+                  
+                  {/* Текущий статус */}
+                  <div className="flex items-center gap-3 px-4 py-3 bg-[#00FF94]/5 border border-[#00FF94]/20 rounded-lg">
+                    <Loader2 className="w-5 h-5 text-[#00FF94] animate-spin flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-['JetBrains_Mono'] text-[#00FF94] font-semibold">
+                        {CHECKPOINTS.find(c => c.key === currentStep)?.icon} {CHECKPOINTS.find(c => c.key === currentStep)?.label}
+                      </p>
+                      {creationStatuses.length > 0 && (
+                        <p className="text-xs text-gray-400 font-['JetBrains_Mono'] mt-0.5">
+                          {creationStatuses[creationStatuses.length - 1]?.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Ошибка (если есть) */}
+                  {creationStatuses.some(s => s.error) && (
+                    <div className="flex items-start gap-3 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-['JetBrains_Mono'] text-red-500 font-semibold">
+                          Ошибка создания
+                        </p>
+                        <p className="text-xs text-red-400 font-['JetBrains_Mono'] mt-1">
+                          {creationStatuses.find(s => s.error)?.error}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </form>
