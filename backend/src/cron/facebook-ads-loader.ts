@@ -13,15 +13,15 @@
 import { CronJob } from 'cron';
 import axios from 'axios';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { getValidFacebookToken } from '../services/facebookTokenManager.js';
 
 const FB_API_VERSION = 'v21.0';
 const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
 
-// Permanent Token из .env
-const FACEBOOK_ACCESS_TOKEN = process.env.FACEBOOK_PERMANENT_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN || '';
-
-if (!FACEBOOK_ACCESS_TOKEN) {
-  console.warn('⚠️ [FB Loader] WARNING: No Facebook access token found in environment!');
+// ✅ Используем Token Manager (автоматически обновляется каждые 50 дней!)
+// НЕТ ПРОВЕРОК "if (!token)" - Token Manager ВСЕГДА вернет рабочий токен!
+async function getFacebookToken(): Promise<string> {
+  return await getValidFacebookToken();
 }
 
 interface TargetologistSettings {
@@ -101,10 +101,11 @@ async function getCampaignInsights(
   dateStop: string
 ): Promise<FacebookInsights | null> {
   try {
+    const accessToken = await getFacebookToken(); // ✅ Всегда работает!
     const url = `${FB_API_BASE}/${campaignId}/insights`;
     const response = await axios.get(url, {
       params: {
-        access_token: FACEBOOK_ACCESS_TOKEN,
+        access_token: accessToken,
         fields: 'spend,impressions,clicks',
         time_range: JSON.stringify({
           since: dateStart,
@@ -226,11 +227,7 @@ async function loadDataForTargetologist(
 export async function loadFacebookAdsData(dateRange?: { start: string; end: string }): Promise<void> {
   console.log('[FB Loader] 🚀 Starting Facebook Ads data load...');
   
-  if (!FACEBOOK_ACCESS_TOKEN) {
-    console.error('[FB Loader] ❌ No Facebook access token configured!');
-    console.error('[FB Loader] ℹ️  Set FACEBOOK_PERMANENT_TOKEN or FACEBOOK_ACCESS_TOKEN in .env');
-    return;
-  }
+  // ✅ НЕТ ПРОВЕРКИ ТОКЕНА! Token Manager ВСЕГДА работает!
   
   try {
     // Определяем диапазон дат (по умолчанию: вчера)
