@@ -6,7 +6,7 @@ import express from 'express';
 import { loadFacebookAdsForDateRange, loadFacebookAdsData } from '../cron/facebook-ads-loader.js';
 import { authenticateJWT } from '../middleware/auth.js';
 
-const router = Router();
+const router = express.Router();
 
 /**
  * POST /api/facebook-ads/load
