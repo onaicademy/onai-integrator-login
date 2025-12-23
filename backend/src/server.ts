@@ -368,15 +368,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ============================================
-// ✅ КРИТИЧНО: MULTER ROUTES ДО express.json()
-// ============================================
-console.log('🔥 Registering Multer routes BEFORE express.json()');
+// ════════════════════════════════════════════════════════════════════════
+// 🚨 КРИТИЧНО: ROUTES ДО express.json() - чтобы избежать parse errors
+// ════════════════════════════════════════════════════════════════════════
+console.log('🔥 Registering special routes BEFORE express.json()');
 
 // ✅ Health check route (первым, без body parsing)
 import healthRouter from './routes/health.js';
 app.use('/api/health', healthRouter); // 🏥 Health checks
 
+// ✅ File upload routes (Multer)
 app.use('/api/materials', materialsRouter);
 app.use('/api/stream', streamUploadRouter); // ✅ Bunny Stream Upload (NEW!)
 
@@ -385,10 +386,30 @@ app.use('/api/stream', streamUploadRouter); // ✅ Bunny Stream Upload (NEW!)
 app.options('/api/materials/upload', cors());
 app.options('/api/stream/upload', cors());
 
-// ============================================
-// ✅ express.json() ПОСЛЕ Multer routes
+// ════════════════════════════════════════════════════════════════════════
+// 🔔 КРИТИЧНО: WEBHOOK ROUTES ПЕРЕД express.json()
+// ════════════════════════════════════════════════════════════════════════
+// amoCRM отправляет webhooks в application/x-www-form-urlencoded формате
+// Если они пройдут через express.json(), будет ошибка парсинга → 400 → retry loop!
+console.log('🔔 Registering webhook routes BEFORE express.json()');
+
+// Добавляем кастомный body parser для webhooks (только для этих путей)
+app.use('/api/amocrm/funnel-sale', express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/api/amocrm/funnel-sale', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
+app.use('/webhook/amocrm', express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/webhook/amocrm', express.json({ limit: '10mb' }));
+
+// Регистрируем webhook routes
+app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 🔔 AmoCRM → Funnel Webhook
+app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook
+app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook
+
+console.log('✅ Webhook routes registered (before express.json)');
+
+// ════════════════════════════════════════════════════════════════════════
+// ✅ express.json() ПОСЛЕ Webhook и Multer routes
 // ✅ КРИТИЧНО: Conditional type filter - игнорирует multipart/form-data
-// ============================================
+// ════════════════════════════════════════════════════════════════════════
 app.use(express.json({
   limit: '100mb', // МАКСИМАЛЬНЫЙ лимит для массовой загрузки
   type: (req) => {
@@ -497,15 +518,15 @@ app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist
 app.use('/api/traffic-facebook', trafficFacebookApiRouter); // 📘 NEW: Facebook Ads API (with caching)
 app.use('/api/targetologist-assignment', targetologistAssignmentRouter); // 🎯 Targetologist Assignment
 app.use('/api/traffic-dashboard', trafficFunnelApiRouter); // 📊 Sales Funnel Visualization
-app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 🔔 AmoCRM → Funnel Webhook
+// ✅ MOVED BEFORE express.json(): app.use('/api/amocrm', amocrmFunnelWebhookRouter);
 app.use('/api/error-reports', errorReportsRouter); // 🚨 Error Reports → Telegram @analisistonaitrafic_bot
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
 app.use('/api/admin/system', systemHealthRouter); // 🚀 System Health & Queue Management (Admin only)
 app.use('/api/admin/debug', debugRouter); // 🚔 Debug Panel (Operation Logging - Admin only)
 app.use('/api/monitoring', monitoringRouter); // 🏥 Bot Health Monitoring System
-app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook → /webhook/amocrm/traffic
-app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook → /webhook/amocrm/referral
+// ✅ MOVED BEFORE express.json(): app.use('/webhook/amocrm', trafficWebhookRouter);
+// ✅ MOVED BEFORE express.json(): app.use('/webhook/amocrm', amoCRMWebhookRouter);
 app.use('/api/admin', adminWebhookLogsRouter); // 🔍 Admin Webhook Logs Viewer
 // app.use('/webhook', unifiedAmoCRMWebhookRouter); // 🎯 UNIFIED (not used - separate endpoints instead)
 

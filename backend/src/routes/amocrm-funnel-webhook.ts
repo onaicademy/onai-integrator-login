@@ -20,9 +20,41 @@ import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const router = Router();
 
-// ✅ ВАЖНО: AmoCRM отправляет данные в формате application/x-www-form-urlencoded
-router.use(express.urlencoded({ extended: true }));
-router.use(express.json()); // На всякий случай поддерживаем и JSON
+// ════════════════════════════════════════════════════════════════════════
+// 🛡️ DEDUPLICATION CACHE - Prevents webhook retry loop
+// ════════════════════════════════════════════════════════════════════════
+const webhookCache = new Map<string, number>(); // Map<webhookId, timestamp>
+const DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+
+function cleanOldWebhooks() {
+  const now = Date.now();
+  for (const [key, timestamp] of webhookCache.entries()) {
+    if (now - timestamp > DEDUP_WINDOW_MS) {
+      webhookCache.delete(key);
+    }
+  }
+}
+
+// Clean old webhooks every minute
+setInterval(cleanOldWebhooks, 60000);
+
+function generateWebhookId(data: any): string {
+  // Generate idempotency key from webhook data
+  const leadIds = data?.leads?.status?.map((l: any) => l.id).join(',') || 'unknown';
+  const timestamp = Math.floor(Date.now() / (60 * 1000)); // Round to minute
+  return `${leadIds}_${timestamp}`;
+}
+
+function isDuplicate(webhookId: string): boolean {
+  const exists = webhookCache.has(webhookId);
+  if (!exists) {
+    webhookCache.set(webhookId, Date.now());
+  }
+  return exists;
+}
+
+// ✅ Body parsers уже настроены в server.ts ПЕРЕД этим роутером
+// НЕ нужно добавлять их здесь
 
 interface AmoCRMFunnelSale {
   leads: {
@@ -46,8 +78,13 @@ interface AmoCRMFunnelSale {
  * POST /api/amocrm/funnel-sale
  * 
  * Webhook для приема данных о продажах "Успешно реализована"
+ * 
+ * ⚠️ КРИТИЧНО: ВСЕГДА возвращаем 200 OK, даже при ошибках!
+ * Иначе amoCRM будет делать retry → создаст webhook loop → rate limit!
  */
 router.post('/funnel-sale', async (req: Request, res: Response) => {
+  const startTime = Date.now();
+  
   try {
     console.log('[AmoCRM Funnel Webhook] 📥 Received webhook');
     console.log('[AmoCRM Funnel Webhook] Content-Type:', req.headers['content-type']);
@@ -58,7 +95,17 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
     // AmoCRM может отправлять данные в разных форматах
     if (typeof req.body === 'string') {
       // Если пришла строка, парсим как JSON
-      data = JSON.parse(req.body);
+      try {
+        data = JSON.parse(req.body);
+      } catch (parseError) {
+        console.error('[AmoCRM Funnel Webhook] ❌ JSON parse error:', parseError);
+        // ⚠️ ВСЕГДА возвращаем 200 OK!
+        return res.status(200).json({
+          success: false,
+          error: 'JSON parse error',
+          message: 'Webhook received but data format is invalid. Returning 200 to prevent retry.',
+        });
+      }
     } else if (req.body.leads) {
       // Уже распарсенный объект
       data = req.body;
@@ -68,12 +115,36 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
       data = req.body;
     }
 
+    // ════════════════════════════════════════════════════════════════
+    // 🛡️ STEP 1: Check for duplicate webhook (idempotency)
+    // ════════════════════════════════════════════════════════════════
+    const webhookId = generateWebhookId(data);
+    
+    if (isDuplicate(webhookId)) {
+      const duration = Date.now() - startTime;
+      console.warn(`[AmoCRM Funnel Webhook] ⚠️ DUPLICATE webhook detected: ${webhookId} (${duration}ms)`);
+      console.warn('[AmoCRM Funnel Webhook] Returning 200 OK to prevent retry loop');
+      
+      // ⚠️ ВСЕГДА возвращаем 200 OK даже для дубликатов!
+      return res.status(200).json({
+        success: true,
+        message: 'Webhook already processed (duplicate)',
+        webhookId,
+        duration,
+      });
+    }
+    
+    console.log(`[AmoCRM Funnel Webhook] ✅ New webhook: ${webhookId}`);
+
     // Validate request
     if (!data.leads || !data.leads.status || data.leads.status.length === 0) {
-      console.warn('[AmoCRM Funnel Webhook] ❌ Invalid request body');
-      return res.status(400).json({
+      console.warn('[AmoCRM Funnel Webhook] ❌ Invalid request body (no leads)');
+      
+      // ⚠️ ВСЕГДА возвращаем 200 OK!
+      return res.status(200).json({
         success: false,
-        error: 'Invalid request body'
+        error: 'Invalid request body',
+        message: 'No leads found in webhook data. Returning 200 to prevent retry.',
       });
     }
 
@@ -132,18 +203,30 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
       }
     }
 
-    return res.json({
+    const duration = Date.now() - startTime;
+    
+    // ⚠️ ВСЕГДА возвращаем 200 OK!
+    return res.status(200).json({
       success: true,
       message: 'Funnel sale processed',
       leads_processed: data.leads.status.length,
-      leads_saved: savedCount
+      leads_saved: savedCount,
+      duration,
     });
 
   } catch (error: any) {
+    const duration = Date.now() - startTime;
+    
     console.error('[AmoCRM Funnel Webhook] ❌ Fatal error:', error);
-    return res.status(500).json({
+    console.error('[AmoCRM Funnel Webhook] Stack:', error.stack);
+    
+    // ⚠️ КРИТИЧНО: ВСЕГДА возвращаем 200 OK, даже при фатальных ошибках!
+    // Это предотвращает webhook retry loop
+    return res.status(200).json({
       success: false,
-      error: error.message
+      error: error.message,
+      message: 'Webhook received but processing failed. Returning 200 to prevent retry.',
+      duration,
     });
   }
 });
