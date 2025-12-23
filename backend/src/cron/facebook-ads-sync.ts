@@ -7,7 +7,7 @@
  * Запускается каждый час для обновления воронки
  */
 
-import { CronJob } from 'cron';
+import cron from 'node-cron';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { landingSupabase } from '../config/supabase-landing.js';
 
@@ -97,15 +97,26 @@ export async function syncFacebookAdsToLanding(): Promise<void> {
 /**
  * Cron job - запускается каждый час
  */
-export const facebookAdsSyncJob = new CronJob(
-  '0 * * * *', // Every hour at :00
-  async () => {
+export function startFacebookAdsSyncJob() {
+  // node-cron syntax: minute hour day month weekday  
+  // '0 * * * *' = every hour at :00
+  const job = cron.schedule('0 * * * *', async () => {
     console.log('[FB Sync] 🕒 Cron triggered');
     await syncFacebookAdsToLanding();
-  },
-  null, // onComplete
-  false, // start (будем запускать вручную)
-  'Europe/Moscow' // timezone
-);
+  }, {
+    scheduled: false, // не запускать автоматически
+    timezone: 'Europe/Moscow'
+  });
+  
+  return job;
+}
+
+export const facebookAdsSyncJob = {
+  start: () => {
+    const job = startFacebookAdsSyncJob();
+    job.start();
+    console.log('✅ [FB Sync] Cron job started (hourly)');
+  }
+};
 
 console.log('✅ [FB Sync] Cron job module loaded');

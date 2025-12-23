@@ -10,7 +10,7 @@
  * Запускается каждые 6 часов
  */
 
-import { CronJob } from 'cron';
+import cron from 'node-cron';
 import axios from 'axios';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { getValidFacebookToken } from '../services/facebookTokenManager.js';
@@ -276,16 +276,27 @@ export async function loadFacebookAdsData(dateRange?: { start: string; end: stri
 /**
  * Cron job - запускается каждые 6 часов
  */
-export const facebookAdsLoaderJob = new CronJob(
-  '0 */6 * * *', // Every 6 hours at :00
-  async () => {
+export function startFacebookAdsLoaderJob() {
+  // node-cron syntax: minute hour day month weekday
+  // '0 */6 * * *' = every 6 hours at :00
+  const job = cron.schedule('0 */6 * * *', async () => {
     console.log('[FB Loader] 🕒 Cron triggered');
     await loadFacebookAdsData();
-  },
-  null, // onComplete
-  false, // start (будем запускать вручную)
-  'Europe/Moscow' // timezone
-);
+  }, {
+    scheduled: false, // не запускать автоматически
+    timezone: 'Europe/Moscow'
+  });
+  
+  return job;
+}
+
+export const facebookAdsLoaderJob = {
+  start: () => {
+    const job = startFacebookAdsLoaderJob();
+    job.start();
+    console.log('✅ [FB Loader] Cron job started (every 6h)');
+  }
+};
 
 /**
  * API endpoint для ручного запуска с custom date range
