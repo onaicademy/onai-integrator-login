@@ -23,14 +23,14 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- 🚨 AGGRESSIVE CACHE CLEAR SCRIPT -->
+    <!-- 🔥 SMART CACHE CLEAR SCRIPT (Preserves User Data) -->
     <script>
     (function() {
-      const BUILD_ID = '20251223-1915-CRITICAL-FIX';
+      const BUILD_ID = '20251223-2035-FULL-DEPLOY';
       const STORED_BUILD = localStorage.getItem('app_build_id');
       
       if (STORED_BUILD !== BUILD_ID) {
-        console.log('🧹 [CACHE CLEAR] New build detected, clearing all caches...');
+        console.log('🧹 [CACHE CLEAR] New build detected:', BUILD_ID);
         
         // 1. Clear Service Workers
         if ('serviceWorker' in navigator) {
@@ -42,7 +42,7 @@
           });
         }
         
-        // 2. Clear Cache Storage
+        // 2. Clear Cache Storage API
         if ('caches' in window) {
           caches.keys().then(names => {
             names.forEach(name => {
@@ -52,21 +52,46 @@
           });
         }
         
-        // 3. Clear Storage
+        // 3. Clear ONLY Vite cache keys (preserve auth & settings)
         try {
+          const preserveKeys = [
+            'sb-arqhkacellqbhjhbebfh-auth-token',  // Main DB auth
+            'sb-pjmvxecykysfrzppdcto-auth-token',  // Tripwire DB auth
+            'sb-xikaiavwqinamgolmtcy-auth-token',  // Landing DB auth
+            'user_settings',
+            'dashboard_filters',
+            'traffic_utm_source',
+            'traffic_team_id'
+          ];
+          
+          // Save important data
+          const savedData = {};
+          preserveKeys.forEach(key => {
+            savedData[key] = localStorage.getItem(key);
+          });
+          
+          // Clear all localStorage
           localStorage.clear();
           sessionStorage.clear();
-          console.log('🗑️ Cleared LocalStorage & SessionStorage');
+          
+          // Restore important data
+          Object.entries(savedData).forEach(([key, value]) => {
+            if (value !== null) {
+              localStorage.setItem(key, value);
+            }
+          });
+          
+          console.log('🗑️ Cleared cache (preserved auth & settings)');
         } catch (e) {
           console.warn('Failed to clear storage:', e);
         }
         
-        // 4. Clear IndexedDB
+        // 4. Clear IndexedDB (Vite cache only)
         if ('indexedDB' in window) {
           try {
             indexedDB.databases().then(dbs => {
               dbs.forEach(db => {
-                if (db.name) {
+                if (db.name && db.name.includes('vite')) {
                   console.log('🗑️ Deleting IndexedDB:', db.name);
                   indexedDB.deleteDatabase(db.name);
                 }
