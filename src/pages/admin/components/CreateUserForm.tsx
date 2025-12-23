@@ -1,9 +1,27 @@
 import { useState, useEffect } from 'react';
 
-import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw } from 'lucide-react';
+import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw, AlertCircle, Check } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { api } from '@/utils/apiClient';
 import { tripwireSupabase } from '@/lib/supabase-tripwire';
+
+// 📊 Статусы создания пользователя
+interface CreationStatus {
+  status: string;
+  message: string;
+  error?: string;
+  data?: any;
+  timestamp: string;
+}
+
+// 🎯 Чекпоинты для отображения
+const CHECKPOINTS = [
+  { key: 'checking', label: 'Проверка email адреса', icon: '🔍' },
+  { key: 'creating_auth', label: 'Создание учетной записи', icon: '🔐' },
+  { key: 'creating_profile', label: 'Создание профиля в базе данных', icon: '📝' },
+  { key: 'sending_email', label: 'Отправка приглашения', icon: '📧' },
+  { key: 'completed', label: 'Завершено', icon: '🎉' },
+];
 
 interface CreateUserFormProps {
   onClose: () => void;
@@ -31,6 +49,10 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [generatedEmail, setGeneratedEmail] = useState('');
   
+  // 🚀 NEW: Прогресс-бар состояния
+  const [creationStatuses, setCreationStatuses] = useState<CreationStatus[]>([]);
+  const [currentStep, setCurrentStep] = useState('');
+  
   // 🔥 FIX: Автогенерация пароля при загрузке формы
   useEffect(() => {
     if (!password) {
@@ -44,6 +66,8 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
     e.preventDefault();
     setLoading(true);
     setError('');
+    setCreationStatuses([]);
+    setCurrentStep('');
 
     // ✅ FIX: Валидация перед отправкой
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
@@ -73,8 +97,9 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
         throw new Error('Не авторизован');
       }
 
+      // 🚀 Используем SSE endpoint для real-time статусов
       const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-      const response = await fetch(`${API_URL}/api/admin/tripwire/users`, {
+      const response = await fetch(`${API_URL}/api/admin/tripwire/users/create-with-progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,32 +108,77 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
         body: JSON.stringify({
           full_name: fullName,
           email: email,
-          password: password, // Отправляем пароль на backend
+          password: password,
+          currentUserId: session.user.id,
+          currentUserEmail: session.user.email,
+          currentUserName: fullName,
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка создания пользователя');
+        throw new Error('Ошибка соединения с сервером');
       }
 
-      // 🔥 FIX: Используем пароль из response, если есть, иначе показываем отправленный
-      const displayPassword = data.generated_password || password;
-      console.log('✅ [CREATE_USER] Response data:', data);
-      console.log('🔑 [CREATE_USER] Display password:', displayPassword);
-      
-      setGeneratedPassword(displayPassword);
-      setGeneratedEmail(data.email);
-      setSuccess(true);
-      onSuccess();
+      // 📡 Читаем SSE stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-      // Закрыть через 8 секунд
-      setTimeout(() => {
-        onClose();
-      }, 8000);
+      if (!reader) {
+        throw new Error('Не удалось установить соединение');
+      }
+
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Обрабатываем каждую строку SSE
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonData = line.substring(6);
+            try {
+              const status: CreationStatus = JSON.parse(jsonData);
+              
+              console.log('📊 [SSE]', status);
+              
+              setCreationStatuses(prev => [...prev, status]);
+              setCurrentStep(status.status);
+
+              // Если error - показываем
+              if (status.status === 'error') {
+                setError(status.error || status.message);
+                setLoading(false);
+                return;
+              }
+
+              // Если completed - показываем success
+              if (status.status === 'completed') {
+                setGeneratedPassword(password);
+                setGeneratedEmail(email);
+                setSuccess(true);
+                onSuccess();
+
+                // Закрыть через 8 секунд
+                setTimeout(() => {
+                  onClose();
+                }, 8000);
+              }
+            } catch (parseError) {
+              console.error('Failed to parse SSE data:', parseError);
+            }
+          }
+        }
+      }
     } catch (err: any) {
-      setError(err.message);
+      console.error('❌ Creation error:', err);
+      setError(err.message || 'Произошла неизвестная ошибка');
     } finally {
       setLoading(false);
     }
@@ -246,6 +316,81 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
                   <span>СОЗДАТЬ АККАУНТ</span>
                 )}
               </button>
+
+              {/* 🚀 ПРОГРЕСС-БАР */}
+              {loading && creationStatuses.length > 0 && (
+                <div className="space-y-4 pt-6 border-t-2 border-gray-800/50">
+                  <h3 className="text-sm font-['JetBrains_Mono'] text-[#9CA3AF] uppercase tracking-wider">
+                    📊 ПРОГРЕСС СОЗДАНИЯ
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {CHECKPOINTS.map((checkpoint, index) => {
+                      const status = creationStatuses.find(s => s.status === checkpoint.key);
+                      const isCompleted = status && !status.error;
+                      const isError = status?.error;
+                      const isCurrent = currentStep === checkpoint.key;
+                      const isPending = !status;
+
+                      return (
+                        <div
+                          key={checkpoint.key}
+                          className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all
+                            ${isCompleted ? 'bg-[#00FF94]/10 border-[#00FF94]/50' : ''}
+                            ${isError ? 'bg-red-500/10 border-red-500/50' : ''}
+                            ${isCurrent ? 'bg-yellow-500/10 border-yellow-500/50 animate-pulse' : ''}
+                            ${isPending ? 'bg-gray-900/50 border-gray-800' : ''}
+                          `}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                            ${isCompleted ? 'bg-[#00FF94]/20 border-2 border-[#00FF94]' : ''}
+                            ${isError ? 'bg-red-500/20 border-2 border-red-500' : ''}
+                            ${isCurrent ? 'bg-yellow-500/20 border-2 border-yellow-500' : ''}
+                            ${isPending ? 'bg-gray-800 border-2 border-gray-700' : ''}
+                          `}>
+                            {isCompleted && <Check className="w-5 h-5 text-[#00FF94]" />}
+                            {isError && <AlertCircle className="w-5 h-5 text-red-500" />}
+                            {isCurrent && <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />}
+                            {isPending && <span className="text-gray-600 text-sm">{index + 1}</span>}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{checkpoint.icon}</span>
+                              <p className={`font-['JetBrains_Mono'] text-sm font-semibold
+                                ${isCompleted ? 'text-[#00FF94]' : ''}
+                                ${isError ? 'text-red-500' : ''}
+                                ${isCurrent ? 'text-yellow-500' : ''}
+                                ${isPending ? 'text-gray-600' : ''}
+                              `}>
+                                {checkpoint.label}
+                              </p>
+                            </div>
+                            
+                            {status && (
+                              <p className={`text-xs mt-1 font-['JetBrains_Mono']
+                                ${isError ? 'text-red-400' : 'text-gray-400'}
+                              `}>
+                                {status.error || status.message}
+                              </p>
+                            )}
+
+                            {/* Суб-статусы */}
+                            {creationStatuses
+                              .filter(s => s.status.startsWith(checkpoint.key + '_'))
+                              .map((subStatus, i) => (
+                                <p key={i} className="text-xs mt-1 text-gray-500 font-['JetBrains_Mono'] ml-2">
+                                  {subStatus.message}
+                                </p>
+                              ))
+                            }
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </form>
           ) : (
             // Success State

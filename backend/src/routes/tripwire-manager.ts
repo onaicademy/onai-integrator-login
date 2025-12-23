@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateJWT, requireSalesOrAdmin } from '../middleware/auth';
 import * as tripwireManagerController from '../controllers/tripwireManagerController';
+import createWithProgressRouter from './admin-tripwire-create-with-progress';
 
 const router = express.Router();
 
@@ -13,6 +14,9 @@ const router = express.Router();
 
 // POST /api/admin/tripwire/users - Создать пользователя
 router.post('/users', authenticateJWT, requireSalesOrAdmin, tripwireManagerController.createTripwireUser);
+
+// 🚀 POST /api/admin/tripwire/users/create-with-progress - Создать пользователя с прогресс-баром (SSE)
+router.use(createWithProgressRouter);
 
 // GET /api/admin/tripwire/users - Получить список пользователей
 router.get('/users', authenticateJWT, requireSalesOrAdmin, tripwireManagerController.getTripwireUsers);
