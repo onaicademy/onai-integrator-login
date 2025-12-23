@@ -344,27 +344,25 @@ export default function ProfTest() {
     };
   }, [showResults]);
 
-  // Phone Input Masking
+  // Phone Input - Universal (accepts any country code)
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-    let output = '';
-
-    if (value.length > 0) {
-      const firstChar = value[0];
-      if (firstChar === '7' || firstChar === '8' || firstChar === '9') {
-        output = '+7';
-        if (value.length > 1) output += ' (' + value.substring(1, 4);
-        if (value.length > 4) output += ') ' + value.substring(4, 7);
-        if (value.length > 7) output += '-' + value.substring(7, 9);
-        if (value.length > 9) output += '-' + value.substring(9, 11);
-      } else {
-        output = '+' + value.substring(0, 15);
-      }
-    } else {
-      output = '+';
+    let value = e.target.value;
+    
+    // Allow only + and digits
+    value = value.replace(/[^\d+]/g, '');
+    
+    // Ensure only one + at the start
+    if (value.includes('+')) {
+      const parts = value.split('+');
+      value = '+' + parts.join('').replace(/\D/g, '');
+    }
+    
+    // Limit to 20 characters (enough for any international number)
+    if (value.length > 20) {
+      value = value.substring(0, 20);
     }
 
-    setFormData(prev => ({ ...prev, phone: output }));
+    setFormData(prev => ({ ...prev, phone: value }));
   };
 
   const handleSelectOption = (index: number) => {
@@ -406,10 +404,10 @@ export default function ProfTest() {
       return;
     }
 
-    // ✅ Проверка телефона (минимум 11 цифр для +7)
+    // ✅ Проверка телефона (минимум 10 цифр для международных номеров)
     const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length < 11) {
-      setSubmitError('❌ Введите корректный номер телефона');
+    if (phoneDigits.length < 10) {
+      setSubmitError('❌ Введите корректный номер телефона (минимум 10 цифр)');
       return;
     }
 
@@ -820,7 +818,7 @@ export default function ProfTest() {
                 />
                 <input
                   type="tel"
-                  placeholder="+7 (___) ___-__-__"
+                  placeholder="+7 (777) 123-45-67"
                   value={formData.phone}
                   onChange={handlePhoneChange}
                   onFocus={(e) => { if (!e.target.value) setFormData(prev => ({ ...prev, phone: '+' })); }}
