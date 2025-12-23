@@ -12,9 +12,12 @@ import { getFunnelMetrics, getFunnelStageDetails } from '../services/funnel-serv
 const router = Router();
 
 /**
- * GET /api/traffic-dashboard/funnel
+ * GET /api/traffic-dashboard/funnel?team=kenesary
  * 
  * Получить полную воронку продаж со всеми этапами
+ * 
+ * Query params:
+ * - team (optional): Фильтр по таргетологу (kenesary, traf4, arystan, muha)
  * 
  * Response:
  * {
@@ -23,14 +26,18 @@ const router = Router();
  *   "totalRevenue": 73950000,
  *   "totalConversions": 142,
  *   "overallConversionRate": 11.5,
+ *   "roi": 456.78,
  *   "timestamp": "2025-12-22T..."
  * }
  */
 router.get('/funnel', async (req: Request, res: Response) => {
   try {
+    const teamFilter = req.query.team as string | undefined;
+    
     console.log('[Funnel API] GET /funnel - fetching all stages');
+    console.log('[Funnel API] Team filter:', teamFilter || 'all teams');
 
-    const result = await getFunnelMetrics();
+    const result = await getFunnelMetrics(teamFilter);
 
     return res.json(result);
 
@@ -43,6 +50,7 @@ router.get('/funnel', async (req: Request, res: Response) => {
       totalRevenue: 0,
       totalConversions: 0,
       overallConversionRate: 0,
+      roi: 0,
       timestamp: new Date().toISOString()
     });
   }
@@ -65,11 +73,13 @@ router.get('/funnel', async (req: Request, res: Response) => {
 router.get('/funnel/:stageId', async (req: Request, res: Response) => {
   try {
     const { stageId } = req.params;
+    const teamFilter = req.query.team as string | undefined;
 
     console.log(`[Funnel API] GET /funnel/${stageId} - fetching stage details`);
+    console.log('[Funnel API] Team filter:', teamFilter || 'all teams');
 
     // Validate stageId
-    const validStages = ['proftest', 'express', 'payment', 'tripwire', 'main'];
+    const validStages = ['spend', 'proftest', 'express', 'main']; // Updated stages
     if (!validStages.includes(stageId)) {
       return res.status(400).json({
         success: false,
@@ -78,7 +88,7 @@ router.get('/funnel/:stageId', async (req: Request, res: Response) => {
       });
     }
 
-    const stage = await getFunnelStageDetails(stageId);
+    const stage = await getFunnelStageDetails(stageId, teamFilter);
 
     if (!stage) {
       return res.status(404).json({

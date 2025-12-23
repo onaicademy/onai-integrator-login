@@ -20,3 +20,4 @@ COMMENT ON COLUMN tripwire_users.onboarding_completed_at IS 'Дата и вре�
 
 
 
+

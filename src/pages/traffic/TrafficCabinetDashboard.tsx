@@ -98,21 +98,25 @@ export default function TrafficCabinetDashboard() {
       </div>
       
       {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* CONVERSION FUNNEL - ВОРОНКА ПРОДАЖ */}
+      {/* MAIN CONTENT: 2-COLUMN LAYOUT */}
       {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="mb-8">
-        <ConversionFunnel />
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* LEFT COLUMN: CONVERSION FUNNEL (COMPACT) */}
+        <div className="lg:col-span-4">
+          <ConversionFunnel 
+            compact={true} 
+            teamFilter={showOnlyMyTeam ? teamName?.toLowerCase() : undefined}
+          />
+        </div>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* ORIGINAL TRAFFIC DASHBOARD */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <div>
-        <TrafficCommandDashboard 
-          filterTeam={showOnlyMyTeam ? teamName : null}
-          currentUserTeam={teamName}
-          language={language}
-        />
+        {/* RIGHT COLUMN: TRAFFIC DASHBOARD */}
+        <div className="lg:col-span-8">
+          <TrafficCommandDashboard 
+            filterTeam={showOnlyMyTeam ? teamName : null}
+            currentUserTeam={teamName}
+            language={language}
+          />
+        </div>
       </div>
       
       {/* Security Footer - Simple */}

@@ -56,7 +56,12 @@ interface FunnelData {
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════
 
-export default function ConversionFunnel() {
+interface ConversionFunnelProps {
+  compact?: boolean; // Compact mode for sidebar layout
+  teamFilter?: string; // Filter by team (kenesary, traf4, etc)
+}
+
+export default function ConversionFunnel({ compact = false, teamFilter }: ConversionFunnelProps) {
   const [data, setData] = useState<FunnelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +73,7 @@ export default function ConversionFunnel() {
 
   useEffect(() => {
     fetchFunnelData();
-  }, []);
+  }, [teamFilter]); // Re-fetch when teamFilter changes
 
   const fetchFunnelData = async () => {
     try {
@@ -76,7 +81,13 @@ export default function ConversionFunnel() {
       setError(null);
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await axios.get(`${apiUrl}/api/traffic-dashboard/funnel`);
+      const url = teamFilter 
+        ? `${apiUrl}/api/traffic-dashboard/funnel?team=${teamFilter}`
+        : `${apiUrl}/api/traffic-dashboard/funnel`;
+      
+      console.log('[ConversionFunnel] Fetching from:', url);
+      
+      const response = await axios.get(url);
 
       if (response.data.success) {
         setData(response.data);
@@ -169,47 +180,67 @@ export default function ConversionFunnel() {
   // ═══════════════════════════════════════════════════════════════
 
   return (
-    <div className="space-y-6">
+    <div className={compact ? "space-y-4" : "space-y-6"}>
       {/* ═══════════════════════════════════════════════════════════════ */}
       {/* HEADER: TOTAL STATS */}
       {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-          <Target className="w-6 h-6 text-[#00FF88]" />
-          Воронка Продаж ONAI Academy
+      <div className={`bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 ${compact ? 'p-4' : 'p-6'}`}>
+        <h2 className={`${compact ? 'text-lg' : 'text-2xl'} font-bold text-white ${compact ? 'mb-3' : 'mb-4'} flex items-center gap-2`}>
+          <Target className={`${compact ? 'w-5 h-5' : 'w-6 h-6'} text-[#00FF88]`} />
+          {compact ? 'Воронка' : 'Воронка Продаж ONAI Academy'}
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-5 h-5 text-green-400" />
-              <span className="text-white/60 text-sm">Общая выручка</span>
+        {!compact && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white/5 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-5 h-5 text-green-400" />
+                <span className="text-white/60 text-sm">Общая выручка</span>
+              </div>
+              <p className="text-2xl font-bold text-green-400">{formatCurrency(data.totalRevenue)}</p>
             </div>
-            <p className="text-2xl font-bold text-green-400">{formatCurrency(data.totalRevenue)}</p>
-          </div>
 
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="w-5 h-5 text-blue-400" />
-              <span className="text-white/60 text-sm">Всего конверсий</span>
+            <div className="bg-white/5 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                <span className="text-white/60 text-sm">Всего конверсий</span>
+              </div>
+              <p className="text-2xl font-bold text-blue-400">{formatNumber(data.totalConversions)}</p>
             </div>
-            <p className="text-2xl font-bold text-blue-400">{formatNumber(data.totalConversions)}</p>
-          </div>
 
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5 text-[#00FF88]" />
-              <span className="text-white/60 text-sm">Общая конверсия</span>
+            <div className="bg-white/5 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-[#00FF88]" />
+                <span className="text-white/60 text-sm">Общая конверсия</span>
+              </div>
+              <p className="text-2xl font-bold text-[#00FF88]">{data.overallConversionRate.toFixed(1)}%</p>
             </div>
-            <p className="text-2xl font-bold text-[#00FF88]">{data.overallConversionRate.toFixed(1)}%</p>
           </div>
-        </div>
+        )}
+        
+        {/* Compact summary */}
+        {compact && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Выручка:</span>
+              <span className="font-bold text-green-400">{formatCurrency(data.totalRevenue)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Конверсий:</span>
+              <span className="font-bold text-blue-400">{formatNumber(data.totalConversions)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Конверсия:</span>
+              <span className="font-bold text-[#00FF88]">{data.overallConversionRate.toFixed(1)}%</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════ */}
       {/* FUNNEL STAGES (RESPONSIVE) */}
       {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="space-y-4">
+      <div className={compact ? "space-y-2" : "space-y-4"}>
         {data.stages.map((stage, index) => (
           <div key={stage.id}>
             {/* Stage Card */}
@@ -219,38 +250,42 @@ export default function ConversionFunnel() {
                 ${getStatusColor(stage.status)}
                 hover:bg-white/10 cursor-pointer
               `}
-              onClick={() => toggleExpand(stage.id)}
+              onClick={() => !compact && toggleExpand(stage.id)}
             >
               {/* Main Content */}
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className={compact ? "p-3" : "p-6"}>
+                <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-4'}`}>
                   {/* Left: Title & Emoji */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{stage.emoji}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={compact ? "text-2xl" : "text-4xl"}>{stage.emoji}</span>
                     <div>
-                      <h3 className="text-xl font-bold text-white">{stage.title}</h3>
-                      {stage.description && (
+                      <h3 className={`${compact ? 'text-sm' : 'text-xl'} font-bold text-white`}>
+                        {compact ? stage.title.split(' ')[0] : stage.title}
+                      </h3>
+                      {!compact && stage.description && (
                         <p className="text-sm text-white/60">{stage.description}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Right: Conversion Rate */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <div className="text-right">
-                      <p className="text-3xl font-bold text-white">{stage.conversionRate.toFixed(1)}%</p>
-                      <p className="text-sm text-white/60">конверсия</p>
+                      <p className={`${compact ? 'text-lg' : 'text-3xl'} font-bold text-white`}>
+                        {stage.conversionRate.toFixed(1)}%
+                      </p>
+                      {!compact && <p className="text-sm text-white/60">конверсия</p>}
                     </div>
-                    {expandedStage === stage.id ? (
+                    {!compact && (expandedStage === stage.id ? (
                       <ChevronUp className="w-5 h-5 text-white/60" />
                     ) : (
                       <ChevronDown className="w-5 h-5 text-white/60" />
-                    )}
+                    ))}
                   </div>
                 </div>
 
                 {/* Metrics Grid (Compact - always visible) */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {!compact && <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {/* Metric 1 */}
                   {stage.metrics.visitors !== undefined && (
                     <div className="bg-white/5 rounded-lg p-3">
@@ -336,10 +371,10 @@ export default function ConversionFunnel() {
                       <p className="text-lg font-bold text-white">{formatCurrency(stage.metrics.avgValue)}</p>
                     </div>
                   )}
-                </div>
+                </div>}
 
                 {/* Churn Risk Warning */}
-                {stage.churnRisk !== undefined && stage.churnRisk > 10 && (
+                {!compact && stage.churnRisk !== undefined && stage.churnRisk > 10 && (
                   <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-yellow-400" />
                     <p className="text-sm text-yellow-400">
@@ -350,7 +385,7 @@ export default function ConversionFunnel() {
               </div>
 
               {/* Expanded Details */}
-              {expandedStage === stage.id && (
+              {!compact && expandedStage === stage.id && (
                 <div className="border-t border-white/10 p-6 bg-white/5">
                   <h4 className="text-lg font-semibold text-white mb-4">Детальная статистика</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -374,7 +409,7 @@ export default function ConversionFunnel() {
             </div>
 
             {/* Arrow Down (except for last stage) */}
-            {index < data.stages.length - 1 && (
+            {!compact && index < data.stages.length - 1 && (
               <div className="flex justify-center py-2">
                 <ChevronDown className="w-6 h-6 text-white/40" />
               </div>
@@ -386,9 +421,11 @@ export default function ConversionFunnel() {
       {/* ═══════════════════════════════════════════════════════════════ */}
       {/* FOOTER: TIMESTAMP */}
       {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="text-center text-white/40 text-sm">
-        Последнее обновление: {new Date(data.timestamp).toLocaleString('ru-RU')}
-      </div>
+      {!compact && (
+        <div className="text-center text-white/40 text-sm">
+          Последнее обновление: {new Date(data.timestamp).toLocaleString('ru-RU')}
+        </div>
+      )}
     </div>
   );
 }

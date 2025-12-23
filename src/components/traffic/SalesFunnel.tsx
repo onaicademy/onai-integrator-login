@@ -85,8 +85,8 @@ export const SalesFunnel = ({ data }: SalesFunnelProps) => {
       conversionRate: expressRate,
     },
     {
-      label: 'Main Course',
-      sublabel: 'Основной',
+      label: 'Integrator Flagman',
+      sublabel: 'Основной продукт',
       value: data.mainSales,
       money: data.revenue_main || 0,
       moneyLabel: 'Заработано',

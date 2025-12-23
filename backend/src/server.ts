@@ -147,7 +147,8 @@ import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targ
 import trafficFacebookApiRouter from './routes/traffic-facebook-api.js'; // 📘 NEW: Facebook Ads API (with caching)
 import targetologistAssignmentRouter from './routes/targetologist-assignment.js'; // 🎯 Targetologist Assignment (manual + auto)
 import trafficFunnelApiRouter from './routes/traffic-funnel-api.js'; // 📊 Sales Funnel Visualization
-import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 🔔 AmoCRM → Funnel Webhook
+import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 🔔 AmoCRM → Express Course Webhook
+import amocrmMainProductWebhookRouter from './routes/amocrm-main-product-webhook.js'; // 🏆 AmoCRM → Main Product Webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
@@ -400,11 +401,14 @@ app.use('/webhook/amocrm', express.urlencoded({ extended: true, limit: '10mb' })
 app.use('/webhook/amocrm', express.json({ limit: '10mb' }));
 
 // Регистрируем webhook routes
-app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 🔔 AmoCRM → Funnel Webhook
-app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook
+app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 📚 AmoCRM → Express Course Webhook (5K KZT)
+app.use('/webhook/amocrm', amocrmMainProductWebhookRouter); // 🏆 AmoCRM → Main Product Webhook (490K KZT)
+app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook (legacy)
 app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook
 
 console.log('✅ Webhook routes registered (before express.json)');
+console.log('   📚 Express Course: POST /api/amocrm/funnel-sale');
+console.log('   🏆 Main Product: POST /webhook/amocrm/traffic');
 
 // ════════════════════════════════════════════════════════════════════════
 // ✅ express.json() ПОСЛЕ Webhook и Multer routes
@@ -683,6 +687,17 @@ const server = app.listen(PORT, () => {
         console.log('✅ Token auto-refresh (FB + AmoCRM) initialized');
       } catch (error) {
         console.error('❌ Ошибка инициализации Token auto-refresh:', error);
+      }
+
+      // 7.5. Start Facebook Ads Sync Cron (только production)
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          const { facebookAdsSyncJob } = await import('./cron/facebook-ads-sync.js');
+          facebookAdsSyncJob.start();
+          console.log('✅ Facebook Ads sync cron started (hourly sync Traffic DB → Landing DB)');
+        } catch (error: any) {
+          console.error('❌ Failed to start Facebook Ads sync:', error.message);
+        }
       }
 
       // 8. Start IAE Agent schedulers and bot

@@ -1,38 +1,66 @@
 /**
- * Funnel Service - ONAI Academy Sales Funnel (Landing DB Only)
+ * ════════════════════════════════════════════════════════════════════════
+ * 📊 FUNNEL SERVICE - ONAI ACADEMY SALES FUNNEL (4 STAGES)
+ * ════════════════════════════════════════════════════════════════════════
  * 
- * Воронка продаж (3 этапа):
- * 1. ProfTest (🧪) - тестирование профессии
- * 2. ExpressCourse Landing (📚) - просмотр оффера
- * 3. Payment (💳) - оплата экспресс-курса 5K
+ * Воронка продаж (4 этапа):
+ * 1. 💰 Затраты (Facebook Ads) - spent USD/KZT
+ * 2. 🧪 ProfTest - лиды с профтеста
+ * 3. 📚 Express Course - покупки экспресс-курса (5K KZT)
+ * 4. 🏆 Integrator Flagman - покупки основного продукта (490K KZT)
  * 
- * Production-ready: кэширование, error handling, query optimization
+ * Features:
+ * - Фильтрация по командам (team filter)
+ * - Реальные данные из БД (Landing DB, Traffic DB)
+ * - Кэширование (5 мин TTL)
+ * - ROI с учётом обеих продаж
  */
 
 import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { getCachedOrFresh } from './cache-service.js';
 
 // Date filter: last 30 days
-const THIRTY_DAYS_AGO = new Date();
-THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
+function getThirtyDaysAgo(): string {
+  const date = new Date();
+  date.setDate(date.getDate() - 30);
+  return date.toISOString();
+}
+
+// Exchange rate (simplified - можно подтянуть из exchange_rates таблицы)
+const USD_TO_KZT = 475;
+
+// ════════════════════════════════════════════════════════════════════════
+// TYPES
+// ════════════════════════════════════════════════════════════════════════
 
 export interface FunnelMetrics {
-  visitors?: number;
-  passed?: number;
-  views?: number;
-  purchases?: number;
-  revenue?: number;
-  avgValue?: number;
+  // Stage 1: Затраты
+  spend_usd?: number;
+  spend_kzt?: number;
+  impressions?: number;
+  clicks?: number;
+  
+  // Stage 2: ProfTest
+  proftest_leads?: number;
+  
+  // Stage 3: Express Course
+  express_purchases?: number;
+  express_revenue?: number;
+  
+  // Stage 4: Main Product (Integrator Flagman)
+  main_purchases?: number;
+  main_revenue?: number;
 }
 
 export interface FunnelStage {
   id: string;
   title: string;
   emoji: string;
+  description: string;
   metrics: FunnelMetrics;
   conversionRate: number;
   status: 'success' | 'warning' | 'danger' | 'neutral';
-  description?: string;
 }
 
 export interface FunnelResponse {
@@ -41,205 +69,312 @@ export interface FunnelResponse {
   totalRevenue: number;
   totalConversions: number;
   overallConversionRate: number;
+  roi: number; // ROI %
   timestamp: string;
 }
 
-/**
- * STAGE 1: ProfTest Metrics
- * Источник: landing_leads WHERE source LIKE 'proftest%'
- */
-async function getProfTestMetrics(): Promise<FunnelMetrics> {
-  return getCachedOrFresh('funnel:proftest', async () => {
+// ════════════════════════════════════════════════════════════════════════
+// STAGE 1: FACEBOOK ADS (Затраты)
+// ════════════════════════════════════════════════════════════════════════
+async function getFacebookAdsMetrics(teamFilter?: string): Promise<FunnelMetrics> {
+  const cacheKey = `funnel:facebook:${teamFilter || 'all'}`;
+  
+  return getCachedOrFresh(cacheKey, async () => {
     try {
-      console.log('[Funnel] Fetching ProfTest metrics from Landing DB...');
+      console.log('[Funnel] Fetching Facebook Ads metrics from Traffic DB...');
+      console.log('[Funnel] Team filter:', teamFilter || 'all teams');
       
-      const { data, error } = await landingSupabase
+      let query = trafficAdminSupabase
+        .from('traffic_stats')
+        .select('spend, impressions, clicks')
+        .gte('created_at', getThirtyDaysAgo());
+      
+      // Применяем фильтр по команде если передан
+      if (teamFilter) {
+        query = query.eq('team_id', teamFilter);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('[Funnel] Facebook Ads error:', error.message);
+        throw error;
+      }
+      
+      const spend_usd = data?.reduce((sum, row) => sum + (row.spend || 0), 0) || 0;
+      const impressions = data?.reduce((sum, row) => sum + (row.impressions || 0), 0) || 0;
+      const clicks = data?.reduce((sum, row) => sum + (row.clicks || 0), 0) || 0;
+      const spend_kzt = spend_usd * USD_TO_KZT;
+      
+      console.log(`[Funnel] ✅ Facebook Ads: $${spend_usd} USD (${spend_kzt} KZT), ${impressions} impressions`);
+      
+      return {
+        spend_usd,
+        spend_kzt,
+        impressions,
+        clicks
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getFacebookAdsMetrics failed:', error.message);
+      return { spend_usd: 0, spend_kzt: 0, impressions: 0, clicks: 0 };
+    }
+  }, 300); // 5 min cache
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// STAGE 2: PROFTEST (Лиды)
+// ════════════════════════════════════════════════════════════════════════
+async function getProfTestMetrics(teamFilter?: string): Promise<FunnelMetrics> {
+  const cacheKey = `funnel:proftest:${teamFilter || 'all'}`;
+  
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching ProfTest metrics from Landing DB (landing_leads table)...');
+      
+      // PRODUCTION: Используем СУЩЕСТВУЮЩУЮ таблицу landing_leads (692 записи!)
+      let query = landingSupabase
         .from('landing_leads')
-        .select('id, created_at')
-        .like('source', 'proftest%') // source = 'proftest_arystan', 'proftest_aruzhan', etc
-        .gte('created_at', THIRTY_DAYS_AGO.toISOString())
-        .limit(10000)
-        .order('created_at', { ascending: false });
+        .select('id, source, metadata')
+        .like('source', 'proftest%');
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error('[Funnel] ProfTest error:', error.message);
         throw error;
       }
       
-      const visitors = data?.length || 0;
+      // Фильтр по utm_source из metadata (JSON поле)
+      let filteredData = data || [];
+      if (teamFilter) {
+        filteredData = filteredData.filter(lead => {
+          const utmSource = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
+          return utmSource?.toLowerCase() === teamFilter.toLowerCase();
+        });
+      }
       
-      console.log(`[Funnel] ✅ ProfTest: ${visitors} visitors`);
+      const proftest_leads = filteredData.length;
       
-      return {
-        visitors: visitors,
-        passed: visitors // все кто посетил = прошли тест
-      };
+      console.log(`[Funnel] ✅ ProfTest: ${proftest_leads} leads (total: ${data?.length}, filtered: ${teamFilter || 'all'})`);
+      
+      return { proftest_leads };
     } catch (error: any) {
       console.error('[Funnel] getProfTestMetrics failed:', error.message);
-      // Fallback: return zero metrics on error
-      return { visitors: 0, passed: 0 };
+      return { proftest_leads: 0 };
     }
-  }, 300); // TTL 5 мин
+  }, 300);
 }
 
-/**
- * STAGE 2: Express Course Landing Metrics
- * Источник: landing_leads WHERE email_sent=true (получили оффер)
- */
-async function getExpressCourseMetrics(): Promise<FunnelMetrics> {
-  return getCachedOrFresh('funnel:express', async () => {
+// ════════════════════════════════════════════════════════════════════════
+// STAGE 3: EXPRESS COURSE (Покупки 5K KZT)
+// ════════════════════════════════════════════════════════════════════════
+async function getExpressCourseMetrics(teamFilter?: string): Promise<FunnelMetrics> {
+  const cacheKey = `funnel:express:${teamFilter || 'all'}`;
+  
+  return getCachedOrFresh(cacheKey, async () => {
     try {
       console.log('[Funnel] Fetching Express Course metrics from Landing DB...');
+      console.log('[Funnel] PRODUCTION: Reading from landing_leads table (source=expresscourse)');
       
-      const { data, error } = await landingSupabase
+      // PRODUCTION: express_course_sales НЕ СУЩЕСТВУЕТ!
+      // Читаем покупателей Express из landing_leads где source='expresscourse'
+      let query = landingSupabase
         .from('landing_leads')
-        .select('id')
-        .eq('email_sent', true) // Получили email с оффером = посмотрели лендинг
-        .gte('created_at', THIRTY_DAYS_AGO.toISOString())
-        .limit(10000);
+        .select('id, metadata, created_at, source')
+        .eq('source', 'expresscourse');
+      
+      // Фильтр по utm_source
+      if (teamFilter) {
+        query = query.eq('utm_source', teamFilter.toLowerCase());
+      }
+      
+      const { data, error } = await query;
+      
+      console.log('[Funnel] Express Course raw data:', JSON.stringify(data, null, 2));
+      console.log('[Funnel] Express Course error:', error);
       
       if (error) {
-        console.error('[Funnel] Express error:', error.message);
+        console.error('[Funnel] Express Course error:', error.message);
         throw error;
       }
       
-      const views = data?.length || 0;
+      // Фильтр по utm_source из metadata
+      let filteredData = data || [];
+      if (teamFilter) {
+        filteredData = filteredData.filter(lead => {
+          const utmSource = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
+          return utmSource?.toLowerCase() === teamFilter.toLowerCase();
+        });
+      }
       
-      console.log(`[Funnel] ✅ Express Course: ${views} views`);
+      const express_purchases = filteredData.length;
+      // Express Course стоит 5000 KZT
+      const express_revenue = express_purchases * 5000;
       
-      return {
-        views: views,
-        avgValue: 5000 // Express курс = 5K KZT
-      };
+      console.log(`[Funnel] ✅ Express Course: ${express_purchases} purchases (total: ${data?.length}), ${express_revenue} KZT`);
+      
+      return { express_purchases, express_revenue };
     } catch (error: any) {
       console.error('[Funnel] getExpressCourseMetrics failed:', error.message);
-      return { views: 0, avgValue: 0 };
+      return { express_purchases: 0, express_revenue: 0 };
     }
   }, 300);
 }
 
-/**
- * STAGE 3: Payment Metrics (5K Express Course)
- * Источник: landing_leads WHERE sms_clicked=true (индикатор оплаты)
- * ✅ sms_clicked = пользователь перешёл по SMS-ссылке = купил курс
- */
-async function getPaymentMetrics(): Promise<FunnelMetrics> {
-  return getCachedOrFresh('funnel:payment', async () => {
+// ════════════════════════════════════════════════════════════════════════
+// STAGE 4: MAIN PRODUCT (Integrator Flagman - 490K KZT)
+// ════════════════════════════════════════════════════════════════════════
+async function getMainProductMetrics(teamFilter?: string): Promise<FunnelMetrics> {
+  const cacheKey = `funnel:main:${teamFilter || 'all'}`;
+  
+  return getCachedOrFresh(cacheKey, async () => {
     try {
-      console.log('[Funnel] Fetching Payment metrics from Landing DB...');
+      console.log('[Funnel] Fetching Integrator Flagman metrics from Landing DB...');
+      console.log('[Funnel] PRODUCTION: main_product_sales table should exist');
       
-      // ✅ Правильный индикатор: sms_clicked = true (переход по SMS = покупка)
-      const { data, error } = await landingSupabase
-        .from('landing_leads')
-        .select('id, source')
-        .eq('sms_clicked', true)
-        .gte('created_at', THIRTY_DAYS_AGO.toISOString())
-        .limit(10000);
+      // Попытка читать из main_product_sales (должна быть создана миграцией)
+      let query = landingSupabase
+        .from('main_product_sales')
+        .select('id, amount, utm_source, sale_date');
+      
+      // Фильтр по utm_source
+      if (teamFilter) {
+        query = query.eq('utm_source', teamFilter.toLowerCase());
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
-        console.error('[Funnel] Payment error:', error.message);
+        // Если таблица не существует - вернуть нули (таблица будет создана миграцией)
+        if (error.code === 'PGRST116' || error.message?.includes('does not exist')) {
+          console.warn('[Funnel] ⚠️  main_product_sales table does not exist yet (will be created by migration)');
+          return { main_purchases: 0, main_revenue: 0 };
+        }
+        console.error('[Funnel] Integrator Flagman error:', error.message);
         throw error;
       }
       
-      const purchases = data?.length || 0;
-      const revenue = purchases * 5000; // 5K за каждый курс
+      const main_purchases = data?.length || 0;
+      const main_revenue = data?.reduce((sum, row) => {
+        const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
+        return sum + (amount || 490000);
+      }, 0) || 0;
       
-      console.log(`[Funnel] ✅ Payment: ${purchases} purchases, ${revenue} KZT`);
+      console.log(`[Funnel] ✅ Integrator Flagman: ${main_purchases} purchases, ${main_revenue} KZT`);
       
-      // Debug: показать распределение по таргетологам
-      if (data && data.length > 0) {
-        const byTargetologist = data.reduce((acc: any, lead: any) => {
-          const source = lead.source || 'unknown';
-          acc[source] = (acc[source] || 0) + 1;
-          return acc;
-        }, {});
-        console.log('[Funnel] 📊 Payment by targetologist:', byTargetologist);
-      }
-      
-      return {
-        purchases: purchases,
-        revenue: revenue
-      };
+      return { main_purchases, main_revenue };
     } catch (error: any) {
-      console.error('[Funnel] getPaymentMetrics failed:', error.message);
-      return { purchases: 0, revenue: 0 };
+      console.error('[Funnel] getMainProductMetrics failed:', error.message);
+      return { main_purchases: 0, main_revenue: 0 };
     }
   }, 300);
 }
 
-/**
- * Главная функция - получить все метрики воронки
- * Загружает ВСЕ 3 этапа ПАРАЛЛЕЛЬНО
- */
-export async function getFunnelMetrics(): Promise<FunnelResponse> {
-  console.log('[Funnel Service] 🚀 Getting funnel metrics from Landing DB...');
+// ════════════════════════════════════════════════════════════════════════
+// MAIN FUNCTION: GET FUNNEL METRICS
+// ════════════════════════════════════════════════════════════════════════
+export async function getFunnelMetrics(teamFilter?: string): Promise<FunnelResponse> {
+  console.log('[Funnel Service] 🚀 Getting funnel metrics...');
+  console.log('[Funnel Service] Team filter:', teamFilter || 'all teams');
 
   try {
-    // 🚀 Параллельная загрузка всех 3 этапов
-    const [proftest, express, payment] = await Promise.all([
-      getProfTestMetrics(),
-      getExpressCourseMetrics(),
-      getPaymentMetrics()
+    // 🚀 Параллельная загрузка всех 4 этапов
+    const [facebook, proftest, express, main] = await Promise.all([
+      getFacebookAdsMetrics(teamFilter),
+      getProfTestMetrics(teamFilter),
+      getExpressCourseMetrics(teamFilter),
+      getMainProductMetrics(teamFilter)
     ]);
 
-    // Рассчитываем conversion rates
-    const expressConversion = proftest.visitors && proftest.visitors > 0
-      ? Math.round((express.views! / proftest.visitors) * 100) 
+    // ════════════════════════════════════════════════════════════════
+    // CALCULATE CONVERSIONS
+    // ════════════════════════════════════════════════════════════════
+    const conv_impressions_to_proftest = facebook.impressions && facebook.impressions > 0
+      ? ((proftest.proftest_leads! / facebook.impressions) * 100)
       : 0;
 
-    const paymentConversion = express.views && express.views > 0
-      ? Math.round((payment.purchases! / express.views) * 100) 
+    const conv_proftest_to_express = proftest.proftest_leads && proftest.proftest_leads > 0
+      ? ((express.express_purchases! / proftest.proftest_leads) * 100)
       : 0;
 
+    const conv_express_to_main = express.express_purchases && express.express_purchases > 0
+      ? ((main.main_purchases! / express.express_purchases) * 100)
+      : 0;
+
+    const conv_overall = facebook.impressions && facebook.impressions > 0
+      ? ((main.main_purchases! / facebook.impressions) * 100)
+      : 0;
+
+    // ════════════════════════════════════════════════════════════════
+    // CALCULATE ROI
+    // ════════════════════════════════════════════════════════════════
+    const totalRevenue = (express.express_revenue || 0) + (main.main_revenue || 0);
+    const totalSpend = facebook.spend_kzt || 0;
+    const roi = totalSpend > 0 
+      ? ((totalRevenue - totalSpend) / totalSpend * 100) 
+      : 0;
+
+    // ════════════════════════════════════════════════════════════════
+    // BUILD STAGES
+    // ════════════════════════════════════════════════════════════════
     const stages: FunnelStage[] = [
+      {
+        id: 'spend',
+        title: 'Затраты',
+        emoji: '💰',
+        description: 'Расходы на Facebook Ads',
+        metrics: facebook,
+        conversionRate: 100, // Starting point
+        status: 'neutral'
+      },
       {
         id: 'proftest',
         title: 'ProfTest',
         emoji: '🧪',
-        description: 'Тестирование профессии - первый контакт',
+        description: 'Лиды с теста профессии',
         metrics: proftest,
-        conversionRate: 100,
-        status: 'success'
+        conversionRate: parseFloat(conv_impressions_to_proftest.toFixed(2)),
+        status: conv_impressions_to_proftest > 1 ? 'success' : 'warning'
       },
       {
         id: 'express',
-        title: 'Express Course Landing',
+        title: 'Express Course',
         emoji: '📚',
-        description: 'Просмотр оффера экспресс-курса',
+        description: 'Покупки экспресс-курса (5K KZT)',
         metrics: express,
-        conversionRate: expressConversion,
-        status: expressConversion > 30 ? 'success' : 'warning'
+        conversionRate: parseFloat(conv_proftest_to_express.toFixed(2)),
+        status: conv_proftest_to_express > 5 ? 'success' : 'warning'
       },
       {
-        id: 'payment',
-        title: 'Paid Express Course (5K)',
-        emoji: '💳',
-        description: 'Оплата экспресс-курса',
-        metrics: payment,
-        conversionRate: paymentConversion,
-        status: paymentConversion > 20 ? 'success' : 'warning'
+        id: 'main',
+        title: 'Integrator Flagman',
+        emoji: '🏆',
+        description: 'Покупки основного продукта (490K KZT)',
+        metrics: main,
+        conversionRate: parseFloat(conv_express_to_main.toFixed(2)),
+        status: conv_express_to_main > 2 ? 'success' : 'warning'
       }
     ];
 
-    const totalRevenue = payment.revenue || 0;
-    const totalConversions = payment.purchases || 0;
-    const firstInput = proftest.visitors || 0;
-    const overallConversion = firstInput > 0 
-      ? (totalConversions / firstInput) * 100 
-      : 0;
+    const totalConversions = main.main_purchases || 0;
 
-    console.log(`[Funnel Service] ✅ Success: 3 stages, ${totalRevenue.toLocaleString()} KZT, ${totalConversions} conversions`);
+    console.log(`[Funnel Service] ✅ Success: 4 stages`);
+    console.log(`[Funnel Service] 💰 Revenue: ${totalRevenue.toLocaleString()} KZT`);
+    console.log(`[Funnel Service] 🎯 Conversions: ${totalConversions}`);
+    console.log(`[Funnel Service] 📊 ROI: ${roi.toFixed(2)}%`);
 
     return {
       success: true,
       stages,
       totalRevenue,
       totalConversions,
-      overallConversionRate: parseFloat(overallConversion.toFixed(2)),
+      overallConversionRate: parseFloat(conv_overall.toFixed(4)),
+      roi: parseFloat(roi.toFixed(2)),
       timestamp: new Date().toISOString()
     };
   } catch (error: any) {
     console.error('[Funnel Service] ❌ FATAL ERROR:', error.message);
+    console.error('[Funnel Service] Stack:', error.stack);
     
     // Return empty funnel on fatal error
     return {
@@ -248,6 +383,7 @@ export async function getFunnelMetrics(): Promise<FunnelResponse> {
       totalRevenue: 0,
       totalConversions: 0,
       overallConversionRate: 0,
+      roi: 0,
       timestamp: new Date().toISOString()
     };
   }
@@ -256,10 +392,10 @@ export async function getFunnelMetrics(): Promise<FunnelResponse> {
 /**
  * Получить детальную информацию по конкретному stage
  */
-export async function getFunnelStageDetails(stageId: string): Promise<FunnelStage | null> {
+export async function getFunnelStageDetails(stageId: string, teamFilter?: string): Promise<FunnelStage | null> {
   console.log(`[Funnel Service] Getting details for stage: ${stageId}`);
 
-  const allMetrics = await getFunnelMetrics();
+  const allMetrics = await getFunnelMetrics(teamFilter);
   const stage = allMetrics.stages.find(s => s.id === stageId);
 
   if (!stage) {

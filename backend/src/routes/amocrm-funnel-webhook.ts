@@ -1,22 +1,18 @@
 /**
- * AmoCRM → Funnel Webhook
+ * ════════════════════════════════════════════════════════════════════════
+ * 📚 AMOCRM EXPRESS COURSE WEBHOOK (5,000 KZT)
+ * ════════════════════════════════════════════════════════════════════════
  * 
- * Webhook для приема данных о продажах из AmoCRM
- * Этап: "Успешно реализована" (490,000 KZT основной продукт)
+ * Endpoint: POST /api/amocrm/funnel-sale
+ * Purpose: Принимает данные о продажах экспресс-курса из AmoCRM
+ * Pipeline: https://onaiagencykz.amocrm.ru/settings/pipeline/leads/10350882
  * 
- * Webhook URL: https://onai.academy/api/amocrm/funnel-sale
- * 
- * Интеграция:
- * 1. Принимает данные о сделке из AmoCRM
- * 2. Извлекает UTM метки из сделки
- * 3. Определяет таргетолога по UTM
- * 4. Обновляет метрики воронки
- * 5. Сохраняет в Supabase
+ * Сохраняет в Landing DB → express_course_sales
  */
 
 import { Router, Request, Response } from 'express';
 import express from 'express';
-import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { landingSupabase } from '../config/supabase-landing.js';
 
 const router = Router();
 
@@ -244,6 +240,18 @@ router.get('/funnel-sale/health', async (req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
+/**
+ * Helper: Get custom field value by field code or name
+ */
+function getCustomFieldValue(customFields: any[], fieldCode: string): string | null {
+  const field = customFields.find((f: any) => 
+    f.field_code === fieldCode || 
+    f.name?.toLowerCase() === fieldCode.toLowerCase()
+  );
+  
+  return field?.values?.[0]?.value || null;
+}
 
 /**
  * Helper: Extract UTM data from AmoCRM custom fields
