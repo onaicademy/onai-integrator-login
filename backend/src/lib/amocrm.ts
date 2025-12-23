@@ -6,6 +6,75 @@ const AMOCRM_DOMAIN = process.env.AMOCRM_DOMAIN || 'onaiagencykz';
 const AMOCRM_TOKEN = process.env.AMOCRM_ACCESS_TOKEN;
 const AMOCRM_TIMEOUT = 60000; // 60 секунд (увеличено!)
 
+// ════════════════════════════════════════════════════════════════════════
+// 🚦 RATE LIMITER - Prevents amoCRM API rate limit (429 errors)
+// ════════════════════════════════════════════════════════════════════════
+
+class AmoCRMRateLimiter {
+  private lastRequestTime = 0;
+  private readonly minDelay = 2000; // 2 seconds between requests (safe for amoCRM)
+  private requestCount = 0;
+  private windowStart = Date.now();
+  private readonly windowSize = 60000; // 1 minute window for monitoring
+
+  /**
+   * Throttle a function to ensure minimum delay between amoCRM API requests
+   */
+  async throttle<T>(fn: () => Promise<T>): Promise<T> {
+    const now = Date.now();
+    const elapsed = now - this.lastRequestTime;
+    
+    // Wait if not enough time passed since last request
+    if (elapsed < this.minDelay) {
+      const waitTime = this.minDelay - elapsed;
+      console.log(`⏳ [Rate Limiter] Waiting ${waitTime}ms before next amoCRM request...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    // Update metrics
+    this.lastRequestTime = Date.now();
+    this.requestCount++;
+    
+    // Reset window if needed
+    if (Date.now() - this.windowStart > this.windowSize) {
+      this.windowStart = Date.now();
+      this.requestCount = 0;
+    }
+    
+    // Calculate current rate
+    const windowElapsed = (Date.now() - this.windowStart) / 1000;
+    const requestsPerSecond = windowElapsed > 0 ? (this.requestCount / windowElapsed).toFixed(2) : '0.00';
+    
+    console.log(`📊 [Rate Limiter] Current rate: ${requestsPerSecond} req/s (${this.requestCount} requests in last ${windowElapsed.toFixed(0)}s)`);
+    
+    // Alert if rate is too high
+    if (parseFloat(requestsPerSecond) > 0.5) {
+      console.warn(`⚠️ [Rate Limiter] WARNING: Request rate (${requestsPerSecond} req/s) approaching amoCRM limit!`);
+    }
+    
+    // Execute function
+    return await fn();
+  }
+
+  /**
+   * Get current statistics
+   */
+  getStats() {
+    const windowElapsed = (Date.now() - this.windowStart) / 1000;
+    const requestsPerSecond = windowElapsed > 0 ? (this.requestCount / windowElapsed) : 0;
+    
+    return {
+      requestCount: this.requestCount,
+      windowElapsed: windowElapsed,
+      requestsPerSecond: requestsPerSecond,
+      lastRequestTime: this.lastRequestTime,
+    };
+  }
+}
+
+// Singleton instance
+const rateLimiter = new AmoCRMRateLimiter();
+
 // Helper: axios with proper timeouts (более надежный чем fetch)
 const amocrmAxios = axios.create({
   timeout: AMOCRM_TIMEOUT,
@@ -15,40 +84,81 @@ const amocrmAxios = axios.create({
   },
 });
 
-// Wrapper для совместимости с fetch API
-async function fetchWithTimeout(url: string, options: RequestInit = {}) {
-  try {
-    const config: AxiosRequestConfig = {
-      method: (options.method as any) || 'GET',
-      url,
-      data: options.body ? JSON.parse(options.body as string) : undefined,
-      headers: {
-        ...amocrmAxios.defaults.headers,
-        ...(options.headers as any),
-      },
-    };
-    
-    const response = await amocrmAxios.request(config);
-    
-    // Convert axios response to fetch-like response
-    return {
-      ok: response.status >= 200 && response.status < 300,
-      status: response.status,
-      json: async () => response.data,
-      headers: new Map(Object.entries(response.headers)),
-    } as Response;
-  } catch (error: any) {
-    if (error.response) {
-      // HTTP error response
+// ════════════════════════════════════════════════════════════════════════
+// 🌐 HTTP Wrapper with Rate Limiting & 429 Error Handling
+// ════════════════════════════════════════════════════════════════════════
+
+/**
+ * Wrapper для совместимости с fetch API + Rate Limiting + 429 handling
+ */
+async function fetchWithTimeout(url: string, options: RequestInit = {}, retryCount = 0): Promise<Response> {
+  const MAX_RETRIES = 3;
+  
+  return rateLimiter.throttle(async () => {
+    try {
+      const config: AxiosRequestConfig = {
+        method: (options.method as any) || 'GET',
+        url,
+        data: options.body ? JSON.parse(options.body as string) : undefined,
+        headers: {
+          ...amocrmAxios.defaults.headers,
+          ...(options.headers as any),
+        },
+      };
+      
+      const response = await amocrmAxios.request(config);
+      
+      // Convert axios response to fetch-like response
       return {
-        ok: false,
-        status: error.response.status,
-        json: async () => error.response.data,
-        headers: new Map(Object.entries(error.response.headers || {})),
+        ok: response.status >= 200 && response.status < 300,
+        status: response.status,
+        json: async () => response.data,
+        headers: new Map(Object.entries(response.headers)),
+        body: response.data,
       } as Response;
+      
+    } catch (error: any) {
+      if (error.response) {
+        const status = error.response.status;
+        
+        // ════════════════════════════════════════════════════════════
+        // 🚨 HANDLE 429 (Too Many Requests) - Exponential Backoff
+        // ════════════════════════════════════════════════════════════
+        if (status === 429 && retryCount < MAX_RETRIES) {
+          const retryAfterHeader = error.response.headers['retry-after'];
+          const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader) : Math.pow(2, retryCount) * 30; // 30s, 60s, 120s
+          
+          console.warn(`🚨 [429] Rate limit hit! Retry ${retryCount + 1}/${MAX_RETRIES} after ${retryAfter}s...`);
+          console.warn(`🚨 [429] URL: ${url}`);
+          console.warn(`🚨 [429] Method: ${config.method}`);
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+          
+          // Recursive retry with incremented count
+          console.log(`🔄 [429] Retrying request (attempt ${retryCount + 2}/${MAX_RETRIES + 1})...`);
+          return fetchWithTimeout(url, options, retryCount + 1);
+        }
+        
+        // HTTP error response (not 429 or max retries reached)
+        if (status === 429 && retryCount >= MAX_RETRIES) {
+          console.error(`❌ [429] Max retries (${MAX_RETRIES}) reached for URL: ${url}`);
+          console.error(`❌ [429] amoCRM account may be blocked. Contact amoCRM support!`);
+        }
+        
+        return {
+          ok: false,
+          status: error.response.status,
+          json: async () => error.response.data,
+          headers: new Map(Object.entries(error.response.headers || {})),
+          body: error.response.data,
+        } as Response;
+      }
+      
+      // Network or other error
+      throw error;
     }
-    throw error;
-  }
+  });
 }
 
 interface ContactData {

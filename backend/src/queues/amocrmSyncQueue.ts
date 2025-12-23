@@ -226,9 +226,13 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
   },
   {
     connection: redis,
-    concurrency: 2, // Process 2 jobs simultaneously
+    concurrency: 1, // 🚦 Process 1 job at a time (prevent amoCRM rate limit!)
     maxStalledCount: 3, // Max retries for stalled jobs
     stalledInterval: 5000, // Check every 5 seconds
+    limiter: {
+      max: 1, // Max 1 job
+      duration: 2000, // Per 2 seconds (safe rate for amoCRM API)
+    },
   }
 );
 
