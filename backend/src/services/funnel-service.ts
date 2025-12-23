@@ -163,21 +163,32 @@ async function getProfTestMetrics(teamFilter?: string): Promise<FunnelMetrics> {
       
       // Фильтр по utm_source с учетом mapping команд
       let filteredData = data || [];
-      if (teamFilter) {
-        const allowedUtmSources = getUtmSourcesForTeam(teamFilter);
-        if (allowedUtmSources) {
-          filteredData = filteredData.filter(lead => {
-            const utmSource = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source || lead.utm_source;
-            return utmSource && allowedUtmSources.some(allowed => 
-              utmSource.toLowerCase().includes(allowed.toLowerCase())
-            );
-          });
-        }
+      const allowedUtmSources = teamFilter ? getUtmSourcesForTeam(teamFilter) : null;
+      
+      if (teamFilter && allowedUtmSources) {
+        console.log(`[Funnel] Filtering by team: ${teamFilter} → UTM sources: [${allowedUtmSources.join(', ')}]`);
+        
+        filteredData = filteredData.filter(lead => {
+          const utmFromMetadata = lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
+          const utmFromColumn = lead.utm_source;
+          const utmSource = utmFromColumn || utmFromMetadata;
+          
+          const matches = utmSource && allowedUtmSources.some(allowed => 
+            utmSource.toLowerCase().includes(allowed.toLowerCase())
+          );
+          
+          // Debug первого лида
+          if (data?.indexOf(lead) === 0) {
+            console.log(`[Funnel] Example lead UTM: column="${utmFromColumn}", metadata="${utmFromMetadata}", matches=${matches}`);
+          }
+          
+          return matches;
+        });
       }
       
       const proftest_leads = filteredData.length;
       
-      console.log(`[Funnel] ✅ ProfTest: ${proftest_leads} leads (total: ${data?.length}, filtered: ${teamFilter || 'all'}, utm: ${allowedUtmSources?.join(', ') || 'all'})`);
+      console.log(`[Funnel] ✅ ProfTest: ${proftest_leads} leads (total: ${data?.length}, filtered: ${teamFilter || 'all'})`);
       
       return { proftest_leads };
     } catch (error: any) {
