@@ -69,7 +69,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
     setCreationStatuses([]);
     setCurrentStep('');
 
-    // ✅ FIX: Валидация перед отправкой
+    // ✅ Валидация перед отправкой
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       setError('Неверный формат email адреса');
       setLoading(false);
@@ -88,99 +88,140 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
       return;
     }
 
-    try {
-      const {
-        data: { session },
-      } = await tripwireSupabase.auth.getSession();
+    // 🔄 RETRY МЕХАНИЗМ
+    const MAX_RETRIES = 2;
+    let retryCount = 0;
 
-      if (!session?.access_token) {
-        throw new Error('Не авторизован');
-      }
+    while (retryCount <= MAX_RETRIES) {
+      try {
+        const {
+          data: { session },
+        } = await tripwireSupabase.auth.getSession();
 
-      // 🚀 Используем SSE endpoint для real-time статусов
-      const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-      const response = await fetch(`${API_URL}/api/admin/tripwire/users/create-with-progress`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          full_name: fullName,
-          email: email,
-          password: password,
-          currentUserId: session.user.id,
-          currentUserEmail: session.user.email,
-          currentUserName: fullName,
-        }),
-      });
+        if (!session?.access_token) {
+          throw new Error('Не авторизован. Пожалуйста, войдите в систему снова');
+        }
 
-      if (!response.ok) {
-        throw new Error('Ошибка соединения с сервером');
-      }
+        // 🚀 SSE endpoint для real-time статусов
+        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+        
+        if (retryCount > 0) {
+          setCreationStatuses(prev => [...prev, {
+            status: 'retry',
+            message: `⚠️ Повторная попытка ${retryCount} из ${MAX_RETRIES}...`,
+            timestamp: new Date().toISOString()
+          }]);
+        }
 
-      // 📡 Читаем SSE stream
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+        const response = await fetch(`${API_URL}/api/admin/tripwire/users/create-with-progress`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            full_name: fullName,
+            email: email,
+            password: password,
+            currentUserId: session.user.id,
+            currentUserEmail: session.user.email,
+            currentUserName: fullName,
+          }),
+        });
 
-      if (!reader) {
-        throw new Error('Не удалось установить соединение');
-      }
+        if (!response.ok) {
+          if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount)); // Exponential backoff
+            continue;
+          }
+          throw new Error(`Ошибка соединения с сервером (HTTP ${response.status})`);
+        }
 
-      let buffer = '';
+        // 📡 Читаем SSE stream
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
 
-      while (true) {
-        const { done, value } = await reader.read();
+        if (!reader) {
+          throw new Error('Не удалось установить соединение SSE');
+        }
 
-        if (done) break;
+        let buffer = '';
+        let lastStatusTime = Date.now();
+        const STATUS_TIMEOUT = 30000; // 30 секунд timeout
 
-        buffer += decoder.decode(value, { stream: true });
+        while (true) {
+          // Проверка timeout
+          if (Date.now() - lastStatusTime > STATUS_TIMEOUT) {
+            throw new Error('Превышено время ожидания ответа от сервера');
+          }
 
-        // Обрабатываем каждую строку SSE
-        const lines = buffer.split('\n\n');
-        buffer = lines.pop() || '';
+          const { done, value } = await reader.read();
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonData = line.substring(6);
-            try {
-              const status: CreationStatus = JSON.parse(jsonData);
-              
-              console.log('📊 [SSE]', status);
-              
-              setCreationStatuses(prev => [...prev, status]);
-              setCurrentStep(status.status);
+          if (done) break;
 
-              // Если error - показываем
-              if (status.status === 'error') {
-                setError(status.error || status.message);
-                setLoading(false);
-                return;
+          buffer += decoder.decode(value, { stream: true });
+          lastStatusTime = Date.now();
+
+          // Обрабатываем каждую строку SSE
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const jsonData = line.substring(6);
+              try {
+                const status: CreationStatus = JSON.parse(jsonData);
+                
+                console.log('📊 [SSE]', status);
+                
+                setCreationStatuses(prev => [...prev, status]);
+                setCurrentStep(status.status);
+
+                // Если error - показываем
+                if (status.status === 'error') {
+                  setError(status.error || status.message);
+                  setLoading(false);
+                  return;
+                }
+
+                // Если completed - показываем success
+                if (status.status === 'completed') {
+                  setGeneratedPassword(password);
+                  setGeneratedEmail(email);
+                  setSuccess(true);
+                  onSuccess();
+
+                  // Закрыть через 8 секунд
+                  setTimeout(() => {
+                    onClose();
+                  }, 8000);
+                  return;
+                }
+              } catch (parseError) {
+                console.error('Failed to parse SSE data:', parseError);
               }
-
-              // Если completed - показываем success
-              if (status.status === 'completed') {
-                setGeneratedPassword(password);
-                setGeneratedEmail(email);
-                setSuccess(true);
-                onSuccess();
-
-                // Закрыть через 8 секунд
-                setTimeout(() => {
-                  onClose();
-                }, 8000);
-              }
-            } catch (parseError) {
-              console.error('Failed to parse SSE data:', parseError);
             }
           }
         }
+
+        // Если цикл завершился без completed - это ошибка
+        throw new Error('Соединение прервано до завершения создания');
+
+      } catch (err: any) {
+        console.error('❌ Creation error:', err);
+        
+        if (retryCount < MAX_RETRIES && err.message.includes('соединени')) {
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+          continue;
+        }
+        
+        // Все попытки исчерпаны
+        setError(err.message || 'Произошла неизвестная ошибка при создании пользователя');
+        setLoading(false);
+        return;
       }
-    } catch (err: any) {
-      console.error('❌ Creation error:', err);
-      setError(err.message || 'Произошла неизвестная ошибка');
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -317,62 +358,87 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
                 )}
               </button>
 
-              {/* 🚀 ЛИНЕЙНЫЙ ПРОГРЕСС-БАР */}
+              {/* 🚀 ЛИНЕЙНЫЙ ПРОГРЕСС-БАР С РЕАЛЬНЫМИ СТАТУСАМИ */}
               {loading && creationStatuses.length > 0 && (
                 <div className="space-y-3 pt-4">
                   {/* Прогресс-бар */}
                   <div className="relative">
-                    {/* Background */}
                     <div className="h-2 bg-gray-800/50 rounded-full overflow-hidden">
-                      {/* Progress fill */}
                       <div 
                         className="h-full bg-gradient-to-r from-[#00FF94] to-[#00CC6A] transition-all duration-500 ease-out relative"
                         style={{ 
-                          width: `${(CHECKPOINTS.findIndex(c => c.key === currentStep) + 1) * (100 / CHECKPOINTS.length)}%` 
+                          width: `${(() => {
+                            const completedStatuses = ['checked', 'auth_created', 'profile_created', 'email_sent', 'completed'];
+                            const completedCount = completedStatuses.filter(s => 
+                              creationStatuses.some(cs => cs.status === s)
+                            ).length;
+                            return Math.round((completedCount / CHECKPOINTS.length) * 100);
+                          })()}%` 
                         }}
                       >
-                        {/* Glow effect */}
                         <div className="absolute inset-0 bg-[#00FF94] blur-sm opacity-50"></div>
                       </div>
                     </div>
                     
-                    {/* Percentage */}
                     <div className="absolute -top-6 right-0">
                       <span className="text-[#00FF94] font-['JetBrains_Mono'] text-sm font-bold">
-                        {Math.round((CHECKPOINTS.findIndex(c => c.key === currentStep) + 1) * (100 / CHECKPOINTS.length))}%
+                        {(() => {
+                          const completedStatuses = ['checked', 'auth_created', 'profile_created', 'email_sent', 'completed'];
+                          const completedCount = completedStatuses.filter(s => 
+                            creationStatuses.some(cs => cs.status === s)
+                          ).length;
+                          return Math.round((completedCount / CHECKPOINTS.length) * 100);
+                        })()}%
                       </span>
                     </div>
                   </div>
                   
-                  {/* Текущий статус */}
-                  <div className="flex items-center gap-3 px-4 py-3 bg-[#00FF94]/5 border border-[#00FF94]/20 rounded-lg">
-                    <Loader2 className="w-5 h-5 text-[#00FF94] animate-spin flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-['JetBrains_Mono'] text-[#00FF94] font-semibold">
-                        {CHECKPOINTS.find(c => c.key === currentStep)?.icon} {CHECKPOINTS.find(c => c.key === currentStep)?.label}
-                      </p>
-                      {creationStatuses.length > 0 && (
-                        <p className="text-xs text-gray-400 font-['JetBrains_Mono'] mt-0.5">
-                          {creationStatuses[creationStatuses.length - 1]?.message}
-                        </p>
-                      )}
-                    </div>
+                  {/* Детальные статусы */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {creationStatuses.map((status, index) => {
+                      const isError = !!status.error;
+                      
+                      return (
+                        <div 
+                          key={index}
+                          className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-['JetBrains_Mono'] ${
+                            isError 
+                              ? 'bg-red-500/10 border border-red-500/30' 
+                              : 'bg-gray-800/50 border border-gray-700/50'
+                          }`}
+                        >
+                          {isError ? (
+                            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <Check className="w-4 h-4 text-[#00FF94] flex-shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={isError ? 'text-red-400' : 'text-[#00FF94]'}>
+                              {status.message}
+                            </p>
+                            {status.error && (
+                              <p className="text-red-300 mt-1 break-words">
+                                ❌ {status.error}
+                              </p>
+                            )}
+                          </div>
+                          {isError && (
+                            <button
+                              onClick={() => {
+                                const errorText = `ОШИБКА СОЗДАНИЯ УЧЕНИКА\n\nЭтап: ${status.message}\nОшибка: ${status.error}\nВремя: ${new Date(status.timestamp).toLocaleString('ru-RU')}`;
+                                navigator.clipboard.writeText(errorText);
+                                alert('✅ Ошибка скопирована в буфер обмена');
+                              }}
+                              className="text-red-400 hover:text-red-300 transition-colors flex-shrink-0 text-base"
+                              title="Копировать ошибку"
+                            >
+                              📋
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-
-                  {/* Ошибка (если есть) */}
-                  {creationStatuses.some(s => s.error) && (
-                    <div className="flex items-start gap-3 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-['JetBrains_Mono'] text-red-500 font-semibold">
-                          Ошибка создания
-                        </p>
-                        <p className="text-xs text-red-400 font-['JetBrains_Mono'] mt-1">
-                          {creationStatuses.find(s => s.error)?.error}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </form>
