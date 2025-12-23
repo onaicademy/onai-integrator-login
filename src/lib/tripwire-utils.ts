@@ -59,39 +59,18 @@ const getStreamDate = (): Date => {
 
 /**
  * Получить время для прямого эфира
- * 📅 СТАТИЧНАЯ ДАТА: 20 декабря в 20:00
+ * 🚫 ЗАБЛОКИРОВАНО: Информация будет позже
  */
 export const getStreamTime = (): string => {
-  return '20 декабря в 20:00';
+  return 'Скоро';
 };
 
 /**
  * Получить обратный отсчёт до эфира
- * ⏰ ТАЙМЕР ДО 20 ДЕКАБРЯ 20:00
+ * 🚫 ЗАБЛОКИРОВАНО
  */
 export const getStreamCountdown = (): string => {
-  const now = new Date();
-  const streamDate = getStreamDate();
-  
-  const diff = streamDate.getTime() - now.getTime();
-  
-  if (diff <= 0) {
-    return 'Эфир идёт сейчас! 🔴';
-  }
-  
-  const totalHours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  
-  // Если больше 24 часов - показываем дни
-  if (totalHours >= 24) {
-    const days = Math.floor(totalHours / 24);
-    const remainingHours = totalHours % 24;
-    return `${days}д ${remainingHours}ч ${minutes}м`;
-  }
-  
-  // Если меньше 24 часов - показываем часы:минуты:секунды
-  return `${totalHours}ч ${minutes}м ${seconds}с`;
+  return 'Скоро';
 };
 
 /**
