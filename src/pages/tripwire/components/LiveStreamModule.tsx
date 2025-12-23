@@ -17,7 +17,8 @@ interface LiveStreamModuleProps {
 const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: LiveStreamModuleProps) {
   const [streamTime, setStreamTime] = useState(getStreamTime());
   const [countdown, setCountdown] = useState(getStreamCountdown());
-  const isUnlocked = modulesCompleted >= 3;
+  // 🚫 МОДУЛЬ ВРЕМЕННО ЗАБЛОКИРОВАН
+  const isUnlocked = false; // modulesCompleted >= 3;
 
   // 🚀 OPTIMIZATION: Update every 10 seconds instead of 1 second (less re-renders)
   useEffect(() => {
@@ -171,16 +172,15 @@ const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: Li
           </div>
         )}
 
-        {isUnlocked && (
-          <div className="p-3 sm:p-4 md:p-5 bg-[#00FF94]/10 border border-[#00FF94]/30 rounded-xl 
-                         flex items-start gap-2 sm:gap-3">
-             <div className="mt-0.5 text-base sm:text-lg text-[#00FF94] flex-shrink-0">✅</div>
-             <p className="text-xs sm:text-sm md:text-base text-[#00FF94] font-['Manrope'] break-words 
-                          leading-relaxed min-w-0 flex-1">
-               Ссылка на эфир будет доступна вам в WhatsApp сообществе
-             </p>
-          </div>
-        )}
+        {/* Заглушка для всех пользователей */}
+        <div className="p-3 sm:p-4 md:p-5 bg-white/5 border border-white/10 rounded-xl 
+                       flex items-start gap-2 sm:gap-3">
+           <div className="mt-0.5 text-base sm:text-lg text-white/60 flex-shrink-0">📢</div>
+           <p className="text-xs sm:text-sm md:text-base text-white/70 font-['Manrope'] break-words 
+                        leading-relaxed min-w-0 flex-1">
+             Скоро вся информация будет в сообществе
+           </p>
+        </div>
       </div>
     </Card>
   );
