@@ -1,34 +1,19 @@
 import { Card } from '@/components/ui/card';
-import { getStreamTime, getStreamCountdown } from '@/lib/tripwire-utils';
-import { motion } from 'framer-motion';
-import { Lock, Radio, Clock } from 'lucide-react';
-import { useState, useEffect, memo } from 'react';
+import { Lock, Radio } from 'lucide-react';
+import { memo } from 'react';
 
 interface LiveStreamModuleProps {
   modulesCompleted: number;
 }
 
 /**
- * 🔴 LIVE STREAM MODULE - REDESIGN
- * - Замена эмоджи на 3D иконку (Radio)
- * - Адаптация под общий стиль
- * - 🚀 OPTIMIZATION: Memoized with React.memo
+ * 🔴 LIVE STREAM MODULE - ВРЕМЕННО ЗАБЛОКИРОВАН
+ * - Модуль полностью заблокирован для всех пользователей
+ * - Заглушка: "Информация будет позже"
  */
 const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: LiveStreamModuleProps) {
-  const [streamTime, setStreamTime] = useState(getStreamTime());
-  const [countdown, setCountdown] = useState(getStreamCountdown());
-  // 🚫 МОДУЛЬ ВРЕМЕННО ЗАБЛОКИРОВАН
-  const isUnlocked = false; // modulesCompleted >= 3;
-
-  // 🚀 OPTIMIZATION: Update every 10 seconds instead of 1 second (less re-renders)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStreamTime(getStreamTime());
-      setCountdown(getStreamCountdown());
-    }, 10000); // каждые 10 секунд вместо 1
-
-    return () => clearInterval(interval);
-  }, []);
+  // 🚫 МОДУЛЬ ПОЛНОСТЬЮ ЗАБЛОКИРОВАН
+  const isUnlocked = false;
 
   return (
     <Card 
@@ -108,34 +93,13 @@ const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: Li
           </h2>
         </div>
 
-        {/* Подзаголовок */}
-        <p className={`text-sm sm:text-base md:text-lg mb-3 sm:mb-4 md:mb-6 font-['Manrope'] break-words 
-                      ${isUnlocked ? 'text-white/80' : 'text-white/40'}`}>
-          С основателями академии
-        </p>
-
-        {/* Время эфира - ЗАГЛУШКА */}
-        <div className="flex flex-col gap-3 sm:gap-3.5 md:gap-4 lg:gap-5 mb-3 sm:mb-4 md:mb-6">
-          {/* Информация будет позже */}
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit bg-white/5 border border-white/10">
+        {/* Заглушка - информация будет позже */}
+        <div className="mb-4 sm:mb-6">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full w-fit bg-white/5 border border-white/10">
             <span className="text-xs sm:text-sm font-bold font-['JetBrains_Mono'] whitespace-nowrap text-white/60">
               Информация будет позже
             </span>
           </div>
-        </div>
-
-        {/* Описание */}
-        <div className="space-y-2 mb-4 sm:mb-6">
-          <p className={`text-sm sm:text-base md:text-lg font-bold font-['Manrope'] 
-                        tracking-tight leading-snug
-                        ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
-            Как создать платформу стоимостью<br />20 000$
-          </p>
-          <p className={`text-[10px] sm:text-xs md:text-sm font-['Manrope'] uppercase 
-                        tracking-wide sm:tracking-wider break-words 
-                        ${isUnlocked ? 'text-white/70' : 'text-white/30'}`}>
-            БЕЗ НАВЫКОВ ПРОГРАММИРОВАНИЯ
-          </p>
         </div>
 
         {/* Статус разблокировки */}
