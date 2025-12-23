@@ -22,7 +22,7 @@ function getTripwireSupabase() {
   if (!tripwireSupabase) {
     tripwireSupabase = createClient(
       process.env.TRIPWIRE_SUPABASE_URL || '',
-      process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
+      process.env.TRIPWIRE_SERVICE_ROLE_KEY || process.env.TRIPWIRE_SUPABASE_SERVICE_KEY || ''
     );
   }
   return tripwireSupabase;
