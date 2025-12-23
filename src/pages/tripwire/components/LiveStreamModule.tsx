@@ -93,41 +93,13 @@ const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: Li
           </h2>
         </div>
 
-        {/* Заглушка - информация будет позже */}
-        <div className="mb-4 sm:mb-6">
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full w-fit bg-white/5 border border-white/10">
-            <span className="text-xs sm:text-sm font-bold font-['JetBrains_Mono'] whitespace-nowrap text-white/60">
-              Информация будет позже
+        {/* Заглушка - СКОРО */}
+        <div className="flex items-center justify-center p-6 sm:p-8 md:p-10">
+          <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-white/5 border border-white/10">
+            <span className="text-base sm:text-lg md:text-xl font-bold font-['JetBrains_Mono'] uppercase text-white/60">
+              СКОРО
             </span>
           </div>
-        </div>
-
-        {/* Статус разблокировки */}
-        {!isUnlocked && (
-          <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-white/5 border border-white/10 rounded-xl">
-            <div className="p-2 bg-white/5 rounded-lg flex-shrink-0">
-               <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-white/40" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-semibold text-white/60 font-['JetBrains_Mono'] 
-                           uppercase break-words">
-                ЗАБЛОКИРОВАНО
-              </p>
-              <p className="text-xs text-white/40 font-['Manrope'] break-words leading-relaxed mt-1">
-                Завершите все 3 модуля, чтобы получить доступ
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Заглушка для всех пользователей */}
-        <div className="p-3 sm:p-4 md:p-5 bg-white/5 border border-white/10 rounded-xl 
-                       flex items-start gap-2 sm:gap-3">
-           <div className="mt-0.5 text-base sm:text-lg text-white/60 flex-shrink-0">📢</div>
-           <p className="text-xs sm:text-sm md:text-base text-white/70 font-['Manrope'] break-words 
-                        leading-relaxed min-w-0 flex-1">
-             Скоро вся информация будет в сообществе
-           </p>
         </div>
       </div>
     </Card>
