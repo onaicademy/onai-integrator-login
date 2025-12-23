@@ -22,5 +22,73 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- 🚨 AGGRESSIVE CACHE CLEAR SCRIPT -->
+    <script>
+    (function() {
+      const BUILD_ID = '20251223-1915-CRITICAL-FIX';
+      const STORED_BUILD = localStorage.getItem('app_build_id');
+      
+      if (STORED_BUILD !== BUILD_ID) {
+        console.log('🧹 [CACHE CLEAR] New build detected, clearing all caches...');
+        
+        // 1. Clear Service Workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(reg => {
+              console.log('🗑️ Unregistering SW:', reg.scope);
+              reg.unregister();
+            });
+          });
+        }
+        
+        // 2. Clear Cache Storage
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              console.log('🗑️ Deleting cache:', name);
+              caches.delete(name);
+            });
+          });
+        }
+        
+        // 3. Clear Storage
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          console.log('🗑️ Cleared LocalStorage & SessionStorage');
+        } catch (e) {
+          console.warn('Failed to clear storage:', e);
+        }
+        
+        // 4. Clear IndexedDB
+        if ('indexedDB' in window) {
+          try {
+            indexedDB.databases().then(dbs => {
+              dbs.forEach(db => {
+                if (db.name) {
+                  console.log('🗑️ Deleting IndexedDB:', db.name);
+                  indexedDB.deleteDatabase(db.name);
+                }
+              });
+            });
+          } catch (e) {
+            console.warn('Failed to clear IndexedDB:', e);
+          }
+        }
+        
+        // 5. Set new build ID
+        localStorage.setItem('app_build_id', BUILD_ID);
+        
+        // 6. Force reload without cache
+        setTimeout(() => {
+          console.log('🔄 Reloading page...');
+          window.location.reload(true);
+        }, 500);
+      } else {
+        console.log('✅ [CACHE] Build ID matches:', BUILD_ID);
+      }
+    })();
+    </script>
   </body>
 </html>
