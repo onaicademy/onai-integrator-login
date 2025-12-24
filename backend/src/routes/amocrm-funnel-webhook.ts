@@ -161,28 +161,28 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
 
       // Prepare sale data
       const saleData = {
-        amocrm_lead_id: lead.id,
-        status_id: lead.status_id,
+        deal_id: parseInt(lead.id.toString()),
         pipeline_id: lead.pipeline_id,
-        targetologist: targetologist || 'Unknown',
+        status_id: lead.status_id,
+        amount: 490000, // Main product = 490K KZT
         utm_source: utmData.utm_source || null,
         utm_campaign: utmData.utm_campaign || null,
         utm_medium: utmData.utm_medium || null,
         utm_content: utmData.utm_content || null,
         utm_term: utmData.utm_term || null,
-        product: 'main_490k', // Main product
-        amount: 490000, // KZT
-        funnel_stage: 'main', // Этап воронки
+        sale_date: new Date().toISOString(),
+        webhook_received_at: new Date().toISOString(),
+        raw_data: JSON.stringify(lead),
       };
 
       console.log('[AmoCRM Funnel Webhook] 💾 Saving to DB:', JSON.stringify(saleData, null, 2));
 
-      // Save to Supabase (PostgREST schema cache теперь обновлён!)
+      // Save to Supabase (Landing DB - main_product_sales table)
       try {
-        const { data: savedData, error } = await trafficAdminSupabase
-          .from('funnel_sales')
+        const { data: savedData, error } = await landingSupabase
+          .from('main_product_sales')
           .upsert(saleData, {
-            onConflict: 'amocrm_lead_id'
+            onConflict: 'deal_id'
           })
           .select()
           .single();

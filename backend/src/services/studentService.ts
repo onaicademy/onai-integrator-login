@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import { sendWelcomeEmail } from './emailService';
 
 /**
  * Создать нового студента
@@ -100,6 +101,20 @@ export async function createStudent(data: {
       }
     }
 
+    // 5. ✅ Отправляем приветственное письмо с доступами
+    console.log('[StudentService] Sending welcome email...');
+    const emailSent = await sendWelcomeEmail({
+      toEmail: data.email,
+      name: data.full_name,
+      password: data.password,
+    });
+
+    if (emailSent) {
+      console.log('[StudentService] ✅ Welcome email sent successfully');
+    } else {
+      console.warn('[StudentService] ⚠️ Failed to send welcome email (non-critical)');
+    }
+
     return {
       success: true,
       user_id: authData.user.id,
@@ -107,6 +122,7 @@ export async function createStudent(data: {
         email: data.email,
         temp_password: data.password,
       },
+      email_sent: emailSent,
     };
   } catch (error: any) {
     console.error('[StudentService] ❌ Error:', error.message);
