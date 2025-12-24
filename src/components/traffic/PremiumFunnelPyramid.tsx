@@ -163,9 +163,8 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
     return value.toLocaleString('ru-RU');
   };
 
+  // 🔥 FULL NUMBERS - показываем все цифры без сокращений
   const formatCurrency = (value: number) => {
-    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M ₸`;
-    if (value >= 1_000) return `${Math.round(value / 1_000)}K ₸`;
     return `${value.toLocaleString('ru-RU')} ₸`;
   };
 
@@ -196,92 +195,78 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
         </div>
       )}
 
-      {/* Funnel with LEFT side arrows showing conversions */}
-      <div className="relative">
+      {/* Funnel - TRUE PYRAMID SHAPE with centered stages */}
+      <div className="relative flex flex-col items-center">
         {displayStages.map((stage, index) => (
-          <div key={stage.id} className="relative">
-            {/* Conversion Arrow - LEFT SIDE (shown before stage, except first) */}
+          <div key={stage.id} className="relative w-full flex flex-col items-center">
+            {/* Conversion Arrow - CENTER TOP (shown before stage, except first) */}
             {index > 0 && displayStages[index].conversionRate !== undefined && (
-              <div className="flex items-center mb-2">
-                {/* Left Arrow with Conversion % */}
-                <div className="flex flex-col items-center mr-4 min-w-[60px]">
-                  <div className="flex flex-col items-center">
-                    <ChevronDown className="w-5 h-5 text-[#00FF88] -mb-1" />
-                    <div className={`
-                      px-2 py-1 rounded text-xs font-bold tabular-nums
-                      ${stage.conversionRate! >= 30 ? 'bg-[#00FF88]/20 text-[#00FF88]' : ''}
-                      ${stage.conversionRate! >= 10 && stage.conversionRate! < 30 ? 'bg-[#00FF88]/10 text-[#00FF88]/80' : ''}
-                      ${stage.conversionRate! < 10 ? 'bg-gray-800 text-gray-400' : ''}
-                    `}>
-                      {stage.conversionRate!.toFixed(1)}%
-                    </div>
-                    <ChevronDown className="w-5 h-5 text-[#00FF88] -mt-1" />
-                  </div>
+              <div className="flex flex-col items-center py-1">
+                <ChevronDown className="w-5 h-5 text-[#00FF88] -mb-1" />
+                <div className={`
+                  px-2 py-1 rounded text-xs font-bold tabular-nums
+                  ${stage.conversionRate! >= 30 ? 'bg-[#00FF88]/20 text-[#00FF88]' : ''}
+                  ${stage.conversionRate! >= 10 && stage.conversionRate! < 30 ? 'bg-[#00FF88]/10 text-[#00FF88]/80' : ''}
+                  ${stage.conversionRate! < 10 ? 'bg-gray-800 text-gray-400' : ''}
+                `}>
+                  {stage.conversionRate!.toFixed(1)}%
                 </div>
-                
-                {/* Connecting line to stage */}
-                <div className="flex-1 h-px bg-gradient-to-r from-[#00FF88]/30 to-transparent" />
+                <ChevronDown className="w-5 h-5 text-[#00FF88] -mt-1" />
               </div>
             )}
 
-            {/* Stage Block */}
-            <div className="flex items-start gap-4">
-              {/* Left placeholder for alignment when no arrow */}
-              {index === 0 && <div className="min-w-[60px] mr-4" />}
-              
-              {/* Stage Content */}
-              <div 
-                className="flex-1 transition-all duration-300"
-                style={{ maxWidth: `${widthPercentages[index]}%` }}
-              >
-                <div className={`
-                  relative py-4 px-5
-                  bg-[#0a0a0a] border border-gray-800
-                  rounded-lg
-                  hover:border-[#00FF88]/30 transition-colors
-                  ${!hasData ? 'opacity-60' : ''}
-                `}>
-                  {/* Stage Number Badge */}
-                  <div className="absolute -left-2 -top-2 w-6 h-6 rounded-full bg-[#00FF88] flex items-center justify-center">
-                    <span className="text-xs font-bold text-black">{index + 1}</span>
+            {/* Stage Block - PYRAMID: широкий сверху, узкий снизу */}
+            <div 
+              className="transition-all duration-300"
+              style={{ width: `${widthPercentages[index]}%` }}
+            >
+              <div className={`
+                relative py-4 px-5
+                bg-[#0a0a0a] border border-gray-800
+                ${index === 0 ? 'rounded-t-xl' : ''}
+                ${index === displayStages.length - 1 ? 'rounded-b-xl' : ''}
+                ${index > 0 && index < displayStages.length - 1 ? 'rounded-lg' : ''}
+                hover:border-[#00FF88]/30 transition-colors
+                ${!hasData ? 'opacity-60' : ''}
+              `}>
+                {/* Stage Number Badge */}
+                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#00FF88] flex items-center justify-center shadow-lg">
+                  <span className="text-sm font-bold text-black">{index + 1}</span>
+                </div>
+                
+                {/* Content */}
+                <div className="flex items-center justify-between">
+                  {/* Left: Icon + Label */}
+                  <div className="flex items-center gap-3">
+                    <div className={`
+                      w-10 h-10 rounded-lg flex items-center justify-center
+                      ${index === 0 ? 'bg-[#00FF88]/20 text-[#00FF88]' : ''}
+                      ${index === 1 ? 'bg-[#00FF88]/15 text-[#00FF88]/80' : ''}
+                      ${index === 2 ? 'bg-[#00FF88]/10 text-[#00FF88]/60' : ''}
+                      ${index === 3 ? 'bg-[#00FF88]/5 text-[#00FF88]/40' : ''}
+                    `}>
+                      {stage.icon}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium text-sm">{stage.label}</p>
+                      <p className="text-gray-500 text-xs">{stage.sublabel}</p>
+                    </div>
                   </div>
-                  
-                  {/* Content */}
-                  <div className="flex items-center justify-between">
-                    {/* Left: Icon + Label */}
-                    <div className="flex items-center gap-3">
-                      <div className={`
-                        w-10 h-10 rounded-lg flex items-center justify-center
-                        ${index === 0 ? 'bg-[#00FF88]/10 text-[#00FF88]' : ''}
-                        ${index === 1 ? 'bg-[#00FF88]/8 text-[#00FF88]/80' : ''}
-                        ${index === 2 ? 'bg-[#00FF88]/5 text-[#00FF88]/60' : ''}
-                      `}>
-                        {stage.icon}
-                      </div>
-                      <div>
-                        <p className="text-white font-medium text-sm">{stage.label}</p>
-                        <p className="text-gray-500 text-xs">{stage.sublabel}</p>
-                      </div>
-                    </div>
 
-                    {/* Right: Value + Revenue */}
-                    <div className="text-right">
-                      <p className="text-white font-bold text-xl tabular-nums">
-                        {typeof stage.value === 'string' ? stage.value : formatNumber(stage.value)}
+                  {/* Right: Value + Revenue */}
+                  <div className="text-right">
+                    <p className="text-white font-bold text-xl tabular-nums">
+                      {typeof stage.value === 'string' ? stage.value : formatNumber(stage.value)}
+                    </p>
+                    {stage.revenue !== undefined && stage.revenue > 0 && (
+                      <p className="text-[#00FF88] text-xs font-medium">
+                        {formatCurrency(stage.revenue)}
                       </p>
-                      {stage.revenue !== undefined && stage.revenue > 0 && (
-                        <p className="text-[#00FF88] text-xs font-medium">
-                          {formatCurrency(stage.revenue)}
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-            
-            {/* Spacer between stages */}
-            {index < displayStages.length - 1 && <div className="h-2" />}
           </div>
         ))}
       </div>

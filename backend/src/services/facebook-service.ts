@@ -99,9 +99,8 @@ export async function fetchAllAdAccounts(forceRefresh = false): Promise<{
       throw new Error('Facebook access token not configured');
     }
 
-    // 🔥 ALL 8 Business Managers (complete list from user)
+    // 🔥 Business Managers (без Дискурс Реклама - removed per user request)
     const ALL_BUSINESS_MANAGERS = [
-      { id: '511415357787388', name: 'Дискурс Реклама' },
       { id: '109908023605532', name: 'Residence Astana' },
       { id: '627807087089319', name: 'ONAI Academy, TOO' },
       { id: '219720327894125', name: 'Nakama group' },
