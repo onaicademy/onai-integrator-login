@@ -402,7 +402,7 @@ async function getFacebookAdsMetrics(teamFilter?: string, userId?: string, dateR
       
       // Применяем фильтр по команде если передан
       if (teamFilter) {
-        query = query.eq('team_id', teamFilter);
+        query = query.eq('team', teamFilter);
       }
       
       const { data, error } = await query;
