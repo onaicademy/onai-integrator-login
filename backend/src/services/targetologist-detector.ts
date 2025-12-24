@@ -70,40 +70,45 @@ export async function detectTargetologist(
   // ═══════════════════════════════════════════════════════════════
   
   try {
+    // ⚠️ TEMPORARILY DISABLED - table 'campaign_targetologist_map' does not exist
+    // Skip database check until table is created
+
+    /* COMMENTED OUT UNTIL TABLE IS CREATED
     const { data: dbRecord, error } = await trafficAdminSupabase
       .from('campaign_targetologist_map')
       .select('*')
       .eq('fb_campaign_id', fbCampaignId)
       .maybeSingle();
-    
+
     if (!error && dbRecord && dbRecord.manually_verified) {
       console.log(`[Detector] ✅ Found in DATABASE: ${dbRecord.targetologist} (verified)`);
       return {
         targetologist: dbRecord.targetologist as Targetologist,
         method: 'database',
         confidence: 'high',
-        details: { 
+        details: {
           reason: 'Manually verified in database',
           patterns: dbRecord.detected_patterns || []
         }
       };
     }
-    
+
     if (!error && dbRecord) {
       console.log(`[Detector] ✅ Found in DATABASE: ${dbRecord.targetologist} (auto-detected)`);
       return {
         targetologist: dbRecord.targetologist as Targetologist,
         method: dbRecord.confidence as DetectionMethod || 'database',
         confidence: 'high',
-        details: { 
+        details: {
           reason: 'Previously detected and stored',
           utm: dbRecord.detected_utms || undefined,
           patterns: dbRecord.detected_patterns || []
         }
       };
     }
+    */
   } catch (err) {
-    console.warn('[Detector] ⚠️ Database check failed:', err);
+    console.warn('[Detector] ⚠️ Database check skipped (table not exists)');
   }
   
   // ═══════════════════════════════════════════════════════════════
@@ -217,6 +222,12 @@ async function saveCampaignMapping(data: {
   detected_patterns?: string[];
   manually_verified: boolean;
 }): Promise<void> {
+  // ⚠️ TEMPORARILY DISABLED - table 'campaign_targetologist_map' does not exist in DB schema
+  // TODO: Create table or move mapping to traffic_targetologist_settings
+  console.log(`[Detector] 📝 Would save mapping: ${data.fb_campaign_id} → ${data.targetologist} (disabled - table not exists)`);
+  return;
+
+  /* COMMENTED OUT UNTIL TABLE IS CREATED
   try {
     const { error } = await trafficAdminSupabase
       .from('campaign_targetologist_map')
@@ -236,7 +247,7 @@ async function saveCampaignMapping(data: {
           onConflict: 'fb_campaign_id'
         }
       );
-    
+
     if (error) {
       console.error('[Detector] Failed to save mapping:', error);
     } else {
@@ -245,6 +256,7 @@ async function saveCampaignMapping(data: {
   } catch (error) {
     console.error('[Detector] Exception saving mapping:', error);
   }
+  */
 }
 
 /**
