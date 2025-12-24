@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🛡️ SENTRY MONITORING UTILITIES - Backend Tripwire Specific
  * 

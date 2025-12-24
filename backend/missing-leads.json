@@ -1,0 +1,267 @@
+[
+  {
+    "id": "fe1e6e84-21c3-4afd-b22e-64b02745b880",
+    "email": "taschkent_2023@inbox.ru",
+    "name": "Bek",
+    "phone": "+998911645502",
+    "source": "proftest_arystan",
+    "amocrm_lead_id": null,
+    "amocrm_synced": false,
+    "metadata": {
+      "answers": [
+        3,
+        2,
+        3,
+        2,
+        3,
+        1,
+        3,
+        3,
+        2,
+        3
+      ],
+      "pixelId": "1173453391598938",
+      "timestamp": "2025-12-23T16:16:17.014Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 OPR/125.0.0.0 (Edition cdf)",
+      "utmParams": {
+        "fbclid": "IwY2xjawO3grJleHRuA2FlbQEwAGFkaWQBqyvblYZRpmJyaWQRMTdXamw5aDdlRVRGRGFVaTRzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEedwibMmgfYHNdh5bJNlW3ruB5nv6JGrHtpLIDqls0aEXa-l4Lpa7xfIIb7Uo_aem_Gi2hK3dv-ibltdjsdr513Q",
+        "utm_term": "120238037018230214",
+        "utm_medium": "fb",
+        "utm_source": "fbarystan",
+        "utm_content": "ars3",
+        "utm_campaign": "arystan_23.12_ru"
+      },
+      "campaignName": "Arystan Campaign",
+      "campaignSlug": "arystan",
+      "proftestAnswers": [
+        {
+          "answer": "35+",
+          "question": "Сколько вам лет?",
+          "questionNumber": 1
+        },
+        {
+          "answer": "Наемный сотрудник",
+          "question": "Кем вы сейчас работаете/зарабатываете?",
+          "questionNumber": 2
+        },
+        {
+          "answer": "Считаю, что это несерьезно",
+          "question": "Насколько вы освоили ChatGPT/нейросети?",
+          "questionNumber": 3
+        },
+        {
+          "answer": "Сначала попробую бесплатно",
+          "question": "Есть клиент, готовый заплатить 500$ за настройку AI-бота. Сколько времени потратите на обучение?",
+          "questionNumber": 4
+        },
+        {
+          "answer": "Инвестировать в обучение",
+          "question": "Вы успешно сдали работу, получили 500$, ваши действия?",
+          "questionNumber": 5
+        },
+        {
+          "answer": "Попробую сделать по-своему",
+          "question": "Вы получили готовую схему по созданию вирусного видео на сотни тысяч просмотров, ваши действия?",
+          "questionNumber": 6
+        },
+        {
+          "answer": "Ни то, ни другое",
+          "question": "Что для вас ценнее: 1000$ или 10 000 живых подписчиков?",
+          "questionNumber": 7
+        },
+        {
+          "answer": "Вообще об этом не думал",
+          "question": "У вас когда-нибудь была идея создать приложение или сервис?",
+          "questionNumber": 8
+        },
+        {
+          "answer": "Не бывает такого",
+          "question": "Представьте, у вас есть робот, который разрабатывает для вас любые сервисы и приложения. Ваши действия?",
+          "questionNumber": 9
+        },
+        {
+          "answer": "Если буду делать 500$, то столько и вложу",
+          "question": "Сколько вы готовы инвестировать в знания, которые выведут вас на новый уровень?",
+          "questionNumber": 10
+        }
+      ]
+    },
+    "created_at": "2025-12-23T14:20:17.626625+00:00",
+    "updated_at": "2025-12-23T14:20:17.626625+00:00",
+    "email_sent": false,
+    "email_sent_at": null,
+    "email_error": null,
+    "sms_sent": false,
+    "sms_sent_at": null,
+    "sms_error": null,
+    "sms_message_id": null,
+    "email_opened_at": null,
+    "email_clicked": false,
+    "email_clicked_at": null,
+    "sms_clicked": false,
+    "sms_clicked_at": null,
+    "click_count": 0,
+    "amocrm_sync_status": null,
+    "amocrm_sync_attempts": 0,
+    "amocrm_sync_last_error": null,
+    "amocrm_contact_id": null,
+    "utm_source": null,
+    "utm_campaign": null,
+    "utm_medium": null,
+    "utm_content": null,
+    "utm_term": null
+  },
+  {
+    "id": "b7b812d6-3a5a-4fa0-8ef3-096f1b4447ff",
+    "email": "rfa0025@gmail.com",
+    "name": "Фаридун ",
+    "phone": "+992938381989",
+    "source": "proftest_arystan",
+    "amocrm_lead_id": null,
+    "amocrm_synced": false,
+    "metadata": {
+      "answers": [
+        3,
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        1,
+        0,
+        3
+      ],
+      "pixelId": "1173453391598938",
+      "timestamp": "2025-12-23T14:16:32.961Z",
+      "userAgent": "Mozilla/5.0 (Linux; Android 14; 23090RA98G Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/143.0.7499.34 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/543.0.0.55.73;IABMV/1;]",
+      "utmParams": {
+        "fbclid": "IwZXh0bgNhZW0BMABhZGlkAasr25WGUaZzcnRjBmFwcF9pZAwzNTA2ODU1MzE3MjgAAR6Ebq0TmxbwhRD_R_pINvhiCBBedCSEQ4AIP49qgUc7dYqaltFZKzltuHuuJA_aem_EuDvQ0Mp5hvRco_0BrhZoQ",
+        "utm_term": "120238037018230214",
+        "utm_medium": "fb",
+        "utm_source": "fbarystan",
+        "utm_content": "ars3",
+        "utm_campaign": "arystan_23.12_ru"
+      },
+      "campaignName": "Arystan Campaign",
+      "campaignSlug": "arystan",
+      "proftestAnswers": [
+        {
+          "answer": "35+",
+          "question": "Сколько вам лет?",
+          "questionNumber": 1
+        },
+        {
+          "answer": "Фриланс, работа на себя",
+          "question": "Кем вы сейчас работаете/зарабатываете?",
+          "questionNumber": 2
+        },
+        {
+          "answer": "Активно использую",
+          "question": "Насколько вы освоили ChatGPT/нейросети?",
+          "questionNumber": 3
+        },
+        {
+          "answer": "Сначала попробую бесплатно",
+          "question": "Есть клиент, готовый заплатить 500$ за настройку AI-бота. Сколько времени потратите на обучение?",
+          "questionNumber": 4
+        },
+        {
+          "answer": "Инвестировать в обучение",
+          "question": "Вы успешно сдали работу, получили 500$, ваши действия?",
+          "questionNumber": 5
+        },
+        {
+          "answer": "Сразу применю и повторю",
+          "question": "Вы получили готовую схему по созданию вирусного видео на сотни тысяч просмотров, ваши действия?",
+          "questionNumber": 6
+        },
+        {
+          "answer": "Конечно, 1000$",
+          "question": "Что для вас ценнее: 1000$ или 10 000 живых подписчиков?",
+          "questionNumber": 7
+        },
+        {
+          "answer": "Была, но не смог реализовать",
+          "question": "У вас когда-нибудь была идея создать приложение или сервис?",
+          "questionNumber": 8
+        },
+        {
+          "answer": "Начну делать свое приложение",
+          "question": "Представьте, у вас есть робот, который разрабатывает для вас любые сервисы и приложения. Ваши действия?",
+          "questionNumber": 9
+        },
+        {
+          "answer": "Если буду делать 500$, то столько и вложу",
+          "question": "Сколько вы готовы инвестировать в знания, которые выведут вас на новый уровень?",
+          "questionNumber": 10
+        }
+      ]
+    },
+    "created_at": "2025-12-23T14:16:34.544355+00:00",
+    "updated_at": "2025-12-23T14:16:34.544355+00:00",
+    "email_sent": false,
+    "email_sent_at": null,
+    "email_error": null,
+    "sms_sent": false,
+    "sms_sent_at": null,
+    "sms_error": null,
+    "sms_message_id": null,
+    "email_opened_at": null,
+    "email_clicked": false,
+    "email_clicked_at": null,
+    "sms_clicked": false,
+    "sms_clicked_at": null,
+    "click_count": 0,
+    "amocrm_sync_status": null,
+    "amocrm_sync_attempts": 0,
+    "amocrm_sync_last_error": null,
+    "amocrm_contact_id": null,
+    "utm_source": null,
+    "utm_campaign": null,
+    "utm_medium": null,
+    "utm_content": null,
+    "utm_term": null
+  },
+  {
+    "id": "bca48b85-c4d6-42c3-8554-675e1fe80a27",
+    "email": null,
+    "name": "Хабибулла Альтекешев",
+    "phone": "+7 (707) 344-34-70",
+    "source": "expresscourse",
+    "amocrm_lead_id": null,
+    "amocrm_synced": false,
+    "metadata": {
+      "ip": "::ffff:127.0.0.1",
+      "language": "ru",
+      "timestamp": "2025-12-23T14:01:25.626Z",
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+      "utmParams": {},
+      "paymentMethod": "kaspi"
+    },
+    "created_at": "2025-12-23T14:01:26.530211+00:00",
+    "updated_at": "2025-12-23T14:01:26.530211+00:00",
+    "email_sent": false,
+    "email_sent_at": null,
+    "email_error": null,
+    "sms_sent": false,
+    "sms_sent_at": null,
+    "sms_error": null,
+    "sms_message_id": null,
+    "email_opened_at": null,
+    "email_clicked": false,
+    "email_clicked_at": null,
+    "sms_clicked": false,
+    "sms_clicked_at": null,
+    "click_count": 0,
+    "amocrm_sync_status": null,
+    "amocrm_sync_attempts": 0,
+    "amocrm_sync_last_error": null,
+    "amocrm_contact_id": null,
+    "utm_source": null,
+    "utm_campaign": null,
+    "utm_medium": null,
+    "utm_content": null,
+    "utm_term": null
+  }
+]

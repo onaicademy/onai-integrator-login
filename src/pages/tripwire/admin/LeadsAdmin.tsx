@@ -105,11 +105,26 @@ export default function LeadsAdmin() {
         return leadsWithStatus;
       }
       
-      // Get notification statuses for all leads
-      const { data: notificationsData } = await landingSupabase
-        .from('scheduled_notifications')
-        .select('lead_id, status, error_message')
-        .in('lead_id', leadsData?.map(l => l.id) || []);
+      // Get notification statuses for all leads - BATCHED to avoid URL length limits
+      let notificationsData: Array<{ lead_id: string; status: string; error_message: string }> = [];
+      const leadIds = leadsData?.map(l => l.id) || [];
+      const BATCH_SIZE = 50; // Supabase URL limit safe batch size
+      
+      for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
+        const batchIds = leadIds.slice(i, i + BATCH_SIZE);
+        try {
+          const { data: batchData } = await landingSupabase
+            .from('scheduled_notifications')
+            .select('lead_id, status, error_message')
+            .in('lead_id', batchIds);
+          
+          if (batchData) {
+            notificationsData = [...notificationsData, ...batchData];
+          }
+        } catch (e) {
+          console.error('Error fetching notification batch:', e);
+        }
+      }
       
       // Merge notification status into leads
       const leadsWithStatus = leadsData?.map(lead => {

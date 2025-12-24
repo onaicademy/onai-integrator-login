@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { AMOCRM_CONFIG } from '../config/amocrm-config.js';

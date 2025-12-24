@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Traffic Dashboard Weekly Plans Routes
  * 

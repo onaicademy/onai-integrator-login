@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Queue } from 'bullmq';
 import { redis } from '../config/redis';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire';

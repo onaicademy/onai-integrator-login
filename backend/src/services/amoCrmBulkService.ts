@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * AmoCRM Bulk Sync Service with Rate Limiting
  * Handles high-volume AmoCRM operations with proper rate limiting

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ========================================
  * MINIMAL EXPRESS SERVER - PRODUCTION

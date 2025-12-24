@@ -13,21 +13,13 @@ import { trafficAdminSupabase } from './supabase-traffic.js';
 type DatabaseMode = 'production' | 'mock';
 
 const getMode = (): DatabaseMode => {
-  // ✅ FIX: Используем MOCK_MODE env var для явного указания
+  // ✅ FIX: Explicit MOCK_MODE env var to enable mock
   if (process.env.MOCK_MODE === 'true') {
     return 'mock';
   }
   
-  // Или если NODE_ENV = development
-  if (process.env.NODE_ENV === 'development') {
-    return 'mock';
-  }
-  
-  // Или если мы на localhost (проверка через hostname)
-  if (process.env.API_URL?.includes('localhost') || process.env.API_URL?.includes('127.0.0.1')) {
-    return 'mock';
-  }
-  
+  // ✅ PRODUCTION by default unless explicitly set to mock
+  // This ensures settings are saved to database on production server
   return 'production';
 };
 

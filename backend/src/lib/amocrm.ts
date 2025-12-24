@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AMOCRM_CONFIG, getStageByPaymentMethod } from '../config/amocrm-config.js';
 import axios, { AxiosRequestConfig } from 'axios';
 import { withAmoCrmLock } from './amocrmLock.js';

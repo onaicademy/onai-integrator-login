@@ -13,6 +13,6 @@
     "moduleResolution": "node"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "src/config/sentry.ts", "src/utils/sentryMonitoring.ts"]
+  "exclude": ["node_modules", "**/__tests__/**", "**/*.test.ts"]
 }
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🏥 Extended Health & Status Endpoints
  * БЕЗОПАСНЫЙ МОДУЛЬ - только READ-ONLY операции

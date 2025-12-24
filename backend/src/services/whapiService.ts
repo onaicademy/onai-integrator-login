@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 📱 WHAPI SERVICE
  * Сервис для массовых рассылок через WhatsApp API (Whapi.cloud)

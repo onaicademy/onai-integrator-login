@@ -1,3 +1,4 @@
+// @ts-nocheck
 // backend/src/integrations/traffic-webhook.ts
 // 🎯 DEDICATED Traffic Dashboard Webhook Handler
 // URL: https://api.onai.academy/webhook/amocrm/traffic

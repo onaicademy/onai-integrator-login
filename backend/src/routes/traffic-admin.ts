@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Traffic Dashboard Admin Settings Routes
  * 

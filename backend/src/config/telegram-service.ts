@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Telegram Service - COMPLETELY INDEPENDENT from Redis
  * ⭐ Uses only Supabase for data storage

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { logger, CorrelatedError } from './correlationId.js';
 

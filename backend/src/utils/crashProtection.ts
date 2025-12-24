@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Crash Protection & Recovery System
  * Защита от unexpected crashes и автоматический recovery

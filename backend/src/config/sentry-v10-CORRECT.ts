@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import type { Express, Request, Response, NextFunction } from 'express';

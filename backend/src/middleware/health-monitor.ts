@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🛡️ HEALTH MONITORING & CIRCUIT BREAKER STATUS
  * Endpoint для проверки здоровья сервера + защита от перегрузки

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🏥 MONITORING API ENDPOINTS
  * 

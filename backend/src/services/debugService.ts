@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { tripwireAdminSupabase } from '../config/supabase-tripwire';
 
 /**

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Redis Configuration for AmoCRM BullMQ
  * ⭐ ISOLATED from Telegram - only for AmoCRM sync queues

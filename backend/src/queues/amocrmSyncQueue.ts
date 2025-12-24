@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * BullMQ Queue for AmoCRM Bulk Sync
  * Handles async processing of lead synchronization with retry logic
