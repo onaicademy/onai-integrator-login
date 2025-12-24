@@ -30,6 +30,8 @@ interface FacebookAdAccount {
   currency?: string;
   timezone_name?: string;
   amount_spent?: string;
+  business_manager_id?: string;
+  business_manager_name?: string;
 }
 
 interface FacebookCampaign {
@@ -97,50 +99,51 @@ export async function fetchAllAdAccounts(forceRefresh = false): Promise<{
       throw new Error('Facebook access token not configured');
     }
 
-    // 🔥 МНОЖЕСТВЕННЫЕ Business Managers
-    const BUSINESS_IDS = [
-      process.env.FACEBOOK_BUSINESS_ID || '627807087089319',
-      '109908023605532' // Второй BM
+    // 🔥 ALL 8 Business Managers (complete list from user)
+    const ALL_BUSINESS_MANAGERS = [
+      { id: '511415357787388', name: 'Дискурс Реклама' },
+      { id: '109908023605532', name: 'Residence Astana' },
+      { id: '627807087089319', name: 'ONAI Academy, TOO' },
+      { id: '219720327894125', name: 'Nakama group' },
+      { id: '1425104648731040', name: 'TOO Academy' },
+      { id: '1174363964568351', name: 'White Kimberly Flores' },
+      { id: '1166877195542037', name: 'labonte__1uwx25' },
+      { id: '1142153484339267', name: 'Onai academy' }
     ];
 
-    console.log(`📊 [Facebook Service] Fetching from ${BUSINESS_IDS.length} Business Managers...`);
+    console.log(`📊 [Facebook Service] Fetching from ${ALL_BUSINESS_MANAGERS.length} Business Managers...`);
 
     // Fetch from ALL Business Managers in parallel
-    const allRequests = BUSINESS_IDS.flatMap(businessId => [
-      // Owned accounts
-      axios.get(`${FB_API_BASE}/${businessId}/owned_ad_accounts`, {
-        params: {
-          access_token: fbToken,
-          fields: 'id,name,account_status,currency,timezone_name,amount_spent',
-          limit: 500
-        },
-        timeout: 15000
-      }).catch(err => ({ data: { data: [] } })),
-      
-      // Client accounts
-      axios.get(`${FB_API_BASE}/${businessId}/client_ad_accounts`, {
-        params: {
-          access_token: fbToken,
-          fields: 'id,name,account_status,currency,timezone_name,amount_spent',
-          limit: 500
-        },
-        timeout: 15000
-      }).catch(err => ({ data: { data: [] } }))
-    ]);
+    const bmResults = await Promise.all(
+      ALL_BUSINESS_MANAGERS.map(async (bm) => {
+        try {
+          // Fetch owned accounts for this BM
+          const ownedResponse = await axios.get(`${FB_API_BASE}/${bm.id}/owned_ad_accounts`, {
+            params: {
+              access_token: fbToken,
+              fields: 'id,name,account_status,currency,timezone_name,amount_spent',
+              limit: 100
+            },
+            timeout: 15000
+          }).catch(() => ({ data: { data: [] } }));
 
-    const results = await Promise.allSettled(allRequests);
+          const ownedAccounts = (ownedResponse.data?.data || []).map((acc: any) => ({
+            ...acc,
+            business_manager_id: bm.id,
+            business_manager_name: bm.name
+          }));
 
-    // Extract ALL successful results from all BMs
-    const allAccounts: FacebookAdAccount[] = [];
-    
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
-        const accounts = result.value.data?.data || [];
-        allAccounts.push(...accounts);
-        console.log(`📊 [Facebook Service] BM ${Math.floor(index / 2) + 1} (${index % 2 === 0 ? 'owned' : 'client'}): ${accounts.length} accounts`);
-      }
-    });
+          console.log(`  📂 ${bm.name}: ${ownedAccounts.length} accounts`);
+          return ownedAccounts;
+        } catch (err: any) {
+          console.log(`  ⚠️ ${bm.name}: No access (${err.message})`);
+          return [];
+        }
+      })
+    );
 
+    // Flatten all accounts
+    const allAccounts: FacebookAdAccount[] = bmResults.flat();
     console.log(`📊 [Facebook Service] Total accounts before dedup: ${allAccounts.length}`);
 
     // Deduplicate by ID

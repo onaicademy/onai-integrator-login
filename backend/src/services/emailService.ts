@@ -165,7 +165,7 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
                           <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: #00FF94; border-radius: 6px;">
                             <tr>
                               <td align="center" style="padding: 18px 45px;">
-                                <a href="https://onai.academy/tripwire/login?email=${encodeURIComponent(params.toEmail)}" style="color: #000000; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: inline-block;">
+                                <a href="https://onai.academy/integrator/login?email=${encodeURIComponent(params.toEmail)}" style="color: #000000; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: inline-block;">
                                   ВОЙТИ В ПЛАТФОРМУ
                                 </a>
                               </td>

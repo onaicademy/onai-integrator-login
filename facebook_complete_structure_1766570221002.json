@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-12-24T09:57:01.000Z",
+  "startingBusinessId": "1425104648731040",
+  "summary": {
+    "businessManagersFound": 1,
+    "totalAdAccounts": 1
+  },
+  "businesses": [
+    {
+      "businessId": "1425104648731040",
+      "businessName": "TOO Academy",
+      "accounts": [
+        {
+          "accountId": "30779210298344970",
+          "fullId": "act_30779210298344970",
+          "name": "onAI Academy",
+          "status": 1,
+          "currency": "USD"
+        }
+      ]
+    }
+  ]
+}

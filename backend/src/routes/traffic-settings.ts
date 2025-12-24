@@ -267,34 +267,65 @@ router.get('/facebook/ad-accounts', async (req: Request, res: Response) => {
       });
     }
 
-    console.log('📘 Fetching ALL Facebook ad accounts from Business Manager (no user filtering)...');
+    console.log('📘 Fetching ALL Facebook ad accounts from ALL Business Managers...');
 
-    // 🔥 FIXED: Use Business Manager endpoint instead of /me/adaccounts
-    // Business ID from env or hardcoded
-    const BUSINESS_ID = process.env.FACEBOOK_BUSINESS_ID || '627807087089319';
+    // 🔥 ALL 8 Business Managers (from Facebook API scan)
+    const ALL_BUSINESS_MANAGERS = [
+      { id: '1425104648731040', name: 'TOO Academy' },
+      { id: '627807087089319', name: 'ONAI Academy, TOO' },
+      { id: '511415357787388', name: 'Дискурс Реклама' },
+      { id: '219720327894125', name: 'Nakama group' },
+      { id: '109908023605532', name: 'Residence Astana' },
+      { id: '1174363964568351', name: 'White Kimberly Flores' },
+      { id: '1166877195542037', name: 'labonte__1uwx25' },
+      { id: '1142153484339267', name: 'Onai academy' }
+    ];
     
-    console.log(`📊 Using Business Manager ID: ${BUSINESS_ID}`);
+    console.log(`📊 Scanning ${ALL_BUSINESS_MANAGERS.length} Business Managers...`);
     
-    // Get ALL ad accounts from Business Manager
-    const response = await axios.get(`${FB_API_BASE}/${BUSINESS_ID}/owned_ad_accounts`, {
-      params: {
-        access_token: fbToken,
-        fields: 'id,name,account_status,currency,timezone_name,amount_spent',
-        limit: 500  // 🔥 Get ALL accounts
-      },
-      timeout: 15000
+    // Fetch ad accounts from ALL Business Managers in parallel
+    const allAccountsNested = await Promise.all(
+      ALL_BUSINESS_MANAGERS.map(async (bm) => {
+        try {
+          console.log(`  📂 Fetching from: ${bm.name} (${bm.id})`);
+          const response = await axios.get(`${FB_API_BASE}/${bm.id}/owned_ad_accounts`, {
+            params: {
+              access_token: fbToken,
+              fields: 'id,name,account_status,currency,timezone_name,amount_spent',
+              limit: 100
+            },
+            timeout: 15000
+          });
+          
+          const accounts = (response.data.data || []).map((acc: any) => ({
+            id: acc.id,
+            name: acc.name,
+            status: acc.account_status === 1 ? 'ACTIVE' : 'INACTIVE',
+            currency: acc.currency || 'USD',
+            timezone: acc.timezone_name || 'UTC',
+            amount_spent: acc.amount_spent || '0',
+            business_manager: bm.name,
+            business_manager_id: bm.id
+          }));
+          
+          console.log(`    ✅ ${accounts.length} accounts from ${bm.name}`);
+          return accounts;
+        } catch (err: any) {
+          console.log(`    ⚠️ No access to ${bm.name}: ${err.message}`);
+          return [];
+        }
+      })
+    );
+    
+    // Flatten and deduplicate by account ID
+    const seenIds = new Set<string>();
+    const adAccounts = allAccountsNested.flat().filter((acc) => {
+      if (seenIds.has(acc.id)) return false;
+      seenIds.add(acc.id);
+      return true;
     });
 
-    const adAccounts = response.data.data.map((acc: any) => ({
-      id: acc.id,
-      name: acc.name,
-      status: acc.account_status === 1 ? 'ACTIVE' : 'INACTIVE',
-      currency: acc.currency || 'USD',
-      timezone: acc.timezone_name || 'UTC',
-      amount_spent: acc.amount_spent || '0'
-    }));
-
-    console.log(`✅ Loaded ${adAccounts.length} ad accounts from Business Manager ${BUSINESS_ID}`);
+    console.log(`✅ Total: ${adAccounts.length} unique ad accounts from all Business Managers`);
     console.log(`📊 ALL targetologists can see ALL ${adAccounts.length} accounts`);
 
     res.json({

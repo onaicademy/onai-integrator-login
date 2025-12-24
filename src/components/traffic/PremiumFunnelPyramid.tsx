@@ -1,24 +1,25 @@
 /**
- * Premium Funnel Pyramid Component - Minimalist Design with LEFT Arrows
+ * Premium Funnel Pyramid Component - 4 Stage Sales Funnel
  * 
- * 3-stage sales funnel:
- * 1. ProfTest Registrations (widest)
- * 2. Express Course Purchases  
- * 3. Integrator Flagman Purchases (narrowest)
+ * 4-stage sales funnel (pyramid shape):
+ * 1. 💰 Затраты (Facebook Ads) - widest
+ * 2. 👥 ProfTest Лиды - registrations
+ * 3. 📚 Купили Express - purchases (5,000₸)
+ * 4. 🏆 Купили Flagman - main product (490,000₸) - narrowest
  * 
- * Design: LEFT side arrows showing stage-to-stage conversions
+ * Design: Pyramid shape (wide top → narrow bottom)
  * Brand colors: #00FF88 (green), black background
  */
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, ShoppingCart, Award, Loader2, ArrowDown, ChevronDown } from 'lucide-react';
+import { DollarSign, Users, ShoppingCart, Award, Loader2, ChevronDown } from 'lucide-react';
 
 interface FunnelStage {
   id: string;
   label: string;
   sublabel: string;
-  value: number;
+  value: number | string;
   revenue?: number;
   conversionRate?: number;
   icon: React.ReactNode;
@@ -52,43 +53,58 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
       if (response.data.success) {
         const apiStages = response.data.stages || [];
         
+        // Extract stages from API response
+        const spendStage = apiStages.find((s: any) => s.id === 'spend');
         const proftestStage = apiStages.find((s: any) => s.id === 'proftest');
         const expressStage = apiStages.find((s: any) => s.id === 'express');
-        const mainStage = apiStages.find((s: any) => s.id === 'main' || s.id === 'payment');
+        const mainStage = apiStages.find((s: any) => s.id === 'main');
 
-        const proftestValue = proftestStage?.metrics?.proftest_leads || proftestStage?.metrics?.visitors || 0;
-        const expressValue = expressStage?.metrics?.express_purchases || expressStage?.metrics?.purchases || 0;
-        const mainValue = mainStage?.metrics?.main_purchases || mainStage?.metrics?.purchases || 0;
-        
-        const expressRevenue = expressStage?.metrics?.express_revenue || expressStage?.metrics?.revenue || 0;
-        const mainRevenue = mainStage?.metrics?.main_revenue || mainStage?.metrics?.revenue || 0;
+        // Extract values
+        const spendUSD = spendStage?.metrics?.spend_usd || 0;
+        const spendKZT = spendStage?.metrics?.spend_kzt || 0;
+        const proftestLeads = proftestStage?.metrics?.proftest_leads || 0;
+        const expressPurchases = expressStage?.metrics?.express_purchases || 0;
+        const expressRevenue = expressStage?.metrics?.express_revenue || 0;
+        const mainPurchases = mainStage?.metrics?.main_purchases || 0;
+        const mainRevenue = mainStage?.metrics?.main_revenue || 0;
 
-        const proftestToExpress = proftestValue > 0 ? (expressValue / proftestValue) * 100 : 0;
-        const expressToMain = expressValue > 0 ? (mainValue / expressValue) * 100 : 0;
+        // Calculate conversions
+        const spendToLeads = spendUSD > 0 ? (proftestLeads / (spendUSD * 100)) * 100 : 0; // leads per $100
+        const leadsToExpress = proftestLeads > 0 ? (expressPurchases / proftestLeads) * 100 : 0;
+        const expressToMain = expressPurchases > 0 ? (mainPurchases / expressPurchases) * 100 : 0;
 
         const mappedStages: FunnelStage[] = [
           {
-            id: 'proftest',
-            label: 'ProfTest',
-            sublabel: 'Регистрации',
-            value: proftestValue,
+            id: 'spend',
+            label: 'Затраты',
+            sublabel: 'Facebook Ads',
+            value: `$${spendUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+            revenue: spendKZT,
             conversionRate: undefined,
+            icon: <DollarSign className="w-5 h-5" />,
+          },
+          {
+            id: 'proftest',
+            label: 'ProfTest Лиды',
+            sublabel: 'Регистрации',
+            value: proftestLeads,
+            conversionRate: undefined, // First real metric stage
             icon: <Users className="w-5 h-5" />,
           },
           {
             id: 'express',
-            label: 'Express Course',
-            sublabel: 'Покупки',
-            value: expressValue,
+            label: 'Купили Express',
+            sublabel: '5,000₸ за курс',
+            value: expressPurchases,
             revenue: expressRevenue,
-            conversionRate: proftestToExpress,
+            conversionRate: leadsToExpress,
             icon: <ShoppingCart className="w-5 h-5" />,
           },
           {
             id: 'main',
-            label: 'Integrator Flagman',
-            sublabel: 'Основной продукт',
-            value: mainValue,
+            label: 'Купили Flagman',
+            sublabel: '490,000₸ за курс',
+            value: mainPurchases,
             revenue: mainRevenue,
             conversionRate: expressToMain,
             icon: <Award className="w-5 h-5" />,
@@ -98,12 +114,10 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
         setStages(mappedStages);
         setTotalRevenue(response.data.totalRevenue || expressRevenue + mainRevenue);
       } else {
-        // Set placeholder stages on error
         setStages(getPlaceholderStages());
       }
     } catch (err: any) {
       console.error('Error fetching funnel:', err);
-      // Set placeholder stages on error
       setStages(getPlaceholderStages());
     } finally {
       setLoading(false);
@@ -112,16 +126,23 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
 
   const getPlaceholderStages = (): FunnelStage[] => [
     {
+      id: 'spend',
+      label: 'Затраты',
+      sublabel: 'Facebook Ads',
+      value: '$0',
+      icon: <DollarSign className="w-5 h-5" />,
+    },
+    {
       id: 'proftest',
-      label: 'ProfTest',
+      label: 'ProfTest Лиды',
       sublabel: 'Регистрации',
       value: 0,
       icon: <Users className="w-5 h-5" />,
     },
     {
       id: 'express',
-      label: 'Express Course',
-      sublabel: 'Покупки',
+      label: 'Купили Express',
+      sublabel: '5,000₸ за курс',
       value: 0,
       revenue: 0,
       conversionRate: 0,
@@ -129,8 +150,8 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
     },
     {
       id: 'main',
-      label: 'Integrator Flagman',
-      sublabel: 'Основной продукт',
+      label: 'Купили Flagman',
+      sublabel: '490,000₸ за курс',
       value: 0,
       revenue: 0,
       conversionRate: 0,
@@ -148,7 +169,8 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
     return `${value.toLocaleString('ru-RU')} ₸`;
   };
 
-  const widthPercentages = [100, 70, 45];
+  // Pyramid widths: widest (Spend) → narrowest (Flagman)
+  const widthPercentages = [100, 85, 65, 45];
 
   if (loading) {
     return (
@@ -159,7 +181,10 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
   }
 
   const displayStages = stages.length > 0 ? stages : getPlaceholderStages();
-  const hasData = displayStages.some(s => s.value > 0);
+  const hasData = displayStages.some(s => {
+    const v = s.value;
+    return typeof v === 'number' ? v > 0 : (v && v !== '$0');
+  });
 
   return (
     <div className={`w-full ${compact ? 'py-4' : 'py-6'}`}>
@@ -242,7 +267,7 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
                     {/* Right: Value + Revenue */}
                     <div className="text-right">
                       <p className="text-white font-bold text-xl tabular-nums">
-                        {formatNumber(stage.value)}
+                        {typeof stage.value === 'string' ? stage.value : formatNumber(stage.value)}
                       </p>
                       {stage.revenue !== undefined && stage.revenue > 0 && (
                         <p className="text-[#00FF88] text-xs font-medium">

@@ -62,9 +62,9 @@ export function initializeSupabase(): SupabaseClients {
   devLog('[Supabase Manager] ✅ Main client created (with auth)');
 
   // ═══════════════════════════════════════════════════════════════
-  // TRIPWIRE CLIENT - Data only, NO AUTH
+  // TRIPWIRE CLIENT - WITH AUTH (separate database, separate auth)
   // ═══════════════════════════════════════════════════════════════
-  
+
   const tripwireUrl = import.meta.env.VITE_TRIPWIRE_SUPABASE_URL;
   const tripwireKey = import.meta.env.VITE_TRIPWIRE_SUPABASE_ANON_KEY;
 
@@ -73,11 +73,15 @@ export function initializeSupabase(): SupabaseClients {
   if (tripwireUrl && tripwireKey) {
     tripwireClient = createClient(tripwireUrl, tripwireKey, {
       auth: {
-        persistSession: false, // ✅ Disable auth on data clients
-        autoRefreshToken: false,
+        autoRefreshToken: true, // ✅ Enable auto refresh for Tripwire auth
+        persistSession: true,   // ✅ CRITICAL: Persist session in localStorage
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        storageKey: 'sb-tripwire-auth-token', // 🔥 Separate key for Tripwire
+        flowType: 'pkce',
       },
     });
-    devLog('[Supabase Manager] ✅ Tripwire client created (data only)');
+    devLog('[Supabase Manager] ✅ Tripwire client created (with independent auth)');
   } else {
     console.warn('[Supabase Manager] ⚠️ Tripwire credentials not found, using mock');
     tripwireClient = mainClient; // Fallback to main
@@ -185,8 +189,10 @@ function setupAuthStateListener() {
 
 /**
  * Update all data clients with current auth token
- * 
+ *
  * This keeps all clients in sync with main auth
+ *
+ * NOTE: Tripwire has independent auth, so we don't sync it
  */
 function updateDataClientsWithToken(session: Session) {
   if (!clients) return;
@@ -197,14 +203,10 @@ function updateDataClientsWithToken(session: Session) {
   // This allows them to make authenticated requests
   // without triggering their own auth state changes
 
-  if (clients.tripwire !== clients.main) {
-    // @ts-ignore - setAuth is internal but works
-    clients.tripwire.auth.setSession({
-      access_token,
-      refresh_token: refresh_token || '',
-    });
-    devLog('[Supabase Manager] Tripwire token updated');
-  }
+  // 🚫 SKIP Tripwire - it has independent auth
+  // if (clients.tripwire !== clients.main) {
+  //   clients.tripwire.auth.setSession({ ... });
+  // }
 
   if (clients.landing !== clients.main) {
     // @ts-ignore
@@ -252,20 +254,29 @@ export function getAuthToken(): string | null {
  * Logout from all clients
  */
 export async function logoutFromAll() {
-  if (!clients?.main) return;
+  if (!clients) return;
 
   console.log('👋 [Supabase Manager] Logging out from all clients...');
 
-  // Sign out from primary auth client
-  await clients.main.auth.signOut();
+  // Sign out from primary auth client (main platform)
+  if (clients.main) {
+    await clients.main.auth.signOut();
+  }
+
+  // Sign out from Tripwire auth client (separate auth system)
+  if (clients.tripwire && clients.tripwire !== clients.main) {
+    await clients.tripwire.auth.signOut();
+  }
 
   // Clear session
   authSession = null;
 
-  // Clear tokens
+  // Clear ALL auth tokens
   try {
     localStorage.removeItem('supabase_token');
     localStorage.removeItem('tripwire_supabase_token');
+    localStorage.removeItem('sb-unified-auth-token'); // Main auth
+    localStorage.removeItem('sb-tripwire-auth-token'); // Tripwire auth
   } catch (e) {
     console.warn('⚠️ Failed to clear tokens');
   }

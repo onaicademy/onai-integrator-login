@@ -8,7 +8,7 @@
  * ✅ Pre-selection из БД
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,15 @@ interface FBAccount {
   currency?: string;
   timezone?: string;
   amount_spent?: string;
+  business_manager_id?: string;
+  business_manager_name?: string;
+}
+
+// Business Manager interface for hierarchical display
+interface BusinessManager {
+  id: string;
+  name: string;
+  accounts: FBAccount[];
 }
 
 interface Campaign {
@@ -64,6 +73,7 @@ export default function TrafficSettings() {
   
   // UI state
   const [expandedAccounts, setExpandedAccounts] = useState<Set<string>>(new Set());
+  const [expandedBMs, setExpandedBMs] = useState<Set<string>>(new Set());
   const [accountSearchQuery, setAccountSearchQuery] = useState('');
   const [campaignSearchQuery, setCampaignSearchQuery] = useState('');
 
@@ -212,7 +222,7 @@ export default function TrafficSettings() {
         }
       });
       
-      const merged = Array.from(accountsMap.values());
+      const merged: FBAccount[] = Array.from(accountsMap.values()) as FBAccount[];
       
       setAvailableAccounts(merged);
       
@@ -395,6 +405,38 @@ export default function TrafficSettings() {
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // GROUP ACCOUNTS BY BUSINESS MANAGER
+  // ═══════════════════════════════════════════════════════════════
+  
+  const businessManagers: BusinessManager[] = useMemo(() => {
+    const bmMap = new Map<string, BusinessManager>();
+    
+    availableAccounts.forEach(account => {
+      const bmId = account.business_manager_id || 'unknown';
+      const bmName = account.business_manager_name || 'Unknown Business Manager';
+      
+      if (!bmMap.has(bmId)) {
+        bmMap.set(bmId, { id: bmId, name: bmName, accounts: [] });
+      }
+      bmMap.get(bmId)!.accounts.push(account);
+    });
+    
+    return Array.from(bmMap.values()).sort((a, b) => b.accounts.length - a.accounts.length);
+  }, [availableAccounts]);
+
+  const toggleBMExpanded = (bmId: string) => {
+    setExpandedBMs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bmId)) {
+        newSet.delete(bmId);
+      } else {
+        newSet.add(bmId);
+      }
+      return newSet;
+    });
+  };
+
+  // ═══════════════════════════════════════════════════════════════
   // FILTERED LISTS
   // ═══════════════════════════════════════════════════════════════
   
@@ -435,7 +477,7 @@ export default function TrafficSettings() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <OnAILogo size="sm" />
+              <OnAILogo />
               <div>
                 <h1 className="text-xl font-bold text-white">Настройки</h1>
                 <p className="text-sm text-white/60">{user?.email}</p>
@@ -524,6 +566,11 @@ export default function TrafficSettings() {
                 {/* Счетчики */}
                 <div className="flex items-center gap-6 px-6 py-3 bg-white/5 rounded-lg">
                   <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{businessManagers.length}</div>
+                    <div className="text-xs text-white/60">BM</div>
+                  </div>
+                  <div className="w-px h-8 bg-white/20"></div>
+                  <div className="text-center">
                     <div className="text-2xl font-bold text-white">{selectedAccountIds.length}</div>
                     <div className="text-xs text-white/60">Кабинетов</div>
                   </div>
@@ -609,150 +656,197 @@ export default function TrafficSettings() {
               </div>
             )}
 
-            {/* Accounts List */}
-            <div className="space-y-2" data-tour="fb-accounts-list">
+            {/* Accounts List - Hierarchical by Business Manager */}
+            <div className="space-y-4" data-tour="fb-accounts-list">
               {availableAccounts.length === 0 ? (
                 <div className="text-center py-8 text-white/40">
                   <Facebook className="w-12 h-12 mx-auto mb-3 opacity-40" />
                   <p>Нажмите "Загрузить доступные кабинеты" выше</p>
                 </div>
-              ) : filteredAccounts.length === 0 ? (
+              ) : businessManagers.length === 0 ? (
                 <div className="text-center py-8 text-white/40">
                   <p>Ничего не найдено</p>
                 </div>
               ) : (
-                filteredAccounts.map(account => (
-                  <div key={account.id}>
-                    {/* Account Item */}
-                    <div 
-                      className={`
-                        p-4 rounded-lg border transition-all cursor-pointer
-                        ${selectedAccountIds.includes(account.id)
-                          ? 'bg-[#00FF88]/10 border-[#00FF88] hover:bg-[#00FF88]/15'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 flex-1">
-                          {/* Checkbox */}
-                          <Checkbox
-                            checked={selectedAccountIds.includes(account.id)}
-                            onCheckedChange={() => toggleAccount(account.id)}
-                            className="border-white/40"
-                          />
-                          
-                          {/* Account Info */}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-white">{account.name}</h3>
-                              {selectedAccountIds.includes(account.id) && (
-                                <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />
-                              )}
-                            </div>
-                            <p className="text-sm text-white/60">
-                              ID: {account.id} • {account.currency || 'USD'}
-                              {account.amount_spent && ` • Потрачено: $${account.amount_spent}`}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Expand campaigns button */}
-                        {selectedAccountIds.includes(account.id) && (
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleAccountExpanded(account.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className="text-white/60 hover:text-white"
-                          >
-                            {expandedAccounts.has(account.id) ? (
-                              <ChevronDown className="w-4 h-4" />
+                businessManagers.map(bm => {
+                  // Filter accounts by search
+                  const filteredBMAccounts = bm.accounts.filter(acc =>
+                    acc.name.toLowerCase().includes(accountSearchQuery.toLowerCase()) ||
+                    acc.id.toLowerCase().includes(accountSearchQuery.toLowerCase())
+                  );
+                  
+                  if (accountSearchQuery && filteredBMAccounts.length === 0) return null;
+                  
+                  const bmIsExpanded = expandedBMs.has(bm.id);
+                  const bmSelectedCount = bm.accounts.filter(acc => selectedAccountIds.includes(acc.id)).length;
+                  
+                  return (
+                    <div key={bm.id} className="rounded-xl border border-white/10 overflow-hidden">
+                      {/* Business Manager Header */}
+                      <div 
+                        className={`p-4 cursor-pointer transition-all ${
+                          bmSelectedCount > 0 ? 'bg-[#1877F2]/20' : 'bg-white/5 hover:bg-white/10'
+                        }`}
+                        onClick={() => toggleBMExpanded(bm.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {bmIsExpanded ? (
+                              <ChevronDown className="w-5 h-5 text-[#1877F2]" />
                             ) : (
-                              <ChevronRight className="w-4 h-4" />
+                              <ChevronRight className="w-5 h-5 text-white/60" />
                             )}
-                            Кампании
-                          </Button>
-                        )}
+                            <div className="w-10 h-10 rounded-lg bg-[#1877F2]/20 flex items-center justify-center">
+                              <Facebook className="w-5 h-5 text-[#1877F2]" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-white">{bm.name}</h3>
+                              <p className="text-sm text-white/60">
+                                {bm.accounts.length} кабинетов • Выбрано: {bmSelectedCount}
+                              </p>
+                            </div>
+                          </div>
+                          {bmSelectedCount > 0 && (
+                            <span className="px-3 py-1 bg-[#00FF88]/20 text-[#00FF88] rounded-full text-sm font-semibold">
+                              {bmSelectedCount} выбрано
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Campaigns List (когда expanded) */}
-                    {expandedAccounts.has(account.id) && selectedAccountIds.includes(account.id) && (
-                      <div className="ml-8 mt-2 space-y-2">
-                        {loadingCampaigns[account.id] ? (
-                          <div className="flex items-center gap-2 text-white/60 py-4">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Загрузка кампаний...</span>
-                          </div>
-                        ) : !availableCampaigns[account.id] || availableCampaigns[account.id].length === 0 ? (
-                          <div className="text-white/40 py-4 text-sm">
-                            Нет доступных кампаний
-                          </div>
-                        ) : (
-                          filteredCampaigns(account.id).map(campaign => (
-                            <div
-                              key={campaign.id}
-                              className={`
-                                p-3 rounded-lg border transition-all
-                                ${selectedCampaignIds.includes(campaign.id)
-                                  ? 'bg-[#00FF88]/10 border-[#00FF88]/50'
-                                  : 'bg-white/5 border-white/10 hover:bg-white/10'
-                                }
-                              `}
-                            >
-                              <div className="flex items-center gap-3">
-                                <Checkbox
-                                  checked={selectedCampaignIds.includes(campaign.id)}
-                                  onCheckedChange={() => toggleCampaign(campaign.id)}
-                                  className="border-white/40"
-                                />
-                                
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-medium text-white">{campaign.name}</h4>
+                      
+                      {/* Ad Accounts (when expanded) */}
+                      {bmIsExpanded && (
+                        <div className="border-t border-white/10 p-3 space-y-2 bg-black/20">
+                          {(accountSearchQuery ? filteredBMAccounts : bm.accounts).map(account => (
+                            <div key={account.id}>
+                              {/* Account Item */}
+                              <div 
+                                className={`
+                                  p-3 rounded-lg border transition-all cursor-pointer
+                                  ${selectedAccountIds.includes(account.id)
+                                    ? 'bg-[#00FF88]/10 border-[#00FF88] hover:bg-[#00FF88]/15'
+                                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                  }
+                                `}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3 flex-1">
+                                    {/* Checkbox */}
+                                    <Checkbox
+                                      checked={selectedAccountIds.includes(account.id)}
+                                      onCheckedChange={() => toggleAccount(account.id)}
+                                      className="border-white/40"
+                                    />
                                     
-                                    {/* 🔥 Targetologist Badge */}
-                                    {campaign.targetologist && (
-                                      <span className={`
-                                        px-2 py-0.5 rounded text-xs font-semibold
-                                        ${campaign.detectionMethod === 'database' ? 'bg-green-500/20 text-green-400 border border-green-500/40' : ''}
-                                        ${campaign.detectionMethod === 'utm' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' : ''}
-                                        ${campaign.detectionMethod === 'pattern' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : ''}
-                                        ${campaign.detectionMethod === 'manual' ? 'bg-gray-500/20 text-gray-400 border border-gray-500/40' : ''}
-                                      `}>
-                                        {campaign.detectionMethod === 'database' && '✅ '}
-                                        {campaign.detectionMethod === 'utm' && '🔗 '}
-                                        {campaign.detectionMethod === 'pattern' && '🎯 '}
-                                        {campaign.detectionMethod === 'manual' && '📝 '}
-                                        {campaign.targetologist}
-                                      </span>
-                                    )}
-                                    
-                                    {/* ❓ Needs Manual Assignment */}
-                                    {!campaign.targetologist && campaign.detectionMethod === 'manual' && (
-                                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/40">
-                                        ❓ Не определен
-                                      </span>
-                                    )}
-                                    {selectedCampaignIds.includes(campaign.id) && (
-                                      <CheckCircle2 className="w-3 h-3 text-[#00FF88]" />
-                                    )}
+                                    {/* Account Info */}
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <h4 className="font-medium text-white">{account.name}</h4>
+                                        {selectedAccountIds.includes(account.id) && (
+                                          <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-white/60">
+                                        ID: {account.id} • {account.currency || 'USD'}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <p className="text-xs text-white/60">
-                                    {campaign.status} • {campaign.objective || 'No objective'}
-                                  </p>
+
+                                  {/* Expand campaigns button */}
+                                  {selectedAccountIds.includes(account.id) && (
+                                    <Button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleAccountExpanded(account.id);
+                                      }}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-white/60 hover:text-white"
+                                    >
+                                      {expandedAccounts.has(account.id) ? (
+                                        <ChevronDown className="w-4 h-4" />
+                                      ) : (
+                                        <ChevronRight className="w-4 h-4" />
+                                      )}
+                                      Кампании
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
+
+                              {/* Campaigns List (когда expanded) */}
+                              {expandedAccounts.has(account.id) && selectedAccountIds.includes(account.id) && (
+                                <div className="ml-8 mt-2 space-y-2">
+                                  {loadingCampaigns[account.id] ? (
+                                    <div className="flex items-center gap-2 text-white/60 py-4">
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      <span>Загрузка кампаний...</span>
+                                    </div>
+                                  ) : !availableCampaigns[account.id] || availableCampaigns[account.id].length === 0 ? (
+                                    <div className="text-white/40 py-4 text-sm">
+                                      Нет доступных кампаний
+                                    </div>
+                                  ) : (
+                                    filteredCampaigns(account.id).map(campaign => (
+                                      <div
+                                        key={campaign.id}
+                                        className={`
+                                          p-3 rounded-lg border transition-all
+                                          ${selectedCampaignIds.includes(campaign.id)
+                                            ? 'bg-[#00FF88]/10 border-[#00FF88]/50'
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                          }
+                                        `}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <Checkbox
+                                            checked={selectedCampaignIds.includes(campaign.id)}
+                                            onCheckedChange={() => toggleCampaign(campaign.id)}
+                                            className="border-white/40"
+                                          />
+                                          
+                                          <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                              <h4 className="text-sm font-medium text-white">{campaign.name}</h4>
+                                              
+                                              {/* 🔥 Targetologist Badge */}
+                                              {campaign.targetologist && (
+                                                <span className={`
+                                                  px-2 py-0.5 rounded text-xs font-semibold
+                                                  ${campaign.detectionMethod === 'database' ? 'bg-green-500/20 text-green-400 border border-green-500/40' : ''}
+                                                  ${campaign.detectionMethod === 'utm' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' : ''}
+                                                  ${campaign.detectionMethod === 'pattern' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : ''}
+                                                  ${campaign.detectionMethod === 'manual' ? 'bg-gray-500/20 text-gray-400 border border-gray-500/40' : ''}
+                                                `}>
+                                                  {campaign.detectionMethod === 'database' && '✅ '}
+                                                  {campaign.detectionMethod === 'utm' && '🔗 '}
+                                                  {campaign.detectionMethod === 'pattern' && '🎯 '}
+                                                  {campaign.detectionMethod === 'manual' && '📝 '}
+                                                  {campaign.targetologist}
+                                                </span>
+                                              )}
+                                              
+                                              {selectedCampaignIds.includes(campaign.id) && (
+                                                <CheckCircle2 className="w-3 h-3 text-[#00FF88]" />
+                                              )}
+                                            </div>
+                                            <p className="text-xs text-white/60">
+                                              {campaign.status} • {campaign.objective || 'No objective'}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>

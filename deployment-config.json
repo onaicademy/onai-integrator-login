@@ -1,0 +1,353 @@
+{
+  "project": "Facebook API Integration",
+  "version": "1.0",
+  "createdDate": "2025-12-24",
+  "status": "production-ready",
+  
+  "summary": {
+    "description": "Facebook API integration для получения всех Business Manager и Ad Accounts с автоматическим обновлением токена",
+    "businessManagersFound": 8,
+    "adAccountsTotal": 21,
+    "tokenStatus": "active-with-auto-refresh",
+    "cronTaskInstalled": true
+  },
+
+  "facebook": {
+    "appId": "1079708200963910",
+    "appSecret": "48a635657fd97b73afc817d95a1f9dff",
+    "primaryBusinessId": "1425104648731040",
+    "accessToken": {
+      "type": "User Access Token",
+      "expiresDate": "2025-12-24T12:00:00.000Z",
+      "scopes": 51,
+      "status": "valid",
+      "autoRefreshEnabled": true,
+      "refreshCheckIntervalDays": 7
+    }
+  },
+
+  "businessManagers": [
+    {
+      "id": "1425104648731040",
+      "name": "TOO Academy",
+      "adAccountsCount": 1,
+      "adAccounts": [
+        {
+          "accountId": "30779210298344970",
+          "fullId": "act_30779210298344970",
+          "name": "onAI Academy",
+          "status": 1,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "id": "1174363964568351",
+      "name": "White Kimberly Flores",
+      "adAccountsCount": 0,
+      "adAccounts": []
+    },
+    {
+      "id": "1166877195542037",
+      "name": "labonte__1uwx25",
+      "adAccountsCount": 0,
+      "adAccounts": []
+    },
+    {
+      "id": "1142153484339267",
+      "name": "Onai academy",
+      "adAccountsCount": 0,
+      "adAccounts": []
+    },
+    {
+      "id": "627807087089319",
+      "name": "ONAI Academy, TOO",
+      "adAccountsCount": 3,
+      "adAccounts": [
+        {
+          "accountId": "723912340644156",
+          "fullId": "act_723912340644156",
+          "name": "AI BOT Target",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1296178948690331",
+          "fullId": "act_1296178948690331",
+          "name": "onAI academy",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "675529218691061",
+          "fullId": "act_675529218691061",
+          "name": "smmmcwin",
+          "status": 101,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "id": "511415357787388",
+      "name": "Дискурс Реклама",
+      "adAccountsCount": 10,
+      "adAccounts": [
+        {
+          "accountId": "1675253917222263",
+          "name": "Дискурс Реклама10",
+          "status": 9
+        },
+        {
+          "accountId": "836449538718885",
+          "name": "Дискурс Реклама9",
+          "status": 1
+        },
+        {
+          "accountId": "840154751880121",
+          "name": "Дискурс Реклама8",
+          "status": 1
+        },
+        {
+          "accountId": "1897552854199980",
+          "name": "Дискурс Реклама7",
+          "status": 1
+        },
+        {
+          "accountId": "1380183653716300",
+          "name": "Дискурс Реклама6",
+          "status": 1
+        },
+        {
+          "accountId": "1460199501683484",
+          "name": "Дискурс Реклама5",
+          "status": 1
+        },
+        {
+          "accountId": "1084528433855072",
+          "name": "Дискурс Реклама4",
+          "status": 1
+        },
+        {
+          "accountId": "1635735417001231",
+          "name": "Дискурс Реклама3",
+          "status": 1
+        },
+        {
+          "accountId": "1254961403085855",
+          "name": "Дискурс Реклама2",
+          "status": 1
+        },
+        {
+          "accountId": "1244178987054329",
+          "name": "Дискурс Реклама",
+          "status": 1
+        }
+      ]
+    },
+    {
+      "id": "219720327894125",
+      "name": "Nakama group",
+      "adAccountsCount": 2,
+      "adAccounts": [
+        {
+          "accountId": "1904738710280178",
+          "name": "Чатботы2.0",
+          "status": 3
+        },
+        {
+          "accountId": "460212879946365",
+          "name": "Чатботы",
+          "status": 3
+        }
+      ]
+    },
+    {
+      "id": "109908023605532",
+      "name": "Residence Astana",
+      "adAccountsCount": 5,
+      "adAccounts": [
+        {
+          "accountId": "536516782861387",
+          "name": "Maqtakyz Vending",
+          "status": 3
+        },
+        {
+          "accountId": "1666574150915271",
+          "name": "YourTeam",
+          "status": 1
+        },
+        {
+          "accountId": "964264512447589",
+          "name": "Nutrients.kz",
+          "status": 3
+        },
+        {
+          "accountId": "1148747516560616",
+          "name": "Tima",
+          "status": 3
+        },
+        {
+          "accountId": "940562651395715",
+          "name": "Residence Astana",
+          "status": 3
+        }
+      ]
+    }
+  ],
+
+  "scripts": {
+    "development": {
+      "basePath": "/Users/miso/onai-integrator-login",
+      "files": [
+        {
+          "name": "facebook-complete-final.js",
+          "purpose": "Главный скрипт - получение всех BM и AC",
+          "usage": "node facebook-complete-final.js",
+          "output": "JSON файл с полной структурой"
+        },
+        {
+          "name": "check-token-info.js",
+          "purpose": "Проверка информации о токене",
+          "usage": "node check-token-info.js",
+          "output": "Информация о токене и scopes"
+        },
+        {
+          "name": "token-manager.cjs",
+          "purpose": "Управление и обновление токена",
+          "usage": "node token-manager.cjs",
+          "output": ".facebook_token.json и логи"
+        },
+        {
+          "name": "setup-token-auto-refresh.sh",
+          "purpose": "Установка крон-задачи для автообновления",
+          "usage": "bash setup-token-auto-refresh.sh",
+          "output": "Установленная крон-задача"
+        }
+      ]
+    },
+    "production": {
+      "basePath": "/production/facebook",
+      "deploymentStatus": "pending",
+      "requiredFiles": [
+        "facebook-complete-final.js",
+        "check-token-info.js",
+        "token-manager.cjs",
+        "setup-token-auto-refresh.sh",
+        ".env",
+        ".facebook_token.json (auto-created)"
+      ],
+      "cronTask": {
+        "frequency": "daily",
+        "time": "09:00",
+        "command": "node /production/facebook/token-manager.cjs",
+        "logFile": "/production/facebook/token-manager.log"
+      }
+    }
+  },
+
+  "tokenRefresh": {
+    "status": "installed",
+    "installationDate": "2025-12-24",
+    "method": "crontab",
+    "schedule": "0 9 * * *",
+    "checkInterval": 7,
+    "checkBefore": "7 days before expiry",
+    "autoRefreshEnabled": true,
+    "logLocation": "/Users/miso/onai-integrator-login/token-manager.log",
+    "configFile": ".facebook_token.json",
+    "how_it_works": [
+      "Каждый день в 09:00 запускается token-manager.cjs",
+      "Скрипт проверяет статус текущего токена",
+      "Если осталось ≤7 дней - пытается обновить",
+      "Обновленный токен сохраняется в .facebook_token.json",
+      "Результат логируется в token-manager.log"
+    ],
+    "management_commands": {
+      "view_cron_tasks": "crontab -l",
+      "edit_cron_tasks": "crontab -e",
+      "run_manual_check": "node token-manager.cjs",
+      "view_logs": "tail -f token-manager.log",
+      "reinstall_cron": "bash setup-token-auto-refresh.sh"
+    }
+  },
+
+  "files": {
+    "development": {
+      "location": "/Users/miso/onai-integrator-login",
+      "scripts": [
+        "facebook-complete-final.js",
+        "check-token-info.js",
+        "token-manager.cjs",
+        "setup-token-auto-refresh.sh",
+        "fetch-facebook-managers-accounts.js",
+        "fetch-complete-facebook-structure.js",
+        "fetch-all-facebook-managers.js"
+      ],
+      "generated": [
+        "COMPLETE_FACEBOOK_STRUCTURE_*.json",
+        ".facebook_token.json",
+        "token-manager.log"
+      ],
+      "documentation": [
+        "DEPLOYMENT_REPORT_FACEBOOK_API.md",
+        "PRODUCTION_DEPLOYMENT_GUIDE.md",
+        "deployment-config.json"
+      ]
+    }
+  },
+
+  "nextSteps": [
+    "Убедиться что токен обновляется автоматически через крон",
+    "Протестировать деплой на staging перед production",
+    "Скопировать все файлы в production директорию",
+    "Установить крон-задачу на production сервере",
+    "Настроить мониторинг и alerting",
+    "Создать backup процедуры",
+    "Документировать все изменения и конфигурации"
+  ],
+
+  "recommendations": [
+    "Рассмотреть переход на System User Token (не требует обновления)",
+    "Настроить slack/email оповещения при ошибках обновления",
+    "Регулярно проверять логи обновления токена",
+    "Создавать бекапы JSON файлов с данными",
+    "Мониторить количество ad accounts (может измениться)"
+  ],
+
+  "security": {
+    "tokenHandling": "Токен хранится в .env файле (production) и .facebook_token.json",
+    "filePermissions": "700 для директории, 600 для конфиг файлов",
+    "logFileLocation": "/production/facebook/token-manager.log",
+    "backupLocation": "/production/facebook/backups/",
+    "recommendations": [
+      "Используй .env для production токена",
+      "Не коммитай .env в git",
+      "Регулярно ротируй токены",
+      "Логируй все попытки доступа",
+      "Используй System User Token для production (если возможно)"
+    ]
+  },
+
+  "monitoring": {
+    "dailyCheck": "Проверка token-manager.log",
+    "weeklyCheck": "Запуск node check-token-info.js",
+    "monthlyAudit": "Запуск node facebook-complete-final.js",
+    "alerts": [
+      "Токен истек - CRITICAL",
+      "Крон-задача не выполнилась - WARNING",
+      "Изменилось количество BM/AC - INFO",
+      "Ошибка при обновлении токена - ERROR"
+    ]
+  },
+
+  "documentation": {
+    "fullReport": "DEPLOYMENT_REPORT_FACEBOOK_API.md",
+    "deploymentGuide": "PRODUCTION_DEPLOYMENT_GUIDE.md",
+    "configFile": "deployment-config.json (this file)",
+    "facebookDocs": "https://developers.facebook.com/docs/graph-api"
+  },
+
+  "lastUpdated": "2025-12-24T00:00:00Z",
+  "createdBy": "GitHub Copilot",
+  "nextAgentNotes": "Смотри DEPLOYMENT_REPORT_FACEBOOK_API.md и PRODUCTION_DEPLOYMENT_GUIDE.md для полной информации о деплое на production"
+}

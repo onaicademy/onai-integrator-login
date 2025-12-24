@@ -1,0 +1,214 @@
+{
+  "timestamp": "2025-12-24T10:52:26.393Z",
+  "user": {
+    "id": "122129868110710011",
+    "name": "Ирина Викторовна Декскаймер"
+  },
+  "summary": {
+    "businessManagersTotal": 8,
+    "adAccountsTotal": 21,
+    "averageAccountsPerBusiness": 2.63
+  },
+  "businesses": [
+    {
+      "businessId": "511415357787388",
+      "businessName": "Дискурс Реклама",
+      "accountsCount": 10,
+      "accounts": [
+        {
+          "accountId": "1675253917222263",
+          "fullId": "act_1675253917222263",
+          "name": "Дискурс Реклама10",
+          "status": 9,
+          "currency": "USD"
+        },
+        {
+          "accountId": "836449538718885",
+          "fullId": "act_836449538718885",
+          "name": "Дискурс Реклама9",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "840154751880121",
+          "fullId": "act_840154751880121",
+          "name": "Дискурс Реклама8",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1897552854199980",
+          "fullId": "act_1897552854199980",
+          "name": "Дискурс Реклама7",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1380183653716300",
+          "fullId": "act_1380183653716300",
+          "name": "Дискурс Реклама6",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1460199501683484",
+          "fullId": "act_1460199501683484",
+          "name": "Дискурс Реклама5",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1084528433855072",
+          "fullId": "act_1084528433855072",
+          "name": "Дискурс Реклама4",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1635735417001231",
+          "fullId": "act_1635735417001231",
+          "name": "Дискурс Реклама3",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1254961403085855",
+          "fullId": "act_1254961403085855",
+          "name": "Дискурс Реклама2",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1244178987054329",
+          "fullId": "act_1244178987054329",
+          "name": "Дискурс Реклама",
+          "status": 1,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "businessId": "109908023605532",
+      "businessName": "Residence Astana",
+      "accountsCount": 5,
+      "accounts": [
+        {
+          "accountId": "536516782861387",
+          "fullId": "act_536516782861387",
+          "name": "Maqtakyz Vending",
+          "status": 3,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1666574150915271",
+          "fullId": "act_1666574150915271",
+          "name": "YourTeam",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "964264512447589",
+          "fullId": "act_964264512447589",
+          "name": "Nutrients.kz",
+          "status": 3,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1148747516560616",
+          "fullId": "act_1148747516560616",
+          "name": "Tima",
+          "status": 3,
+          "currency": "USD"
+        },
+        {
+          "accountId": "940562651395715",
+          "fullId": "act_940562651395715",
+          "name": "Residence Astana",
+          "status": 3,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "businessId": "627807087089319",
+      "businessName": "ONAI Academy, TOO",
+      "accountsCount": 3,
+      "accounts": [
+        {
+          "accountId": "723912340644156",
+          "fullId": "act_723912340644156",
+          "name": "AI BOT Target",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "1296178948690331",
+          "fullId": "act_1296178948690331",
+          "name": "onAI academy",
+          "status": 1,
+          "currency": "USD"
+        },
+        {
+          "accountId": "675529218691061",
+          "fullId": "act_675529218691061",
+          "name": "smmmcwin",
+          "status": 101,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "businessId": "219720327894125",
+      "businessName": "Nakama group",
+      "accountsCount": 2,
+      "accounts": [
+        {
+          "accountId": "1904738710280178",
+          "fullId": "act_1904738710280178",
+          "name": "Чатботы2.0",
+          "status": 3,
+          "currency": "USD"
+        },
+        {
+          "accountId": "460212879946365",
+          "fullId": "act_460212879946365",
+          "name": "Чатботы",
+          "status": 3,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "businessId": "1425104648731040",
+      "businessName": "TOO Academy",
+      "accountsCount": 1,
+      "accounts": [
+        {
+          "accountId": "30779210298344970",
+          "fullId": "act_30779210298344970",
+          "name": "onAI Academy",
+          "status": 1,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "businessId": "1174363964568351",
+      "businessName": "White Kimberly Flores",
+      "accountsCount": 0,
+      "accounts": []
+    },
+    {
+      "businessId": "1166877195542037",
+      "businessName": "labonte__1uwx25",
+      "accountsCount": 0,
+      "accounts": []
+    },
+    {
+      "businessId": "1142153484339267",
+      "businessName": "Onai academy",
+      "accountsCount": 0,
+      "accounts": []
+    }
+  ]
+}
