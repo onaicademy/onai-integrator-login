@@ -298,19 +298,14 @@ async function getExpressCoursePurchases(teamFilter?: string): Promise<FunnelMet
       console.log('[Funnel] Fetching Express Course PURCHASES from Landing DB (express_course_sales)...');
       
       // Get purchases from express_course_sales table in Landing DB
+      // ⚠️ ONLY real AmoCRM sales (deal_id < 1B), not migrated leads
       let query = landingSupabase
         .from('express_course_sales')
-        .select('id, amount, utm_source, sale_date');
+        .select('id, amount, utm_source, utm_medium, sale_date, deal_id')
+        .lt('deal_id', 1000000000);
       
-      // Filter by team via utm_source if specified
-      if (teamFilter) {
-        const teamUtmRule = getTeamUtmRule(teamFilter);
-        if (teamUtmRule && teamUtmRule.sources.length > 0) {
-          // Build OR filter for utm_source
-          const sourceFilters = teamUtmRule.sources.map((s: string) => `utm_source.ilike.%${s}%`).join(',');
-          query = query.or(sourceFilters);
-        }
-      }
+      // Note: We fetch all sales and filter in-memory for proper UTM matching
+      // (Supabase OR doesn't support complex source+medium matching)
       
       const { data, error } = await query;
       
@@ -319,11 +314,21 @@ async function getExpressCoursePurchases(teamFilter?: string): Promise<FunnelMet
         throw error;
       }
       
-      const express_purchases = data?.length || 0;
-      const express_revenue = data?.reduce((sum, row) => {
+      // Filter by team UTM rules in-memory
+      let filteredData = data || [];
+      if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Express by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(sale => matchesTeamUtm(sale, teamUtmRule));
+        }
+      }
+      
+      const express_purchases = filteredData.length;
+      const express_revenue = filteredData.reduce((sum, row) => {
         const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
         return sum + (amount || 5000);
-      }, 0) || 0;
+      }, 0);
       
       // Also get student stats from Tripwire for additional metrics
       const { data: profiles } = await tripwireAdminSupabase
@@ -370,16 +375,7 @@ async function getMainProductMetrics(teamFilter?: string): Promise<FunnelMetrics
       // Read from main_product_sales in Landing DB (where webhook saves)
       let query = landingSupabase
         .from('main_product_sales')
-        .select('id, amount, utm_source, sale_date');
-      
-      // Filter by utm_source if team specified
-      if (teamFilter) {
-        const teamUtmRule = getTeamUtmRule(teamFilter);
-        if (teamUtmRule && teamUtmRule.sources.length > 0) {
-          const sourceFilters = teamUtmRule.sources.map((s: string) => `utm_source.ilike.%${s}%`).join(',');
-          query = query.or(sourceFilters);
-        }
-      }
+        .select('id, amount, utm_source, utm_medium, sale_date');
       
       const { data, error } = await query;
       
@@ -393,11 +389,21 @@ async function getMainProductMetrics(teamFilter?: string): Promise<FunnelMetrics
         throw error;
       }
       
-      const main_purchases = data?.length || 0;
-      const main_revenue = data?.reduce((sum, row) => {
+      // Filter by team UTM rules in-memory
+      let filteredData = data || [];
+      if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Flagman by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(sale => matchesTeamUtm(sale, teamUtmRule));
+        }
+      }
+      
+      const main_purchases = filteredData.length;
+      const main_revenue = filteredData.reduce((sum, row) => {
         const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
         return sum + (amount || 490000);
-      }, 0) || 0;
+      }, 0);
       
       console.log(`[Funnel] ✅ Integrator Flagman: ${main_purchases} purchases, ${main_revenue.toLocaleString()} KZT`);
       
