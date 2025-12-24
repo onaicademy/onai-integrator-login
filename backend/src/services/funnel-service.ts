@@ -151,11 +151,11 @@ export function resolveFunnelDateRange(preset?: string, date?: string, start?: s
   const daysBackMatch = presetKey.match(/^(\d+)d$/);
   const daysBack = daysBackMatch ? parseInt(daysBackMatch[1], 10) : 30;
   const now = new Date();
-  const start = new Date(now);
-  start.setDate(start.getDate() - daysBack);
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - daysBack);
 
   return {
-    since: start.toISOString().split('T')[0],
+    since: startDate.toISOString().split('T')[0],
     until: now.toISOString().split('T')[0],
     preset: presetKey,
     singleDate: null,
