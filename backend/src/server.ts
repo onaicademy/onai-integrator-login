@@ -139,6 +139,7 @@ import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Te
 import trafficAuthRouter from './routes/traffic-auth.js'; // 🚀 Traffic Dashboard Auth
 import trafficPlansRouter from './routes/traffic-plans.js'; // 📊 Traffic Weekly Plans
 import trafficAdminRouter from './routes/traffic-admin.js'; // ⚙️ Traffic Admin Panel
+import attributionManagerRouter from './routes/attribution-manager.js'; // 🎯 Attribution Manager (Safety Net)
 import trafficSecurityRouter from './routes/traffic-security.js'; // 🔒 Traffic Security & Sessions Tracking
 import utmAnalyticsRouter from './routes/utm-analytics.js'; // 📊 UTM Analytics (All Sales Sources)
 import trafficOnboardingRouter from './routes/traffic-onboarding.js'; // 🎓 Traffic Onboarding Tour
@@ -517,6 +518,7 @@ app.use('/api/telegram', telegramTestRouter); // 🤖 Telegram Bot Testing (ма
 app.use('/api/traffic-auth', trafficAuthRouter); // 🚀 Traffic Dashboard Auth (JWT + bcrypt)
 app.use('/api/traffic-plans', trafficPlansRouter); // 📊 Traffic Weekly Plans (Groq AI)
 app.use('/api/traffic-admin', trafficAdminRouter); // ⚙️ Traffic Admin Panel (settings, users)
+app.use('/api/attribution', attributionManagerRouter); // 🎯 Attribution Manager (Safety Net)
 app.use('/api/traffic-security', trafficSecurityRouter); // 🔒 Traffic Security & Sessions Tracking
 app.use('/api/utm-analytics', utmAnalyticsRouter); // 📊 UTM Analytics (All Sales Sources)
 app.use('/api/traffic-onboarding', trafficOnboardingRouter); // 🎓 Traffic Onboarding Tour

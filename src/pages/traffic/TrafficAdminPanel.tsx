@@ -17,10 +17,11 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TrafficCabinetLayout } from '@/components/traffic/TrafficCabinetLayout';
-import { 
+import { AttributionPanel } from '@/components/traffic/AttributionPanel';
+import {
   Settings, Users, Sparkles, Loader2, CheckCircle, AlertCircle, RefreshCw,
   BarChart3, Shield, PieChart, Building2, TrendingUp, UserCheck, UserX,
-  Mail, Send, Calendar, Clock, Target, Activity
+  Mail, Send, Calendar, Clock, Target, Activity, GitBranch
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
@@ -32,7 +33,7 @@ const getPath = (path: string) => {
 };
 
 export default function TrafficAdminPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'settings' | 'generate'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'attribution' | 'settings' | 'generate'>('dashboard');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
@@ -78,6 +79,12 @@ export default function TrafficAdminPanel() {
             label="Пользователи"
           />
           <TabButton
+            active={activeTab === 'attribution'}
+            onClick={() => setActiveTab('attribution')}
+            icon={<GitBranch className="w-4 h-4" />}
+            label="Атрибуция"
+          />
+          <TabButton
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
             icon={<Settings className="w-4 h-4" />}
@@ -94,6 +101,7 @@ export default function TrafficAdminPanel() {
         {/* Content */}
         {activeTab === 'dashboard' && <DashboardPanel />}
         {activeTab === 'users' && <UsersPanel />}
+        {activeTab === 'attribution' && <AttributionPanel />}
         {activeTab === 'settings' && <SettingsPanel />}
         {activeTab === 'generate' && <GeneratePanel />}
       </div>

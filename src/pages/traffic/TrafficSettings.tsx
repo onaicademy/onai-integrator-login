@@ -653,7 +653,46 @@ export default function TrafficSettings() {
               </div>
             </div>
           </div>
-          
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* FACEBOOK TRACKING SETUP INSTRUCTIONS */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <div className="bg-gradient-to-r from-[#00FF88]/10 to-blue-500/10 backdrop-blur-sm rounded-xl border border-[#00FF88]/20 p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-[#00FF88]/20 flex items-center justify-center">
+                <Settings className="w-6 h-6 text-[#00FF88]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">⚙️ Настройка отслеживания кампаний</h3>
+                <p className="text-sm text-white/60">Используйте этот формат UTM-параметров для автоматической атрибуции</p>
+              </div>
+            </div>
+
+            <div className="bg-black/40 rounded-lg p-4 border border-[#00FF88]/20">
+              <p className="text-sm text-white/80 mb-3">
+                <strong className="text-[#00FF88]">Обязательный формат URL Parameters:</strong>
+              </p>
+              <div className="bg-[#1a1a24] rounded-lg p-4 font-mono text-sm border border-[#00FF88]/10">
+                <code className="text-[#00FF88]">
+                  utm_source=fb_{user?.team?.toLowerCase() || 'your_team'}&utm_medium=cpc&utm_campaign={'{{campaign.name}}'}
+                </code>
+              </div>
+              <div className="mt-4 space-y-2 text-xs text-white/70">
+                <p>• <span className="text-[#00FF88]">utm_source=fb_{user?.team?.toLowerCase() || 'your_team'}</span> — автоматически присвоит трафик вашей команде</p>
+                <p>• <span className="text-white/90">utm_medium=cpc</span> — тип трафика (обязательно "cpc")</p>
+                <p>• <span className="text-white/90">utm_campaign={'{{campaign.name}}'}</span> — динамическая переменная FB</p>
+              </div>
+
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <p className="text-xs text-yellow-200">
+                  <strong>⚠️ Важно:</strong> Если вы не укажете <code className="text-[#00FF88]">fb_{user?.team?.toLowerCase() || 'your_team'}</code> в utm_source,
+                  система попытается определить владельца кампании по рекламному кабинету.
+                  Если и кабинет не привязан к команде — кампания попадёт в раздел "Нераспределённые" в админке.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* ═══════════════════════════════════════════════════════════════ */}
           {/* FACEBOOK AD ACCOUNTS SECTION */}
           {/* ═══════════════════════════════════════════════════════════════ */}

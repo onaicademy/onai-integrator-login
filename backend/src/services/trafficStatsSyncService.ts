@@ -80,6 +80,55 @@ async function getUserTeamName(userId: string): Promise<string> {
   }
 }
 
+/**
+ * Attribution Safety Net: Determines team name using a fallback hierarchy
+ * Priority 1: UTM Source (fb_teamname pattern in campaign name)
+ * Priority 2: Ad Account ID mapping (integration_ad_accounts table)
+ * Priority 3: User's team from traffic_users
+ * Fallback: 'Unassigned'
+ */
+async function getAttributedTeamName(
+  userId: string,
+  campaignName: string,
+  adAccountId: string
+): Promise<string> {
+  // Priority 1: Check for fb_teamname pattern in campaign name
+  const utmMatch = campaignName.match(/fb_([a-zA-Z0-9_-]+)/i);
+  if (utmMatch && utmMatch[1]) {
+    const teamFromUtm = utmMatch[1];
+    console.log(`[Attribution] UTM match found: fb_${teamFromUtm} → ${teamFromUtm}`);
+    return teamFromUtm;
+  }
+
+  // Priority 2: Check Ad Account mapping in database
+  try {
+    const { data } = await landingSupabase
+      .from('integration_ad_accounts')
+      .select('team_name')
+      .eq('account_id', adAccountId)
+      .maybeSingle();
+
+    if (data?.team_name) {
+      console.log(`[Attribution] Ad Account mapping: ${adAccountId} → ${data.team_name}`);
+      return data.team_name;
+    }
+  } catch (error: any) {
+    console.warn(`[Attribution] Ad Account lookup failed for ${adAccountId}:`, error.message);
+  }
+
+  // Priority 3: Use user's team from traffic_users (with fallback mapping)
+  const userTeam = await getUserTeamName(userId);
+
+  // If userTeam is a UUID prefix (8 chars), it means no team was found → mark as Unassigned
+  if (userTeam.length === 8 && /^[a-f0-9]{8}$/.test(userTeam)) {
+    console.log(`[Attribution] No team found for user ${userId}, marking as Unassigned`);
+    return 'Unassigned';
+  }
+
+  console.log(`[Attribution] Using user team: ${userTeam}`);
+  return userTeam;
+}
+
 async function fetchAccountInsightsDaily(
   accountId: string,
   campaignIds: string[],
@@ -247,7 +296,6 @@ export async function syncUserTrafficStats(
 
   const rateMap = await getExchangeRateMap(globalStart, endDate);
   const fallbackRate = await getAverageExchangeRate(globalStart, endDate);
-  const teamName = await getUserTeamName(userId);
 
   const rows: any[] = [];
 
@@ -260,7 +308,7 @@ export async function syncUserTrafficStats(
       accessToken
     );
 
-    insights.forEach((row: any) => {
+    for (const row of insights) {
       const statDate = row.date_start || globalStart;
       const spendUsd = parseFloat(row.spend || '0');
       const impressions = parseInt(row.impressions || '0', 10);
@@ -272,6 +320,11 @@ export async function syncUserTrafficStats(
       const frequency = row.frequency ? parseFloat(row.frequency || '0') : 0;
       const rate = rateMap[statDate] || fallbackRate;
 
+      const campaignName = row.campaign_name || campaigns.find((c) => c.id === row.campaign_id)?.name || '';
+
+      // Use Attribution Safety Net to determine team
+      const teamName = await getAttributedTeamName(userId, campaignName, accountId);
+
       rows.push({
         date: statDate,  // Production DB uses 'date' column
         stat_date: statDate,  // Keep for backwards compatibility
@@ -279,7 +332,7 @@ export async function syncUserTrafficStats(
         team: teamName,
         ad_account_id: accountId,
         campaign_id: row.campaign_id,
-        campaign_name: row.campaign_name || campaigns.find((c) => c.id === row.campaign_id)?.name,
+        campaign_name: campaignName,
         spend_usd: Number(spendUsd.toFixed(4)),
         spend_kzt: Number((spendUsd * rate).toFixed(4)),
         impressions,
@@ -292,7 +345,7 @@ export async function syncUserTrafficStats(
         usd_to_kzt_rate: Number(rate.toFixed(4)),
         updated_at: new Date().toISOString(),
       });
-    });
+    }
   }
 
   await upsertStatsRows(rows);
