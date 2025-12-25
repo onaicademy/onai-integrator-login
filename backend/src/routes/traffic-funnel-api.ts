@@ -127,7 +127,7 @@ router.get('/funnel/:stageId', async (req: Request, res: Response) => {
 
 /**
  * GET /api/traffic-dashboard/funnel/health
- * 
+ *
  * Health check для funnel API
  */
 router.get('/funnel/health', async (req: Request, res: Response) => {
@@ -137,6 +137,141 @@ router.get('/funnel/health', async (req: Request, res: Response) => {
     service: 'funnel-api',
     timestamp: new Date().toISOString()
   });
+});
+
+/**
+ * GET /api/traffic-dashboard/funnel-analytics
+ *
+ * Cross-Device Funnel Analytics
+ * Tracks: ProfTest → Express Visit → Express Submit → Purchase
+ *
+ * Query params:
+ * - team (optional): Filter by utm_source
+ * - utm_campaign (optional): Filter by campaign
+ * - start (optional): Start date (YYYY-MM-DD)
+ * - end (optional): End date (YYYY-MM-DD)
+ *
+ * Response: Funnel stages with conversion rates
+ */
+router.get('/funnel-analytics', async (req: Request, res: Response) => {
+  try {
+    const { landingSupabase } = await import('../config/supabase-landing.js');
+
+    const teamFilter = req.query.team as string | undefined;
+    const campaignFilter = req.query.utm_campaign as string | undefined;
+    const startDate = req.query.start as string | undefined;
+    const endDate = req.query.end as string | undefined;
+
+    console.log('[Funnel Analytics API] Fetching conversion funnel data');
+    console.log('[Funnel Analytics API] Filters:', { teamFilter, campaignFilter, startDate, endDate });
+
+    // Build query
+    let query = landingSupabase
+      .from('journey_stages')
+      .select(`
+        lead_id,
+        event_type,
+        created_at,
+        metadata,
+        landing_leads!inner (
+          id,
+          client_id,
+          metadata
+        )
+      `);
+
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+
+    const { data: journeyData, error } = await query;
+
+    if (error) {
+      console.error('[Funnel Analytics API] Error:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    // Group by client_id and track progression
+    const clientJourneys = new Map<string, any>();
+
+    journeyData?.forEach((stage: any) => {
+      const clientId = stage.landing_leads?.client_id || stage.lead_id;
+      const utmParams = stage.landing_leads?.metadata?.utmParams || stage.metadata?.utmParams || {};
+      const utmSource = utmParams.utm_source || '';
+      const utmCampaign = utmParams.utm_campaign || '';
+
+      // Apply filters
+      if (teamFilter && !utmSource.includes(teamFilter)) return;
+      if (campaignFilter && utmCampaign !== campaignFilter) return;
+
+      if (!clientJourneys.has(clientId)) {
+        clientJourneys.set(clientId, {
+          client_id: clientId,
+          utm_source: utmSource,
+          utm_campaign: utmCampaign,
+          proftest_submit: false,
+          express_visit: false,
+          express_submit: false,
+          purchase: false,
+          revenue: 0,
+        });
+      }
+
+      const journey = clientJourneys.get(clientId);
+
+      if (stage.event_type === 'proftest_submit') journey.proftest_submit = true;
+      if (stage.event_type === 'express_visit') journey.express_visit = true;
+      if (stage.event_type === 'express_submit') journey.express_submit = true;
+      if (stage.event_type === 'purchase') {
+        journey.purchase = true;
+        journey.revenue = stage.metadata?.sale_amount || 0;
+      }
+    });
+
+    // Calculate funnel metrics
+    const journeys = Array.from(clientJourneys.values());
+
+    const stats = {
+      total_users: journeys.length,
+      proftest_leads: journeys.filter(j => j.proftest_submit).length,
+      express_visits: journeys.filter(j => j.express_visit).length,
+      express_apps: journeys.filter(j => j.express_submit).length,
+      purchases: journeys.filter(j => j.purchase).length,
+      total_revenue: journeys.reduce((sum, j) => sum + j.revenue, 0),
+    };
+
+    const conversions = {
+      cr1_proftest_to_express: stats.proftest_leads > 0
+        ? ((stats.express_apps / stats.proftest_leads) * 100).toFixed(2)
+        : '0.00',
+      cr2_express_to_purchase: stats.express_apps > 0
+        ? ((stats.purchases / stats.express_apps) * 100).toFixed(2)
+        : '0.00',
+      overall_cr: stats.proftest_leads > 0
+        ? ((stats.purchases / stats.proftest_leads) * 100).toFixed(2)
+        : '0.00',
+    };
+
+    return res.json({
+      success: true,
+      stats,
+      conversions,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error: any) {
+    console.error('[Funnel Analytics API] Error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch funnel analytics',
+    });
+  }
 });
 
 export default router;

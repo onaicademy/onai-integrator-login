@@ -364,12 +364,15 @@ router.post('/submit', async (req: Request, res: Response) => {
     }
 
     // 2. Add journey stage (optional - only if table exists)
+    // 🎯 EVENT TYPE DETECTION: express_submit (from payment selection)
     const stage = paymentMethod ? `payment_${paymentMethod}` : 'expresscourse_submitted';
+    const eventType = paymentMethod ? 'express_submit' : 'express_visit'; // ✅ NEW: Detect event type
     const { error: journeyError } = await landingSupabase
       .from('journey_stages')
       .insert({
         lead_id: leadId,
         stage,
+        event_type: eventType, // ✅ NEW: express_submit or express_visit
         source,
         metadata: {
           paymentMethod,
@@ -812,11 +815,13 @@ router.post('/proftest', async (req: Request, res: Response) => {
     }
 
     // 2. Add journey stage (optional - only if table exists)
+    // 🎯 EVENT TYPE DETECTION: proftest_submit
     const { error: journeyError } = await landingSupabase
       .from('journey_stages')
       .insert({
         lead_id: leadId,
         stage: 'proftest_submitted',
+        event_type: 'proftest_submit', // ✅ NEW: Event type for funnel tracking
         source: source || `proftest_${campaignSlug || 'unknown'}`,
         metadata: {
           answers,
@@ -1027,6 +1032,7 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
       .insert({
         lead_id: leadId,
         stage: 'expresscourse_clicked',
+        event_type: 'express_visit', // ✅ Track visit event
         source: source === 'email' ? 'email_link' : 'sms_link',
         metadata: {
           utm_source: source,
