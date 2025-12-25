@@ -50,6 +50,11 @@ const addDays = (date: string, days: number) => {
 
 const isDateBefore = (a: string, b: string) => new Date(a) < new Date(b);
 
+// Hardcoded team mapping fallback for known users
+const KNOWN_USER_TEAMS: Record<string, string> = {
+  '97524c98-c193-4d0d-b9ce-8a8011366a63': 'Kenesary',
+};
+
 async function getUserTeamName(userId: string): Promise<string> {
   try {
     const { data } = await trafficAdminSupabase
@@ -58,9 +63,20 @@ async function getUserTeamName(userId: string): Promise<string> {
       .eq('id', userId)
       .maybeSingle();
 
-    return data?.team_name || data?.username || data?.full_name || data?.email || userId.slice(0, 8);
-  } catch {
+    if (data?.team_name) return data.team_name;
+    if (data?.username) return data.username;
+    if (data?.full_name) return data.full_name;
+    if (data?.email) return data.email;
+
+    // Fallback to hardcoded mapping before using UUID prefix
+    if (KNOWN_USER_TEAMS[userId]) {
+      return KNOWN_USER_TEAMS[userId];
+    }
+
     return userId.slice(0, 8);
+  } catch {
+    // On error, try hardcoded mapping first
+    return KNOWN_USER_TEAMS[userId] || userId.slice(0, 8);
   }
 }
 
