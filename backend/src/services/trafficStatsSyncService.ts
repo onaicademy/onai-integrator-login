@@ -255,7 +255,8 @@ export async function syncUserTrafficStats(
       const rate = rateMap[statDate] || fallbackRate;
 
       rows.push({
-        stat_date: statDate,
+        date: statDate,  // Production DB uses 'date' column
+        stat_date: statDate,  // Keep for backwards compatibility
         user_id: userId,
         team: teamName,
         ad_account_id: accountId,
