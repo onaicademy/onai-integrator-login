@@ -119,10 +119,25 @@ async function getLatestCampaignDates(userId: string, campaignIds: string[]) {
 
 async function upsertStatsRows(rows: any[]) {
   if (!rows.length) return;
+
+  // Production DB doesn't have proper unique constraint for upsert
+  // Use delete + insert strategy instead
   for (const chunk of chunkArray(rows, 500)) {
+    // Delete existing rows for the same team+date+campaign combinations
+    for (const row of chunk) {
+      await landingSupabase
+        .from('traffic_stats')
+        .delete()
+        .eq('team', row.team)
+        .eq('date', row.date)
+        .eq('campaign_id', row.campaign_id);
+    }
+
+    // Insert new data
     const { error } = await landingSupabase
       .from('traffic_stats')
-      .upsert(chunk, { onConflict: 'team,date,campaign_id' });  // Production DB constraint
+      .insert(chunk);
+
     if (error) {
       throw error;
     }
