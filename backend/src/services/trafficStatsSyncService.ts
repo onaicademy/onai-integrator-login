@@ -122,7 +122,7 @@ async function upsertStatsRows(rows: any[]) {
   for (const chunk of chunkArray(rows, 500)) {
     const { error } = await landingSupabase
       .from('traffic_stats')
-      .upsert(chunk, { onConflict: 'stat_date,user_id,campaign_id' });
+      .upsert(chunk, { onConflict: 'team,date,campaign_id' });  // Production DB constraint
     if (error) {
       throw error;
     }
