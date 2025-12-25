@@ -36,6 +36,8 @@ export default function TrafficTargetologistDashboard() {
   const [showOnlyMyTeam, setShowOnlyMyTeam] = useState(false);
   const [dateRange, setDateRange] = useState<'7d' | '14d' | '30d'>('7d');
   const [customDate, setCustomDate] = useState<string | null>(null);
+  const [rangeStart, setRangeStart] = useState<string | null>(null);
+  const [rangeEnd, setRangeEnd] = useState<string | null>(null);
   const [currency, setCurrency] = useState<'USD' | 'KZT'>('USD');
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
@@ -102,16 +104,20 @@ export default function TrafficTargetologistDashboard() {
   }, []);
 
   // Fetch analytics data
+  const hasCustomRange = Boolean(rangeStart && rangeEnd);
+
   const { data: analytics, isLoading: analyticsLoading, refetch, isFetching } = useQuery({
-    queryKey: ['combined-analytics', dateRange, customDate],
+    queryKey: ['combined-analytics', user?.id, dateRange, customDate, rangeStart, rangeEnd],
     queryFn: async () => {
-      const url = customDate 
-        ? `${API_URL}/api/traffic/combined-analytics?date=${customDate}`
-        : `${API_URL}/api/traffic/combined-analytics?preset=${dateRange}`;
-      const response = await axios.get(url);
+      const url = hasCustomRange
+        ? `${API_URL}/api/traffic/combined-analytics?start=${rangeStart}&end=${rangeEnd}`
+        : customDate 
+          ? `${API_URL}/api/traffic/combined-analytics?date=${customDate}`
+          : `${API_URL}/api/traffic/combined-analytics?preset=${dateRange}`;
+      const response = await axios.get(`${url}&userId=${user?.id}`);
       return response.data;
     },
-    enabled: !!user,
+    enabled: !!user?.id,
     refetchInterval: 600000,
     retry: 2,
   });
@@ -300,9 +306,11 @@ export default function TrafficTargetologistDashboard() {
                   onClick={() => {
                     setDateRange(range);
                     setCustomDate(null);
+                    setRangeStart(null);
+                    setRangeEnd(null);
                   }}
                   className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                    dateRange === range && !customDate
+                    dateRange === range && !customDate && !hasCustomRange
                       ? 'bg-[#00FF88] text-black'
                       : 'text-gray-500 hover:text-white'
                   }`}
@@ -318,13 +326,57 @@ export default function TrafficTargetologistDashboard() {
               <input
                 type="date"
                 value={customDate || ''}
-                onChange={(e) => setCustomDate(e.target.value)}
+                onChange={(e) => {
+                  setCustomDate(e.target.value);
+                  setRangeStart(null);
+                  setRangeEnd(null);
+                }}
                 max={new Date().toISOString().split('T')[0]}
                 className="bg-transparent text-white text-xs border-none outline-none w-28"
                 style={{ colorScheme: 'dark' }}
               />
               {customDate && (
                 <button onClick={() => setCustomDate(null)} className="p-0.5 hover:text-white">
+                  <X className="w-3 h-3 text-gray-500" />
+                </button>
+              )}
+            </div>
+
+            {/* Custom Range */}
+            <div className="flex items-center gap-2 bg-[#0a0a0a] rounded-lg border border-gray-800 px-3 py-1.5">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <input
+                type="date"
+                value={rangeStart || ''}
+                onChange={(e) => {
+                  setRangeStart(e.target.value);
+                  setCustomDate(null);
+                }}
+                max={rangeEnd || new Date().toISOString().split('T')[0]}
+                className="bg-transparent text-white text-xs border-none outline-none w-28"
+                style={{ colorScheme: 'dark' }}
+              />
+              <span className="text-xs text-gray-600">—</span>
+              <input
+                type="date"
+                value={rangeEnd || ''}
+                onChange={(e) => {
+                  setRangeEnd(e.target.value);
+                  setCustomDate(null);
+                }}
+                min={rangeStart || undefined}
+                max={new Date().toISOString().split('T')[0]}
+                className="bg-transparent text-white text-xs border-none outline-none w-28"
+                style={{ colorScheme: 'dark' }}
+              />
+              {hasCustomRange && (
+                <button
+                  onClick={() => {
+                    setRangeStart(null);
+                    setRangeEnd(null);
+                  }}
+                  className="p-0.5 hover:text-white"
+                >
                   <X className="w-3 h-3 text-gray-500" />
                 </button>
               )}
@@ -343,7 +395,7 @@ export default function TrafficTargetologistDashboard() {
             {/* Exchange Rate */}
             {analytics?.exchangeRate && (
               <span className="text-xs text-gray-600 hidden md:inline">
-                1 USD = {analytics.exchangeRate.usdToKzt.toFixed(0)} ₸
+                1 USD = {analytics.exchangeRate.usdToKzt.toFixed(2)} ₸
               </span>
             )}
           </div>
@@ -362,7 +414,14 @@ export default function TrafficTargetologistDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Left: Funnel Pyramid */}
               <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-                <PremiumFunnelPyramid teamFilter={showOnlyMyTeam ? teamName : null} />
+                <PremiumFunnelPyramid
+                  teamFilter={showOnlyMyTeam ? teamName : null}
+                  userId={user?.id}
+                  preset={customDate || hasCustomRange ? null : dateRange}
+                  date={customDate}
+                  startDate={hasCustomRange ? rangeStart : null}
+                  endDate={hasCustomRange ? rangeEnd : null}
+                />
               </div>
 
               {/* Right: Metrics Grid */}

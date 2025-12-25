@@ -22,6 +22,8 @@ const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
 
 // Cache TTL: 5 minutes
 const CACHE_TTL = 300;
+const CAMPAIGNS_CACHE_TTL = 300;
+const CAMPAIGNS_LITE_TTL = 900;
 
 interface FacebookAdAccount {
   id: string;
@@ -37,6 +39,7 @@ interface FacebookAdAccount {
 interface FacebookCampaign {
   id: string;
   name: string;
+  ad_account_id: string;
   status?: string;
   objective?: string;
   effective_status?: string;
@@ -52,6 +55,18 @@ interface FacebookCampaign {
   detectionMethod?: DetectionMethod;
   detectionConfidence?: DetectionConfidence;
 }
+
+type CampaignInsights = {
+  campaign_id?: string;
+  spend?: string;
+  impressions?: string;
+  clicks?: string;
+  reach?: string;
+  actions?: Array<{
+    action_type?: string;
+    value?: string;
+  }>;
+};
 
 /**
  * Fetch ALL ad accounts from Facebook Business Manager
@@ -203,7 +218,8 @@ export async function fetchAllAdAccounts(forceRefresh = false): Promise<{
  */
 export async function fetchCampaignsForAccount(
   accountId: string,
-  forceRefresh = false
+  forceRefresh = false,
+  lite = false
 ): Promise<{
   success: boolean;
   campaigns: FacebookCampaign[];
@@ -211,7 +227,7 @@ export async function fetchCampaignsForAccount(
   cached: boolean;
   error?: string;
 }> {
-  const cacheKey = `fb:campaigns:${accountId}`;
+  const cacheKey = `fb:campaigns:${accountId}:${lite ? 'lite' : 'full'}`;
 
   try {
     // Validate account ID format
@@ -219,25 +235,24 @@ export async function fetchCampaignsForAccount(
       throw new Error('Invalid account ID format (must start with "act_")');
     }
 
-    // Check cache first (unless force refresh)
-    if (!forceRefresh) {
-      const cachedData = await cacheGet<{
-        campaigns: FacebookCampaign[];
-        count: number;
-      }>(cacheKey);
+    const cachedData = !forceRefresh
+      ? await cacheGet<{
+          campaigns: FacebookCampaign[];
+          count: number;
+        }>(cacheKey)
+      : null;
 
-      if (cachedData) {
-        console.log(`✅ [Facebook Service] Returning cached campaigns for ${accountId}`);
-        return {
-          success: true,
-          campaigns: cachedData.campaigns,
-          count: cachedData.count,
-          cached: true
-        };
-      }
+    if (cachedData) {
+      console.log(`✅ [Facebook Service] Returning cached campaigns for ${accountId}`);
+      return {
+        success: true,
+        campaigns: cachedData.campaigns,
+        count: cachedData.count,
+        cached: true
+      };
     }
 
-    console.log(`📡 [Facebook Service] Fetching campaigns for ${accountId}...`);
+    console.log(`📡 [Facebook Service] Fetching campaigns for ${accountId}${lite ? ' (lite)' : ''}...`);
 
     const fbToken = process.env.FB_ACCESS_TOKEN || process.env.FACEBOOK_ADS_TOKEN;
     
@@ -245,34 +260,91 @@ export async function fetchCampaignsForAccount(
       throw new Error('Facebook access token not configured');
     }
 
-    // Step 1: Fetch basic campaign data
+    const metaKey = `fb:campaigns:meta:${accountId}:${lite ? 'lite' : 'full'}`;
+    const cachedMeta = await cacheGet<{ etag?: string; lastModified?: string }>(metaKey);
+    const headers: Record<string, string> = {};
+    if (cachedMeta?.etag) headers['If-None-Match'] = cachedMeta.etag;
+    if (cachedMeta?.lastModified) headers['If-Modified-Since'] = cachedMeta.lastModified;
+
+    // Step 1: Fetch basic campaign data (conditional request if meta exists)
     const campaignsResponse = await axios.get(`${FB_API_BASE}/${accountId}/campaigns`, {
       params: {
         access_token: fbToken,
         fields: 'id,name,status,objective,effective_status',
         limit: 500
       },
+      headers,
+      timeout: 15000,
+      validateStatus: (status) => status === 200 || status === 304,
+    });
+
+    if (campaignsResponse.status === 304) {
+      if (cachedData) {
+        console.log(`✅ [Facebook Service] Campaigns not modified for ${accountId}, using cache`);
+        return {
+          success: true,
+          campaigns: cachedData.campaigns,
+          count: cachedData.count,
+          cached: true
+        };
+      }
+      console.log(`⚠️ [Facebook Service] 304 without cache for ${accountId}, retrying full fetch`);
+      return fetchCampaignsForAccount(accountId, true, lite);
+    }
+
+    const campaigns = campaignsResponse.data?.data || [];
+    const etag = campaignsResponse.headers?.etag;
+    const lastModified = campaignsResponse.headers?.['last-modified'];
+    if (etag || lastModified) {
+      await cacheSet(metaKey, { etag, lastModified }, CACHE_TTL);
+    }
+    console.log(`📊 [Facebook Service] Found ${campaigns.length} campaigns`);
+
+    if (lite) {
+      const liteCampaigns: FacebookCampaign[] = campaigns.map((campaign: any) => ({
+        id: campaign.id,
+        name: campaign.name,
+        status: campaign.effective_status || campaign.status,
+        objective: campaign.objective,
+        effective_status: campaign.effective_status,
+        ad_account_id: accountId
+      }));
+
+      await cacheSet(cacheKey, {
+        campaigns: liteCampaigns,
+        count: liteCampaigns.length
+      }, CAMPAIGNS_LITE_TTL);
+
+      return {
+        success: true,
+        campaigns: liteCampaigns,
+        count: liteCampaigns.length,
+        cached: false
+      };
+    }
+
+    // Step 2: Fetch insights at account level (avoid N+1 requests)
+    const insightsResponse = await axios.get(`${FB_API_BASE}/${accountId}/insights`, {
+      params: {
+        access_token: fbToken,
+        fields: 'campaign_id,spend,impressions,clicks,reach,actions',
+        date_preset: 'last_30d',
+        level: 'campaign',
+        limit: 500
+      },
       timeout: 15000
     });
 
-    const campaigns = campaignsResponse.data.data || [];
-    console.log(`📊 [Facebook Service] Found ${campaigns.length} campaigns`);
+    const insightsRows = insightsResponse.data.data || [];
+    const insightsMap = new Map<string, CampaignInsights>(
+      insightsRows.map((row: any) => [row.campaign_id, row as CampaignInsights])
+    );
 
-    // Step 2: Fetch insights for each campaign (in batches to avoid rate limits)
     const campaignsWithInsights: FacebookCampaign[] = [];
     
     for (const campaign of campaigns) {
       try {
-        const insightsResponse = await axios.get(`${FB_API_BASE}/${campaign.id}/insights`, {
-          params: {
-            access_token: fbToken,
-            fields: 'spend,impressions,clicks,reach,actions',
-            date_preset: 'last_30d'
-          },
-          timeout: 10000
-        });
-
-        const insights = insightsResponse.data.data?.[0] || {};
+        const insights = insightsMap.get(campaign.id) || ({} as CampaignInsights);
         
         // Calculate conversions from actions
         let conversions = 0;
@@ -301,7 +373,12 @@ export async function fetchCampaignsForAccount(
         );
 
         campaignsWithInsights.push({
-          ...campaign,
+          id: campaign.id,
+          name: campaign.name,
+          status: campaign.effective_status || campaign.status,
+          objective: campaign.objective,
+          effective_status: campaign.effective_status,
+          ad_account_id: accountId,
           spend: insights.spend || '0',
           impressions: insights.impressions || '0',
           clicks: insights.clicks || '0',
@@ -316,7 +393,7 @@ export async function fetchCampaignsForAccount(
         });
 
       } catch (insightsError: any) {
-        console.warn(`⚠️ [Facebook Service] Failed to fetch insights for campaign ${campaign.id}:`, insightsError.message);
+        console.warn(`⚠️ [Facebook Service] Failed to process campaign ${campaign.id}:`, insightsError.message);
 
         // 🔥 Detect targetologist even for campaigns without insights
         const detection = await detectTargetologist(
@@ -328,7 +405,12 @@ export async function fetchCampaignsForAccount(
 
         // Include campaign without insights
         campaignsWithInsights.push({
-          ...campaign,
+          id: campaign.id,
+          name: campaign.name,
+          status: campaign.effective_status || campaign.status,
+          objective: campaign.objective,
+          effective_status: campaign.effective_status,
+          ad_account_id: accountId,
           spend: '0',
           impressions: '0',
           clicks: '0',
@@ -350,7 +432,7 @@ export async function fetchCampaignsForAccount(
     await cacheSet(cacheKey, {
       campaigns: campaignsWithInsights,
       count: campaignsWithInsights.length
-    }, CACHE_TTL);
+    }, CAMPAIGNS_CACHE_TTL);
 
     return {
       success: true,

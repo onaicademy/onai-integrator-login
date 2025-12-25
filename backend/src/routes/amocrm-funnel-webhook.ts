@@ -164,7 +164,7 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
         deal_id: parseInt(lead.id.toString()),
         pipeline_id: lead.pipeline_id,
         status_id: lead.status_id,
-        amount: 490000, // Main product = 490K KZT
+        amount: 5000, // Express course = 5K KZT
         utm_source: utmData.utm_source || null,
         utm_campaign: utmData.utm_campaign || null,
         utm_medium: utmData.utm_medium || null,
@@ -177,10 +177,10 @@ router.post('/funnel-sale', async (req: Request, res: Response) => {
 
       console.log('[AmoCRM Funnel Webhook] 💾 Saving to DB:', JSON.stringify(saleData, null, 2));
 
-      // Save to Supabase (Landing DB - main_product_sales table)
+      // Save to Supabase (Landing DB - express_course_sales table)
       try {
         const { data: savedData, error } = await landingSupabase
-          .from('main_product_sales')
+          .from('express_course_sales')
           .upsert(saleData, {
             onConflict: 'deal_id'
           })

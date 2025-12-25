@@ -283,7 +283,7 @@ class BotHealthMonitor {
         `https://${subdomain}.amocrm.ru/api/v4/account`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 10000,
+          timeout: 20000,
         }
       );
 
@@ -295,9 +295,10 @@ class BotHealthMonitor {
         responseTime: Date.now() - startTime,
       };
     } catch (error: any) {
+      const isTimeout = error.code === 'ECONNABORTED' || /timeout/i.test(error.message);
       return {
         name: 'AmoCRM API',
-        status: 'error',
+        status: isTimeout ? 'warning' : 'error',
         lastCheck: new Date().toISOString(),
         message: error.response?.data?.detail || error.message,
         responseTime: Date.now() - startTime,

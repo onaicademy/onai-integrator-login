@@ -183,7 +183,8 @@ initSentry(app);
 import { 
   aiLimiter, 
   apiLimiter, 
-  authLimiter 
+  authLimiter,
+  trafficFacebookLimiter
 } from './middleware/rate-limit';
 
 // ✅ Enhanced Security Headers with Helmet
@@ -330,6 +331,7 @@ app.use(userActivityErrorLogger); // 📝 Log API errors to user_activity_logs
 app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
 app.use('/api/tripwire/', apiLimiter); // 100 req/15min для tripwire
 app.use('/api/admin/', apiLimiter);    // 100 req/15min для admin
+app.use('/api/traffic-facebook/', trafficFacebookLimiter); // FB cache API limiter
 // AI endpoints получат строгий лимит в своих роутах (10 req/min)
 
 // Увеличиваем timeout для массовой загрузки видео
@@ -741,17 +743,20 @@ const server = app.listen(PORT, () => {
         const { startDailyTrafficReport } = await import('./jobs/dailyTrafficReport');
         const { startWeeklyTrafficReport } = await import('./jobs/weeklyTrafficReport');
         const { startDailyDebugReportJob } = await import('./jobs/dailyDebugReport');
+        const { startDailyTrafficStatsSync } = await import('./jobs/dailyTrafficStatsSync');
 
         startExchangeRateFetcher();     // 08:00 Almaty (02:00 UTC)
         startDailyTrafficReport();      // 08:05 Almaty (02:05 UTC)
         startWeeklyTrafficReport();     // Monday 08:10 Almaty (02:10 UTC)
         startDailyDebugReportJob();     // 23:00 Almaty (17:00 UTC) - Daily Debug Report via GROQ
+        startDailyTrafficStatsSync();   // 08:15 Almaty (02:15 UTC)
 
         console.log('✅ Currency & Traffic Reports schedulers initialized');
         console.log('   - Exchange Rate Fetcher: 08:00 Almaty (02:00 UTC)');
         console.log('   - Daily Traffic Report: 08:05 Almaty (02:05 UTC)');
         console.log('   - Weekly Traffic Report: Monday 08:10 Almaty (02:10 UTC)');
         console.log('   - Daily Debug Report: 23:00 Almaty (17:00 UTC) - GROQ AI Summary');
+        console.log('   - Daily Traffic Stats Sync: 08:15 Almaty (02:15 UTC)');
       } catch (error) {
         console.error('❌ Failed to initialize Currency/Traffic Reports:', error);
       }
@@ -826,4 +831,3 @@ setInterval(() => {
 console.log('✅ Cache cleanup scheduled (every 5 minutes)');
 
 export default app;
-

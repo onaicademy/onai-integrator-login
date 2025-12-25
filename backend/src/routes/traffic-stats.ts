@@ -1,8 +1,13 @@
-// @ts-nocheck
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { AMOCRM_CONFIG } from '../config/amocrm-config.js';
 import { supabase } from '../config/supabase';
+import { database } from '../config/database-layer.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
+import { landingSupabase } from '../config/supabase-landing.js';
+import { cacheGet, cacheSet } from '../config/redis.js';
+import { getAlmatyDate, getYesterdayAlmaty } from '../utils/timezone';
+import { getAverageExchangeRate, getExchangeRateForDate } from '../services/exchangeRateService.js';
 
 const router = Router();
 
@@ -13,41 +18,22 @@ const AMOCRM_TIMEOUT = 60000;
 // Facebook Ads configuration
 const FB_API_VERSION = 'v21.0';
 const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
-const FB_ACCESS_TOKEN = process.env.FACEBOOK_ADS_TOKEN || 'EAAPVZCSfHj0YBQGxLZAdo9TK0m0Wuj3czwTmXXfEmvUNfwLWMaypNgn4rZBFjsT8w049mzXYBZAGhVkb9Qc7nNXLCpIPMu2NuDfQNEjM3rHXyeSOvSQ2vjhdRppKykbjhLATTRHYFxvPRWEZAg0wnXqXuzRB0BEuZCBELO0yZCPNPpQtiZBijR1c3ZC3p51C8Qb0u';
+const FB_ACCESS_TOKEN = process.env.FACEBOOK_ADS_TOKEN;
+
+if (!FB_ACCESS_TOKEN) {
+  console.error('❌ CRITICAL: FACEBOOK_ADS_TOKEN not configured in environment variables');
+}
 
 // 💱 Курс валют (USD → KZT)
-let cachedExchangeRate: { rate: number; timestamp: number } | null = null;
-const CACHE_DURATION = 3600000; // 1 час
 
-async function getUSDtoKZTRate(): Promise<number> {
-  try {
-    // Проверяем кеш
-    if (cachedExchangeRate && Date.now() - cachedExchangeRate.timestamp < CACHE_DURATION) {
-      console.log(`💱 Using cached USD/KZT rate: ${cachedExchangeRate.rate}`);
-      return cachedExchangeRate.rate;
-    }
-
-    // Получаем актуальный курс
-    const response = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json', {
-      timeout: 5000,
-    });
-    
-    const rate = response.data?.usd?.kzt;
-    
-    if (!rate || typeof rate !== 'number') {
-      console.warn('⚠️ Invalid exchange rate, using fallback: 470');
-      return 470; // Fallback курс
-    }
-
-    // Кешируем
-    cachedExchangeRate = { rate, timestamp: Date.now() };
-    console.log(`💱 Fetched new USD/KZT rate: ${rate}`);
-    
-    return rate;
-  } catch (error) {
-    console.error('❌ Error fetching exchange rate:', error);
-    return cachedExchangeRate?.rate || 470; // Используем кеш или fallback
+async function getUSDtoKZTRate(startDate?: string, endDate?: string): Promise<number> {
+  if (startDate && endDate) {
+    return getAverageExchangeRate(startDate, endDate);
   }
+  if (startDate) {
+    return getExchangeRateForDate(startDate);
+  }
+  return getExchangeRateForDate(getAlmatyDate());
 }
 
 const AD_ACCOUNTS = {
@@ -80,6 +66,147 @@ const AD_ACCOUNTS = {
     campaignPatterns: ['alex', 'traf4', 'proftest'],
   },
 };
+
+const USER_ANALYTICS_CACHE_TTL = 300;
+
+const normalizeAccountId = (id?: string | null) => {
+  if (!id) return '';
+  return id.startsWith('act_') ? id : `act_${id}`;
+};
+
+const normalizeCampaigns = (campaigns: any[] = []) => {
+  const map = new Map<string, any>();
+  campaigns.forEach((campaign) => {
+    if (!campaign?.id) return;
+    const normalizedAccountId = normalizeAccountId(String(campaign.ad_account_id || ''));
+    const normalized = { ...campaign, ad_account_id: normalizedAccountId };
+    const existing = map.get(campaign.id);
+    if (!existing) {
+      map.set(campaign.id, normalized);
+      return;
+    }
+    const existingAccountId = existing.ad_account_id || '';
+    const preferCandidate = normalizedAccountId.startsWith('act_') && !existingAccountId.startsWith('act_');
+    map.set(campaign.id, preferCandidate ? normalized : { ...normalized, ...existing });
+  });
+  return Array.from(map.values());
+};
+
+const chunkArray = <T>(items: T[], size: number) => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+};
+
+const matchesUtmSource = (lead: any, utmSource: string) => {
+  const source = (lead.utm_source || lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source || '')
+    .toString()
+    .toLowerCase();
+  return source === utmSource.toLowerCase();
+};
+
+async function getUserTeamName(userId: string): Promise<string> {
+  try {
+    const { data, error } = await trafficAdminSupabase
+      .from('traffic_users')
+      .select('team_name')
+      .eq('id', userId)
+      .maybeSingle();
+    if (!error && data?.team_name) {
+      return data.team_name;
+    }
+  } catch (error) {
+    console.warn('⚠️ [Combined Analytics] Failed to resolve team name:', error);
+  }
+  return 'Targetologist';
+}
+
+async function fetchCampaignInsightsForAccount(
+  accountId: string,
+  campaignIds: string[],
+  since: string,
+  until: string,
+  accessToken: string
+) {
+  let spend = 0;
+  let impressions = 0;
+  let clicks = 0;
+  let reach = 0;
+  const uniqueCampaignIds = Array.from(new Set(campaignIds));
+
+  for (const chunk of chunkArray(uniqueCampaignIds, 50)) {
+    const response = await axios.get(`${FB_BASE_URL}/${accountId}/insights`, {
+      params: {
+        access_token: accessToken,
+        fields: 'campaign_id,spend,impressions,clicks,reach',
+        time_range: JSON.stringify({ since, until }),
+        level: 'campaign',
+        filtering: JSON.stringify([{
+          field: 'campaign.id',
+          operator: 'IN',
+          value: chunk,
+        }]),
+        limit: 500,
+      },
+      timeout: 15000,
+    });
+
+    const rows = response.data?.data || [];
+    rows.forEach((row: any) => {
+      spend += parseFloat(row.spend || '0');
+      impressions += parseInt(row.impressions || '0', 10);
+      clicks += parseInt(row.clicks || '0', 10);
+      reach += parseInt(row.reach || '0', 10);
+    });
+  }
+
+  return { spend, impressions, clicks, reach };
+}
+
+async function getLandingStatsSummary(
+  userId: string,
+  campaignIds: string[],
+  since: string,
+  until: string
+) {
+  const query = landingSupabase
+    .from('traffic_stats')
+    .select('spend_usd, spend_kzt, impressions, clicks, reach, usd_to_kzt_rate')
+    .eq('user_id', userId)
+    .gte('stat_date', since)
+    .lte('stat_date', until);
+
+  if (campaignIds.length > 0) {
+    query.in('campaign_id', campaignIds);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.warn('[Combined Analytics] Landing traffic_stats error:', error.message);
+    return null;
+  }
+
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  const totals = data.reduce(
+    (acc, row) => {
+      acc.spend_usd += parseFloat((row as any).spend_usd || '0');
+      acc.spend_kzt += parseFloat((row as any).spend_kzt || '0');
+      acc.impressions += parseInt((row as any).impressions || '0', 10);
+      acc.clicks += parseInt((row as any).clicks || '0', 10);
+      acc.reach += parseInt((row as any).reach || '0', 10);
+      return acc;
+    },
+    { spend_usd: 0, spend_kzt: 0, impressions: 0, clicks: 0, reach: 0 }
+  );
+
+  return totals;
+}
 
 // Create axios client for AmoCRM
 const amocrmClient = axios.create({
@@ -499,33 +626,251 @@ router.get('/pipeline', async (req: Request, res: Response) => {
 router.get('/combined-analytics', async (req: Request, res: Response) => {
   try {
     const preset = (req.query.preset as string) || '30d';
+    const presetKey = preset.toLowerCase();
     const customDate = req.query.date as string; // YYYY-MM-DD format
+    const rangeStart = typeof req.query.start === 'string' ? req.query.start : undefined;
+    const rangeEnd = typeof req.query.end === 'string' ? req.query.end : undefined;
+    const userId = typeof req.query.userId === 'string' ? req.query.userId : undefined;
+
+    if (rangeStart && rangeEnd) {
+      const startDateObj = new Date(rangeStart);
+      const endDateObj = new Date(rangeEnd);
+      if (Number.isNaN(startDateObj.getTime()) || Number.isNaN(endDateObj.getTime()) || startDateObj > endDateObj) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid date range',
+        });
+      }
+    }
     
     // Get date range
     let cutoff: number;
     let since: string;
     let until: string;
+    let singleDate: string | null = null;
 
-    if (customDate) {
-      // Custom single date - показываем данные за эти сутки
-      const selectedDate = new Date(customDate);
-      const nextDay = new Date(selectedDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      
-      since = selectedDate.toISOString().split('T')[0];
-      until = selectedDate.toISOString().split('T')[0];
-      cutoff = selectedDate.getTime();
-      
-      console.log(`📅 Custom date selected: ${since} (single day)`);
-    } else {
+    if (rangeStart && rangeEnd) {
+      since = rangeStart;
+      until = rangeEnd;
+      singleDate = rangeStart === rangeEnd ? rangeStart : null;
+      cutoff = new Date(`${since}T00:00:00+06:00`).getTime();
+    } else if (customDate) {
+      singleDate = customDate;
+    } else if (presetKey === 'today') {
+      singleDate = getAlmatyDate();
+    } else if (presetKey === 'yesterday' || presetKey === '24h' || presetKey === '1d') {
+      singleDate = getYesterdayAlmaty();
+    }
+
+    if (singleDate) {
+      // Single day range (Almaty timezone)
+      since = singleDate;
+      until = singleDate;
+      cutoff = new Date(`${singleDate}T00:00:00+06:00`).getTime();
+      console.log(`📅 Single date selected: ${since} (preset: ${preset})`);
+    } else if (!since || !until) {
       // Preset range
-    const now = Date.now();
-    const daysBack = preset === '7d' ? 7 : preset === '14d' ? 14 : 30;
+      const now = Date.now();
+      const daysBackMatch = presetKey.match(/^(\d+)d$/);
+      const daysBack = daysBackMatch ? parseInt(daysBackMatch[1], 10) : 30;
       cutoff = now - (daysBack * 24 * 60 * 60 * 1000);
       since = new Date(cutoff).toISOString().split('T')[0];
       until = new Date().toISOString().split('T')[0];
     }
+    const rangeStartMs = new Date(`${since}T00:00:00+06:00`).getTime();
+    const rangeEndMs = new Date(`${until}T23:59:59+06:00`).getTime();
+
+    if (userId) {
+      const cacheKey = `combined:user:${userId}:${since}:${until}`;
+      const cached = await cacheGet<any>(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+
+      const settings = await database.getSettings(userId);
+      const selectedCampaigns = normalizeCampaigns(settings?.tracked_campaigns || [])
+        .filter((campaign: any) => campaign.enabled !== false);
+
+      if (!selectedCampaigns.length) {
+        const usdToKztRate = await getUSDtoKZTRate(since, until);
+        const emptyResponse = {
+          success: true,
+          period: { since, until, preset: rangeStart && rangeEnd ? 'custom' : preset },
+          teams: [],
+          totals: {
+            spend: 0,
+            spendKZT: 0,
+            revenue: 0,
+            sales: 0,
+            impressions: 0,
+            clicks: 0,
+            roas: 0,
+            cpa: 0,
+            ctr: 0,
+          },
+          topUtmBySales: [],
+          topCampaignsByCtr: [],
+          topCampaignsByVideo: [],
+          exchangeRate: {
+            usdToKzt: usdToKztRate,
+            updatedAt: new Date().toISOString(),
+          },
+          updatedAt: new Date().toISOString(),
+          message: 'No campaigns selected',
+        };
+        await cacheSet(cacheKey, emptyResponse, USER_ANALYTICS_CACHE_TTL);
+        return res.json(emptyResponse);
+      }
+
+      const selectedCampaignIds = selectedCampaigns.map((campaign: any) => campaign.id);
+      const landingSummary = await getLandingStatsSummary(userId, selectedCampaignIds, since, until);
+
+      let totalSpend = 0;
+      let totalSpendKzt = 0;
+      let totalImpressions = 0;
+      let totalClicks = 0;
+      let totalReach = 0;
+      let exchangeRateValue = 0;
+
+      if (landingSummary) {
+        totalSpend = landingSummary.spend_usd;
+        totalSpendKzt = landingSummary.spend_kzt;
+        totalImpressions = landingSummary.impressions;
+        totalClicks = landingSummary.clicks;
+        totalReach = landingSummary.reach;
+        if (totalSpend > 0 && totalSpendKzt > 0) {
+          exchangeRateValue = totalSpendKzt / totalSpend;
+        } else {
+          exchangeRateValue = await getUSDtoKZTRate(since, until);
+          totalSpendKzt = totalSpend * exchangeRateValue;
+        }
+      } else {
+        const campaignsByAccount = new Map<string, string[]>();
+        for (const campaign of selectedCampaigns) {
+          const accountId = normalizeAccountId(campaign.ad_account_id);
+          if (!accountId) continue;
+          const list = campaignsByAccount.get(accountId) || [];
+          list.push(campaign.id);
+          campaignsByAccount.set(accountId, list);
+        }
+
+        const accessToken = FB_ACCESS_TOKEN;
+        if (!accessToken) {
+          return res.status(500).json({
+            success: false,
+            error: 'Facebook token not configured',
+          });
+        }
+
+        for (const [accountId, campaignIds] of campaignsByAccount.entries()) {
+          try {
+            const metrics = await fetchCampaignInsightsForAccount(
+              accountId,
+              campaignIds,
+              since,
+              until,
+              accessToken
+            );
+            totalSpend += metrics.spend;
+            totalImpressions += metrics.impressions;
+            totalClicks += metrics.clicks;
+            totalReach += metrics.reach;
+          } catch (error: any) {
+            console.error(`❌ [Combined Analytics] FB insights error for ${accountId}:`, error.message);
+          }
+        }
+        exchangeRateValue = await getUSDtoKZTRate(since, until);
+        totalSpendKzt = totalSpend * exchangeRateValue;
+      }
+
+      const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+
+      const utmSource = settings?.utm_sources?.facebook
+        || settings?.utm_source
+        || settings?.personal_utm_source;
+
+      let sales = 0;
+      if (utmSource) {
+        const paidLeads = await getAllPaidLeads();
+        for (const lead of paidLeads) {
+          const utmData = extractUTMFromLead(lead);
+          const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
+
+          if (singleDate) {
+            const leadDate = getAlmatyDate(new Date(closedTime));
+            if (leadDate !== singleDate) {
+              continue;
+            }
+          } else if (closedTime < rangeStartMs || closedTime > rangeEndMs) {
+            continue;
+          }
+
+          if (matchesUtmSource(utmData, utmSource)) {
+            sales++;
+          }
+        }
+      }
+
+      const revenueKZT = sales * 5000;
+      const spendKZT = totalSpendKzt;
+      const roas = spendKZT > 0 ? revenueKZT / spendKZT : 0;
+      const cpa = sales > 0 ? totalSpend / sales : 0;
+
+      const teamName = await getUserTeamName(userId);
+      const teamEntry = {
+        team: teamName,
+        spend: totalSpend,
+        spendKZT,
+        revenue: revenueKZT,
+        roas,
+        sales,
+        cpa,
+        impressions: totalImpressions,
+        clicks: totalClicks,
+        ctr,
+        reach: totalReach,
+        leads: 0,
+        fbPurchases: 0,
+        videoMetrics: null,
+        topVideoCreatives: [],
+        campaigns: [],
+      };
+
+      const response = {
+        success: true,
+        period: { since, until, preset: rangeStart && rangeEnd ? 'custom' : preset },
+        teams: [teamEntry],
+        totals: {
+          spend: totalSpend,
+          spendKZT,
+          revenue: revenueKZT,
+          sales,
+          impressions: totalImpressions,
+          clicks: totalClicks,
+          roas,
+          cpa,
+          ctr,
+        },
+        topUtmBySales: [],
+        topCampaignsByCtr: [],
+        topCampaignsByVideo: [],
+        exchangeRate: {
+          usdToKzt: exchangeRateValue,
+          updatedAt: new Date().toISOString(),
+        },
+        updatedAt: new Date().toISOString(),
+      };
+
+      await cacheSet(cacheKey, response, USER_ANALYTICS_CACHE_TTL);
+      return res.json(response);
+    }
     
+    const cacheKey = `combined:all:${since}:${until}`;
+    const cachedAll = await cacheGet<any>(cacheKey);
+    if (cachedAll) {
+      return res.json(cachedAll);
+    }
+
     console.log(`📊 Fetching combined analytics (TRIPWIRE ONLY): ${since} to ${until}`);
     
     // 1. Fetch FB Ads spend - ONLY tripwire campaigns
@@ -810,16 +1155,16 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     for (const lead of processedLeads) {
       const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
       
-      // Для custom date - проверяем что сделка закрыта именно в этот день
-      if (customDate) {
-        const leadDate = new Date(closedTime).toISOString().split('T')[0];
-        if (leadDate !== customDate) {
+      // Для single date - проверяем что сделка закрыта именно в этот день (Almaty)
+      if (singleDate) {
+        const leadDate = getAlmatyDate(new Date(closedTime));
+        if (leadDate !== singleDate) {
           outsideDateRangeCount++;
           continue;
         }
       } else {
         // Для preset - проверяем что сделка в диапазоне
-        if (closedTime < cutoff) {
+        if (closedTime < rangeStartMs || closedTime > rangeEndMs) {
           outsideDateRangeCount++;
           continue;
         }
@@ -869,22 +1214,23 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     
     // 3. Combine data
     // 💱 Получаем курс для корректного ROAS
-    const usdToKztRate = await getUSDtoKZTRate();
+    const usdToKztRate = await getUSDtoKZTRate(since, until);
     
     const combined = fbResults.map(fb => {
       // Match team names
-      let amocrmTeam = amocrmStats[fb.team] || amocrmStats[fb.team.toLowerCase()];
-      
+      let amocrmTeam: { sales: number; revenue: number } | undefined = amocrmStats[fb.team] || amocrmStats[fb.team.toLowerCase()];
+
       // Try matching by UTM pattern
       if (!amocrmTeam) {
         const config = AD_ACCOUNTS[fb.team as keyof typeof AD_ACCOUNTS];
         if (config) {
-          amocrmTeam = Object.entries(amocrmStats).find(([key]) => 
+          const found = Object.entries(amocrmStats).find(([key]) =>
             key.toLowerCase().includes(config.utmPattern.toLowerCase())
-          )?.[1];
+          );
+          amocrmTeam = found ? found[1] : undefined;
         }
       }
-      
+
       const sales = amocrmTeam?.sales || 0;
       const revenueKZT = amocrmTeam?.revenue || 0; // Revenue в KZT
       const spendKZT = fb.spend * usdToKztRate; // Конвертируем spend в KZT
@@ -939,13 +1285,13 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     for (const lead of processedLeads) {
       const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
       
-      // Для custom date - проверяем что сделка закрыта именно в этот день
-      if (customDate) {
-        const leadDate = new Date(closedTime).toISOString().split('T')[0];
-        if (leadDate !== customDate) continue;
+      // Для single date - проверяем что сделка закрыта именно в этот день (Almaty)
+      if (singleDate) {
+        const leadDate = getAlmatyDate(new Date(closedTime));
+        if (leadDate !== singleDate) continue;
       } else {
         // Для preset - проверяем что сделка в диапазоне
-        if (closedTime < cutoff) continue;
+        if (closedTime < rangeStartMs || closedTime > rangeEndMs) continue;
       }
       
       const campaign = lead.utm_campaign || lead.utm_content || 'unknown';
@@ -1027,9 +1373,9 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
         completionRate: Number(item.completionRate.toFixed(1)),
       }));
     
-    res.json({
+    const responsePayload = {
       success: true,
-      period: { since, until, preset },
+      period: { since, until, preset: rangeStart && rangeEnd ? 'custom' : preset },
       teams: combined,
       totals: {
         ...totals,
@@ -1043,10 +1389,13 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       topCampaignsByVideo,  // Топ по видео (Facebook Ads)
       exchangeRate: {
         usdToKzt: usdToKztRate,
-        updatedAt: cachedExchangeRate?.timestamp ? new Date(cachedExchangeRate.timestamp).toISOString() : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    await cacheSet(cacheKey, responsePayload, USER_ANALYTICS_CACHE_TTL);
+    res.json(responsePayload);
 
     // 💾 АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ ОТЧЕТА В БД (если это запрос за конкретную дату)
     if (customDate) {

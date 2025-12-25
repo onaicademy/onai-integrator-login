@@ -7,7 +7,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { getFunnelMetrics, getFunnelStageDetails } from '../services/funnel-service.js';
+import { getFunnelMetrics, getFunnelStageDetails, resolveFunnelDateRange } from '../services/funnel-service.js';
 
 const router = Router();
 
@@ -33,11 +33,17 @@ const router = Router();
 router.get('/funnel', async (req: Request, res: Response) => {
   try {
     const teamFilter = req.query.team as string | undefined;
+    const userId = req.query.userId as string | undefined;
+    const preset = typeof req.query.preset === 'string' ? req.query.preset : undefined;
+    const date = typeof req.query.date === 'string' ? req.query.date : undefined;
+    const start = typeof req.query.start === 'string' ? req.query.start : undefined;
+    const end = typeof req.query.end === 'string' ? req.query.end : undefined;
+    const dateRange = resolveFunnelDateRange(preset, date, start, end);
     
     console.log('[Funnel API] GET /funnel - fetching all stages');
     console.log('[Funnel API] Team filter:', teamFilter || 'all teams');
 
-    const result = await getFunnelMetrics(teamFilter);
+    const result = await getFunnelMetrics(teamFilter, userId, dateRange);
 
     return res.json(result);
 
@@ -74,6 +80,12 @@ router.get('/funnel/:stageId', async (req: Request, res: Response) => {
   try {
     const { stageId } = req.params;
     const teamFilter = req.query.team as string | undefined;
+    const userId = req.query.userId as string | undefined;
+    const preset = typeof req.query.preset === 'string' ? req.query.preset : undefined;
+    const date = typeof req.query.date === 'string' ? req.query.date : undefined;
+    const start = typeof req.query.start === 'string' ? req.query.start : undefined;
+    const end = typeof req.query.end === 'string' ? req.query.end : undefined;
+    const dateRange = resolveFunnelDateRange(preset, date, start, end);
 
     console.log(`[Funnel API] GET /funnel/${stageId} - fetching stage details`);
     console.log('[Funnel API] Team filter:', teamFilter || 'all teams');
@@ -88,7 +100,7 @@ router.get('/funnel/:stageId', async (req: Request, res: Response) => {
       });
     }
 
-    const stage = await getFunnelStageDetails(stageId, teamFilter);
+    const stage = await getFunnelStageDetails(stageId, teamFilter, userId, dateRange);
 
     if (!stage) {
       return res.status(404).json({

@@ -8,14 +8,47 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { database } from '../config/database-layer.js';
+import { scheduleUserTrafficStatsSync } from '../services/trafficStatsSyncService.js';
 import axios from 'axios';
 
 const router = Router();
 
 const FB_API_VERSION = 'v18.0';
 const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
+
+const normalizeAccountId = (id?: string | null) => {
+  if (!id) return id || '';
+  return id.startsWith('act_') ? id : `act_${id}`;
+};
+
+const normalizeAccounts = (accounts: any[] = []) => {
+  const map = new Map<string, any>();
+  accounts.forEach((account) => {
+    if (!account?.id) return;
+    const normalizedId = normalizeAccountId(String(account.id));
+    map.set(normalizedId, { ...account, id: normalizedId });
+  });
+  return Array.from(map.values());
+};
+
+const normalizeCampaigns = (campaigns: any[] = []) => {
+  const map = new Map<string, any>();
+  campaigns.forEach((campaign) => {
+    if (!campaign?.id) return;
+    const normalizedAccountId = normalizeAccountId(String(campaign.ad_account_id || ''));
+    const normalized = { ...campaign, ad_account_id: normalizedAccountId };
+    const existing = map.get(campaign.id);
+    if (!existing) {
+      map.set(campaign.id, normalized);
+      return;
+    }
+    const existingAccountId = existing.ad_account_id || '';
+    const preferCandidate = normalizedAccountId.startsWith('act_') && !existingAccountId.startsWith('act_');
+    map.set(campaign.id, preferCandidate ? normalized : { ...normalized, ...existing });
+  });
+  return Array.from(map.values());
+};
 
 /**
  * GET /api/traffic-settings/facebook/status
@@ -190,6 +223,17 @@ router.get('/:userId', async (req: Request, res: Response) => {
     
     // ✅ Используем database layer
     const settings = await database.getSettings(userId);
+    const normalizedSettings = settings
+      ? {
+          ...settings,
+          fb_ad_accounts: normalizeAccounts(settings.fb_ad_accounts || []),
+          tracked_campaigns: normalizeCampaigns(settings.tracked_campaigns || []),
+          personal_utm_source: settings.personal_utm_source ?? settings.utm_source,
+          utm_sources: settings.utm_sources
+            ? { ...settings.utm_sources, facebook: settings.utm_source || settings.utm_sources.facebook }
+            : { facebook: settings.utm_source },
+        }
+      : settings;
     
     // ✅ If no settings found, return empty defaults instead of 500
     if (!settings) {
@@ -206,7 +250,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
     
     res.json({
       success: true,
-      settings
+      settings: normalizedSettings || settings
     });
     
   } catch (error: any) {
@@ -517,10 +561,38 @@ router.put('/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const updateData = req.body;
+    const existingSettings = await database.getSettings(userId);
+    const utmSource = updateData.personal_utm_source ?? updateData.utm_source;
+    const mergedUtmSources = {
+      ...(existingSettings?.utm_sources || {}),
+      ...(utmSource ? { facebook: utmSource } : {}),
+    };
+    const normalizedPayload = {
+      fb_ad_accounts: normalizeAccounts(updateData.fb_ad_accounts || []),
+      tracked_campaigns: normalizeCampaigns(updateData.tracked_campaigns || []),
+      utm_source: utmSource,
+      utm_sources: mergedUtmSources,
+      utm_medium: updateData.utm_medium,
+      utm_templates: updateData.utm_templates,
+      fb_access_token: updateData.fb_access_token,
+      notification_email: updateData.notification_email,
+      notification_telegram: updateData.notification_telegram,
+      report_frequency: updateData.report_frequency,
+    };
+    const sanitizedPayload = Object.fromEntries(
+      Object.entries(normalizedPayload).filter(([, value]) => value !== undefined)
+    );
     
     // ✅ Используем database layer
-    const settings = await database.updateSettings(userId, updateData);
+    const settings = await database.updateSettings(userId, sanitizedPayload);
     
+    scheduleUserTrafficStatsSync(userId, {
+      daysBack: 14,
+      includeToday: true,
+      warmCache: true,
+      reason: 'settings_saved',
+    });
+
     res.json({
       success: true,
       settings
@@ -594,16 +666,9 @@ router.get('/:userId/fb-accounts', async (req: Request, res: Response) => {
 router.get('/:userId/campaigns', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const { adAccountId } = req.query;
+    const adAccountId = typeof req.query.adAccountId === 'string' ? req.query.adAccountId : undefined;
     
-    const supabase = trafficAdminSupabase;
-    
-    // Получаем настройки
-    const { data: settings } = await supabase
-      .from('traffic_targetologist_settings')
-      .select('fb_access_token, fb_ad_accounts')
-      .eq('user_id', userId)
-      .single();
+    const settings = await database.getSettings(userId);
     
     const accessToken = settings?.fb_access_token || process.env.FB_ACCESS_TOKEN;
     
@@ -721,17 +786,7 @@ router.post('/:userId/fb-token', async (req: Request, res: Response) => {
       });
     }
     
-    // Сохраняем токен
-    const supabase = trafficAdminSupabase;
-    
-    const { data, error } = await supabase
-      .from('traffic_targetologist_settings')
-      .update({ fb_access_token: token })
-      .eq('user_id', userId)
-      .select()
-      .single();
-    
-    if (error) throw error;
+    await database.updateSettings(userId, { fb_access_token: token });
     
     res.json({
       success: true,

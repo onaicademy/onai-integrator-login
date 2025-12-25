@@ -55,6 +55,48 @@ interface Campaign {
   detectionConfidence?: 'high' | 'medium' | 'low';
 }
 
+const normalizeAccountId = (id: string) => {
+  if (!id) return id;
+  return id.startsWith('act_') ? id : `act_${id}`;
+};
+
+const normalizeAccounts = (accounts: FBAccount[]) => {
+  const map = new Map<string, FBAccount>();
+  accounts.forEach(account => {
+    const normalizedId = normalizeAccountId(account.id);
+    map.set(normalizedId, { ...account, id: normalizedId });
+  });
+  return Array.from(map.values());
+};
+
+const normalizeCampaigns = (campaigns: Campaign[]) => {
+  const map = new Map<string, Campaign>();
+  campaigns.forEach(campaign => {
+    if (!campaign?.id) return;
+    const normalizedAccountId = normalizeAccountId(campaign.ad_account_id);
+    const normalized = { ...campaign, ad_account_id: normalizedAccountId };
+    const existing = map.get(campaign.id);
+    if (!existing) {
+      map.set(campaign.id, normalized);
+      return;
+    }
+    const existingAccountId = existing.ad_account_id || '';
+    const preferCandidate = normalizedAccountId.startsWith('act_') && !existingAccountId.startsWith('act_');
+    map.set(campaign.id, preferCandidate ? normalized : { ...normalized, ...existing });
+  });
+  return Array.from(map.values());
+};
+
+const groupCampaignsByAccount = (campaigns: Campaign[]) => {
+  const grouped: Record<string, Campaign[]> = {};
+  campaigns.forEach(campaign => {
+    const accountId = normalizeAccountId(campaign.ad_account_id);
+    if (!grouped[accountId]) grouped[accountId] = [];
+    grouped[accountId].push({ ...campaign, ad_account_id: accountId });
+  });
+  return grouped;
+};
+
 export default function TrafficSettings() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
@@ -62,6 +104,7 @@ export default function TrafficSettings() {
   const [saving, setSaving] = useState(false);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [loadingCampaigns, setLoadingCampaigns] = useState<Record<string, boolean>>({});
+  const [campaignsLoadedFromApi, setCampaignsLoadedFromApi] = useState<Record<string, boolean>>({});
   
   // Available lists (загруженные из API)
   const [availableAccounts, setAvailableAccounts] = useState<FBAccount[]>([]);
@@ -162,24 +205,18 @@ export default function TrafficSettings() {
       
       if (settings) {
         // ✅ Если в БД есть сохраненные кабинеты - показываем их
-        const savedAccounts = settings.fb_ad_accounts || [];
+        const savedAccounts = normalizeAccounts(settings.fb_ad_accounts || []);
         if (savedAccounts.length > 0) {
           setAvailableAccounts(savedAccounts);
-          setSelectedAccountIds(savedAccounts.map((a: any) => a.id));
+          setSelectedAccountIds(Array.from(new Set(savedAccounts.map((a: any) => a.id))));
         }
         
         // ✅ Если есть сохраненные кампании - показываем их
-        const savedCampaigns = settings.tracked_campaigns || [];
+        const savedCampaigns = normalizeCampaigns(settings.tracked_campaigns || []);
         if (savedCampaigns.length > 0) {
-          // Group campaigns by ad account
-          const grouped: Record<string, Campaign[]> = {};
-          savedCampaigns.forEach((camp: Campaign) => {
-            const accId = camp.ad_account_id;
-            if (!grouped[accId]) grouped[accId] = [];
-            grouped[accId].push(camp);
-          });
-          setAvailableCampaigns(grouped);
-          setSelectedCampaignIds(savedCampaigns.map((c: any) => c.id));
+          setAvailableCampaigns(groupCampaignsByAccount(savedCampaigns));
+          setSelectedCampaignIds(Array.from(new Set(savedCampaigns.map((c: any) => c.id))));
+          setCampaignsLoadedFromApi({});
         }
         
         setPersonalUtmSource(settings.personal_utm_source || `fb_${userId.toLowerCase()}`);
@@ -207,7 +244,7 @@ export default function TrafficSettings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const accounts = res.data.accounts || [];
+      const accounts = normalizeAccounts(res.data.accounts || []);
       
       // 🔥 MERGE: Новые из API + уже выбранные из БД
       const existingIds = selectedAccountIds;
@@ -258,7 +295,7 @@ export default function TrafficSettings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const accounts = res.data.accounts || [];
+      const accounts = normalizeAccounts(res.data.accounts || []);
 
       // Update available accounts
       setAvailableAccounts(accounts);
@@ -280,20 +317,28 @@ export default function TrafficSettings() {
   
   const loadCampaignsForAccount = async (accountId: string) => {
     try {
-      setLoadingCampaigns(prev => ({ ...prev, [accountId]: true }));
+      const normalizedAccountId = normalizeAccountId(accountId);
+      setLoadingCampaigns(prev => ({ ...prev, [normalizedAccountId]: true }));
       const token = localStorage.getItem('traffic_token');
 
       // 🔥 NEW: Use new Facebook API endpoint with caching
-      const res = await axios.get(`${API_URL}/api/traffic-facebook/campaigns/${accountId}`, {
+      const res = await axios.get(`${API_URL}/api/traffic-facebook/campaigns/${accountId}?lite=true`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const campaigns = res.data.campaigns || [];
+      const campaigns = normalizeCampaigns(
+        (res.data.campaigns || []).map((camp: Campaign) => ({
+          ...camp,
+          ad_account_id: normalizedAccountId,
+        }))
+      );
       
       setAvailableCampaigns(prev => ({
         ...prev,
-        [accountId]: campaigns
+        [normalizedAccountId]: normalizeCampaigns([...(prev[normalizedAccountId] || []), ...campaigns])
       }));
+
+      setCampaignsLoadedFromApi(prev => ({ ...prev, [normalizedAccountId]: true }));
       
       toast.success(`✅ Загружено ${campaigns.length} кампаний`);
       
@@ -301,7 +346,8 @@ export default function TrafficSettings() {
       console.error('Failed to load campaigns:', error);
       toast.error('❌ Ошибка загрузки кампаний');
     } finally {
-      setLoadingCampaigns(prev => ({ ...prev, [accountId]: false }));
+      const normalizedAccountId = normalizeAccountId(accountId);
+      setLoadingCampaigns(prev => ({ ...prev, [normalizedAccountId]: false }));
     }
   };
 
@@ -338,15 +384,16 @@ export default function TrafficSettings() {
   };
 
   const toggleAccountExpanded = (accountId: string) => {
+    const normalizedAccountId = normalizeAccountId(accountId);
     setExpandedAccounts(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(accountId)) {
-        newSet.delete(accountId);
+      if (newSet.has(normalizedAccountId)) {
+        newSet.delete(normalizedAccountId);
       } else {
-        newSet.add(accountId);
+        newSet.add(normalizedAccountId);
         // Load campaigns when expanding
-        if (!availableCampaigns[accountId]) {
-          loadCampaignsForAccount(accountId);
+        if (!campaignsLoadedFromApi[normalizedAccountId]) {
+          loadCampaignsForAccount(normalizedAccountId);
         }
       }
       return newSet;
@@ -370,11 +417,15 @@ export default function TrafficSettings() {
       const allSelectedCampaigns = Object.values(availableCampaigns)
         .flat()
         .filter(camp => selectedCampaignIds.includes(camp.id));
+      const uniqueCampaignsMap = new Map<string, Campaign>();
+      allSelectedCampaigns.forEach(campaign => {
+        if (!campaign?.id) return;
+        uniqueCampaignsMap.set(campaign.id, campaign);
+      });
       
       const saveData = {
-        fb_ad_accounts: selectedAccounts,
-        tracked_campaigns: allSelectedCampaigns,
-        facebook_connected: selectedAccounts.length > 0,
+        fb_ad_accounts: normalizeAccounts(selectedAccounts),
+        tracked_campaigns: Array.from(uniqueCampaignsMap.values()),
         personal_utm_source: personalUtmSource || `fb_${user?.team?.toLowerCase()}`,
       };
       

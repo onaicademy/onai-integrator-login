@@ -52,14 +52,10 @@ export function PremiumMetricsGrid({
   const formatMoney = (value: number, type: 'spend' | 'revenue' = 'spend') => {
     if (currency === 'KZT') {
       const valueKZT = type === 'revenue' ? value : value * exchangeRate;
-      if (valueKZT >= 1_000_000) return `${(valueKZT / 1_000_000).toFixed(1)}M ₸`;
-      if (valueKZT >= 1_000) return `${Math.round(valueKZT / 1_000)}K ₸`;
-      return `${valueKZT.toLocaleString('ru-RU')} ₸`;
+      return `${valueKZT.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₸`;
     }
     const valueUSD = type === 'revenue' ? value / exchangeRate : value;
-    if (valueUSD >= 1_000_000) return `$${(valueUSD / 1_000_000).toFixed(1)}M`;
-    if (valueUSD >= 1_000) return `$${(valueUSD / 1_000).toFixed(1)}K`;
-    return `$${valueUSD.toFixed(2)}`;
+    return `$${valueUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const formatNumber = (value: number) => {
@@ -95,7 +91,7 @@ export function PremiumMetricsGrid({
     {
       id: 'roas',
       label: 'ROAS',
-      value: `${roas.toFixed(1)}x`,
+      value: `${roas.toFixed(2)}x`,
       sublabel: roas >= 2 ? 'Отлично' : roas >= 1 ? 'Прибыльно' : 'Требует работы',
       icon: <Target className="w-4 h-4" />,
       status: getRoasStatus(roas),
@@ -112,7 +108,7 @@ export function PremiumMetricsGrid({
       id: 'clicks',
       label: 'Клики',
       value: formatNumber(clicks),
-      sublabel: `CTR: ${ctr.toFixed(1)}%`,
+      sublabel: `CTR: ${ctr.toFixed(2)}%`,
       icon: <Zap className="w-4 h-4" />,
       status: 'neutral',
     },

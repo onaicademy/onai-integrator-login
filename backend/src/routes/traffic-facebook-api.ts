@@ -31,6 +31,7 @@ const router = Router();
  * 
  * Query params:
  * - ?refresh=true : Force refresh (skip cache)
+ * - ?lite=true : Return minimal campaign fields (faster)
  * 
  * Response:
  * {
@@ -126,8 +127,9 @@ router.get('/campaigns/:accountId', async (req: Request, res: Response) => {
     }
 
     const forceRefresh = req.query.refresh === 'true';
+    const lite = req.query.lite === 'true';
 
-    const result = await fetchCampaignsForAccount(accountId, forceRefresh);
+    const result = await fetchCampaignsForAccount(accountId, forceRefresh, lite);
 
     if (!result.success) {
       return res.status(500).json({

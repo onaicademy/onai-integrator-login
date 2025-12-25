@@ -6,7 +6,7 @@
 
 import cron from 'node-cron';
 import { supabase } from '../config/supabase';
-import { getExchangeRateForDate } from './dailyExchangeRateFetcher';
+import { getExchangeRateForDate } from '../services/exchangeRateService';
 import { calculateROI } from '../services/roiCalculator';
 import { sendAdminMessage } from '../services/telegramService';
 

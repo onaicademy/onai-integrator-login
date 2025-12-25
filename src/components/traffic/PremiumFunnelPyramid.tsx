@@ -27,26 +27,38 @@ interface FunnelStage {
 
 interface PremiumFunnelPyramidProps {
   teamFilter?: string | null;
+  userId?: string | null;
   compact?: boolean;
+  preset?: string | null;
+  date?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
 }
 
-export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFunnelPyramidProps) {
+export function PremiumFunnelPyramid({ teamFilter, userId, compact = false, preset, date, startDate, endDate }: PremiumFunnelPyramidProps) {
   const [loading, setLoading] = useState(true);
   const [stages, setStages] = useState<FunnelStage[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
 
   useEffect(() => {
     fetchFunnelData();
-  }, [teamFilter]);
+  }, [teamFilter, userId, preset, date, startDate, endDate]);
 
   const fetchFunnelData = async () => {
     try {
       setLoading(true);
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const url = teamFilter 
-        ? `${apiUrl}/api/traffic-dashboard/funnel?team=${teamFilter}`
-        : `${apiUrl}/api/traffic-dashboard/funnel`;
+      const params = new URLSearchParams();
+      if (teamFilter) params.set('team', teamFilter);
+      if (userId) params.set('userId', userId);
+      if (preset) params.set('preset', preset);
+      if (date) params.set('date', date);
+      if (startDate && endDate) {
+        params.set('start', startDate);
+        params.set('end', endDate);
+      }
+      const url = `${apiUrl}/api/traffic-dashboard/funnel${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await axios.get(url);
 
@@ -78,7 +90,7 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
             id: 'spend',
             label: 'Затраты',
             sublabel: 'Facebook Ads',
-            value: `$${spendUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+            value: `$${spendUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             revenue: spendKZT,
             conversionRate: undefined,
             icon: <DollarSign className="w-5 h-5" />,
@@ -129,7 +141,7 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
       id: 'spend',
       label: 'Затраты',
       sublabel: 'Facebook Ads',
-      value: '$0',
+      value: '$0.00',
       icon: <DollarSign className="w-5 h-5" />,
     },
     {
@@ -165,7 +177,7 @@ export function PremiumFunnelPyramid({ teamFilter, compact = false }: PremiumFun
 
   // 🔥 FULL NUMBERS - показываем все цифры без сокращений
   const formatCurrency = (value: number) => {
-    return `${value.toLocaleString('ru-RU')} ₸`;
+    return `${value.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₸`;
   };
 
   // Pyramid widths: widest (Spend) → narrowest (Flagman)

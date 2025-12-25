@@ -26,6 +26,69 @@ const getMode = (): DatabaseMode => {
 const mode = getMode();
 console.log(`[DB LAYER] Using ${mode} mode`);
 
+const resolveTrafficUserId = async (candidateUserId: string): Promise<string> => {
+  try {
+    const { data: directUser, error: directError } = await trafficAdminSupabase
+      .from('traffic_users')
+      .select('id')
+      .eq('id', candidateUserId)
+      .maybeSingle();
+
+    if (!directError && directUser?.id) {
+      return directUser.id;
+    }
+
+    const { data: targetologist, error: targetologistError } = await trafficAdminSupabase
+      .from('traffic_targetologists')
+      .select('id,email,full_name,team,role,password_hash,is_active')
+      .eq('id', candidateUserId)
+      .maybeSingle();
+
+    if (targetologistError || !targetologist) {
+      return candidateUserId;
+    }
+
+    const { data: byEmail, error: byEmailError } = await trafficAdminSupabase
+      .from('traffic_users')
+      .select('id')
+      .eq('email', targetologist.email)
+      .maybeSingle();
+
+    if (!byEmailError && byEmail?.id) {
+      return byEmail.id;
+    }
+
+    const insertPayload = {
+      id: targetologist.id,
+      email: targetologist.email,
+      password_hash: targetologist.password_hash || 'disabled',
+      full_name: targetologist.full_name || targetologist.email,
+      team_name: targetologist.team,
+      role: targetologist.role === 'admin' ? 'admin' : 'targetologist',
+      is_active: targetologist.is_active ?? true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: created, error: insertError } = await trafficAdminSupabase
+      .from('traffic_users')
+      .insert(insertPayload)
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.warn('⚠️ [DB] Failed to insert traffic_users record:', insertError);
+      return candidateUserId;
+    }
+
+    console.log(`✅ [DB] Created traffic_users record for ${targetologist.email}`);
+    return created.id;
+  } catch (resolveError: any) {
+    console.warn('⚠️ [DB] Could not resolve traffic_users id:', resolveError?.message || resolveError);
+    return candidateUserId;
+  }
+};
+
 // ========================================
 // MOCK DATA - для localhost тестирования
 // ========================================
@@ -141,13 +204,34 @@ export const database = {
       .from('traffic_targetologist_settings')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       throw error;
     }
 
-    return data || {
+    if (data) {
+      return data;
+    }
+
+    const resolvedUserId = await resolveTrafficUserId(userId);
+    if (resolvedUserId !== userId) {
+      const { data: resolvedData, error: resolvedError } = await trafficAdminSupabase
+        .from('traffic_targetologist_settings')
+        .select('*')
+        .eq('user_id', resolvedUserId)
+        .maybeSingle();
+
+      if (resolvedError && resolvedError.code !== 'PGRST116') {
+        throw resolvedError;
+      }
+
+      if (resolvedData) {
+        return resolvedData;
+      }
+    }
+
+    return {
       user_id: userId,
       fb_ad_accounts: [],
       tracked_campaigns: [],
@@ -164,8 +248,8 @@ export const database = {
 
     if (mode === 'mock') {
       // MOCK MODE - update in memory
-      mockSettings[userId] = { 
-        ...mockSettings[userId], 
+      mockSettings[userId] = {
+        ...mockSettings[userId],
         ...settings,
         user_id: userId,
         updated_at: new Date().toISOString()
@@ -175,20 +259,65 @@ export const database = {
     }
 
     // PRODUCTION MODE
-    const { data, error } = await trafficAdminSupabase
-      .from('traffic_targetologist_settings')
-      .upsert(
-        { user_id: userId, ...settings, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' }
-      )
-      .select()
-      .single();
+    try {
+      const { data: existingDirect } = await trafficAdminSupabase
+        .from('traffic_targetologist_settings')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (error) {
-      throw error;
+      const settingsUserId = existingDirect ? userId : await resolveTrafficUserId(userId);
+
+      const existing = existingDirect
+        ? existingDirect
+        : (
+          await trafficAdminSupabase
+            .from('traffic_targetologist_settings')
+            .select('*')
+            .eq('user_id', settingsUserId)
+            .maybeSingle()
+        ).data;
+
+      const payload = {
+        user_id: settingsUserId,
+        ...settings,
+        updated_at: new Date().toISOString()
+      };
+
+      let data, error;
+
+      if (existing) {
+        // Update existing record
+        const result = await trafficAdminSupabase
+          .from('traffic_targetologist_settings')
+          .update(payload)
+          .eq('user_id', settingsUserId)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else {
+        // Insert new record
+        const result = await trafficAdminSupabase
+          .from('traffic_targetologist_settings')
+          .insert(payload)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
+
+      if (error) {
+        console.error(`❌ [DB] Error updating settings for ${userId}:`, error);
+        throw error;
+      }
+
+      console.log(`✅ [DB] Updated settings for ${userId}`);
+      return data;
+    } catch (err: any) {
+      console.error(`❌ [DB] updateSettings failed:`, err);
+      throw new Error(`Failed to update settings: ${err.message}`);
     }
-
-    return data;
   },
 
   /**

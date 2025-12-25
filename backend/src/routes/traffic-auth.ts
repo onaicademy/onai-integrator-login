@@ -31,9 +31,12 @@ router.post('/login', async (req, res) => {
     // ✅ РЕШЕНИЕ SCHEMA CACHE: Mock Mode для локальной разработки
     let user: any = null;
     
+    let authSource: 'targetologists' | 'users' | 'mock' = 'users';
+
     if (process.env.NODE_ENV !== 'production') {
       // 🏠 LOCALHOST: Используем mock data
       console.log('⚠️ [MOCK] Using mock targetologist for local development');
+      authSource = 'mock';
       
       // Mock users для тестирования (все 8 пользователей)
       const mockUsers: Record<string, any> = {
@@ -129,12 +132,42 @@ router.post('/login', async (req, res) => {
       
       user = mockUsers[email.toLowerCase().trim()] || null;
     } else {
-      // 🚀 PRODUCTION: Используем настоящую RPC функцию
-      const { data: users, error } = await trafficAdminSupabase
-        .rpc('get_targetologist_by_email', { 
-          p_email: email.toLowerCase().trim() 
-        });
-      user = users?.[0] || null;
+      // 🚀 PRODUCTION: сначала пробуем RPC (если таблица targetologists существует)
+      try {
+        const { data: users, error } = await trafficAdminSupabase
+          .rpc('get_targetologist_by_email', { 
+            p_email: email.toLowerCase().trim() 
+          });
+
+        if (error) {
+          console.warn('⚠️ [AUTH] RPC get_targetologist_by_email failed, fallback to traffic_users:', error.message);
+        } else if (users?.[0]) {
+          user = users[0];
+          authSource = 'targetologists';
+        }
+      } catch (rpcError: any) {
+        console.warn('⚠️ [AUTH] RPC exception, fallback to traffic_users:', rpcError?.message || rpcError);
+      }
+
+      // ✅ Fallback: traffic_users
+      if (!user) {
+        const { data: userRow, error: userError } = await trafficAdminSupabase
+          .from('traffic_users')
+          .select('id,email,full_name,team_name,role,password_hash,is_active')
+          .eq('email', email.toLowerCase().trim())
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (userError) {
+          console.warn('⚠️ [AUTH] traffic_users lookup failed:', userError.message);
+        } else if (userRow) {
+          user = {
+            ...userRow,
+            team: userRow.team_name
+          };
+          authSource = 'users';
+        }
+      }
     }
     
     if (!user) {
@@ -155,10 +188,17 @@ router.post('/login', async (req, res) => {
     }
     
     // Update last login timestamp
-    await trafficAdminSupabase
-      .from('traffic_targetologists')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', user.id);
+    if (authSource === 'targetologists') {
+      await trafficAdminSupabase
+        .from('traffic_targetologists')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+    } else if (authSource === 'users') {
+      await trafficAdminSupabase
+        .from('traffic_users')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+    }
     
     // 🔒 Log user session (IP, device, browser)
     await logUserSession(req, user.id, {
@@ -425,4 +465,3 @@ router.post('/request-password-reset', async (req, res) => {
 });
 
 export default router;
-

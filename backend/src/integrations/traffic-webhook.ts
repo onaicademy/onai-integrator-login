@@ -6,7 +6,7 @@
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { sendToAllChats } from '../services/telegramBot.js';
-import { getExchangeRateForDate } from '../jobs/dailyExchangeRateFetcher';
+import { getExchangeRateForDate } from '../services/exchangeRateService';
 
 const router = Router();
 

@@ -6,8 +6,8 @@
 
 import cron from 'node-cron';
 import axios from 'axios';
-import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { sendAdminMessage } from '../services/telegramService';
+import { getExchangeRateForDate, upsertExchangeRate } from '../services/exchangeRateService';
 
 /**
  * Fetch USD/KZT exchange rate from multiple sources
@@ -91,21 +91,8 @@ export function startExchangeRateFetcher() {
         timeZone: 'Asia/Almaty' 
       });
       
-      // Step 3: Store in Traffic database
-      const { data, error} = await trafficAdminSupabase
-        .from('exchange_rates')
-        .upsert([
-          {
-            date: almatyDate,
-            usd_to_kzt: usdToKzt,
-            source: source,
-            fetched_at: new Date().toISOString()
-          }
-        ], {
-          onConflict: 'date'
-        });
-      
-      if (error) throw error;
+      // Step 3: Store in Landing database
+      await upsertExchangeRate(almatyDate, usdToKzt, source);
       
       console.log(`✅ Exchange rate updated: 1 USD = ${usdToKzt} KZT (${almatyDate})`);
       
@@ -136,28 +123,6 @@ export function startExchangeRateFetcher() {
 }
 
 // Helper: Get exchange rate for specific date
-export async function getExchangeRateForDate(date: string): Promise<number> {
-  const { data } = await trafficAdminSupabase
-    .from('exchange_rates')
-    .select('usd_to_kzt')
-    .eq('date', date)
-    .single();
-  
-  if (!data) {
-    const { data: latestRate } = await trafficAdminSupabase
-      .from('exchange_rates')
-      .select('usd_to_kzt')
-      .order('date', { ascending: false })
-      .limit(1)
-      .single();
-    
-    console.warn(`No rate for ${date}, using latest: ${latestRate?.usd_to_kzt}`);
-    return latestRate?.usd_to_kzt || 475.0;
-  }
-  
-  return data.usd_to_kzt;
-}
-
 function getYesterdayDate(): string {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);

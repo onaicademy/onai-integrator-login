@@ -140,7 +140,7 @@ export async function validateAmoCRMToken(token: string): Promise<boolean> {
         headers: {
           'Authorization': `Bearer ${token}`
         },
-        timeout: 5000
+        timeout: 30000 // Increased from 5s to 30s for slow AmoCRM responses
       }
     );
     

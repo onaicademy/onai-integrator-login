@@ -87,6 +87,10 @@ interface AnalyticsData {
     clicks: number;
     reach: number;
   };
+  exchangeRate?: {
+    usdToKzt: number;
+    updatedAt: string;
+  };
   period?: {
     since: string;
     until: string;
@@ -95,7 +99,7 @@ interface AnalyticsData {
 }
 
 // 📊 Получить данные из API
-async function fetchAnalytics(preset: string = '24h'): Promise<AnalyticsData | null> {
+async function fetchAnalytics(preset: string = 'yesterday'): Promise<AnalyticsData | null> {
   try {
     const response = await axios.get(`${API_URL}/api/traffic/combined-analytics?preset=${preset}`);
     return response.data;
@@ -273,12 +277,15 @@ function buildGroqPrompt(
   let prompt = `${config.title}\n\n`;
   prompt += `Фокус: ${config.focus}\n`;
   prompt += `Тон: ${config.tone}\n\n`;
+  if (data.period?.since && data.period?.until) {
+    prompt += `Период: ${data.period.since} → ${data.period.until} (${data.period.preset || 'custom'})\n\n`;
+  }
   prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   prompt += `📊 ДАННЫЕ:\n`;
   prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
   
   // Общие показатели (обе валюты!)
-  const exchangeRate = 450; // 1 USD = 450 KZT
+  const exchangeRate = data.exchangeRate?.usdToKzt || 450; // 1 USD = 450 KZT
   const spendKzt = Math.round(data.totals.spend * exchangeRate);
   const revenueUsd = Math.round(data.totals.revenue / exchangeRate);
   
@@ -434,7 +441,7 @@ function generateSimpleReport(data: AnalyticsData, title: string): string {
 
 // 🌅 10:00 - Вчерашний отчет
 export async function generateYesterdayReportAI(): Promise<string> {
-  const data = await fetchAnalytics('24h');
+  const data = await fetchAnalytics('yesterday');
   if (!data) return '❌ Не удалось загрузить данные';
   
   return await generateAIReport(data, '10:00');

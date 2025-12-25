@@ -183,7 +183,7 @@ async function validateAmoCRMToken(token: string): Promise<{ valid: boolean; exp
       `https://${domain}.amocrm.ru/api/v4/account`,
       {
         headers: { 'Authorization': `Bearer ${token}` },
-        timeout: 10000
+        timeout: 30000 // Increased from 10s to 30s for AmoCRM API
       }
     );
     

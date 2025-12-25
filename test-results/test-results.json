@@ -1,0 +1,856 @@
+{
+  "config": {
+    "configFile": "/Users/miso/onai-integrator-login/playwright.config.ts",
+    "rootDir": "/Users/miso/onai-integrator-login/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 4
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/miso/onai-integrator-login/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/miso/onai-integrator-login/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/miso/onai-integrator-login/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/miso/onai-integrator-login/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/miso/onai-integrator-login/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/miso/onai-integrator-login/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/miso/onai-integrator-login/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/Users/miso/onai-integrator-login/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/miso/onai-integrator-login/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/Users/miso/onai-integrator-login/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 4,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "traffic-dashboard.spec.ts",
+      "file": "traffic-dashboard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Traffic Dashboard - Critical User Flows",
+          "file": "traffic-dashboard.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display login page correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15041,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:19:39.518Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-bac2d11d4dc2da58dedb",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 23837,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:34:16",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 16,
+                          "line": 34
+                        },
+                        "snippet": "  32 |     \n  33 |     // Wait for navigation to dashboard\n> 34 |     await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n     |                ^\n  35 |     \n  36 |     // Verify dashboard loaded\n  37 |     await expect(page.locator('text=Traffic Dashboard')).toBeVisible();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 16,
+                            "line": 34
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  32 |     \n  33 |     // Wait for navigation to dashboard\n> 34 |     await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n     |                ^\n  35 |     \n  36 |     // Verify dashboard loaded\n  37 |     await expect(page.locator('text=Traffic Dashboard')).toBeVisible();\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:34:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:19:39.485Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--9ef97-ully-with-valid-credentials-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--9ef97-ully-with-valid-credentials-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--9ef97-ully-with-valid-credentials-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 16,
+                        "line": 34
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-10b03d5a3239b72243e9",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "should toggle language between RU and KZ",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 23614,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:42:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:42:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:19:39.490Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--c84ac--language-between-RU-and-KZ-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--c84ac--language-between-RU-and-KZ-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--c84ac--language-between-RU-and-KZ-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-7e86a79666caf7553654",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "should filter results to show only user team",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 23747,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:61:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:61:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:19:39.491Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--d6001-ults-to-show-only-user-team-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--d6001-ults-to-show-only-user-team-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--d6001-ults-to-show-only-user-team-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-ec17e8fe29cb236e9d21",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 59,
+              "column": 3
+            },
+            {
+              "title": "should switch between ExpressCourse and Main Products tabs",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 16388,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:76:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:76:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:19:55.337Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--623d8-urse-and-Main-Products-tabs-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--623d8-urse-and-Main-Products-tabs-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--623d8-urse-and-Main-Products-tabs-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-1ee7dfc4d8dabec1bdca",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 74,
+              "column": 3
+            },
+            {
+              "title": "should navigate to detailed analytics",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 27107,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:96:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:96:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:20:05.325Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--fb5ae-igate-to-detailed-analytics-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--fb5ae-igate-to-detailed-analytics-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--fb5ae-igate-to-detailed-analytics-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-ad1e71a7a9b4879fe9dc",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 94,
+              "column": 3
+            },
+            {
+              "title": "should navigate to settings",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 27081,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:109:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:109:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:20:05.331Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--93a9a-should-navigate-to-settings-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--93a9a-should-navigate-to-settings-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--93a9a-should-navigate-to-settings-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-b44ff2a7ed33fed1c8f1",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 107,
+              "column": 3
+            },
+            {
+              "title": "should logout successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 12606,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:122:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:122:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:20:05.352Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--6436c--should-logout-successfully-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--6436c--should-logout-successfully-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--6436c--should-logout-successfully-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-ab8ae11b22f1e75c95e8",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 120,
+              "column": 3
+            },
+            {
+              "title": "should open Debug Panel with keyboard shortcut",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 22514,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:134:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:134:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:20:12.837Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--be3fb-anel-with-keyboard-shortcut-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--be3fb-anel-with-keyboard-shortcut-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--be3fb-anel-with-keyboard-shortcut-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-2c242efc778d9ba18fd8",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 132,
+              "column": 3
+            },
+            {
+              "title": "should start onboarding tour on first visit",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 18555,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:148:5",
+                        "location": {
+                          "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                          "column": 14,
+                          "line": 168
+                        },
+                        "snippet": "  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                            "column": 14,
+                            "line": 168
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/traffic/dashboard/**\" until \"load\"\n============================================================\n\n  166 |   await page.fill('input[type=\"password\"]', 'password123');\n  167 |   await page.click('button[type=\"submit\"]');\n> 168 |   await page.waitForURL('/traffic/dashboard/**', { timeout: 10000 });\n      |              ^\n  169 | }\n  170 |\n    at loginAsTestUser (/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:168:14)\n    at /Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts:148:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-24T13:20:20.936Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--c56e0-oarding-tour-on-first-visit-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--c56e0-oarding-tour-on-first-visit-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/miso/onai-integrator-login/test-results/traffic-dashboard-Traffic--c56e0-oarding-tour-on-first-visit-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/miso/onai-integrator-login/tests/e2e/traffic-dashboard.spec.ts",
+                        "column": 14,
+                        "line": 168
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "eb4feb13bc217b109d59-732d912fe60e3b2a3b62",
+              "file": "traffic-dashboard.spec.ts",
+              "line": 143,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-12-24T13:19:38.401Z",
+    "duration": 61609.005,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}

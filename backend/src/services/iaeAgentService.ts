@@ -8,6 +8,9 @@ const FB_ACCESS_TOKEN = process.env.FACEBOOK_ADS_TOKEN;
 const FB_API_VERSION = 'v21.0';
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
+const AMOCRM_CACHE_TTL_MS = 10 * 60 * 1000;
+const amocrmCache = new Map<string, { timestamp: number; data: any }>();
+
 // 🔧 Types
 export interface DateRange {
   start: string; // YYYY-MM-DD
@@ -98,6 +101,12 @@ export async function collectData(dateRange: DateRange) {
 
 async function fetchAmoCRMData(dateRange: DateRange) {
   try {
+    const cacheKey = `${dateRange.start}:${dateRange.end}`;
+    const cached = amocrmCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < AMOCRM_CACHE_TTL_MS) {
+      return cached.data;
+    }
+
     // 🔄 Get valid token (with auto-refresh)
     const { getValidAmoCRMToken } = await import('./amocrmTokenManager.js');
     const token = await getValidAmoCRMToken();
@@ -107,14 +116,14 @@ async function fetchAmoCRMData(dateRange: DateRange) {
         'Authorization': `Bearer ${token}`
       },
       params: {
-        limit: 250,
+        limit: 50,
         'filter[created_at][from]': new Date(dateRange.start).getTime() / 1000,
         'filter[created_at][to]': new Date(dateRange.end).getTime() / 1000
       },
-      timeout: 10000
+      timeout: 20000
     });
     
-    return {
+    const result = {
       healthy: true,
       token_valid: true,
       deals: response.data._embedded?.leads || [],
@@ -125,8 +134,19 @@ async function fetchAmoCRMData(dateRange: DateRange) {
         timestamp: new Date().toISOString()
       }
     };
+    amocrmCache.set(cacheKey, { timestamp: Date.now(), data: result });
+    return result;
   } catch (error: any) {
     console.error('❌ [IAE] AmoCRM fetch error:', error.message);
+    const isTimeout = error.code === 'ECONNABORTED' || /timeout/i.test(error.message);
+    const cacheKey = `${dateRange.start}:${dateRange.end}`;
+    const cached = amocrmCache.get(cacheKey);
+    if (cached && isTimeout) {
+      return {
+        ...cached.data,
+        warning: 'AmoCRM timeout, using cached data',
+      };
+    }
     
     if (error.response?.status === 401 || error.message.includes('invalid') || error.message.includes('expired')) {
       return {
@@ -399,10 +419,15 @@ function calculateDataQuality(collectedData: any): DataQuality {
 export async function getMetricsSummary(dateRange: DateRange): Promise<any> {
   try {
     // Fetch from existing traffic-stats endpoint
+    const startDate = new Date(`${dateRange.start}T00:00:00Z`);
+    const endDate = new Date(`${dateRange.end}T00:00:00Z`);
+    const diffDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / 86400000) + 1);
+    const params = dateRange.start === dateRange.end
+      ? { date: dateRange.start }
+      : { preset: `${diffDays}d` };
+
     const response = await axios.get(`${API_URL}/api/traffic/combined-analytics`, {
-      params: {
-        preset: '7d' // Can be adjusted based on dateRange
-      },
+      params,
       timeout: 30000
     });
     

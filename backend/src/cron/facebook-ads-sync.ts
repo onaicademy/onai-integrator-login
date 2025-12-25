@@ -11,6 +11,23 @@ import cron from 'node-cron';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { landingSupabase } from '../config/supabase-landing.js';
 
+async function buildTeamUserMap() {
+  const { data } = await trafficAdminSupabase
+    .from('traffic_users')
+    .select('id, team_name, username');
+
+  const map = new Map<string, string>();
+  (data || []).forEach((row: any) => {
+    if (row.team_name) {
+      map.set(row.team_name.toLowerCase(), row.id);
+    }
+    if (row.username) {
+      map.set(row.username.toLowerCase(), row.id);
+    }
+  });
+  return map;
+}
+
 /**
  * Синхронизация Facebook Ads статистики
  */
@@ -44,34 +61,35 @@ export async function syncFacebookAdsToLanding(): Promise<void> {
     let syncedCount = 0;
     let errors = 0;
     
+    const teamUserMap = await buildTeamUserMap();
+
     for (const stat of trafficStats) {
       try {
+        const teamKey = (stat.team || '').toLowerCase();
+        const userId = teamUserMap.get(teamKey);
+        if (!userId) {
+          continue;
+        }
+
         const { error: upsertError } = await landingSupabase
           .from('traffic_stats')
           .upsert({
+            stat_date: stat.date,
+            user_id: userId,
             team: stat.team,
-            date: stat.date,
+            ad_account_id: null,
+            campaign_id: 'team_total',
+            campaign_name: 'team_total',
             impressions: stat.impressions || 0,
             clicks: stat.clicks || 0,
             spend_usd: stat.spend_usd || 0,
-            ctr: stat.ctr || 0,
-            cpc: stat.cpc || 0,
-            registrations: stat.registrations || 0,
-            express_sales: stat.express_sales || 0,
-            main_sales: stat.main_sales || 0,
-            revenue_express_usd: stat.revenue_express_usd || 0,
-            revenue_main_usd: stat.revenue_main_usd || 0,
-            revenue_total_usd: stat.revenue_total_usd || 0,
-            profit_usd: stat.profit_usd || 0,
-            roi_percent: stat.roi_percent || 0,
-            usd_to_kzt_rate: stat.usd_to_kzt_rate || 475,
             spend_kzt: stat.spend_kzt || (stat.spend_usd || 0) * 475,
-            revenue_kzt: stat.revenue_kzt || 0,
-            profit_kzt: stat.profit_kzt || 0,
-            campaign_ids: stat.campaign_ids || [],
+            ctr: stat.ctr || 0,
+            cpc_usd: stat.cpc || 0,
+            usd_to_kzt_rate: stat.usd_to_kzt_rate || 475,
             updated_at: new Date().toISOString()
           }, { 
-            onConflict: 'team,date',
+            onConflict: 'stat_date,user_id,campaign_id',
             ignoreDuplicates: false 
           });
         

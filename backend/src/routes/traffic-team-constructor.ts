@@ -186,6 +186,11 @@ router.get('/users', async (req: Request, res: Response) => {
 /**
  * POST /api/traffic-constructor/users
  * Создать нового пользователя
+ * 
+ * ✅ AUTO-CREATES entries in:
+ *   - traffic_users
+ *   - traffic_targetologists  
+ *   - traffic_targetologist_settings
  */
 router.post('/users', async (req: Request, res: Response) => {
   try {
@@ -198,11 +203,14 @@ router.post('/users', async (req: Request, res: Response) => {
       });
     }
 
-    // Проверить что email уникален
+    const normalizedEmail = email.trim().toLowerCase();
+    const userRole = role || 'targetologist';
+
+    // Проверить что email уникален в traffic_users
     const { data: existing } = await trafficSupabase
       .from('traffic_users')
       .select('id')
-      .eq('email', email.trim().toLowerCase())
+      .eq('email', normalizedEmail)
       .single();
 
     if (existing) {
@@ -215,22 +223,71 @@ router.post('/users', async (req: Request, res: Response) => {
     // Хешировать пароль
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Создать пользователя
+    // 1️⃣ Создать пользователя в traffic_users
     const { data, error } = await trafficSupabase
       .from('traffic_users')
       .insert({
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         full_name: fullName,
         team_name: team,
         password_hash: hashedPassword,
-        role: role || 'targetologist'
+        role: userRole
       })
       .select()
       .single();
 
     if (error) throw error;
 
-    console.log(`✅ User "${email}" created`);
+    console.log(`✅ User "${normalizedEmail}" created in traffic_users`);
+
+    // 2️⃣ AUTO-CREATE entry in traffic_targetologists
+    try {
+      const { error: targetologistError } = await trafficSupabase
+        .from('traffic_targetologists')
+        .upsert({
+          id: data.id, // Use same ID as traffic_users
+          email: normalizedEmail,
+          full_name: fullName,
+          team: team,
+          role: userRole,
+          password_hash: hashedPassword,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'email' });
+
+      if (targetologistError) {
+        console.warn(`⚠️ Failed to auto-create traffic_targetologists entry:`, targetologistError.message);
+      } else {
+        console.log(`✅ Auto-created traffic_targetologists entry for "${normalizedEmail}"`);
+      }
+    } catch (tErr: any) {
+      console.warn(`⚠️ Error auto-creating traffic_targetologists:`, tErr.message);
+    }
+
+    // 3️⃣ AUTO-CREATE entry in traffic_targetologist_settings
+    try {
+      const { error: settingsError } = await trafficSupabase
+        .from('traffic_targetologist_settings')
+        .upsert({
+          user_id: data.id,
+          fb_ad_accounts: [],
+          tracked_campaigns: [],
+          utm_source: 'facebook',
+          utm_medium: 'cpc',
+          facebook_connected: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (settingsError) {
+        console.warn(`⚠️ Failed to auto-create traffic_targetologist_settings entry:`, settingsError.message);
+      } else {
+        console.log(`✅ Auto-created traffic_targetologist_settings entry for "${normalizedEmail}"`);
+      }
+    } catch (sErr: any) {
+      console.warn(`⚠️ Error auto-creating traffic_targetologist_settings:`, sErr.message);
+    }
 
     res.json({
       success: true,
@@ -240,6 +297,10 @@ router.post('/users', async (req: Request, res: Response) => {
         fullName: data.full_name,
         team: data.team_name,
         role: data.role
+      },
+      autoCreated: {
+        traffic_targetologists: true,
+        traffic_targetologist_settings: true
       }
     });
   } catch (error: any) {

@@ -124,3 +124,24 @@ export const authLimiter = rateLimit({
   skip: (req: Request) => req.method === 'OPTIONS',
 });
 
+// 🔵 TRAFFIC FACEBOOK: ограничение для тяжелых запросов к FB API
+export const trafficFacebookLimiter = rateLimit({
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  max: (req: Request) => getAdaptiveLimits(req, 60), // Base: 60/2min, Auth: 120/2min
+  keyGenerator: (req: Request) => {
+    const user = (req as any).user;
+    return user?.id || req.ip;
+  },
+  handler: (req: Request, res: Response) => {
+    const user = (req as any).user;
+    console.warn(`⚠️ [RATE LIMIT] Traffic Facebook blocked for ${user?.id || req.ip}`);
+    
+    res.status(429).json({
+      error: 'Too many Facebook requests. Please try again shortly.',
+      retryAfter: 120,
+    });
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: Request) => req.method === 'OPTIONS',
+});

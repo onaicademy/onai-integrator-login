@@ -53,7 +53,7 @@ const TEAM_EMOJI: Record<string, string> = {
 };
 
 // Получить данные из API
-async function fetchAnalytics(preset: string = '24h'): Promise<AnalyticsData | null> {
+async function fetchAnalytics(preset: string = 'yesterday'): Promise<AnalyticsData | null> {
   try {
     const response = await axios.get(`${API_URL}/api/traffic/combined-analytics?preset=${preset}`);
     return response.data;
@@ -90,7 +90,7 @@ function getRoasEmoji(roas: number): string {
 
 // 🌅 ОТЧЕТ ЗА ВЧЕРА (10:00)
 export async function generateYesterdayReport(): Promise<string> {
-  const data = await fetchAnalytics('24h');
+  const data = await fetchAnalytics('yesterday');
   if (!data) return '❌ Не удалось загрузить данные';
   
   const rankedTeams = [...data.teams].sort((a, b) => b.roas - a.roas);
