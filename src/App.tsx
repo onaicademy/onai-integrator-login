@@ -18,6 +18,7 @@ import { initSentry, Sentry } from "@/config/sentryInit"; // 🛡️ Sentry Moni
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Integrator)
 import { AdminGuard as TripwireAdminGuard } from "./components/tripwire/AdminGuard"; // ✅ Admin Guard (Integrator)
+import { TrafficGuard } from "./components/traffic/TrafficGuard"; // ✅ Traffic Guard (LocalStorage-based auth)
 
 // 🛡️ ERROR RECOVERY: Import retry utilities
 import { retryChunkLoad } from "@/utils/error-recovery";
@@ -311,34 +312,114 @@ const AppRoutes = () => {
       <Route path="/traffic/onboarding-test" element={<OnboardingTestPage />} />
       <Route path="/onboarding-test" element={<OnboardingTestPage />} />
       
-      <Route path="/traffic/cabinet/:team" element={<TrafficTargetologistDashboard />} />
-      <Route path="/traffic/detailed-analytics" element={<TrafficDetailedAnalytics />} />
-      <Route path="/traffic/settings" element={<TrafficSettings />} />
-      <Route path="/traffic/admin" element={<Navigate to="/traffic/admin/dashboard" replace />} />
-      <Route path="/traffic/admin/dashboard" element={<TrafficAdminPanel />} />
-      <Route path="/traffic/admin/settings" element={<TrafficAdminPanel />} />
-      <Route path="/traffic/admin/users" element={<TrafficAdminPanel />} />
-      <Route path="/traffic/admin/security" element={<TrafficSecurityPanel />} />
-      <Route path="/traffic/admin/utm-sources" element={<UTMSourcesPanel />} />
-      <Route path="/traffic/admin/team-constructor" element={<TrafficTeamConstructor />} />
+      <Route path="/traffic/cabinet/:team" element={
+        <TrafficGuard>
+          <TrafficTargetologistDashboard />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/detailed-analytics" element={
+        <TrafficGuard>
+          <TrafficDetailedAnalytics />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/settings" element={
+        <TrafficGuard>
+          <TrafficSettings />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin" element={
+        <TrafficGuard requireAdmin={true}>
+          <Navigate to="/traffic/admin/dashboard" replace />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/dashboard" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/settings" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/users" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/security" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficSecurityPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/utm-sources" element={
+        <TrafficGuard requireAdmin={true}>
+          <UTMSourcesPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/team-constructor" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficTeamConstructor />
+        </TrafficGuard>
+      } />
       
       {/* Personal Cabinet for each targetologist - Simplified NO SIDEBAR */}
-      <Route path="/cabinet/:team" element={<TrafficTargetologistDashboard />} />
-      
+      <Route path="/cabinet/:team" element={
+        <TrafficGuard>
+          <TrafficTargetologistDashboard />
+        </TrafficGuard>
+      } />
+
       {/* Detailed Analytics - Campaigns/AdSets/Ads */}
-      <Route path="/detailed-analytics" element={<TrafficDetailedAnalytics />} />
-      
+      <Route path="/detailed-analytics" element={
+        <TrafficGuard>
+          <TrafficDetailedAnalytics />
+        </TrafficGuard>
+      } />
+
       {/* Settings - Targetologist settings */}
-      <Route path="/settings" element={<TrafficSettings />} />
-      
+      <Route path="/settings" element={
+        <TrafficGuard>
+          <TrafficSettings />
+        </TrafficGuard>
+      } />
+
       {/* Admin Panel for Traffic Dashboard */}
-      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-      <Route path="/admin/dashboard" element={<TrafficAdminPanel />} />
-      <Route path="/admin/settings" element={<TrafficAdminPanel />} />
-      <Route path="/admin/users" element={<TrafficAdminPanel />} />
-      <Route path="/admin/security" element={<TrafficSecurityPanel />} />
-      <Route path="/admin/utm-sources" element={<UTMSourcesPanel />} />
-      <Route path="/admin/team-constructor" element={<TrafficTeamConstructor />} />
+      <Route path="/admin" element={
+        <TrafficGuard requireAdmin={true}>
+          <Navigate to="/admin/dashboard" replace />
+        </TrafficGuard>
+      } />
+      <Route path="/admin/dashboard" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/admin/settings" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/admin/users" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/admin/security" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficSecurityPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/admin/utm-sources" element={
+        <TrafficGuard requireAdmin={true}>
+          <UTMSourcesPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/admin/team-constructor" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficTeamConstructor />
+        </TrafficGuard>
+      } />
       
       {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
       <Route path="/integrator" element={

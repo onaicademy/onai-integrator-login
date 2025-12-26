@@ -76,26 +76,30 @@ export default function TrafficLogin() {
         },
         user
       );
-      
+
       console.log('✅ Login successful:', user);
       toast.success(`Добро пожаловать, ${user.fullName}!`);
 
-      // 🔥 FIX: Priority redirect for Global Admin (team can be NULL)
-      if (user.role === 'admin') {
-        console.log('👑 Global Admin detected, redirecting to /traffic/admin');
-        navigate('/traffic/admin');
-        return;
-      }
+      // 🔥 FIX: Add small delay to ensure localStorage writes complete
+      // This prevents race condition where TrafficGuard checks before storage is updated
+      setTimeout(() => {
+        // 🔥 Priority redirect for Global Admin (team can be NULL)
+        if (user.role === 'admin') {
+          console.log('👑 Global Admin detected, redirecting to /traffic/admin');
+          navigate('/traffic/admin');
+          return;
+        }
 
-      // ✅ Navigate targetologists based on team
-      if (user.team) {
-        const teamSlug = user.team.toLowerCase();
-        navigate(`/traffic/cabinet/${teamSlug}`);
-      } else {
-        // Fallback: если нет team и не admin (не должно случиться)
-        console.error('⚠️ User has no team and is not admin:', user);
-        navigate('/traffic');
-      }
+        // ✅ Navigate targetologists based on team
+        if (user.team) {
+          const teamSlug = user.team.toLowerCase();
+          navigate(`/traffic/cabinet/${teamSlug}`);
+        } else {
+          // Fallback: если нет team и не admin (не должно случиться)
+          console.error('⚠️ User has no team and is not admin:', user);
+          navigate('/traffic');
+        }
+      }, 50); // 50ms delay ensures localStorage sync
     } catch (error: any) {
       console.error('❌ Login failed:', error);
       
