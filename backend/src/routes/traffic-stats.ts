@@ -644,9 +644,9 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     }
     
     // Get date range
-    let cutoff: number;
-    let since: string;
-    let until: string;
+    let cutoff: number = 0;
+    let since: string = '';
+    let until: string = '';
     let singleDate: string | null = null;
 
     if (rangeStart && rangeEnd) {

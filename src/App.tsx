@@ -314,6 +314,7 @@ const AppRoutes = () => {
       <Route path="/traffic/cabinet/:team" element={<TrafficTargetologistDashboard />} />
       <Route path="/traffic/detailed-analytics" element={<TrafficDetailedAnalytics />} />
       <Route path="/traffic/settings" element={<TrafficSettings />} />
+      <Route path="/traffic/admin" element={<Navigate to="/traffic/admin/dashboard" replace />} />
       <Route path="/traffic/admin/dashboard" element={<TrafficAdminPanel />} />
       <Route path="/traffic/admin/settings" element={<TrafficAdminPanel />} />
       <Route path="/traffic/admin/users" element={<TrafficAdminPanel />} />
@@ -331,6 +332,7 @@ const AppRoutes = () => {
       <Route path="/settings" element={<TrafficSettings />} />
       
       {/* Admin Panel for Traffic Dashboard */}
+      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
       <Route path="/admin/dashboard" element={<TrafficAdminPanel />} />
       <Route path="/admin/settings" element={<TrafficAdminPanel />} />
       <Route path="/admin/users" element={<TrafficAdminPanel />} />
@@ -453,7 +455,8 @@ const AppRoutes = () => {
       
       {/* Public routes - redirect to /integrator */}
       <Route path="/tripwire/login" element={<Navigate replace to="/integrator/login" />} />
-      <Route path="/tripwire/update-password" element={<Navigate replace to="/integrator/update-password" />} />
+      {/* ✅ TRIPWIRE: Отдельный роут для сброса пароля (изолированная БД) */}
+      <Route path="/tripwire/update-password" element={<TripwireUpdatePassword />} />
       <Route path="/tripwire/certificate/:certificateNumber" element={<RedirectWithParams from="/tripwire" to="/integrator" />} />
       
       {/* Student routes - redirect to /integrator */}

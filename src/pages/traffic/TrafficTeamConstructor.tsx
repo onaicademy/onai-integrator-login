@@ -76,7 +76,8 @@ export default function TrafficTeamConstructor() {
     direction: '',
     customDirection: '',
     fbAdAccountId: '',
-    color: COLORS[0].value
+    color: COLORS[0].value,
+    emoji: '📈'
   });
   
   // User Form State
@@ -174,7 +175,7 @@ export default function TrafficTeamConstructor() {
         return;
       }
       
-      const response = await axios.post(`${API_URL}/api/traffic-constructor/users`, {
+              const response = await axios.post(`${API_URL}/api/traffic-constructor/users`, {
         email: userForm.email,
         fullName: userForm.fullName,
         team: teamName,
@@ -185,10 +186,16 @@ export default function TrafficTeamConstructor() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      if (response.data.emailSent) {
-        toast.success(`Пользователь создан! Email с данными доступа отправлен на ${userForm.email}`);
+      // 🔥 Show retroactive sync result
+      if (response.data.retroactiveSync?.success) {
+        toast.success(
+          `✅ User created! Auto-generated UTM: ${response.data.utmSource}\n` +
+          `📊 Synced ${response.data.retroactiveSync.trafficStatsUpdated} historical records`
+        );
+      } else if (response.data.emailSent) {
+        toast.success(`User created! Email with credentials sent to ${userForm.email}`);
       } else {
-        toast.success(`Пользователь "${userForm.email}" создан!`);
+        toast.success(`User "${userForm.email}" created! UTM: ${response.data.utmSource}`);
       }
       resetUserForm();
       fetchTeamsAndUsers();
@@ -244,7 +251,8 @@ export default function TrafficTeamConstructor() {
       direction: '',
       customDirection: '',
       fbAdAccountId: '',
-      color: COLORS[0].value
+      color: COLORS[0].value,
+      emoji: '📈'
     });
     setIsAddingTeam(false);
     setEditingTeamId(null);

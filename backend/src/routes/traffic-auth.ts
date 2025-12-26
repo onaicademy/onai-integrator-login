@@ -303,25 +303,36 @@ router.post('/refresh', async (req, res) => {
 // 👤 GET /api/traffic-auth/me
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const { data: user, error } = await trafficAdminSupabase
-      .from('traffic_targetologists')
-      .select('id, email, full_name, team_name, role, avatar_url, last_login_at')
+    // Try traffic_users first (primary table)
+    let { data: user, error } = await trafficAdminSupabase
+      .from('traffic_users')
+      .select('id, email, full_name, team_name, role, updated_at')
       .eq('id', req.user.userId)
+      .eq('is_active', true)
       .single();
-    
+
+    // Fallback to traffic_targetologists if not found
     if (error || !user) {
-      return res.status(404).json({ error: 'User not found' });
+      const result = await trafficAdminSupabase
+        .from('traffic_targetologists')
+        .select('id, email, full_name, team_name, role, avatar_url, last_login_at')
+        .eq('id', req.user.userId)
+        .single();
+
+      if (result.error || !result.data) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      user = result.data;
     }
-    
-    res.json({ 
+
+    res.json({
       user: {
         id: user.id,
         email: user.email,
         fullName: user.full_name,
-        team: user.team_name,
-        role: user.role,
-        avatarUrl: user.avatar_url,
-        lastLoginAt: user.last_login_at
+        team: user.team_name || user.team,
+        role: user.role
       }
     });
   } catch (error) {
@@ -405,61 +416,155 @@ export function authenticateToken(req: any, res: any, next: any) {
   });
 }
 
-// 🔒 POST /api/traffic-auth/request-password-reset
-router.post('/request-password-reset', async (req, res) => {
+// 🔒 POST /api/traffic-auth/forgot-password
+// Simple password reset using Resend email service
+router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
-    
+
     console.log(`🔑 Password reset requested for: ${email}`);
-    
+
     // Get user from traffic_users table
     const { data: user, error } = await trafficAdminSupabase
       .from('traffic_users')
-      .select('id, email')
+      .select('id, email, full_name')
       .eq('email', email.toLowerCase().trim())
       .eq('is_active', true)
       .single();
-    
+
     if (error || !user) {
       // Return success anyway for security (don't reveal if email exists)
       console.log(`⚠️ Password reset requested for non-existent email: ${email}`);
-      return res.json({ success: true, message: 'If the email exists, a password reset link will be sent' });
+      return res.json({ success: true, message: 'Если email существует, ссылка для сброса пароля будет отправлена' });
     }
-    
-    // Generate password reset token using NEW Traffic Supabase Auth
-    const trafficUrl = process.env.TRAFFIC_SUPABASE_URL!;
-    const trafficServiceKey = process.env.TRAFFIC_SERVICE_ROLE_KEY!;
-    
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAuth = createClient(trafficUrl, trafficServiceKey);
-    
-    // Send password reset email via Supabase
-    const { data, error: resetError } = await supabaseAuth.auth.admin.generateLink({
-      type: 'recovery',
-      email: user.email,
-      options: {
-        redirectTo: 'https://traffic.onai.academy/reset-password' // TODO: Create this page
+
+    // Generate password reset token (JWT with 1 hour expiry)
+    const resetToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        type: 'password-reset'
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Build reset link
+    const isProduction = process.env.NODE_ENV === 'production';
+    const resetLink = isProduction
+      ? `https://traffic.onai.academy/reset-password?token=${resetToken}`
+      : `http://localhost:5173/traffic/reset-password?token=${resetToken}`;
+
+    // Send email using Resend
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        const emailText = `
+Здравствуйте, ${user.full_name}!
+
+Вы запросили сброс пароля для вашего аккаунта в Traffic Dashboard.
+
+Перейдите по ссылке ниже, чтобы установить новый пароль:
+${resetLink}
+
+Ссылка действительна в течение 1 часа.
+
+Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+
+---
+OnAI Academy
+Traffic Command Dashboard
+        `.trim();
+
+        await resend.emails.send({
+          from: 'OnAI Academy <noreply@onai.academy>',
+          to: user.email,
+          subject: 'Сброс пароля - Traffic Dashboard',
+          text: emailText
+        });
+
+        console.log(`✅ Password reset email sent to: ${email}`);
+      } catch (emailError: any) {
+        console.error('❌ Failed to send email:', emailError.message);
+        // Continue anyway, don't expose email errors to client
       }
-    });
-    
-    if (resetError) {
-      console.error('❌ Supabase password reset error:', resetError);
-      return res.status(500).json({ error: 'Failed to send password reset email' });
+    } else {
+      console.warn('⚠️ RESEND_API_KEY not configured, email not sent');
+      // In dev mode, log the reset link
+      if (!isProduction) {
+        console.log(`🔗 Reset link (DEV): ${resetLink}`);
+      }
     }
-    
-    console.log(`✅ Password reset email sent to: ${email}`);
-    
-    res.json({ 
-      success: true, 
-      message: 'Password reset link sent to your email'
+
+    res.json({
+      success: true,
+      message: 'Если email существует, ссылка для сброса пароля будет отправлена'
     });
-    
+
   } catch (error: any) {
     console.error('❌ Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 🔑 POST /api/traffic-auth/reset-password
+// Reset password using reset token
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Verify reset token
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(403).json({ error: 'Invalid or expired reset link' });
+    }
+
+    if (decoded.type !== 'password-reset') {
+      return res.status(403).json({ error: 'Invalid reset token' });
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update password in database
+    const { error: updateError } = await trafficAdminSupabase
+      .from('traffic_users')
+      .update({
+        password_hash: passwordHash,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', decoded.userId);
+
+    if (updateError) {
+      console.error('❌ Failed to update password:', updateError);
+      return res.status(500).json({ error: 'Failed to update password' });
+    }
+
+    console.log(`✅ Password reset successful for user: ${decoded.email}`);
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+
+  } catch (error: any) {
+    console.error('❌ Reset password error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

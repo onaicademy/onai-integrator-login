@@ -7,6 +7,7 @@
 import { Router, Request, Response } from 'express';
 import { trafficSupabase } from '../config/supabase-traffic.js';
 import bcrypt from 'bcrypt';
+import { syncHistoricalData } from '../services/retroactiveSyncService.js';
 
 const router = Router();
 
@@ -206,6 +207,10 @@ router.post('/users', async (req: Request, res: Response) => {
     const normalizedEmail = email.trim().toLowerCase();
     const userRole = role || 'targetologist';
 
+    // 🔥 AUTO-GENERATE UTM SOURCE
+    const utmSource = `fb_${team.toLowerCase()}`;
+    console.log(`🎯 Auto-generated UTM source: ${utmSource}`);
+
     // Проверить что email уникален в traffic_users
     const { data: existing } = await trafficSupabase
       .from('traffic_users')
@@ -265,7 +270,7 @@ router.post('/users', async (req: Request, res: Response) => {
       console.warn(`⚠️ Error auto-creating traffic_targetologists:`, tErr.message);
     }
 
-    // 3️⃣ AUTO-CREATE entry in traffic_targetologist_settings
+    // 3️⃣ AUTO-CREATE entry in traffic_targetologist_settings with LOCKED UTM
     try {
       const { error: settingsError } = await trafficSupabase
         .from('traffic_targetologist_settings')
@@ -275,6 +280,11 @@ router.post('/users', async (req: Request, res: Response) => {
           tracked_campaigns: [],
           utm_source: 'facebook',
           utm_medium: 'cpc',
+          // 🔐 NEW: Lock UTM source assignment
+          assigned_utm_source: utmSource,
+          utm_source_editable: false,
+          utm_source_assigned_at: new Date().toISOString(),
+          utm_source_assigned_by: null, // Set to admin user ID if available
           facebook_connected: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -283,10 +293,20 @@ router.post('/users', async (req: Request, res: Response) => {
       if (settingsError) {
         console.warn(`⚠️ Failed to auto-create traffic_targetologist_settings entry:`, settingsError.message);
       } else {
-        console.log(`✅ Auto-created traffic_targetologist_settings entry for "${normalizedEmail}"`);
+        console.log(`✅ Auto-created traffic_targetologist_settings with locked UTM: ${utmSource}`);
       }
     } catch (sErr: any) {
       console.warn(`⚠️ Error auto-creating traffic_targetologist_settings:`, sErr.message);
+    }
+
+    // 4️⃣ TRIGGER RETROACTIVE SYNC (Time Machine)
+    console.log(`🕐 Triggering retroactive sync for ${utmSource}...`);
+    const syncResult = await syncHistoricalData(data.id, utmSource);
+    
+    if (syncResult.success) {
+      console.log(`✅ Retroactive sync completed: ${syncResult.trafficStatsUpdated} stats updated`);
+    } else {
+      console.warn(`⚠️ Retroactive sync failed: ${syncResult.error}`);
     }
 
     res.json({
@@ -301,6 +321,16 @@ router.post('/users', async (req: Request, res: Response) => {
       autoCreated: {
         traffic_targetologists: true,
         traffic_targetologist_settings: true
+      },
+      utmSource: utmSource,
+      retroactiveSync: {
+        triggered: true,
+        success: syncResult.success,
+        trafficStatsUpdated: syncResult.trafficStatsUpdated,
+        salesUpdated: syncResult.salesUpdated,
+        leadsUpdated: syncResult.leadsUpdated,
+        syncDurationMs: syncResult.syncDurationMs,
+        error: syncResult.error
       }
     });
   } catch (error: any) {

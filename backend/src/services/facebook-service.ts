@@ -279,12 +279,18 @@ export async function fetchCampaignsForAccount(
     });
 
     if (campaignsResponse.status === 304) {
-      if (cachedData) {
+      // Re-fetch from cache since 304 means cache is still valid
+      const reloadedCache = await cacheGet<{
+        campaigns: FacebookCampaign[];
+        count: number;
+      }>(cacheKey);
+      
+      if (reloadedCache) {
         console.log(`✅ [Facebook Service] Campaigns not modified for ${accountId}, using cache`);
         return {
           success: true,
-          campaigns: cachedData.campaigns,
-          count: cachedData.count,
+          campaigns: reloadedCache.campaigns,
+          count: reloadedCache.count,
           cached: true
         };
       }

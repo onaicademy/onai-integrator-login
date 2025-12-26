@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Settings, Save, RefreshCw, CheckCircle2, XCircle, ChevronDown, ChevronRight,
-  Facebook, LogOut, Loader2, Search, Globe, Power
+  Facebook, LogOut, Loader2, Search, Globe, Power, Lock
 } from 'lucide-react';
 import { OnAILogo } from '@/components/OnAILogo';
 import axios from 'axios';
@@ -122,6 +122,9 @@ export default function TrafficSettings() {
 
   // UTM метка
   const [personalUtmSource, setPersonalUtmSource] = useState('');
+  // 🔐 UTM Lock State
+  const [utmSourceEditable, setUtmSourceEditable] = useState(true);
+  const [utmAssignedBy, setUtmAssignedBy] = useState<string | null>(null);
   
   // 🔥 Facebook Connection Status
   const [fbStatus, setFbStatus] = useState<{
@@ -219,7 +222,17 @@ export default function TrafficSettings() {
           setCampaignsLoadedFromApi({});
         }
         
-        setPersonalUtmSource(settings.personal_utm_source || `fb_${userId.toLowerCase()}`);
+        // 🔐 Load UTM lock status
+        const assignedUtm = settings.assigned_utm_source || `fb_${userId.toLowerCase()}`;
+        const isEditable = settings.utm_source_editable !== false; // Default to true if not set
+        
+        setPersonalUtmSource(assignedUtm);
+        setUtmSourceEditable(isEditable);
+        setUtmAssignedBy(settings.utm_source_assigned_by || null);
+        
+        if (!isEditable) {
+          console.log(`🔒 UTM source is LOCKED: ${assignedUtm}`);
+        }
       }
       
     } catch (error: any) {
@@ -945,15 +958,38 @@ export default function TrafficSettings() {
           {/* UTM МЕТКА */}
           {/* ═══════════════════════════════════════════════════════════════ */}
           <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-            <h2 className="text-lg font-bold text-white mb-4">Персональная UTM метка</h2>
-            <Input
-              placeholder="fb_kenesary"
-              value={personalUtmSource}
-              onChange={(e) => setPersonalUtmSource(e.target.value)}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-            />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-white">Персональная UTM метка</h2>
+              {!utmSourceEditable && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/40 rounded-lg">
+                  <Lock className="w-4 h-4 text-yellow-400" />
+                  <span className="text-sm text-yellow-400 font-semibold">Заблокировано администратором</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="relative">
+              <Input
+                placeholder="fb_kenesary"
+                value={personalUtmSource}
+                onChange={(e) => setPersonalUtmSource(e.target.value)}
+                disabled={!utmSourceEditable}
+                className={`bg-white/5 border-white/10 text-white placeholder:text-white/40 ${
+                  !utmSourceEditable ? 'opacity-60 cursor-not-allowed' : ''
+                }`}
+              />
+              {!utmSourceEditable && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Lock className="w-5 h-5 text-yellow-400" />
+                </div>
+              )}
+            </div>
+            
             <p className="text-sm text-white/60 mt-2">
-              Эта метка будет автоматически добавляться ко всем вашим продажам
+              {utmSourceEditable 
+                ? 'Эта метка будет автоматически добавляться ко всем вашим продажам'
+                : '🔒 UTM метка назначена администратором и не может быть изменена. Обратитесь к администратору, чтобы изменить источник атрибуции.'
+              }
             </p>
           </div>
 

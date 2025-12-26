@@ -32,6 +32,7 @@ export function PasswordRecoveryModal({ isOpen, onClose }: PasswordRecoveryModal
     
     try {
       // ✅ ИЗОЛИРОВАННАЯ БАЗА: Отправляем запрос на сброс пароля через Tripwire Supabase
+      // 🔥 ВАЖНО: redirectTo ДОЛЖЕН быть на основной платформе, где находится компонент TripwireUpdatePassword
       const { error } = await tripwireSupabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${window.location.origin}/tripwire/update-password`,
       });

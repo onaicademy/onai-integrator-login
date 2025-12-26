@@ -80,6 +80,12 @@ export default function TripwireUpdatePassword() {
       }
 
       console.log('✅ [TripwireUpdatePassword] Password updated successfully');
+      
+      // 🔥 ВАЖНО: Принудительно выходим из сессии после смены пароля
+      // Иначе пользователь останется залогиненным со старым токеном
+      await tripwireSupabase.auth.signOut();
+      console.log('✅ [TripwireUpdatePassword] Session terminated');
+      
       setIsSuccess(true);
       toast.success('Пароль успешно изменен');
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, User, Phone, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { getAllUTMParams } from '@/lib/utm-tracker';
 
 interface LeadFormProps {
   isOpen: boolean;
@@ -26,6 +27,10 @@ export function LeadForm({ isOpen, onClose, source = 'expresscourse' }: LeadForm
 
     try {
       const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      
+      // ✅ Capture UTM params + client_id
+      const utmParams = getAllUTMParams();
+      
       const response = await fetch(`${apiBaseUrl}/api/landing/submit`, {
         method: 'POST',
         headers: {
@@ -34,10 +39,12 @@ export function LeadForm({ isOpen, onClose, source = 'expresscourse' }: LeadForm
         body: JSON.stringify({
           ...formData,
           source,
+          utmParams, // ✅ Include tracking data
           metadata: {
             userAgent: navigator.userAgent,
             language: navigator.language,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            utmParams, // ✅ Also in metadata for compatibility
           }
         }),
       });

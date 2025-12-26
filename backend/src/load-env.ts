@@ -9,11 +9,11 @@ import { existsSync } from 'fs';
 // ✅ Get directory path (use native __dirname in CommonJS)
 const currentDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
-// ✅ Try multiple paths for env.env
+// ✅ Try multiple paths for .env (production uses .env, not env.env)
 const possiblePaths = [
-  path.join(currentDir, '..', 'env.env'),
-  path.join(process.cwd(), 'env.env'),
-  '/Users/miso/onai-integrator-login/backend/env.env'
+  path.join(currentDir, '..', '.env'),
+  path.join(process.cwd(), '.env'),
+  '/Users/miso/onai-integrator-login/backend/.env'
 ];
 
 let envLoaded = false;
@@ -32,9 +32,9 @@ for (const envPath of possiblePaths) {
 }
 
 if (!envLoaded) {
-  console.error('❌ env.env file not found in any of the following paths:');
+  console.error('❌ .env file not found in any of the following paths:');
   possiblePaths.forEach(p => console.error(`   - ${p}`));
-  console.error('\n💡 Make sure backend/env.env exists\n');
+  console.error('\n💡 Make sure backend/.env exists\n');
 }
 
 // Export loaded status

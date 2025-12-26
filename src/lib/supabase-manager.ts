@@ -57,6 +57,11 @@ export function initializeSupabase(): SupabaseClients {
       storageKey: 'sb-unified-auth-token', // 🔥 Single key for all!
       flowType: 'pkce',
     },
+    global: {
+      headers: {
+        'x-client-info': 'onai-main-platform', // Suppress multiple instances warning
+      },
+    },
   });
 
   devLog('[Supabase Manager] ✅ Main client created (with auth)');
@@ -79,6 +84,11 @@ export function initializeSupabase(): SupabaseClients {
         storage: window.localStorage,
         storageKey: 'sb-tripwire-auth-token', // 🔥 Separate key for Tripwire
         flowType: 'pkce',
+      },
+      global: {
+        headers: {
+          'x-client-info': 'onai-tripwire-integrator', // Suppress multiple instances warning
+        },
       },
     });
     devLog('[Supabase Manager] ✅ Tripwire client created (with independent auth)');

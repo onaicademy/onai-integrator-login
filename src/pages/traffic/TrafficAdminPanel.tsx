@@ -37,22 +37,43 @@ export default function TrafficAdminPanel() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
-  // Check admin role
+  // Check admin role - verify from backend API to avoid stale localStorage
   useEffect(() => {
-    const userData = localStorage.getItem('traffic_user');
-    if (!userData) {
-      navigate(getPath('/login'));
-      return;
-    }
-    try {
-      const user = JSON.parse(userData);
-      if (user.role !== 'admin') {
-        toast.error('Доступ запрещен: требуется роль администратора');
-        navigate(getPath(`/cabinet/${user.team?.toLowerCase()}`));
+    const verifyAdminAccess = async () => {
+      const token = localStorage.getItem('traffic_token');
+      if (!token) {
+        navigate(getPath('/login'));
+        return;
       }
-    } catch (e) {
-      navigate(getPath('/login'));
-    }
+
+      try {
+        // Verify role from backend API
+        const response = await axios.get(`${API_URL}/api/traffic-auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const user = response.data.user;
+
+        // Update localStorage with latest user data
+        localStorage.setItem('traffic_user', JSON.stringify(user));
+
+        // Check if admin
+        if (user.role !== 'admin') {
+          toast.error('Доступ запрещен: требуется роль администратора');
+          navigate(getPath(`/cabinet/${user.team?.toLowerCase()}`));
+        }
+      } catch (error: any) {
+        console.error('Failed to verify admin access:', error);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          toast.error('Сессия истекла, войдите снова');
+          localStorage.removeItem('traffic_token');
+          localStorage.removeItem('traffic_user');
+          navigate(getPath('/login'));
+        }
+      }
+    };
+
+    verifyAdminAccess();
   }, [navigate]);
   
   return (
