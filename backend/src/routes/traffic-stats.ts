@@ -224,6 +224,8 @@ interface LeadWithUTM {
   created_at: number;
   closed_at: number;
   status_id: number;
+  price?: number; // ✅ Actual sale price from AmoCRM
+  pipeline_id?: number;
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
@@ -1594,3 +1596,33 @@ async function getFacebookImpressions(
 }
 
 export default router;
+
+/**
+ * GET /api/traffic/ai-insight
+ * Get latest AI-generated tactical advice for the current user
+ */
+router.get('/ai-insight', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const { getLatestInsight } = await import('../services/aiAnalystService.js');
+    const insight = await getLatestInsight(userId);
+
+    if (!insight) {
+      return res.json({ success: true, insight: null });
+    }
+
+    res.json({
+      success: true,
+      insight,
+    });
+
+  } catch (error: any) {
+    console.error('❌ [AI Insight API] Error:', error.message);
+    res.status(500).json({ success: false, error: 'Failed to fetch AI insight' });
+  }
+});

@@ -25,7 +25,9 @@
     "test:e2e:report": "playwright show-report",
     "test:tripwire": "playwright test tests/e2e/tripwire",
     "test:landing": "playwright test tests/e2e/landing",
-    "test:dashboard": "playwright test tests/e2e/dashboard"
+    "test:dashboard": "playwright test tests/e2e/dashboard",
+    "test:utm": "ts-node scripts/test-utm-tracking.ts",
+    "test:utm:live": "node scripts/test-live-utm.cjs"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.31.3",
@@ -124,6 +126,7 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.181.2",
     "use-debounce": "^10.0.6",
+    "uuid": "^13.0.0",
     "vaul": "^0.9.9",
     "zod": "^3.25.76",
     "zustand": "^5.0.8"

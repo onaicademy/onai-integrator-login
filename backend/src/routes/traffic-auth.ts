@@ -121,7 +121,7 @@ router.post('/login', async (req, res) => {
           id: 'admin-mock-id',
           email: 'admin@onai.academy',
           full_name: 'Admin',
-          team: 'Admin',
+          team: null, // ✅ Admin has NO team (NULL in production DB)
           role: 'admin',
           password_hash: '$2b$10$Hxv8PramiMr6IMUbhngQ3.6IilQlhEtf0m1OQ6uTfjLWIu8lhyrg2', // admin123
           is_active: true,
@@ -163,7 +163,7 @@ router.post('/login', async (req, res) => {
         } else if (userRow) {
           user = {
             ...userRow,
-            team: userRow.team_name
+            team: userRow.team_name === 'ADMIN' ? null : userRow.team_name  // ✅ ADMIN special value => null
           };
           authSource = 'users';
         }
@@ -228,7 +228,7 @@ router.post('/login', async (req, res) => {
         id: user.id,
         email: user.email,
         fullName: user.full_name,
-        team: user.team,
+        team: user.team || null, // ✅ Ensure NULL is properly serialized
         role: user.role
       }
     });
@@ -279,7 +279,7 @@ router.post('/refresh', async (req, res) => {
         { 
           userId: user.id,
           email: user.email,
-          team: user.team_name,
+          team: user.team_name === 'ADMIN' ? null : user.team_name,  // ✅ ADMIN => null
           role: user.role
         },
         JWT_SECRET,
@@ -331,7 +331,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         id: user.id,
         email: user.email,
         fullName: user.full_name,
-        team: user.team_name || user.team,
+        team: (user.team_name === 'ADMIN' || user.team === 'ADMIN') ? null : (user.team_name || user.team),  // ✅ ADMIN => null
         role: user.role
       }
     });

@@ -25,7 +25,7 @@ interface LoginResponse {
     id: string;
     email: string;
     fullName: string;
-    team: string;
+    team: string | null; // ✅ Can be NULL for admin
     role: 'admin' | 'targetologist';
   };
   expiresIn?: number;
@@ -86,7 +86,9 @@ export default function TrafficLogin() {
       if (user.role === 'admin') {
         navigate(isTrafficDomain ? '/admin/dashboard' : '/traffic/admin/dashboard');
       } else {
-        navigate(isTrafficDomain ? `/cabinet/${user.team.toLowerCase()}` : `/traffic/cabinet/${user.team.toLowerCase()}`);
+        // ✅ CRITICAL FIX: team can be NULL for admin, handle safely
+        const teamSlug = user.team?.toLowerCase() || 'default';
+        navigate(isTrafficDomain ? `/cabinet/${teamSlug}` : `/traffic/cabinet/${teamSlug}`);
       }
     } catch (error: any) {
       console.error('❌ Login failed:', error);

@@ -13,7 +13,7 @@ interface AuthUser {
   id: string;
   email: string;
   fullName: string;
-  team: string;
+  team: string | null; // ✅ Can be NULL for admin (no team assignment)
   role: 'admin' | 'targetologist';
 }
 

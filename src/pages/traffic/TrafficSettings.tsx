@@ -687,20 +687,27 @@ export default function TrafficSettings() {
               </p>
               <div className="bg-[#1a1a24] rounded-lg p-4 font-mono text-sm border border-[#00FF88]/10">
                 <code className="text-[#00FF88]">
-                  utm_source=fb_{user?.team?.toLowerCase() || 'your_team'}&utm_medium=cpc&utm_campaign={'{{campaign.name}}'}
+                  utm_source={personalUtmSource || `fb_${user?.team?.toLowerCase() || 'your_team'}`}&utm_campaign={'{{campaign.name}}'}&utm_medium={'{{adset.name}}'}&utm_content={'{{ad.name}}'}
                 </code>
               </div>
               <div className="mt-4 space-y-2 text-xs text-white/70">
-                <p>• <span className="text-[#00FF88]">utm_source=fb_{user?.team?.toLowerCase() || 'your_team'}</span> — автоматически присвоит трафик вашей команде</p>
-                <p>• <span className="text-white/90">utm_medium=cpc</span> — тип трафика (обязательно "cpc")</p>
-                <p>• <span className="text-white/90">utm_campaign={'{{campaign.name}}'}</span> — динамическая переменная FB</p>
+                <p>• <span className="text-[#00FF88]">utm_source={personalUtmSource || `fb_${user?.team?.toLowerCase() || 'your_team'}`}</span> — ваша фиксированная метка атрибуции{!utmSourceEditable && ' (🔒 назначена администратором)'}</p>
+                <p>• <span className="text-white/90">utm_campaign={'{{campaign.name}}'}</span> — название кампании (динамическая переменная FB)</p>
+                <p>• <span className="text-white/90">utm_medium={'{{adset.name}}'}</span> — название группы объявлений (динамическая переменная FB)</p>
+                <p>• <span className="text-white/90">utm_content={'{{ad.name}}'}</span> — название объявления (динамическая переменная FB)</p>
               </div>
 
-              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                <p className="text-xs text-yellow-200">
-                  <strong>⚠️ Важно:</strong> Если вы не укажете <code className="text-[#00FF88]">fb_{user?.team?.toLowerCase() || 'your_team'}</code> в utm_source,
-                  система попытается определить владельца кампании по рекламному кабинету.
-                  Если и кабинет не привязан к команде — кампания попадёт в раздел "Нераспределённые" в админке.
+              {!utmSourceEditable && (
+                <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <p className="text-xs text-yellow-200">
+                    <strong>🔒 Метка заблокирована:</strong> Ваш <code className="text-[#00FF88]">utm_source</code> назначен администратором и не может быть изменен. Это обеспечивает корректную атрибуцию всего вашего трафика.
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-xs text-blue-200">
+                  <strong>💡 Совет:</strong> Скопируйте эту строку и вставьте в раздел "URL Parameters" при настройке кампании в Facebook Ads Manager.
                 </p>
               </div>
             </div>
@@ -954,44 +961,6 @@ export default function TrafficSettings() {
             </div>
           </div>
 
-          {/* ═══════════════════════════════════════════════════════════════ */}
-          {/* UTM МЕТКА */}
-          {/* ═══════════════════════════════════════════════════════════════ */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white">Персональная UTM метка</h2>
-              {!utmSourceEditable && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/40 rounded-lg">
-                  <Lock className="w-4 h-4 text-yellow-400" />
-                  <span className="text-sm text-yellow-400 font-semibold">Заблокировано администратором</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="relative">
-              <Input
-                placeholder="fb_kenesary"
-                value={personalUtmSource}
-                onChange={(e) => setPersonalUtmSource(e.target.value)}
-                disabled={!utmSourceEditable}
-                className={`bg-white/5 border-white/10 text-white placeholder:text-white/40 ${
-                  !utmSourceEditable ? 'opacity-60 cursor-not-allowed' : ''
-                }`}
-              />
-              {!utmSourceEditable && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <Lock className="w-5 h-5 text-yellow-400" />
-                </div>
-              )}
-            </div>
-            
-            <p className="text-sm text-white/60 mt-2">
-              {utmSourceEditable 
-                ? 'Эта метка будет автоматически добавляться ко всем вашим продажам'
-                : '🔒 UTM метка назначена администратором и не может быть изменена. Обратитесь к администратору, чтобы изменить источник атрибуции.'
-              }
-            </p>
-          </div>
 
           {/* ═══════════════════════════════════════════════════════════════ */}
           {/* SAVE BUTTON */}
@@ -1025,20 +994,15 @@ export default function TrafficSettings() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-lg p-4 border border-white/10">
               <p className="text-sm text-white/60 mb-1">Кабинетов выбрано</p>
               <p className="text-2xl font-bold text-[#00FF88]">{selectedAccountIds.length}</p>
             </div>
-            
+
             <div className="bg-white/5 rounded-lg p-4 border border-white/10">
               <p className="text-sm text-white/60 mb-1">Кампаний выбрано</p>
               <p className="text-2xl font-bold text-[#00FF88]">{selectedCampaignIds.length}</p>
-            </div>
-            
-            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-              <p className="text-sm text-white/60 mb-1">UTM метка</p>
-              <p className="text-lg font-bold text-white truncate">{personalUtmSource || 'Не установлена'}</p>
             </div>
           </div>
         </div>
