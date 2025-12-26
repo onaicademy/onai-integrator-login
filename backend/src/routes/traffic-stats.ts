@@ -67,7 +67,8 @@ const AD_ACCOUNTS = {
   },
 };
 
-const USER_ANALYTICS_CACHE_TTL = 300;
+// 🔥 Cache TTL: 20 minutes (1200 seconds) - Prevents FB API rate limits
+const USER_ANALYTICS_CACHE_TTL = 1200;
 
 const normalizeAccountId = (id?: string | null) => {
   if (!id) return '';
@@ -791,29 +792,82 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
         || settings?.utm_source
         || settings?.personal_utm_source;
 
+      // 🔥 FIX: Get REAL revenue from Express + Flagman sales (not hardcoded 5000)
+      let revenueKZT = 0;
       let sales = 0;
-      if (utmSource) {
-        const paidLeads = await getAllPaidLeads();
-        for (const lead of paidLeads) {
-          const utmData = extractUTMFromLead(lead);
-          const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
 
-          if (singleDate) {
-            const leadDate = getAlmatyDate(new Date(closedTime));
-            if (leadDate !== singleDate) {
+      if (utmSource) {
+        try {
+          // Query Express Course sales (5,000 KZT each)
+          const { data: expressSales, error: expressError } = await landingSupabase
+            .from('express_course_sales')
+            .select('amount, utm_source, sale_date')
+            .gte('sale_date', since)
+            .lte('sale_date', until);
+
+          // Query Flagman/Main Product sales (490,000 KZT each)
+          const { data: flagmanSales, error: flagmanError } = await landingSupabase
+            .from('main_product_sales')
+            .select('amount, utm_source, sale_date')
+            .gte('sale_date', since)
+            .lte('sale_date', until);
+
+          let expressRevenue = 0;
+          let expressPurchases = 0;
+          let flagmanRevenue = 0;
+          let flagmanPurchases = 0;
+
+          // Count Express sales matching UTM
+          if (!expressError && expressSales) {
+            for (const sale of expressSales) {
+              if (matchesUtmSource(sale, utmSource)) {
+                expressPurchases++;
+                const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+                expressRevenue += (amount || 5000);
+              }
+            }
+          }
+
+          // Count Flagman sales matching UTM
+          if (!flagmanError && flagmanSales) {
+            for (const sale of flagmanSales) {
+              if (matchesUtmSource(sale, utmSource)) {
+                flagmanPurchases++;
+                const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+                flagmanRevenue += (amount || 490000);
+              }
+            }
+          }
+
+          revenueKZT = expressRevenue + flagmanRevenue;
+          sales = expressPurchases + flagmanPurchases;
+
+          console.log(`💰 [Revenue Fix] UTM: ${utmSource} | Express: ${expressRevenue.toLocaleString()}₸ (${expressPurchases}) | Flagman: ${flagmanRevenue.toLocaleString()}₸ (${flagmanPurchases}) | Total: ${revenueKZT.toLocaleString()}₸`);
+        } catch (error: any) {
+          console.error('❌ [Revenue Fix] Failed to get sales data:', error.message);
+          // Fallback to old logic if DB query fails
+          const paidLeads = await getAllPaidLeads();
+          for (const lead of paidLeads) {
+            const utmData = extractUTMFromLead(lead);
+            const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
+
+            if (singleDate) {
+              const leadDate = getAlmatyDate(new Date(closedTime));
+              if (leadDate !== singleDate) {
+                continue;
+              }
+            } else if (closedTime < rangeStartMs || closedTime > rangeEndMs) {
               continue;
             }
-          } else if (closedTime < rangeStartMs || closedTime > rangeEndMs) {
-            continue;
-          }
 
-          if (matchesUtmSource(utmData, utmSource)) {
-            sales++;
+            if (matchesUtmSource(utmData, utmSource)) {
+              sales++;
+            }
           }
+          revenueKZT = sales * 5000; // Fallback to old calculation
         }
       }
 
-      const revenueKZT = sales * 5000;
       const spendKZT = totalSpendKzt;
       const roas = spendKZT > 0 ? revenueKZT / spendKZT : 0;
       const cpa = sales > 0 ? totalSpend / sales : 0;

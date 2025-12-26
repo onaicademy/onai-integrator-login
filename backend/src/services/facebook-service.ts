@@ -20,10 +20,10 @@ import { detectTargetologist, type Targetologist, type DetectionMethod, type Det
 const FB_API_VERSION = 'v18.0';
 const FB_API_BASE = `https://graph.facebook.com/${FB_API_VERSION}`;
 
-// Cache TTL: 5 minutes
-const CACHE_TTL = 300;
-const CAMPAIGNS_CACHE_TTL = 300;
-const CAMPAIGNS_LITE_TTL = 900;
+// 🔥 Cache TTL: 20 minutes (1200 seconds) - Prevents FB API rate limits
+const CACHE_TTL = 1200;
+const CAMPAIGNS_CACHE_TTL = 1200;
+const CAMPAIGNS_LITE_TTL = 1200;
 
 interface FacebookAdAccount {
   id: string;

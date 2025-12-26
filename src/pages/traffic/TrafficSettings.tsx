@@ -120,9 +120,8 @@ export default function TrafficSettings() {
   const [accountSearchQuery, setAccountSearchQuery] = useState('');
   const [campaignSearchQuery, setCampaignSearchQuery] = useState('');
 
-  // UTM метка
-  const [personalUtmSource, setPersonalUtmSource] = useState('');
-  // 🔐 UTM Lock State
+  // 🔐 Assigned UTM (read-only, set by admin)
+  const [assignedUtmSource, setAssignedUtmSource] = useState('');
   const [utmSourceEditable, setUtmSourceEditable] = useState(true);
   const [utmAssignedBy, setUtmAssignedBy] = useState<string | null>(null);
   
@@ -222,11 +221,11 @@ export default function TrafficSettings() {
           setCampaignsLoadedFromApi({});
         }
         
-        // 🔐 Load UTM lock status
+        // 🔐 Load assigned UTM (read-only)
         const assignedUtm = settings.assigned_utm_source || `fb_${userId.toLowerCase()}`;
         const isEditable = settings.utm_source_editable !== false; // Default to true if not set
-        
-        setPersonalUtmSource(assignedUtm);
+
+        setAssignedUtmSource(assignedUtm);
         setUtmSourceEditable(isEditable);
         setUtmAssignedBy(settings.utm_source_assigned_by || null);
         
@@ -439,7 +438,7 @@ export default function TrafficSettings() {
       const saveData = {
         fb_ad_accounts: normalizeAccounts(selectedAccounts),
         tracked_campaigns: Array.from(uniqueCampaignsMap.values()),
-        personal_utm_source: personalUtmSource || `fb_${user?.team?.toLowerCase()}`,
+        personal_utm_source: assignedUtmSource || `fb_${user?.team?.toLowerCase()}`,
       };
       
       await axios.put(
@@ -687,11 +686,11 @@ export default function TrafficSettings() {
               </p>
               <div className="bg-[#1a1a24] rounded-lg p-4 font-mono text-sm border border-[#00FF88]/10">
                 <code className="text-[#00FF88]">
-                  utm_source={personalUtmSource || `fb_${user?.team?.toLowerCase() || 'your_team'}`}&utm_campaign={'{{campaign.name}}'}&utm_medium={'{{adset.name}}'}&utm_content={'{{ad.name}}'}
+                  utm_source={assignedUtmSource || `fb_${user?.team?.toLowerCase() || 'your_team'}`}&utm_campaign={'{{campaign.name}}'}&utm_medium={'{{adset.name}}'}&utm_content={'{{ad.name}}'}
                 </code>
               </div>
               <div className="mt-4 space-y-2 text-xs text-white/70">
-                <p>• <span className="text-[#00FF88]">utm_source={personalUtmSource || `fb_${user?.team?.toLowerCase() || 'your_team'}`}</span> — ваша фиксированная метка атрибуции{!utmSourceEditable && ' (🔒 назначена администратором)'}</p>
+                <p>• <span className="text-[#00FF88]">utm_source={assignedUtmSource || `fb_${user?.team?.toLowerCase() || 'your_team'}`}</span> — ваша фиксированная метка атрибуции{!utmSourceEditable && ' (🔒 назначена администратором)'}</p>
                 <p>• <span className="text-white/90">utm_campaign={'{{campaign.name}}'}</span> — название кампании (динамическая переменная FB)</p>
                 <p>• <span className="text-white/90">utm_medium={'{{adset.name}}'}</span> — название группы объявлений (динамическая переменная FB)</p>
                 <p>• <span className="text-white/90">utm_content={'{{ad.name}}'}</span> — название объявления (динамическая переменная FB)</p>
