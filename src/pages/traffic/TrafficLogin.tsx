@@ -79,16 +79,22 @@ export default function TrafficLogin() {
       
       console.log('✅ Login successful:', user);
       toast.success(`Добро пожаловать, ${user.fullName}!`);
-      
-      // ✅ Navigate based on role and environment
-      const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
-      
+
+      // 🔥 FIX: Priority redirect for Global Admin (team can be NULL)
       if (user.role === 'admin') {
-        navigate(isTrafficDomain ? '/admin/dashboard' : '/traffic/admin/dashboard');
+        console.log('👑 Global Admin detected, redirecting to /traffic/admin');
+        navigate('/traffic/admin');
+        return;
+      }
+
+      // ✅ Navigate targetologists based on team
+      if (user.team) {
+        const teamSlug = user.team.toLowerCase();
+        navigate(`/traffic/cabinet/${teamSlug}`);
       } else {
-        // ✅ CRITICAL FIX: team can be NULL for admin, handle safely
-        const teamSlug = user.team?.toLowerCase() || 'default';
-        navigate(isTrafficDomain ? `/cabinet/${teamSlug}` : `/traffic/cabinet/${teamSlug}`);
+        // Fallback: если нет team и не admin (не должно случиться)
+        console.error('⚠️ User has no team and is not admin:', user);
+        navigate('/traffic');
       }
     } catch (error: any) {
       console.error('❌ Login failed:', error);
