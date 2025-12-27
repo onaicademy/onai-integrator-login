@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TrafficCabinetLayout } from '@/components/traffic/TrafficCabinetLayout';
 import { AttributionPanel } from '@/components/traffic/AttributionPanel';
+import { AuthManager } from '@/lib/auth';
 import {
   Settings, Users, Sparkles, Loader2, CheckCircle, AlertCircle, RefreshCw,
   BarChart3, Shield, PieChart, Building2, TrendingUp, UserCheck, UserX,
@@ -34,47 +35,18 @@ const getPath = (path: string) => {
 
 export default function TrafficAdminPanel() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'attribution' | 'settings' | 'generate'>('dashboard');
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
-  // Check admin role - verify from backend API to avoid stale localStorage
+
+  // Load user data from AuthManager
+  // No auth check needed - TrafficGuard with requireAdmin={true} already validated
   useEffect(() => {
-    const verifyAdminAccess = async () => {
-      const token = localStorage.getItem('traffic_token');
-      if (!token) {
-        navigate(getPath('/login'));
-        return;
-      }
-
-      try {
-        // Verify role from backend API
-        const response = await axios.get(`${API_URL}/api/traffic-auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        const user = response.data.user;
-
-        // Update localStorage with latest user data
-        localStorage.setItem('traffic_user', JSON.stringify(user));
-
-        // Check if admin
-        if (user.role !== 'admin') {
-          toast.error('Доступ запрещен: требуется роль администратора');
-          navigate(getPath(`/cabinet/${user.team?.toLowerCase()}`));
-        }
-      } catch (error: any) {
-        console.error('Failed to verify admin access:', error);
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          toast.error('Сессия истекла, войдите снова');
-          localStorage.removeItem('traffic_token');
-          localStorage.removeItem('traffic_user');
-          navigate(getPath('/login'));
-        }
-      }
-    };
-
-    verifyAdminAccess();
-  }, [navigate]);
+    const currentUser = AuthManager.getUser();
+    setUser(currentUser);
+    setLoading(false);
+  }, []);
   
   return (
     <TrafficCabinetLayout>

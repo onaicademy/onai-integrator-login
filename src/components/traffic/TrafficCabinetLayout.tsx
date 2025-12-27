@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, Settings, User, BarChart3, Menu, X, TrendingUp, Shield, PieChart, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AuthManager } from '@/lib/auth';
 
 interface TrafficCabinetLayoutProps {
   children: React.ReactNode;
@@ -20,45 +21,29 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // ✅ FIX: Helper for correct login path
-  const getLoginPath = () => {
-    const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
-    return isTrafficDomain ? '/login' : '/traffic/login';
-  };
-  
+  // ✅ Load user data from AuthManager
+  // No auth check needed - TrafficGuard already validated authentication
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    // Check authentication
-    const userData = localStorage.getItem('traffic_user');
-    const token = localStorage.getItem('traffic_token');
-    
-    if (!userData || !token) {
-      console.log('❌ No auth found, redirecting to login');
-      navigate(getLoginPath());
-      return;
-    }
-    
-    try {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      console.log('✅ User loaded:', parsedUser);
-    } catch (error) {
-      console.error('❌ Failed to parse user data:', error);
-      navigate(getLoginPath());
-    }
-  }, [navigate]);
+    const userData = AuthManager.getUser();
+    setUser(userData);
+    setIsLoading(false);
+  }, []);
   
   const handleLogout = () => {
     console.log('👋 Logging out');
-    localStorage.removeItem('traffic_token');
-    localStorage.removeItem('traffic_user');
-    navigate(getLoginPath());
+    AuthManager.clearAll();
+    const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
+    const loginPath = isTrafficDomain ? '/login' : '/traffic/login';
+    navigate(loginPath);
   };
   
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path);
   };
   
-  if (!user) {
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-[#030303] flex items-center justify-center">
         <div className="text-center">
