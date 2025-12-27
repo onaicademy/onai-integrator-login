@@ -132,7 +132,7 @@ const worker = new Worker<CreateUserJob>(
         email,
         full_name,
         granted_by: currentUserId,
-        manager_name: currentUserName || currentUserEmail || 'Unknown Manager',
+        manager_name: currentUserEmail || 'Unknown Manager', // 🔧 FIX: Always use manager EMAIL
         status: 'active',
         modules_completed: 0,
         price: 5000

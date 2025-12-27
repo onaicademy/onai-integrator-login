@@ -47,12 +47,12 @@ router.get('/teams', async (req: Request, res: Response) => {
  */
 router.post('/teams', async (req: Request, res: Response) => {
   try {
-    const { name, company, direction, fbAdAccountId, color, emoji } = req.body;
+    const { name, direction, color, emoji } = req.body;
 
-    if (!name || !company || !direction) {
+    if (!name) {
       return res.status(400).json({
         success: false,
-        error: 'name, company, direction are required'
+        error: 'name is required'
       });
     }
 
@@ -75,9 +75,7 @@ router.post('/teams', async (req: Request, res: Response) => {
       .from('traffic_teams')
       .insert({
         name,
-        company,
-        direction,
-        fb_ad_account_id: fbAdAccountId,
+        direction: direction || null,
         color: color || '#00FF88',
         emoji: emoji || '📊'
       })
@@ -245,32 +243,7 @@ router.post('/users', async (req: Request, res: Response) => {
 
     console.log(`✅ User "${normalizedEmail}" created in traffic_users`);
 
-    // 2️⃣ AUTO-CREATE entry in traffic_targetologists
-    try {
-      const { error: targetologistError } = await trafficSupabase
-        .from('traffic_targetologists')
-        .upsert({
-          id: data.id, // Use same ID as traffic_users
-          email: normalizedEmail,
-          full_name: fullName,
-          team: team,
-          role: userRole,
-          password_hash: hashedPassword,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'email' });
-
-      if (targetologistError) {
-        console.warn(`⚠️ Failed to auto-create traffic_targetologists entry:`, targetologistError.message);
-      } else {
-        console.log(`✅ Auto-created traffic_targetologists entry for "${normalizedEmail}"`);
-      }
-    } catch (tErr: any) {
-      console.warn(`⚠️ Error auto-creating traffic_targetologists:`, tErr.message);
-    }
-
-    // 3️⃣ AUTO-CREATE entry in traffic_targetologist_settings with LOCKED UTM
+    // 2️⃣ AUTO-CREATE entry in traffic_targetologist_settings with LOCKED UTM
     try {
       const { error: settingsError } = await trafficSupabase
         .from('traffic_targetologist_settings')
@@ -278,14 +251,18 @@ router.post('/users', async (req: Request, res: Response) => {
           user_id: data.id,
           fb_ad_accounts: [],
           tracked_campaigns: [],
-          utm_source: 'facebook',
+          utm_source: utmSource, // 🔐 Auto-generated UTM source
           utm_medium: 'cpc',
-          // 🔐 NEW: Lock UTM source assignment
-          assigned_utm_source: utmSource,
-          utm_source_editable: false,
-          utm_source_assigned_at: new Date().toISOString(),
-          utm_source_assigned_by: null, // Set to admin user ID if available
-          facebook_connected: false,
+          utm_templates: {
+            utm_source: utmSource,
+            utm_medium: 'cpc',
+            utm_campaign: '{campaign_name}',
+            utm_content: '{ad_set_name}',
+            utm_term: '{ad_name}'
+          },
+          notification_email: null,
+          notification_telegram: null,
+          report_frequency: 'daily',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
@@ -319,7 +296,7 @@ router.post('/users', async (req: Request, res: Response) => {
         role: data.role
       },
       autoCreated: {
-        traffic_targetologists: true,
+        traffic_users: true,
         traffic_targetologist_settings: true
       },
       utmSource: utmSource,

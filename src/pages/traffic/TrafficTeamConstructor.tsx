@@ -1,6 +1,6 @@
 /**
  * Traffic Team Constructor
- * 
+ *
  * Admin interface для добавления новых кабинетов и траф команд
  * С выбором компаний под нужное направление
  */
@@ -14,6 +14,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
+import { AuthManager } from '@/lib/auth';
 
 interface Team {
   id: string;
@@ -45,12 +46,11 @@ const DEFAULT_TEAMS = [
   { name: 'Muha' },
 ];
 
-const DIRECTIONS = [
-  { value: 'nutcab_tripwire', label: 'Nutcab/Tripwire (Kenesary)' },
-  { value: 'arystan', label: 'Arystan' },
-  { value: 'onai_zapusk', label: 'On AI / Запуск (Muha)' },
-  { value: 'proftest', label: 'ProfTest / Alex (Traf4)' },
-  { value: 'custom', label: 'Кастомное направление' }
+const PRODUCT_DIRECTIONS = [
+  { value: 'flagman', label: 'Flagman (Основной продукт)' },
+  { value: 'express', label: 'Express (3-дневный курс)' },
+  { value: 'tripwire', label: 'Tripwire / Трехдневник' },
+  { value: 'new_direction', label: 'Новое направление' }
 ];
 
 const COLORS = [
@@ -72,10 +72,7 @@ export default function TrafficTeamConstructor() {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [teamForm, setTeamForm] = useState({
     name: '',
-    company: '',
     direction: '',
-    customDirection: '',
-    fbAdAccountId: '',
     color: COLORS[0].value,
     emoji: '📈'
   });
@@ -123,14 +120,11 @@ export default function TrafficTeamConstructor() {
   
   const handleCreateTeam = async () => {
     try {
-      const token = localStorage.getItem('traffic_token');
-      const direction = teamForm.direction === 'custom' ? teamForm.customDirection : teamForm.direction;
-      
+      const token = AuthManager.getAccessToken();
+
       await axios.post(`${API_URL}/api/traffic-constructor/teams`, {
         name: teamForm.name,
-        company: teamForm.company,
-        direction,
-        fbAdAccountId: teamForm.fbAdAccountId,
+        direction: teamForm.direction,
         color: teamForm.color,
         emoji: teamForm.emoji
       }, {
@@ -247,10 +241,7 @@ export default function TrafficTeamConstructor() {
   const resetTeamForm = () => {
     setTeamForm({
       name: '',
-      company: '',
       direction: '',
-      customDirection: '',
-      fbAdAccountId: '',
       color: COLORS[0].value,
       emoji: '📈'
     });
@@ -323,57 +314,25 @@ export default function TrafficTeamConstructor() {
                   <Input
                     value={teamForm.name}
                     onChange={(e) => setTeamForm({ ...teamForm, name: e.target.value })}
-                    placeholder="Например: Kenesary"
+                    placeholder="Kenesary Team"
                     className="bg-black/50 border-[#00FF88]/20 text-white"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Компания</label>
-                  <Input
-                    value={teamForm.company}
-                    onChange={(e) => setTeamForm({ ...teamForm, company: e.target.value })}
-                    placeholder="Например: Nutcab"
-                    className="bg-black/50 border-[#00FF88]/20 text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Направление</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Направление продукта</label>
                   <select
                     value={teamForm.direction}
                     onChange={(e) => setTeamForm({ ...teamForm, direction: e.target.value })}
                     className="w-full h-10 px-3 bg-black/50 border border-[#00FF88]/20 text-white rounded-md"
                   >
                 <option value="">Выберите направление</option>
-                {DIRECTIONS.map(dir => (
+                {PRODUCT_DIRECTIONS.map(dir => (
                   <option key={dir.value} value={dir.value}>
                     {dir.label}
                   </option>
                 ))}
                   </select>
-                </div>
-                
-                {teamForm.direction === 'custom' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Кастомное направление</label>
-                    <Input
-                      value={teamForm.customDirection}
-                      onChange={(e) => setTeamForm({ ...teamForm, customDirection: e.target.value })}
-                      placeholder="Введите название"
-                      className="bg-black/50 border-[#00FF88]/20 text-white"
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">FB Ad Account ID (опционально)</label>
-                  <Input
-                    value={teamForm.fbAdAccountId}
-                    onChange={(e) => setTeamForm({ ...teamForm, fbAdAccountId: e.target.value })}
-                    placeholder="act_123456789"
-                    className="bg-black/50 border-[#00FF88]/20 text-white"
-                  />
                 </div>
                 
                 <div>

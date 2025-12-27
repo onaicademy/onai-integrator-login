@@ -135,6 +135,13 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       });
     }
 
+    // 🔥 FIX: Enrich req.user with actual user_metadata from database
+    req.user = {
+      ...req.user,
+      user_metadata: authUser.user.user_metadata,
+      role: userRole,
+    };
+
     console.log(`✅ requireAdmin: Access granted for ${req.user.email} (admin)`);
     next();
   } catch (error) {
@@ -220,6 +227,15 @@ export async function requireSalesOrAdmin(req: Request, res: Response, next: Nex
         currentRole: userRole || 'student'
       });
     }
+
+    // 🔥 FIX: Enrich req.user with actual user_metadata from database
+    // This ensures controller has access to correct role even if JWT doesn't include it
+    req.user = {
+      ...req.user,
+      user_metadata: authUser.user.user_metadata,
+      role: userRole,
+      email: userEmail,
+    };
 
     console.log(`✅ requireSalesOrAdmin: Access granted for ${userEmail} (${userRole})`);
     next();

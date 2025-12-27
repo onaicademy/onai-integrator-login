@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
     // ✅ РЕШЕНИЕ SCHEMA CACHE: Mock Mode для локальной разработки
     let user: any = null;
     
-    let authSource: 'targetologists' | 'users' | 'mock' = 'users';
+    let authSource: 'users' | 'mock' = 'users';
 
     if (process.env.NODE_ENV !== 'production') {
       // 🏠 LOCALHOST: Используем mock data
@@ -132,18 +132,18 @@ router.post('/login', async (req, res) => {
       
       user = mockUsers[email.toLowerCase().trim()] || null;
     } else {
-      // 🚀 PRODUCTION: сначала пробуем RPC (если таблица targetologists существует)
+      // 🚀 PRODUCTION: сначала пробуем RPC (если таблица traffic_users существует)
       try {
         const { data: users, error } = await trafficAdminSupabase
-          .rpc('get_targetologist_by_email', { 
-            p_email: email.toLowerCase().trim() 
+          .rpc('get_targetologist_by_email', {
+            p_email: email.toLowerCase().trim()
           });
 
         if (error) {
           console.warn('⚠️ [AUTH] RPC get_targetologist_by_email failed, fallback to traffic_users:', error.message);
         } else if (users?.[0]) {
           user = users[0];
-          authSource = 'targetologists';
+          authSource = 'users';
         }
       } catch (rpcError: any) {
         console.warn('⚠️ [AUTH] RPC exception, fallback to traffic_users:', rpcError?.message || rpcError);
@@ -188,12 +188,7 @@ router.post('/login', async (req, res) => {
     }
     
     // Update last login timestamp
-    if (authSource === 'targetologists') {
-      await trafficAdminSupabase
-        .from('traffic_targetologists')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', user.id);
-    } else if (authSource === 'users') {
+    if (authSource === 'users') {
       await trafficAdminSupabase
         .from('traffic_users')
         .update({ updated_at: new Date().toISOString() })
@@ -311,13 +306,13 @@ router.get('/me', authenticateToken, async (req, res) => {
       .eq('is_active', true)
       .single();
 
-    // Fallback to traffic_targetologists if not found
+    // Fallback: try with is_active check if first query failed
     if (error || !user) {
       const result = await trafficAdminSupabase
-        .from('traffic_targetologists')
+        .from('traffic_users')
         .select('id, email, full_name, team_name, role, avatar_url, last_login_at')
         .eq('id', req.user.userId)
-        .single();
+        .maybeSingle();
 
       if (result.error || !result.data) {
         return res.status(404).json({ error: 'User not found' });
@@ -356,7 +351,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     
     // Get user with password hash
     const { data: user, error } = await trafficAdminSupabase
-      .from('traffic_targetologists')
+      .from('traffic_users')
       .select('password_hash')
       .eq('id', req.user.userId)
       .single();
@@ -375,9 +370,9 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     const newHash = await bcrypt.hash(newPassword, 10);
     
     // Update password
-    const { error: updateError } = await tripwireAdminSupabase
+    const { error: updateError } = await trafficAdminSupabase
       .from('traffic_users')
-      .update({ 
+      .update({
         password_hash: newHash,
         updated_at: new Date().toISOString()
       })

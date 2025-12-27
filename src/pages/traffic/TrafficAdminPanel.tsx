@@ -124,7 +124,7 @@ function TabButton({ active, onClick, icon, label }: any) {
 // DASHBOARD PANEL
 // =====================
 function DashboardPanel() {
-  const token = localStorage.getItem('traffic_token');
+  const token = AuthManager.getAccessToken();
   
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
@@ -294,7 +294,7 @@ function QuickActionCard({ icon, title, description, href }: any) {
 // USERS PANEL
 // =====================
 function UsersPanel() {
-  const token = localStorage.getItem('traffic_token');
+  const token = AuthManager.getAccessToken();
   const queryClient = useQueryClient();
   
   const { data: usersData, isLoading } = useQuery({
@@ -417,7 +417,7 @@ function UsersPanel() {
 // SETTINGS PANEL
 // =====================
 function SettingsPanel() {
-  const token = localStorage.getItem('traffic_token');
+  const token = AuthManager.getAccessToken();
   
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['admin-settings'],
@@ -560,7 +560,7 @@ function SettingsPanel() {
 // GENERATE PANEL
 // =====================
 function GeneratePanel() {
-  const token = localStorage.getItem('traffic_token');
+  const token = AuthManager.getAccessToken();
   const [results, setResults] = useState<any>(null);
   
   const generateMutation = useMutation({

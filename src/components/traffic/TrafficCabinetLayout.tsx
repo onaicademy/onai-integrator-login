@@ -117,8 +117,8 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
           <NavItem
             icon={<TrendingUp className="w-5 h-5" />}
             label="Dashboard"
-            href={user.role === 'admin' ? '/admin/dashboard' : `/cabinet/${user.team.toLowerCase()}`}
-            isActive={isActive(user.role === 'admin' ? '/admin/dashboard' : `/cabinet/${user.team.toLowerCase()}`)}
+            href={user.role === 'admin' ? '/traffic/admin/dashboard' : `/cabinet/${user.team.toLowerCase()}`}
+            isActive={isActive(user.role === 'admin' ? '/traffic/admin/dashboard' : `/cabinet/${user.team.toLowerCase()}`)}
             onClick={() => setSidebarOpen(false)}
             dataTour={user.role === 'admin' ? 'admin-dashboard' : undefined}
           />
@@ -135,16 +135,16 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
               <NavItem
                 icon={<PieChart className="w-5 h-5" />}
                 label="Источники продаж"
-                href="/admin/utm-sources"
-                isActive={isActive('/admin/utm-sources')}
+                href="/traffic/admin/utm-sources"
+                isActive={isActive('/traffic/admin/utm-sources')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="utm-sources"
               />
               <NavItem
                 icon={<Shield className="w-5 h-5" />}
                 label="Безопасность"
-                href="/admin/security"
-                isActive={isActive('/admin/security')}
+                href="/traffic/admin/security"
+                isActive={isActive('/traffic/admin/security')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="security"
               />
@@ -159,24 +159,24 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
               <NavItem
                 icon={<Building2 className="w-5 h-5" />}
                 label="Конструктор команд"
-                href="/admin/team-constructor"
-                isActive={isActive('/admin/team-constructor')}
+                href="/traffic/admin/team-constructor"
+                isActive={isActive('/traffic/admin/team-constructor')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="team-constructor"
               />
               <NavItem
                 icon={<User className="w-5 h-5" />}
                 label="Пользователи"
-                href="/admin/users"
-                isActive={isActive('/admin/users')}
+                href="/traffic/admin/users"
+                isActive={isActive('/traffic/admin/users')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="user-management"
               />
               <NavItem
                 icon={<Settings className="w-5 h-5" />}
                 label="Настройки"
-                href="/admin/settings"
-                isActive={isActive('/admin/settings')}
+                href="/traffic/admin/settings"
+                isActive={isActive('/traffic/admin/settings')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="settings"
               />

@@ -137,7 +137,7 @@ import facebookAdsLoaderRouter from './routes/facebook-ads-loader-api.js'; // �
 import iaeAgentRouter from './routes/iae-agent.js'; // 🤖 IAE Agent (Intelligence Analytics Engine)
 import tokenManagerRouter from './routes/token-manager.js'; // 🔑 Token Auto-Refresh Manager
 import telegramTestRouter from './routes/telegram-test'; // 🤖 Telegram Bot Testing
-import trafficAuthRouter from './routes/traffic-auth.js'; // 🚀 Traffic Dashboard Auth
+import trafficAuthRouter, { authenticateToken } from './routes/traffic-auth.js'; // 🚀 Traffic Dashboard Auth
 import trafficPlansRouter from './routes/traffic-plans.js'; // 📊 Traffic Weekly Plans
 import trafficAdminRouter from './routes/traffic-admin.js'; // ⚙️ Traffic Admin Panel
 import attributionManagerRouter from './routes/attribution-manager.js'; // 🎯 Attribution Manager (Safety Net)
@@ -524,7 +524,7 @@ app.use('/api/attribution', attributionManagerRouter); // 🎯 Attribution Manag
 app.use('/api/traffic-security', trafficSecurityRouter); // 🔒 Traffic Security & Sessions Tracking
 app.use('/api/utm-analytics', utmAnalyticsRouter); // 📊 UTM Analytics (All Sales Sources)
 app.use('/api/traffic-onboarding', trafficOnboardingRouter); // 🎓 Traffic Onboarding Tour
-app.use('/api/traffic-constructor', trafficConstructorRouter); // 🏗️ Team Constructor (Admin)
+app.use('/api/traffic-constructor', authenticateToken, trafficConstructorRouter); // 🏗️ Team Constructor (Admin)
 app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // 📊 Detailed Analytics
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
 app.use('/api/traffic-facebook', trafficFacebookApiRouter); // 📘 NEW: Facebook Ads API (with caching)

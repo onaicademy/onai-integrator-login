@@ -39,8 +39,8 @@ const resolveTrafficUserId = async (candidateUserId: string): Promise<string> =>
     }
 
     const { data: targetologist, error: targetologistError } = await trafficAdminSupabase
-      .from('traffic_targetologists')
-      .select('id,email,full_name,team,role,password_hash,is_active')
+      .from('traffic_users')
+      .select('id,email,full_name,team_name,role,password_hash,is_active')
       .eq('id', candidateUserId)
       .maybeSingle();
 
@@ -63,7 +63,7 @@ const resolveTrafficUserId = async (candidateUserId: string): Promise<string> =>
       email: targetologist.email,
       password_hash: targetologist.password_hash || 'disabled',
       full_name: targetologist.full_name || targetologist.email,
-      team_name: targetologist.team,
+      team_name: targetologist.team_name,
       role: targetologist.role === 'admin' ? 'admin' : 'targetologist',
       is_active: targetologist.is_active ?? true,
       created_at: new Date().toISOString(),
