@@ -271,7 +271,8 @@ export async function hset(key: string, field: string | Record<string, any>, val
  */
 export async function hget(key: string, field: string): Promise<string | null> {
   if (redisAvailable && redisClient) {
-    return await redisClient.hGet(key, field);
+    const value = await redisClient.hGet(key, field);
+    return value ?? null;
   } else {
     const cached = memoryCache.get(key);
     if (cached && Date.now() < cached.expires) {
