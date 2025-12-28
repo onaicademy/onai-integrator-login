@@ -6,6 +6,7 @@ module.exports = {
       script: 'npm',
       args: 'run dev',
       interpreter: 'none',
+      env_file: '/var/www/onai-integrator-login-main/.env',
       env: {
         NODE_ENV: 'production',
       },
