@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, User, BarChart3, Menu, X, TrendingUp, Shield, PieChart, Building2 } from 'lucide-react';
+import { LogOut, Settings, User, BarChart3, Menu, X, TrendingUp, Shield, PieChart, Building2, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthManager } from '@/lib/auth';
 
@@ -171,6 +171,14 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
                 isActive={isActive('/traffic/admin/users')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="user-management"
+              />
+              <NavItem
+                icon={<Activity className="w-5 h-5" />}
+                label="API Интеграции"
+                href="/traffic/admin/api-integrations"
+                isActive={isActive('/traffic/admin/api-integrations')}
+                onClick={() => setSidebarOpen(false)}
+                dataTour="api-integrations"
               />
               <NavItem
                 icon={<Settings className="w-5 h-5" />}

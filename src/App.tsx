@@ -85,6 +85,7 @@ const TrafficTeamConstructor = lazy(() => retryChunkLoad(() => import("./pages/t
 const UTMSourcesPanel = lazy(() => retryChunkLoad(() => import("./pages/traffic/UTMSourcesPanel")));
 const TrafficDetailedAnalytics = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficDetailedAnalytics")));
 const TrafficSettings = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficSettings")));
+const TrafficAPIIntegrations = lazy(() => retryChunkLoad(() => import("./pages/traffic/TrafficAPIIntegrations")));
 const ReferralGeneratorPage = lazy(() => retryChunkLoad(() => import("./pages/referral/ReferralGeneratorPage"))); // 🎯 Referral System
 // Integrator Admin pages
 import TripwireAdminDashboard from "./pages/tripwire/admin/Dashboard";
@@ -335,6 +336,11 @@ const AppRoutes = () => {
       <Route path="/traffic/admin/dashboard" element={
         <TrafficGuard requireAdmin={true}>
           <TrafficAdminPanel />
+        </TrafficGuard>
+      } />
+      <Route path="/traffic/admin/api-integrations" element={
+        <TrafficGuard requireAdmin={true}>
+          <TrafficAPIIntegrations />
         </TrafficGuard>
       } />
       <Route path="/traffic/admin/settings" element={
