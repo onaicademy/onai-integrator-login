@@ -69,7 +69,7 @@ logs
 Dockerfile
 docker-compose.yml
 .dockerignore
-docker/
+# docker/ - REMOVED: nginx.conf нужен для frontend build
 
 # CI/CD
 .github
