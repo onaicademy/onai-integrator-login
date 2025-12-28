@@ -230,3 +230,14 @@ export async function closeRedis(): Promise<void> {
     console.log('👋 [Redis] Connection closed');
   }
 }
+
+/**
+ * Get Redis connection object for BullMQ
+ * BullMQ expects { url: string } or { host, port } object
+ */
+export function getRedisConnection() {
+  const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+  return {
+    url: redisUrl,
+  };
+}

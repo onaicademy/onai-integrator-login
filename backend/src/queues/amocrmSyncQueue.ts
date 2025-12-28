@@ -4,7 +4,7 @@
  * Handles async processing of lead synchronization with retry logic
  */
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
-import redis from '../config/redis';
+import { getRedisConnection } from '../config/redis';
 import { landingSupabase } from '../config/supabase-landing';
 import { amoCrmBulkService } from '../services/amoCrmBulkService';
 import { errorTracking, ErrorSeverity, ErrorCategory } from '../services/errorTrackingService';
@@ -40,7 +40,7 @@ export interface SyncJobResult {
 // CREATE QUEUE
 // ================================================
 export const amocrmSyncQueue = new Queue<SyncJobData, SyncJobResult>('amocrm-sync', {
-  connection: redis,
+  connection: getRedisConnection(),
   defaultJobOptions: {
     attempts: 3, // Retry up to 3 times
     backoff: {
@@ -62,7 +62,7 @@ export const amocrmSyncQueue = new Queue<SyncJobData, SyncJobResult>('amocrm-syn
 // QUEUE EVENTS (for real-time monitoring)
 // ================================================
 export const queueEvents = new QueueEvents('amocrm-sync', {
-  connection: redis,
+  connection: getRedisConnection(),
 });
 
 // Log queue events
@@ -226,7 +226,7 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
     }
   },
   {
-    connection: redis,
+    connection: getRedisConnection(),
     concurrency: 1, // 🚦 Process 1 job at a time (prevent amoCRM rate limit!)
     maxStalledCount: 3, // Max retries for stalled jobs
     stalledInterval: 5000, // Check every 5 seconds
