@@ -14,6 +14,7 @@
 import { Router, Request, Response } from 'express';
 import express from 'express';
 import { landingSupabase } from '../config/supabase-landing.js';
+import { validateExpressCourseWebhook } from '../middleware/validation';
 
 const router = Router();
 
@@ -79,7 +80,7 @@ interface AmoCRMFunnelSale {
  * ⚠️ КРИТИЧНО: ВСЕГДА возвращаем 200 OK, даже при ошибках!
  * Иначе amoCRM будет делать retry → создаст webhook loop → rate limit!
  */
-router.post('/funnel-sale', async (req: Request, res: Response) => {
+router.post('/funnel-sale', validateExpressCourseWebhook, async (req: Request, res: Response) => {
   const startTime = Date.now();
   
   try {

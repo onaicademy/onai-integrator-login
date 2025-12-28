@@ -123,6 +123,7 @@ import leadTrackingRouter from './routes/lead-tracking'; // ✅ Lead Tracking Da
 import unifiedTrackingRouter from './routes/unified-tracking'; // 🎯 Unified Tracking (Email + SMS + UTM)
 import facebookConversionRouter from './routes/facebook-conversion'; // ✅ Facebook Conversion API
 import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
+import apiHealthRouter from './routes/api-health'; // 🏥 API Health Check & Token Management
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
 import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
@@ -150,11 +151,13 @@ import trafficSettingsRouter from './routes/traffic-settings.js'; // ⚙️ Targ
 import trafficFacebookApiRouter from './routes/traffic-facebook-api.js'; // 📘 NEW: Facebook Ads API (with caching)
 import targetologistAssignmentRouter from './routes/targetologist-assignment.js'; // 🎯 Targetologist Assignment (manual + auto)
 import trafficFunnelApiRouter from './routes/traffic-funnel-api.js'; // 📊 Sales Funnel Visualization
+import trafficDashboardRouter from './routes/traffic-dashboard.js'; // 📊 Traffic Dashboard API (Sales Aggregation + UTM Attribution)
 import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 🔔 AmoCRM → Express Course Webhook
 import amocrmMainProductWebhookRouter from './routes/amocrm-main-product-webhook.js'; // 🏆 AmoCRM → Main Product Webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
+import integrationsDiagnosticsRouter from './routes/integrations-diagnostics'; // 🔍 Integrations Diagnostics
 import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks (DEPRECATED - use unified)
 import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
 import trafficWebhookRouter from './integrations/traffic-webhook.js'; // 🎯 DEDICATED Traffic Dashboard Webhook
@@ -468,6 +471,7 @@ app.use('/api/admin/tripwire', tripwireManagerRouter); // ✅ Sales Manager Dash
 app.use('/api/tripwire/admin', tripwireAdminRouter); // ✅ Tripwire Admin Dashboard (admin only)
 app.use('/api/tripwire/admin/mass-broadcast', tripwireMassBroadcastRouter); // ✅ Mass Broadcast (EMAIL + SMS)
 app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsOldRouter); // ✅ Tripwire Transcriptions (Admin)
+app.use('/api/admin/integrations/diagnostics', integrationsDiagnosticsRouter); // 🔍 Integrations Diagnostics
 app.use('/api/tripwire/transcriptions', tripwireTranscriptionsRouter); // ✅ NEW: Public transcriptions API
 app.use('/api/tripwire/users', tripwireProfileRouter); // ✅ Tripwire Profile (Isolated DB)
 app.use('/api/tripwire/analytics', tripwireAnalyticsRouter); // ✅ Tripwire Analytics (ISOLATED DB)
@@ -528,7 +532,9 @@ app.use('/api/traffic-constructor', authenticateToken, trafficConstructorRouter)
 app.use('/api/traffic-detailed-analytics', trafficDetailedAnalyticsRouter); // 📊 Detailed Analytics
 app.use('/api/traffic-settings', trafficSettingsRouter); // ⚙️ Targetologist Settings
 app.use('/api/traffic-facebook', trafficFacebookApiRouter); // 📘 NEW: Facebook Ads API (with caching)
+app.use('/api/health', apiHealthRouter); // 🏥 API Health Check & Token Management
 app.use('/api/targetologist-assignment', targetologistAssignmentRouter); // 🎯 Targetologist Assignment
+app.use('/api/traffic-dashboard', trafficDashboardRouter); // 📊 Traffic Dashboard API (Sales Aggregation + UTM Attribution)
 app.use('/api/traffic-dashboard', trafficFunnelApiRouter); // 📊 Sales Funnel Visualization
 // ✅ MOVED BEFORE express.json(): app.use('/api/amocrm', amocrmFunnelWebhookRouter);
 app.use('/api/error-reports', errorReportsRouter); // 🚨 Error Reports → Telegram @analisistonaitrafic_bot
@@ -540,10 +546,11 @@ app.use('/api/monitoring', monitoringRouter); // 🏥 Bot Health Monitoring Syst
 // ✅ MOVED BEFORE express.json(): app.use('/webhook/amocrm', trafficWebhookRouter);
 // ✅ MOVED BEFORE express.json(): app.use('/webhook/amocrm', amoCRMWebhookRouter);
 app.use('/api/admin', adminWebhookLogsRouter); // 🔍 Admin Webhook Logs Viewer
+app.use('/api/admin', integrationsDiagnosticsRouter); // 🔍 Integrations Diagnostics
 // app.use('/webhook', unifiedAmoCRMWebhookRouter); // 🎯 UNIFIED (not used - separate endpoints instead)
 
 // 404 обработка
-import { notFoundHandler, errorHandler as enhancedErrorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler, errorHandler as enhancedErrorHandler } from './middleware/errorHandler';
 app.use(notFoundHandler);
 
 // 🛡️ SENTRY: Error handler (перед custom error handler)

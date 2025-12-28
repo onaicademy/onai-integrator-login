@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { generateTeamRecommendations, getLatestRecommendations } from '../services/trafficRecommendations.js';
+import { facebookRequestManager } from '../services/circuit-breaker';
 
 const router = Router();
 
@@ -85,14 +86,16 @@ router.get('/insights', async (req: Request, res: Response) => {
         try {
           // 🎯 Fetch campaigns with UTM filtering
           // Look for campaigns that contain team identifier in name
-          const campaignResponse = await axios.get(`${FB_BASE_URL}/${config.id}/campaigns`, {
-            params: {
-              access_token: FB_ACCESS_TOKEN,
-              fields: 'id,name,status',
-              limit: 100,
-            },
-            timeout: 15000,
-          });
+          const campaignResponse = await facebookRequestManager.execute(async () =>
+            axios.get(`${FB_BASE_URL}/${config.id}/campaigns`, {
+              params: {
+                access_token: FB_ACCESS_TOKEN,
+                fields: 'id,name,status',
+                limit: 100,
+              },
+              timeout: 15000,
+            })
+          );
           
           const campaigns = campaignResponse.data.data || [];
           
@@ -136,15 +139,17 @@ router.get('/insights', async (req: Request, res: Response) => {
           const campaignInsights = await Promise.all(
             relevantCampaigns.map(async (campaign: any) => {
               try {
-                const insightResponse = await axios.get(`${FB_BASE_URL}/${campaign.id}/insights`, {
-                  params: {
-                    access_token: FB_ACCESS_TOKEN,
-                    time_range: JSON.stringify({ since, until }),
-                    fields: 'campaign_name,spend,impressions,clicks,actions,action_values',
-                    level: 'campaign',
-                  },
-                  timeout: 15000,
-                });
+                const insightResponse = await facebookRequestManager.execute(async () =>
+                  axios.get(`${FB_BASE_URL}/${campaign.id}/insights`, {
+                    params: {
+                      access_token: FB_ACCESS_TOKEN,
+                      time_range: JSON.stringify({ since, until }),
+                      fields: 'campaign_name,spend,impressions,clicks,actions,action_values',
+                      level: 'campaign',
+                    },
+                    timeout: 15000,
+                  })
+                );
                 
                 const insights = insightResponse.data.data[0] || {};
                 

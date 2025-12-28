@@ -1,8 +1,46 @@
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { sendToAllChats } from '../services/telegramBot';
+import { determineTargetologist, getTargetologistEmoji } from '../services/targetologist-mapper';
+import { validateAmoCRMWebhook } from '../middleware/validation';
+import { errorHandler, ValidationError } from '../middleware/errorHandler';
 
 const router = Router();
+
+// 🔥 Дедупликация webhook (предотвращает дублирование при ретраях)
+const webhookCache = new Map<string, number>();
+const DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 минут
+
+/**
+ * Генерирует уникальный ID для webhook на основе lead_id и времени
+ */
+function generateWebhookId(leadId: string): string {
+  const timestamp = Math.floor(Date.now() / (60 * 1000)); // Округляем до минуты
+  return `${leadId}_${timestamp}`;
+}
+
+/**
+ * Проверяет, является ли webhook дубликатом
+ */
+function isDuplicate(webhookId: string): boolean {
+  const exists = webhookCache.has(webhookId);
+  if (!exists) {
+    webhookCache.set(webhookId, Date.now());
+  }
+  return exists;
+}
+
+/**
+ * Очищает старые записи из кэша (старше DEDUP_WINDOW_MS)
+ */
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, timestamp] of webhookCache.entries()) {
+    if (now - timestamp > DEDUP_WINDOW_MS) {
+      webhookCache.delete(id);
+    }
+  }
+}, DEDUP_WINDOW_MS);
 
 /**
  * Экранирование спецсимволов Markdown
@@ -12,49 +50,6 @@ function escapeMarkdown(text: string | null | undefined): string {
   return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
 }
 
-// 🎯 Маппинг UTM кампаний на таргетологов
-const TARGETOLOGIST_MAPPING: Record<string, string[]> = {
-  'Kenesary': ['tripwire', 'nutcab'],
-  'Arystan': ['arystan'],
-  'Muha': ['on ai', 'onai', 'запуск'],
-  'Traf4': ['alex', 'traf4', 'proftest'],
-};
-
-/**
- * Определить таргетолога по UTM меткам
- */
-function determineTargetologist(utmCampaign: string | null, utmSource: string | null): string {
-  if (!utmCampaign && !utmSource) {
-    return 'Unknown';
-  }
-
-  const campaignLower = (utmCampaign || '').toLowerCase();
-  const sourceLower = (utmSource || '').toLowerCase();
-
-  for (const [targetologist, patterns] of Object.entries(TARGETOLOGIST_MAPPING)) {
-    for (const pattern of patterns) {
-      if (campaignLower.includes(pattern.toLowerCase()) || sourceLower.includes(pattern.toLowerCase())) {
-        return targetologist;
-      }
-    }
-  }
-
-  return 'Unknown';
-}
-
-/**
- * Получить эмодзи для таргетолога
- */
-function getTargetologistEmoji(targetologist: string): string {
-  const emojis: Record<string, string> = {
-    'Kenesary': '👑',
-    'Arystan': '🦁',
-    'Muha': '🚀',
-    'Traf4': '⚡',
-    'Unknown': '❓',
-  };
-  return emojis[targetologist] || '🎯';
-}
 
 /**
  * Форматировать сумму в тенге
@@ -73,7 +68,7 @@ function formatTenge(amount: number): string {
  * Webhook для получения уведомлений об оплатах из AmoCRM
  * РАСШИРЕННАЯ ВЕРСИЯ - сохраняет в обе таблицы (sales_notifications + all_sales_tracking)
  */
-router.post('/sales-webhook', async (req: Request, res: Response) => {
+router.post('/sales-webhook', validateAmoCRMWebhook, async (req: Request, res: Response) => {
   try {
     console.log('📥 AmoCRM Sales Webhook получен:', JSON.stringify(req.body, null, 2));
 
@@ -111,7 +106,14 @@ router.post('/sales-webhook', async (req: Request, res: Response) => {
       console.error('❌ Недостаточно данных в webhook:', req.body);
       return res.status(400).json({ error: 'lead_id and sale_amount are required' });
     }
-
+    
+    // 🔥 Проверка на дубликаты (предотвращает повторную обработку при ретраях)
+    const webhookId = generateWebhookId(lead_id);
+    if (isDuplicate(webhookId)) {
+      console.log('⚠️ Duplicate webhook detected, skipping:', webhookId);
+      return res.status(200).json({ success: true, message: 'Duplicate webhook ignored', duplicate: true });
+    }
+    
     // Определить таргетолога
     const targetologist = determineTargetologist(utmCampaign, utmSource);
     console.log(`🎯 Таргетолог определен: ${targetologist} (utm_campaign: ${utmCampaign}, utm_source: ${utmSource})`);

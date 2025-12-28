@@ -12,6 +12,7 @@
 
 import { Router, Request, Response } from 'express';
 import { landingSupabase } from '../config/supabase-landing.js';
+import { validateExpressCourseWebhook } from '../middleware/validation';
 
 const router = Router();
 
@@ -54,7 +55,7 @@ setInterval(() => {
  * Принимает вебхук от AmoCRM с данными о продаже основного продукта
  * ⚠️ КРИТИЧНО: ВСЕГДА возвращаем 200 OK, чтобы предотвратить retry loop
  */
-router.post('/traffic', async (req: Request, res: Response) => {
+router.post('/traffic', validateExpressCourseWebhook, async (req: Request, res: Response) => {
   const startTime = Date.now();
   
   try {
