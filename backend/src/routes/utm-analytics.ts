@@ -1,12 +1,12 @@
 /**
  * UTM Analytics API
- * 
+ *
  * Анализ всех продаж по UTM-меткам (не только таргетологи)
  * Для админ панели "Источники продаж"
  */
 
 import { Router, Request, Response } from 'express';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
+import { trafficSupabase } from '../config/supabase-traffic';
 
 const router = Router();
 
@@ -26,7 +26,7 @@ router.get('/overview', async (req: Request, res: Response) => {
     }
 
     // Получить все продажи за период
-    const { data: allSales, error } = await tripwireAdminSupabase
+    const { data: allSales, error } = await trafficSupabase
       .from('all_sales_tracking')
       .select('*')
       .gte('sale_date', start || new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000).toISOString())
@@ -126,7 +126,7 @@ router.get('/top-sources', async (req: Request, res: Response) => {
   try {
     const { limit = 10, days = 30 } = req.query;
 
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficSupabase
       .from('top_utm_sources')
       .select('*')
       .limit(Number(limit));
@@ -149,7 +149,7 @@ router.get('/top-campaigns', async (req: Request, res: Response) => {
   try {
     const { limit = 10, source } = req.query;
 
-    let query = tripwireAdminSupabase
+    let query = trafficSupabase
       .from('top_utm_campaigns')
       .select('*');
 
@@ -179,7 +179,7 @@ router.get('/without-utm', async (req: Request, res: Response) => {
   try {
     const { limit = 50 } = req.query;
 
-    const { data, error } = await tripwireAdminSupabase
+    const { data, error } = await trafficSupabase
       .from('sales_without_utm')
       .select('*')
       .limit(Number(limit));
@@ -206,7 +206,7 @@ router.get('/daily-stats', async (req: Request, res: Response) => {
   try {
     const { days = 30, source, campaign } = req.query;
 
-    let query = tripwireAdminSupabase
+    let query = trafficSupabase
       .from('daily_utm_stats')
       .select('*');
 
@@ -248,7 +248,7 @@ router.get('/search', async (req: Request, res: Response) => {
       limit = 100 
     } = req.query;
 
-    let query = tripwireAdminSupabase
+    let query = trafficSupabase
       .from('all_sales_tracking')
       .select('*');
 
@@ -310,7 +310,7 @@ router.get('/source-details/:source', async (req: Request, res: Response) => {
     const { days = 30 } = req.query;
 
     // Все продажи по этому источнику
-    const { data: sales, error } = await tripwireAdminSupabase
+    const { data: sales, error } = await trafficSupabase
       .from('all_sales_tracking')
       .select('*')
       .eq('utm_source', source)

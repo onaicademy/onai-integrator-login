@@ -157,6 +157,7 @@ import amocrmMainProductWebhookRouter from './routes/amocrm-main-product-webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
+import apiIntegrationsRouter from './routes/api-integrations'; // 📊 API Integrations Status (Frontend)
 import integrationsDiagnosticsRouter from './routes/integrations-diagnostics'; // 🔍 Integrations Diagnostics
 import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks (DEPRECATED - use unified)
 import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
@@ -544,6 +545,7 @@ app.use('/api/traffic-dashboard', trafficFunnelApiRouter); // 📊 Sales Funnel 
 app.use('/api/error-reports', errorReportsRouter); // 🚨 Error Reports → Telegram @analisistonaitrafic_bot
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
 app.use('/api/referral', referralRouter); // 🎯 Referral System (UTM tracking & commissions)
+app.use('/api/integrations', apiIntegrationsRouter); // 📊 API Integrations Status (Frontend)
 app.use('/api/admin/system', systemHealthRouter); // 🚀 System Health & Queue Management (Admin only)
 app.use('/api/admin/debug', debugRouter); // 🚔 Debug Panel (Operation Logging - Admin only)
 app.use('/api/monitoring', monitoringRouter); // 🏥 Bot Health Monitoring System
