@@ -70,7 +70,6 @@ const ProfTest = lazy(() => retryChunkLoad(() => import("./pages/tripwire/ProfTe
 const TrafficCommandDashboard = lazy(() => retryChunkLoad(() => import("./pages/tripwire/TrafficCommandDashboard")));
 const MassBroadcast = lazy(() => retryChunkLoad(() => import("./pages/tripwire/admin/MassBroadcast")));
 import TripwireCertificatePage from "./pages/tripwire/TripwireCertificatePage";
-import TripwireUpdatePassword from "./pages/tripwire/TripwireUpdatePassword"; // 🔑 Password Reset
 import { TripwireLayout } from "./components/tripwire/TripwireLayout";
 
 // 🚀 Traffic Dashboard (new personal cabinets system)
@@ -283,10 +282,6 @@ const AppRoutes = () => {
       {/* Public: Landing page (no auth required) - для сбора заявок */}
       <Route path="/expresscourse" element={<TripwireLanding />} />
       <Route path="/integrator/expresscourse" element={<TripwireLanding />} />
-      
-      {/* Public: Password Reset (no auth required) */}
-      <Route path="/integrator/update-password" element={<TripwireUpdatePassword />} />
-      
       {/* Public: Certificate page (no auth required for sharing) */}
       <Route path="/integrator/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
       
@@ -542,8 +537,6 @@ const AppRoutes = () => {
       
       {/* Public routes - redirect to /integrator */}
       <Route path="/tripwire/login" element={<Navigate replace to="/integrator/login" />} />
-      {/* ✅ TRIPWIRE: Отдельный роут для сброса пароля (изолированная БД) */}
-      <Route path="/tripwire/update-password" element={<TripwireUpdatePassword />} />
       <Route path="/tripwire/certificate/:certificateNumber" element={<RedirectWithParams from="/tripwire" to="/integrator" />} />
       
       {/* Student routes - redirect to /integrator */}
