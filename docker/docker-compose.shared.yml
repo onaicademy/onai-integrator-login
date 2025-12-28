@@ -9,8 +9,8 @@ services:
   shared-redis:
     image: redis:7-alpine
     container_name: onai-shared-redis
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"  # Disabled - using system Redis on host
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
