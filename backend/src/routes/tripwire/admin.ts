@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT, requireAdmin } from '../../middleware/auth';
+import { authenticateTripwireJWT, requireTripwireAdmin } from '../../middleware/tripwire-auth';
 import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
 
 const router = Router();
@@ -12,7 +12,7 @@ const supabase = tripwireAdminSupabase;
  * Dashboard stats - ONLY TRIPWIRE STUDENTS
  * ONLY for admin role (saint@onaiacademy.kz)
  */
-router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
+router.get('/stats', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     // 🚫 EXCLUDED EMAILS (admin + sales managers)
     const EXCLUDED_EMAILS = [
@@ -175,7 +175,7 @@ router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
  * List ONLY TRIPWIRE students with their progress
  * ONLY for admin role
  */
-router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
+router.get('/students', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     // 🚫 EXCLUDED EMAILS (admin + sales managers)
     const EXCLUDED_EMAILS = [
@@ -301,7 +301,7 @@ router.get('/students', authenticateJWT, requireAdmin, async (req, res) => {
  * AI costs breakdown - ONLY TRIPWIRE STUDENTS
  * ONLY for admin role
  */
-router.get('/costs', authenticateJWT, requireAdmin, async (req, res) => {
+router.get('/costs', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     // ✅ ШАГ 1: Получить затраты из ОТДЕЛЬНОЙ таблицы tripwire_ai_costs
     // Эта таблица содержит ТОЛЬКО затраты Tripwire:
@@ -391,7 +391,7 @@ router.get('/costs', authenticateJWT, requireAdmin, async (req, res) => {
  * Conversion funnel analytics - ONLY TRIPWIRE STUDENTS
  * ONLY for admin role
  */
-router.get('/funnel', authenticateJWT, requireAdmin, async (req, res) => {
+router.get('/funnel', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     // ✅ ШАГ 1: Получить всех студентов Tripwire
     const { data: tripwireProfiles } = await supabase

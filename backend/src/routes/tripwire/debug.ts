@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT, requireSalesOrAdmin } from '../../middleware/auth';
+import { authenticateTripwireJWT, requireTripwireSalesOrAdmin } from '../../middleware/tripwire-auth';
 import { getDebugStats, getErrorLogs, getAllLogs } from '../../services/debugService';
 import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
 import { 
@@ -16,7 +16,7 @@ const router = Router();
  * Get debug statistics (errors, success rate, response times)
  * Protected: admin or sales role
  */
-router.get('/stats', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/stats', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     // Parse date range
     const startDate = req.query.startDate 
@@ -41,7 +41,7 @@ router.get('/stats', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
  * Get detailed error logs
  * Protected: admin or sales role
  */
-router.get('/errors', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/errors', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
     
@@ -67,7 +67,7 @@ router.get('/errors', authenticateJWT, requireSalesOrAdmin, async (req, res) => 
  * Get all logs (with optional filtering)
  * Protected: admin or sales role
  */
-router.get('/logs', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/logs', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 100;
     const eventType = req.query.eventType as string | undefined;
@@ -94,7 +94,7 @@ router.get('/logs', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
  * Manually trigger cleanup of old logs (older than 7 days)
  * Protected: admin or sales role
  */
-router.post('/cleanup', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.post('/cleanup', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     // Call cleanup function
     const { cleanupOldLogs } = await import('../../services/queueService');
@@ -114,7 +114,7 @@ router.post('/cleanup', authenticateJWT, requireSalesOrAdmin, async (req, res) =
  * Log client-side errors from production
  * Protected: authenticated users only
  */
-router.post('/client-error', authenticateJWT, async (req, res) => {
+router.post('/client-error', authenticateTripwireJWT, async (req, res) => {
   try {
     const { message, stack, userAgent, url, context } = req.body;
     const userId = (req as any).user?.sub;
@@ -162,7 +162,7 @@ router.post('/client-error', authenticateJWT, async (req, res) => {
  * Search Tripwire users by email or phone
  * Protected: admin or sales role
  */
-router.get('/search-users', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/search-users', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const searchTerm = req.query.q as string;
     
@@ -184,7 +184,7 @@ router.get('/search-users', authenticateJWT, requireSalesOrAdmin, async (req, re
  * Get activity logs for specific user
  * Protected: admin or sales role
  */
-router.get('/user-logs/:userId', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/user-logs/:userId', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const limit = parseInt(req.query.limit as string) || 100;
@@ -228,7 +228,7 @@ router.get('/user-logs/:userId', authenticateJWT, requireSalesOrAdmin, async (re
  * Get error/event statistics for specific user
  * Protected: admin or sales role
  */
-router.get('/user-stats/:userId', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/user-stats/:userId', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     

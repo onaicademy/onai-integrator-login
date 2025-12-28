@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT, requireAdmin } from '../../middleware/auth';
+import { authenticateTripwireJWT, requireTripwireAdmin } from '../../middleware/tripwire-auth';
 import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
@@ -115,7 +115,7 @@ async function getPhoneMapFromLandingLeads(tripwireStudents: Array<{ email: stri
  * 🔄 POST /api/tripwire/admin/mass-broadcast/sync
  * Синхронизировать список получателей (обновить статистику)
  */
-router.post('/sync', authenticateJWT, requireAdmin, async (req, res) => {
+router.post('/sync', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     console.log('🔄 СИНХРОНИЗАЦИЯ списка получателей...');
 
@@ -160,7 +160,7 @@ router.post('/sync', authenticateJWT, requireAdmin, async (req, res) => {
  * 📊 GET /api/tripwire/admin/mass-broadcast/stats
  * Получить статистику получателей
  */
-router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
+router.get('/stats', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     console.log('📊 Загрузка статистики массовых рассылок...');
 
@@ -200,7 +200,7 @@ router.get('/stats', authenticateJWT, requireAdmin, async (req, res) => {
  * 📧📱 POST /api/tripwire/admin/mass-broadcast/send
  * Отправить массовую рассылку (EMAIL + SMS)
  */
-router.post('/send', authenticateJWT, requireAdmin, async (req, res) => {
+router.post('/send', authenticateTripwireJWT, requireTripwireAdmin, async (req, res) => {
   try {
     const { email: emailData, sms: smsData } = req.body;
 

@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { authenticateJWT } from '../../middleware/auth';
+import { authenticateTripwireJWT } from '../../middleware/tripwire-auth';
 import * as tripwireCertificateController from '../../controllers/tripwire/tripwireCertificateController';
 import * as tripwireCertificateSSEController from '../../controllers/tripwire/tripwireCertificateSSEController';
 
@@ -20,19 +20,19 @@ router.post('/issue-stream', tripwireCertificateSSEController.issueCertificateSt
  * POST /api/tripwire/certificates/issue
  * Выдать сертификат пользователю (старый метод, для обратной совместимости)
  */
-router.post('/issue', authenticateJWT, tripwireCertificateController.issue);
+router.post('/issue', authenticateTripwireJWT, tripwireCertificateController.issue);
 
 /**
  * GET /api/tripwire/certificates/my
  * Получить сертификат текущего пользователя
  */
-router.get('/my', authenticateJWT, tripwireCertificateController.getMyCertificate);
+router.get('/my', authenticateTripwireJWT, tripwireCertificateController.getMyCertificate);
 
 /**
  * GET /api/tripwire/certificates/check-eligibility
  * Проверить, может ли пользователь получить сертификат
  */
-router.get('/check-eligibility', authenticateJWT, tripwireCertificateController.checkEligibility);
+router.get('/check-eligibility', authenticateTripwireJWT, tripwireCertificateController.checkEligibility);
 
 export default router;
 

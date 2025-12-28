@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT, requireSalesOrAdmin } from '../../middleware/auth';
+import { authenticateTripwireJWT, requireTripwireSalesOrAdmin } from '../../middleware/tripwire-auth';
 import { getQueueMetrics, getSystemMode, setSystemMode } from '../../services/queueService';
 import { tripwireAdminSupabase } from '../../config/supabase-tripwire';
 
@@ -10,7 +10,7 @@ const router = Router();
  * Get current system mode (async_queue or sync_direct)
  * Protected: admin or sales role
  */
-router.get('/mode', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/mode', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const mode = await getSystemMode();
     res.json({ mode });
@@ -25,7 +25,7 @@ router.get('/mode', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
  * Set system mode (kill switch)
  * Protected: admin or sales role
  */
-router.post('/mode', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.post('/mode', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const { mode } = req.body;
     
@@ -54,7 +54,7 @@ router.post('/mode', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
  * Get queue metrics (waiting, active, completed, failed)
  * Protected: admin or sales role
  */
-router.get('/metrics', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/metrics', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const metrics = await getQueueMetrics();
     res.json(metrics);
@@ -69,7 +69,7 @@ router.get('/metrics', authenticateJWT, requireSalesOrAdmin, async (req, res) =>
  * Get recent system health logs (last 50)
  * Protected: admin or sales role
  */
-router.get('/logs', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/logs', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
     

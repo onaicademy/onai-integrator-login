@@ -7,7 +7,7 @@
  */
 
 import express from 'express';
-import { authenticateJWT, requireSalesOrAdmin } from '../middleware/auth';
+import { authenticateTripwireJWT, requireTripwireSalesOrAdmin } from '../middleware/tripwire-auth';
 import {
   createTripwireUser,
   getTripwireUsers,
@@ -21,7 +21,7 @@ const router = express.Router();
  * POST /api/tripwire/users
  * Создать нового Tripwire пользователя (Sales Manager)
  */
-router.post('/users', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.post('/users', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const { email, full_name, password, granted_by, manager_name } = req.body;
 
@@ -48,7 +48,7 @@ router.post('/users', authenticateJWT, requireSalesOrAdmin, async (req, res) => 
  * GET /api/tripwire/users
  * Получить список Tripwire пользователей (Sales Manager)
  */
-router.get('/users', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/users', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const users = await getTripwireUsers();
     res.json(users);
@@ -62,7 +62,7 @@ router.get('/users', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
  * PUT /api/tripwire/users/:userId/status
  * Обновить статус Tripwire пользователя
  */
-router.put('/users/:userId/status', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.put('/users/:userId/status', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const { status } = req.body;
@@ -83,7 +83,7 @@ router.put('/users/:userId/status', authenticateJWT, requireSalesOrAdmin, async 
  * GET /api/tripwire/stats
  * Получить статистику Tripwire (Sales Manager Dashboard)
  */
-router.get('/stats', authenticateJWT, requireSalesOrAdmin, async (req, res) => {
+router.get('/stats', authenticateTripwireJWT, requireTripwireSalesOrAdmin, async (req, res) => {
   try {
     const stats = await getTripwireStats();
     res.json(stats);
