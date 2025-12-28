@@ -46,8 +46,8 @@ services:
     container_name: onai-main-backend
     ports:
       - "3000:3000"
-    env_file:
-      - ../backend/.env
+    # env_file:
+    #   - ../backend/.env  # Отключено - переменные берутся из корневого .env через ${VAR}
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -103,8 +103,8 @@ services:
       context: ../backend
       dockerfile: Dockerfile.worker
     container_name: onai-main-worker
-    env_file:
-      - ../backend/.env
+    # env_file:
+    #   - ../backend/.env  # Отключено - переменные берутся из корневого .env через ${VAR}
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
