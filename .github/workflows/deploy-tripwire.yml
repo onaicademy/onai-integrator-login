@@ -1,0 +1,135 @@
+name: 🎯 Deploy Tripwire
+
+# Автоматический деплой при изменении Tripwire
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/pages/tripwire/**'
+      - 'backend/src/routes/tripwire*.ts'
+      - 'src/hooks/useHonestVideoTracking.tsx'
+      - '.github/workflows/deploy-tripwire.yml'
+  workflow_dispatch:  # Ручной запуск
+
+jobs:
+  deploy-tripwire:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔨 Build frontend
+        run: npm run build
+        env:
+          # Main Supabase
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Tripwire
+          VITE_TRIPWIRE_SUPABASE_URL: ${{ secrets.VITE_TRIPWIRE_SUPABASE_URL }}
+          VITE_TRIPWIRE_SUPABASE_ANON_KEY: ${{ secrets.VITE_TRIPWIRE_SUPABASE_ANON_KEY }}
+          # Landing
+          VITE_LANDING_SUPABASE_URL: ${{ secrets.VITE_LANDING_SUPABASE_URL }}
+          VITE_LANDING_SUPABASE_ANON_KEY: ${{ secrets.VITE_LANDING_SUPABASE_ANON_KEY }}
+          VITE_API_URL: https://api.onai.academy
+
+      - name: 📦 Create deployment archive
+        run: |
+          # Архивируем только Tripwire страницы
+          tar -czf deploy-tripwire-$(date +%Y%m%d-%H%M%S).tar.gz dist/
+
+      - name: 🚀 Upload to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 207.154.231.30
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
+          source: "deploy-tripwire-*.tar.gz"
+          target: "/tmp/"
+          rm: false
+
+      - name: 🔄 Deploy Tripwire Frontend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 207.154.231.30
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            set -e
+            echo "🚀 Деплой Tripwire Frontend..."
+
+            # Определяем директорию (может быть отдельный поддомен)
+            TRIPWIRE_DIR="/var/www/tripwire.onai.academy"
+
+            # Создаём директорию если не существует
+            mkdir -p "$TRIPWIRE_DIR"
+
+            # Backup старой версии
+            cd "$TRIPWIRE_DIR"
+            tar -czf /tmp/tripwire-backup-$(date +%Y%m%d-%H%M%S).tar.gz . 2>/dev/null || true
+
+            # Удаляем старые файлы
+            rm -rf assets/* index.html 2>/dev/null || true
+
+            # Распаковываем новый build
+            LATEST_ARCHIVE=$(ls -t /tmp/deploy-tripwire-*.tar.gz | head -1)
+            tar -xzf "$LATEST_ARCHIVE" --strip-components=1
+
+            # Устанавливаем права
+            chown -R www-data:www-data "$TRIPWIRE_DIR"
+            chmod -R 755 "$TRIPWIRE_DIR"
+
+            # Перезагружаем Nginx
+            systemctl reload nginx
+
+            # Очищаем старые архивы (оставляем последние 5)
+            ls -t /tmp/deploy-tripwire-*.tar.gz | tail -n +6 | xargs rm -f 2>/dev/null || true
+
+            echo "✅ Tripwire Frontend задеплоен успешно!"
+            echo "🌐 URL: https://tripwire.onai.academy"
+
+      - name: 🔄 Deploy Tripwire Backend (если изменён)
+        uses: appleboy/ssh-action@v1.0.3
+        if: contains(github.event.head_commit.modified, 'backend/src/routes/tripwire')
+        with:
+          host: 207.154.231.30
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            set -e
+            echo "🚀 Деплой Tripwire Backend..."
+
+            cd /var/www/onai-integrator-login-main
+            git fetch origin main
+            git reset --hard origin/main
+
+            cd backend
+            npm install --production
+            npm run build
+
+            # Перезапускаем PM2
+            pm2 restart onai-backend --update-env
+
+            echo "✅ Tripwire Backend обновлён!"
+
+      - name: ✅ Verify deployment
+        run: |
+          echo "🔍 Проверка деплоя..."
+          sleep 3
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://tripwire.onai.academy/ || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Tripwire доступен (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ Tripwire может быть не настроен отдельно (HTTP $HTTP_CODE)"
+            echo "ℹ️ Проверьте конфигурацию Nginx для tripwire.onai.academy"
+          fi

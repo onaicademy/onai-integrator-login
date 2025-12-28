@@ -13,7 +13,7 @@ on:
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -25,29 +25,39 @@ jobs:
           username: root
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
+            set -e
             echo "🚀 Начинаю деплой backend..."
-            
-            cd /var/www/onai-integrator-login-main/backend
-            
+
+            # Переходим в правильную директорию
+            cd /var/www/onai-integrator-login-main
+
             echo "📦 Git pull..."
-            git stash
-            git pull origin main
-            
-            echo "📥 Установка зависимостей..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "📥 Установка зависимостей backend..."
+            cd backend
             npm install --production
-            
+
             echo "🔨 Сборка TypeScript..."
-            npm run build || echo "⚠️ Build предупреждения (не критично)"
-            
+            npm run build
+
+            echo "✅ Проверка env.env..."
+            if [ ! -f "env.env" ]; then
+              echo "⚠️ Файл env.env не найден!"
+              exit 1
+            fi
+
             echo "🔄 Перезапуск PM2..."
-            pm2 restart onai-backend --update-env
-            
-            echo "✅ Проверка статуса..."
+            pm2 restart onai-backend --update-env || pm2 start dist/index.js --name onai-backend
+
+            echo "✅ Проверка статуса PM2..."
             pm2 status onai-backend
-            
+            pm2 save
+
             echo "🏥 Health check..."
-            sleep 3
-            curl -f http://localhost:3000/api/health || echo "⚠️ Health check failed"
-            
-            echo "✅ Деплой backend завершён!"
+            sleep 5
+            curl -f http://localhost:3001/api/health || echo "⚠️ Health check failed (проверьте логи: pm2 logs onai-backend)"
+
+            echo "✅ Деплой backend завершён успешно!"
 

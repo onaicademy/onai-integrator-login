@@ -70,17 +70,15 @@ export class TripwireBDIntegration {
    * Получить все лиды из Tripwire BD
    */
   async fetchAllLeads(options: {
-    this.checkInitialized();
-    try {
-      let query = this.supabase!
     limit?: number;
     offset?: number;
     dateFrom?: Date;
     dateTo?: Date;
     status?: string;
   } = {}): Promise<TripwireLead[]> {
+    this.checkInitialized();
     try {
-      let query = this.supabase
+      let query = this.supabase!
         .from('tripwire_leads')
         .select('*')
         .order('created_at', { ascending: false });
@@ -199,8 +197,9 @@ export class TripwireBDIntegration {
    * Создать новый лид в Tripwire BD
    */
   async createLead(lead: Omit<TripwireLead, 'id' | 'created_at' | 'updated_at'>): Promise<TripwireLead> {
+    this.checkInitialized();
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabase!
         .from('tripwire_leads')
         .insert({
           ...lead,
@@ -227,8 +226,9 @@ export class TripwireBDIntegration {
    * Обновить статус лида
    */
   async updateLeadStatus(leadId: number, status: string): Promise<TripwireLead> {
+    this.checkInitialized();
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabase!
         .from('tripwire_leads')
         .update({
           status,
@@ -270,7 +270,7 @@ export class TripwireBDIntegration {
       for (const lead of leads) {
         try {
           // Проверяем, существует ли лид в traffic_sales
-          const { data: existing } = await this.supabase
+          const { data: existing } = await this.supabase!
             .from('traffic_sales')
             .select('id')
             .eq('lead_id', lead.id)
@@ -283,7 +283,7 @@ export class TripwireBDIntegration {
           }
 
           // Создаем запись в traffic_sales
-          await this.supabase
+          await this.supabase!
             .from('traffic_sales')
             .insert({
               lead_id: lead.id,
@@ -328,8 +328,9 @@ export class TripwireBDIntegration {
     message: string;
     details?: any;
   }> {
+    this.checkInitialized();
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabase!
         .from('tripwire_leads')
         .select('id')
         .limit(1);
