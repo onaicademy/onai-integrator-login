@@ -4,7 +4,7 @@
  * Handles async processing of lead synchronization with retry logic
  */
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
-import { getRedisConnection } from '../config/redis';
+import { getRedisConnection, isRedisAvailable, redisClient } from '../config/redis';
 import { landingSupabase } from '../config/supabase-landing';
 import { amoCrmBulkService } from '../services/amoCrmBulkService';
 import { errorTracking, ErrorSeverity, ErrorCategory } from '../services/errorTrackingService';
@@ -39,8 +39,9 @@ export interface SyncJobResult {
 // ================================================
 // CREATE QUEUE
 // ================================================
-export const amocrmSyncQueue = new Queue<SyncJobData, SyncJobResult>('amocrm-sync', {
-  connection: getRedisConnection(),
+// Check if Redis is available before creating queue
+const amocrmSyncQueue = new Queue<SyncJobData, SyncJobResult>('amocrm-sync', {
+  connection: isRedisAvailable() ? getRedisConnection() : undefined,
   defaultJobOptions: {
     attempts: 3, // Retry up to 3 times
     backoff: {
@@ -61,22 +62,25 @@ export const amocrmSyncQueue = new Queue<SyncJobData, SyncJobResult>('amocrm-syn
 // ================================================
 // QUEUE EVENTS (for real-time monitoring)
 // ================================================
-export const queueEvents = new QueueEvents('amocrm-sync', {
-  connection: getRedisConnection(),
+// Check if Redis is available before creating queue events
+const queueEvents = new QueueEvents('amocrm-sync', {
+  connection: isRedisAvailable() ? getRedisConnection() : undefined,
 });
 
-// Log queue events
-queueEvents.on('completed', ({ jobId }) => {
-  logger.info(`✅ Job ${jobId} completed`);
-});
+// Log queue events (only if Redis is available)
+if (isRedisAvailable() && queueEvents) {
+  queueEvents.on('completed', ({ jobId }) => {
+    logger.info(`✅ Job ${jobId} completed`);
+  });
 
-queueEvents.on('failed', ({ jobId, failedReason }) => {
-  logger.error(`❌ Job ${jobId} failed: ${failedReason}`);
-});
+  queueEvents.on('failed', ({ jobId, failedReason }) => {
+    logger.error(`❌ Job ${jobId} failed: ${failedReason}`);
+  });
 
-queueEvents.on('progress', ({ jobId, data }) => {
-  logger.debug(`📊 Job ${jobId} progress:`, data);
-});
+  queueEvents.on('progress', ({ jobId, data }) => {
+    logger.debug(`📊 Job ${jobId} progress:`, data);
+  });
+}
 
 // ================================================
 // WORKER (Process jobs)
@@ -93,8 +97,10 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
     logger.info(`🔄 [Job ${job.id}] Attempt ${attemptNum}/${maxAttempts} for lead ${leadId}`);
 
     try {
-      // ⭐ Mark as in_progress
-      await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', 1);
+      // ⭐ Mark as in_progress (only if Redis is available)
+      if (redisClient && isRedisAvailable()) {
+        await redisClient.hIncrBy(`sync:${syncId}:progress`, 'in_progress', 1);
+      }
 
       // Update job progress
       await job.updateProgress(10);
@@ -143,10 +149,12 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
 
       await job.updateProgress(100);
 
-      // ✅ SUCCESS: Update progress counters
-      await redis.hincrby(`sync:${syncId}:progress`, 'processed', 1);
-      await redis.hincrby(`sync:${syncId}:progress`, 'successful', 1);
-      await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', -1);
+      // ✅ SUCCESS: Update progress counters (only if Redis is available)
+      if (redisClient && isRedisAvailable()) {
+        await redisClient.hIncrBy(`sync:${syncId}:progress`, 'processed', 1);
+        await redisClient.hIncrBy(`sync:${syncId}:progress`, 'successful', 1);
+        await redisClient.hIncrBy(`sync:${syncId}:progress`, 'in_progress', -1);
+      }
 
       logger.info(`✅ [Job ${job.id}] SUCCESS on attempt ${attemptNum}`);
 
@@ -162,8 +170,10 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
       logger.error(`❌ [Job ${job.id}] Error on attempt ${attemptNum}/${maxAttempts}:`, error.message);
 
       if (attemptNum < maxAttempts) {
-        // ⭐ Will retry - don't update processed yet
-        await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', -1);
+        // ⭐ Will retry - don't update processed yet (only if Redis is available)
+        if (redisClient && isRedisAvailable()) {
+          await redisClient.hIncrBy(`sync:${syncId}:progress`, 'in_progress', -1);
+        }
 
         // Update database with retry status
         await landingSupabase
@@ -181,10 +191,12 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
         throw error; // BullMQ handles retry
 
       } else {
-        // ⭐ Final failure - all attempts exhausted
-        await redis.hincrby(`sync:${syncId}:progress`, 'processed', 1);
-        await redis.hincrby(`sync:${syncId}:progress`, 'failed', 1);
-        await redis.hincrby(`sync:${syncId}:progress`, 'in_progress', -1);
+        // ⭐ Final failure - all attempts exhausted (only if Redis is available)
+        if (redisClient && isRedisAvailable()) {
+          await redisClient.hIncrBy(`sync:${syncId}:progress`, 'processed', 1);
+          await redisClient.hIncrBy(`sync:${syncId}:progress`, 'failed', 1);
+          await redisClient.hIncrBy(`sync:${syncId}:progress`, 'in_progress', -1);
+        }
 
         // Update database with final failed status
         await landingSupabase
@@ -226,7 +238,7 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
     }
   },
   {
-    connection: getRedisConnection(),
+    connection: isRedisAvailable() ? getRedisConnection() : undefined,
     concurrency: 1, // 🚦 Process 1 job at a time (prevent amoCRM rate limit!)
     maxStalledCount: 3, // Max retries for stalled jobs
     stalledInterval: 5000, // Check every 5 seconds
@@ -295,8 +307,12 @@ export const closeQueue = async (): Promise<void> => {
 
   try {
     await amocrmSyncWorker.close();
-    await queueEvents.close();
-    await amocrmSyncQueue.close();
+    if (isRedisAvailable() && queueEvents) {
+      await queueEvents.close();
+    }
+    if (isRedisAvailable() && amocrmSyncQueue) {
+      await amocrmSyncQueue.close();
+    }
     logger.info('✅ Queue closed gracefully');
   } catch (error: any) {
     logger.error('❌ Error closing queue:', error.message);
@@ -304,7 +320,11 @@ export const closeQueue = async (): Promise<void> => {
 };
 
 // Log queue initialization
-logger.info('✅ AmoCRM sync queue initialized');
+if (isRedisAvailable()) {
+  logger.info('✅ AmoCRM sync queue initialized with Redis');
+} else {
+  logger.warn('⚠️ AmoCRM sync queue initialized without Redis (queue disabled)');
+}
 
 export default amocrmSyncQueue;
 

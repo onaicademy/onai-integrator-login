@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Queue } from 'bullmq';
-import { redis } from '../config/redis';
+import { getRedisConnection, isRedisAvailable } from '../config/redis';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire';
 
 /**
@@ -38,9 +38,9 @@ function clearCache() {
   console.log('🔄 [CACHE] Config cache cleared');
 }
 
-// Create BullMQ Queue
+// Create BullMQ Queue (only if Redis is available)
 export const userCreationQueue = new Queue<CreateUserJobData>('tripwire-user-creation', {
-  connection: redis,
+  connection: isRedisAvailable() ? getRedisConnection() : undefined,
   defaultJobOptions: {
     attempts: 3,
     backoff: {

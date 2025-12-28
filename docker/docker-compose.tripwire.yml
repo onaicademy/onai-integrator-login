@@ -29,6 +29,14 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
 
   # Backend Tripwire
   tripwire-backend:
@@ -38,6 +46,8 @@ services:
     container_name: onai-tripwire-backend
     ports:
       - "3002:3000"
+    env_file:
+      - ../backend/.env
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -73,6 +83,14 @@ services:
     volumes:
       - ../backend/logs:/app/logs
       - ../backend/uploads:/app/uploads
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
 
   # Worker Tripwire (специфичный для Tripwire)
   tripwire-worker:
@@ -80,6 +98,8 @@ services:
       context: ../backend
       dockerfile: Dockerfile.worker
     container_name: onai-tripwire-worker
+    env_file:
+      - ../backend/.env
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
@@ -108,6 +128,14 @@ services:
       start_period: 40s
     volumes:
       - ../backend/logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
 networks:
   onai-network:

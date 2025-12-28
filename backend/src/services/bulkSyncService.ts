@@ -5,7 +5,7 @@
  */
 import { v4 as uuidv4 } from 'uuid';
 import { landingSupabase } from '../config/supabase-landing';
-import redis from '../config/redis';
+import { hset, expire, set, hgetall, get } from '../config/redis';
 import { amocrmSyncQueue } from '../queues/amocrmSyncQueue';
 import pino from 'pino';
 
@@ -92,7 +92,7 @@ class BulkSyncService {
       }
 
       // 2️⃣ Initialize progress tracking in Redis
-      await redis.hset(`sync:${syncId}:progress`, {
+      await hset(`sync:${syncId}:progress`, {
         total: totalLeads,
         processed: 0,
         successful: 0,
@@ -101,7 +101,7 @@ class BulkSyncService {
       });
 
       // Set TTL for progress data (expire after 7 days)
-      await redis.expire(`sync:${syncId}:progress`, 7 * 24 * 60 * 60);
+      await expire(`sync:${syncId}:progress`, 7 * 24 * 60 * 60);
 
       // 3️⃣ Add all leads to the queue
       const jobs = request.leads.map((lead) => ({
@@ -123,7 +123,7 @@ class BulkSyncService {
       logger.info(`✅ Added ${jobs.length} jobs to queue for sync ${syncId}`);
 
       // 4️⃣ Store start time for ETA calculation
-      await redis.set(`sync:${syncId}:start_time`, Date.now());
+      await set(`sync:${syncId}:start_time`, Date.now().toString());
 
       return syncId;
     } catch (error: any) {
@@ -145,7 +145,7 @@ class BulkSyncService {
   async getProgress(syncId: string): Promise<SyncProgress> {
     try {
       // Get progress from Redis
-      const progress = await redis.hgetall(`sync:${syncId}:progress`);
+      const progress = await hgetall(`sync:${syncId}:progress`);
 
       // Get sync record from database
       const { data: syncRecord, error } = await landingSupabase
@@ -171,7 +171,7 @@ class BulkSyncService {
       // Calculate estimated time remaining
       let estimatedTimeRemaining: number | undefined;
       if (processed > 0 && processed < total) {
-        const startTime = await redis.get(`sync:${syncId}:start_time`);
+        const startTime = await get(`sync:${syncId}:start_time`);
         if (startTime) {
           const elapsedMs = Date.now() - parseInt(startTime);
           const avgTimePerLead = elapsedMs / processed;

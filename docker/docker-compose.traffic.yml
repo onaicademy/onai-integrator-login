@@ -29,6 +29,14 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
 
   # Backend Traffic Dashboard
   traffic-backend:
@@ -46,9 +54,6 @@ services:
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - REDIS_URL=redis://shared-redis:6379
-      - REDIS_HOST=shared-redis
-      - REDIS_PORT=6379
-      - REDIS_DB=0
       - REDIS_HOST=shared-redis
       - REDIS_PORT=6379
       - REDIS_DB=0
@@ -102,6 +107,14 @@ services:
     volumes:
       - ../backend/logs:/app/logs
       - ../.env:/app/.env:ro
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
 
   # Worker Traffic Dashboard
   traffic-worker:
@@ -157,6 +170,14 @@ services:
     volumes:
       - ../backend/logs:/app/logs
       - ../.env:/app/.env:ro
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
 networks:
   onai-network:

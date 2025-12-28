@@ -211,6 +211,137 @@ export function isRedisAvailable(): boolean {
 }
 
 /**
+ * Redis wrapper methods for backward compatibility
+ * These methods work with both Redis and memory fallback
+ */
+
+/**
+ * Set value in Redis (no TTL)
+ */
+export async function set(key: string, value: string): Promise<void> {
+  if (redisAvailable && redisClient) {
+    await redisClient.set(key, value);
+  } else {
+    const expires = Date.now() + (300 * 1000); // Default 5 minutes
+    memoryCache.set(key, { value, expires });
+  }
+}
+
+/**
+ * Get value from Redis
+ */
+export async function get(key: string): Promise<string | null> {
+  if (redisAvailable && redisClient) {
+    return await redisClient.get(key);
+  } else {
+    const cached = memoryCache.get(key);
+    if (cached && Date.now() < cached.expires) {
+      return cached.value;
+    }
+    return null;
+  }
+}
+
+/**
+ * Set hash field in Redis
+ */
+export async function hset(key: string, field: string | Record<string, any>, value?: any): Promise<void> {
+  if (redisAvailable && redisClient) {
+    if (typeof field === 'object') {
+      await redisClient.hSet(key, field);
+    } else {
+      await redisClient.hSet(key, field, value);
+    }
+  } else {
+    // Memory fallback - store as JSON
+    const cached = memoryCache.get(key) || { value: '{}', expires: Date.now() + (300 * 1000) };
+    const hash = JSON.parse(cached.value);
+    if (typeof field === 'object') {
+      Object.assign(hash, field);
+    } else {
+      hash[field] = value;
+    }
+    cached.value = JSON.stringify(hash);
+    memoryCache.set(key, cached);
+  }
+}
+
+/**
+ * Get hash field from Redis
+ */
+export async function hget(key: string, field: string): Promise<string | null> {
+  if (redisAvailable && redisClient) {
+    return await redisClient.hGet(key, field);
+  } else {
+    const cached = memoryCache.get(key);
+    if (cached && Date.now() < cached.expires) {
+      const hash = JSON.parse(cached.value);
+      return hash[field] || null;
+    }
+    return null;
+  }
+}
+
+/**
+ * Get all hash fields from Redis
+ */
+export async function hgetall(key: string): Promise<Record<string, string>> {
+  if (redisAvailable && redisClient) {
+    return await redisClient.hGetAll(key);
+  } else {
+    const cached = memoryCache.get(key);
+    if (cached && Date.now() < cached.expires) {
+      return JSON.parse(cached.value);
+    }
+    return {};
+  }
+}
+
+/**
+ * Increment hash field in Redis
+ */
+export async function hincrby(key: string, field: string, increment: number): Promise<number> {
+  if (redisAvailable && redisClient) {
+    return await redisClient.hIncrBy(key, field, increment);
+  } else {
+    const cached = memoryCache.get(key) || { value: '{}', expires: Date.now() + (300 * 1000) };
+    const hash = JSON.parse(cached.value);
+    const current = parseInt(hash[field] || '0');
+    hash[field] = (current + increment).toString();
+    cached.value = JSON.stringify(hash);
+    memoryCache.set(key, cached);
+    return current + increment;
+  }
+}
+
+/**
+ * Set expiration time on key
+ */
+export async function expire(key: string, seconds: number): Promise<void> {
+  if (redisAvailable && redisClient) {
+    await redisClient.expire(key, seconds);
+  } else {
+    // Memory fallback - update expiration
+    const cached = memoryCache.get(key);
+    if (cached) {
+      cached.expires = Date.now() + (seconds * 1000);
+      memoryCache.set(key, cached);
+    }
+  }
+}
+
+/**
+ * Delete key from Redis
+ */
+export async function del(key: string): Promise<void> {
+  if (redisAvailable && redisClient) {
+    await redisClient.del(key);
+  } else {
+    memoryCache.delete(key);
+  }
+}
+
+/**
  * Get cache stats
  */
 export function getCacheStats() {
