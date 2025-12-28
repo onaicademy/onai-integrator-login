@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   RefreshCw,
@@ -17,7 +18,8 @@ import {
   Activity,
   Facebook,
   Database,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -42,6 +44,7 @@ interface AllApiStatus {
 }
 
 export default function TrafficAPIIntegrations() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState<string | null>(null);
   const [apiStatus, setApiStatus] = useState<AllApiStatus | null>(null);
@@ -138,6 +141,16 @@ export default function TrafficAPIIntegrations() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              onClick={() => navigate('/traffic/admin/dashboard')}
+              variant="outline"
+              className="border-white/10 hover:border-[#00FF88]/30"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Назад
+            </Button>
+          </div>
           <h1 className="text-3xl font-bold text-white mb-2">API Интеграции</h1>
           <p className="text-gray-400">Мониторинг и управление внешними сервисами</p>
         </motion.div>

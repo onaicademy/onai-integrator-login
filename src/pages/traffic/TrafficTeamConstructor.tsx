@@ -72,7 +72,6 @@ export default function TrafficTeamConstructor() {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [teamForm, setTeamForm] = useState({
     name: '',
-    direction: '',
     color: COLORS[0].value,
     emoji: '📈'
   });
@@ -82,10 +81,7 @@ export default function TrafficTeamConstructor() {
   const [userForm, setUserForm] = useState({
     email: '',
     fullName: '',
-    team: '',
-    customTeam: '',
     password: '',
-    role: 'targetologist' as 'targetologist' | 'admin',
     sendEmail: true
   });
   
@@ -124,7 +120,6 @@ export default function TrafficTeamConstructor() {
 
       await axios.post(`${API_URL}/api/traffic-constructor/teams`, {
         name: teamForm.name,
-        direction: teamForm.direction,
         color: teamForm.color,
         emoji: teamForm.emoji
       }, {
@@ -160,21 +155,14 @@ export default function TrafficTeamConstructor() {
   const handleCreateUser = async () => {
     try {
       const token = localStorage.getItem('traffic_token');
-      
-      // Используем customTeam если выбрано 'custom'
-      const teamName = userForm.team === 'custom' ? userForm.customTeam : userForm.team;
-      
-      if (!teamName) {
-        toast.error('Укажите название команды');
-        return;
-      }
-      
-              const response = await axios.post(`${API_URL}/api/traffic-constructor/users`, {
+
+      // Автоматическое определение команды на backend через UTM
+      // Роль всегда Таргетолог
+      const response = await axios.post(`${API_URL}/api/traffic-constructor/users`, {
         email: userForm.email,
         fullName: userForm.fullName,
-        team: teamName,
         password: userForm.password,
-        role: userForm.role,
+        role: 'targetologist', // Всегда таргетолог
         sendEmail: userForm.sendEmail
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -241,7 +229,6 @@ export default function TrafficTeamConstructor() {
   const resetTeamForm = () => {
     setTeamForm({
       name: '',
-      direction: '',
       color: COLORS[0].value,
       emoji: '📈'
     });
@@ -253,10 +240,7 @@ export default function TrafficTeamConstructor() {
     setUserForm({
       email: '',
       fullName: '',
-      team: '',
-      customTeam: '',
       password: '',
-      role: 'targetologist',
       sendEmail: true
     });
     setIsAddingUser(false);
@@ -308,7 +292,7 @@ export default function TrafficTeamConstructor() {
           {isAddingTeam && (
             <div className="mb-6 p-6 bg-black/60 border border-[#00FF88]/20 rounded-xl">
               <h3 className="text-lg font-bold text-white mb-4">Новая команда</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Название команды</label>
                   <Input
@@ -319,22 +303,6 @@ export default function TrafficTeamConstructor() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Направление продукта</label>
-                  <select
-                    value={teamForm.direction}
-                    onChange={(e) => setTeamForm({ ...teamForm, direction: e.target.value })}
-                    className="w-full h-10 px-3 bg-black/50 border border-[#00FF88]/20 text-white rounded-md"
-                  >
-                <option value="">Выберите направление</option>
-                {PRODUCT_DIRECTIONS.map(dir => (
-                  <option key={dir.value} value={dir.value}>
-                    {dir.label}
-                  </option>
-                ))}
-                  </select>
-                </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Цвет</label>
                   <div className="flex gap-2">
@@ -445,37 +413,7 @@ export default function TrafficTeamConstructor() {
                     className="bg-black/50 border-[#00FF88]/20 text-white"
                   />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Команда</label>
-                  <select
-                    value={userForm.team}
-                    onChange={(e) => setUserForm({ ...userForm, team: e.target.value })}
-                    className="w-full h-10 px-3 bg-black/50 border border-[#00FF88]/20 text-white rounded-md"
-                  >
-                    <option value="">Выберите команду</option>
-                    {/* Сначала команды из БД, затем дефолтные */}
-                    {(teams.length > 0 ? teams : DEFAULT_TEAMS.map(t => ({ id: t.name, name: t.name }))).map(team => (
-                      <option key={team.id || team.name} value={team.name}>
-                        {team.name}
-                      </option>
-                    ))}
-                    <option value="custom">+ Другая команда...</option>
-                  </select>
-                </div>
-                
-                {userForm.team === 'custom' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Название команды</label>
-                    <Input
-                      value={userForm.customTeam}
-                      onChange={(e) => setUserForm({ ...userForm, customTeam: e.target.value })}
-                      placeholder="Введите название"
-                      className="bg-black/50 border-[#00FF88]/20 text-white"
-                    />
-                  </div>
-                )}
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Пароль</label>
                   <Input
@@ -485,18 +423,6 @@ export default function TrafficTeamConstructor() {
                     placeholder="••••••••"
                     className="bg-black/50 border-[#00FF88]/20 text-white"
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Роль</label>
-                  <select
-                    value={userForm.role}
-                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value as 'targetologist' | 'admin' })}
-                    className="w-full h-10 px-3 bg-black/50 border border-[#00FF88]/20 text-white rounded-md"
-                  >
-                    <option value="targetologist">Таргетолог</option>
-                    <option value="admin">Администратор</option>
-                  </select>
                 </div>
                 
                 {/* Отправить Email */}

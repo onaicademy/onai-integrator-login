@@ -110,7 +110,7 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
           {/* ГЛАВНОЕ */}
           <NavItem
             icon={<TrendingUp className="w-5 h-5" />}
-            label="Dashboard"
+            label="Панель управления"
             href={user.role === 'admin' ? '/traffic/admin/dashboard' : `/cabinet/${user.team.toLowerCase()}`}
             isActive={isActive(user.role === 'admin' ? '/traffic/admin/dashboard' : `/cabinet/${user.team.toLowerCase()}`)}
             onClick={() => setSidebarOpen(false)}
@@ -173,14 +173,6 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
                 isActive={isActive('/traffic/admin/api-integrations')}
                 onClick={() => setSidebarOpen(false)}
                 dataTour="api-integrations"
-              />
-              <NavItem
-                icon={<Settings className="w-5 h-5" />}
-                label="Настройки"
-                href="/traffic/admin/settings"
-                isActive={isActive('/traffic/admin/settings')}
-                onClick={() => setSidebarOpen(false)}
-                dataTour="settings"
               />
             </>
           )}
