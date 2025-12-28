@@ -36,14 +36,16 @@ export async function initRedis(): Promise<void> {
 
     redisClient = createClient({
       url: redisUrl,
-      reconnectStrategy: (retries) => {
-        if (retries > 10) {
-          console.log('⚠️ [Redis] Max reconnection attempts reached, giving up');
-          return new Error('Max reconnection attempts reached');
-        }
-        const delay = Math.min(retries * 100, 3000);
-        console.log(`🔄 [Redis] Reconnecting in ${delay}ms (attempt ${retries})...`);
-        return delay;
+      socket: {
+        reconnectStrategy: (retries: number) => {
+          if (retries > 10) {
+            console.log('⚠️ [Redis] Max reconnection attempts reached, giving up');
+            return new Error('Max reconnection attempts reached');
+          }
+          const delay = Math.min(retries * 100, 3000);
+          console.log(`🔄 [Redis] Reconnecting in ${delay}ms (attempt ${retries})...`);
+          return delay;
+        },
       },
       database: db
     });
