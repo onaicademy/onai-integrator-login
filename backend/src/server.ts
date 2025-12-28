@@ -152,7 +152,7 @@ import trafficFacebookApiRouter from './routes/traffic-facebook-api.js'; // 📘
 import targetologistAssignmentRouter from './routes/targetologist-assignment.js'; // 🎯 Targetologist Assignment (manual + auto)
 import trafficFunnelApiRouter from './routes/traffic-funnel-api.js'; // 📊 Sales Funnel Visualization
 import trafficDashboardRouter from './routes/traffic-dashboard.js'; // 📊 Traffic Dashboard API (Sales Aggregation + UTM Attribution)
-import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 🔔 AmoCRM → Express Course Webhook
+import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 📚 AmoCRM → Express Course Webhook
 import amocrmMainProductWebhookRouter from './routes/amocrm-main-product-webhook.js'; // 🏆 AmoCRM → Main Product Webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
@@ -405,17 +405,21 @@ console.log('🔔 Registering webhook routes BEFORE express.json()');
 // Добавляем кастомный body parser для webhooks (только для этих путей)
 app.use('/api/amocrm/funnel-sale', express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/amocrm/funnel-sale', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
+app.use('/api/amocrm/expresscourse', express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/api/amocrm/expresscourse', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
 app.use('/webhook/amocrm', express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/webhook/amocrm', express.json({ limit: '10mb' }));
 
 // Регистрируем webhook routes
-app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 📚 AmoCRM → Express Course Webhook (5K KZT)
+app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 📚 AmoCRM → Express Course Webhook (OLD - для обратной совместимости)
+// NOTE: amocrmFunnelWebhookRouter already handles Express Course webhooks
 app.use('/webhook/amocrm', amocrmMainProductWebhookRouter); // 🏆 AmoCRM → Main Product Webhook (490K KZT)
 app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook (legacy)
 app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook
 
 console.log('✅ Webhook routes registered (before express.json)');
-console.log('   📚 Express Course: POST /api/amocrm/funnel-sale');
+console.log('   📚 Express Course (OLD): POST /api/amocrm/funnel-sale');
+console.log('   📚 Express Course (NEW): POST /api/amocrm/expresscourse');
 console.log('   🏆 Main Product: POST /webhook/amocrm/traffic');
 
 // ════════════════════════════════════════════════════════════════════════
