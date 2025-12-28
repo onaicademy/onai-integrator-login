@@ -73,6 +73,9 @@ services:
       - BUNNY_STREAM_API_KEY=${BUNNY_STREAM_API_KEY}
       - BUNNY_STREAM_LIBRARY_ID=${BUNNY_STREAM_LIBRARY_ID}
       - BUNNY_STREAM_CDN_HOSTNAME=${BUNNY_STREAM_CDN_HOSTNAME}
+      # AmoCRM
+      - AMOCRM_DOMAIN=${AMOCRM_DOMAIN}
+      - AMOCRM_ACCESS_TOKEN=${AMOCRM_ACCESS_TOKEN}
     depends_on:
       shared-redis:
         condition: service_healthy
