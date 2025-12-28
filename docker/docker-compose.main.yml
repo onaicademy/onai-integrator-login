@@ -76,6 +76,11 @@ services:
       # AmoCRM
       - AMOCRM_DOMAIN=${AMOCRM_DOMAIN}
       - AMOCRM_ACCESS_TOKEN=${AMOCRM_ACCESS_TOKEN}
+      # Other Supabase DBs
+      - TRAFFIC_SUPABASE_URL=${TRAFFIC_SUPABASE_URL}
+      - TRAFFIC_SERVICE_ROLE_KEY=${TRAFFIC_SERVICE_ROLE_KEY}
+      - LANDING_SUPABASE_URL=${LANDING_SUPABASE_URL}
+      - LANDING_SUPABASE_SERVICE_KEY=${LANDING_SUPABASE_SERVICE_KEY}
     depends_on:
       shared-redis:
         condition: service_healthy
