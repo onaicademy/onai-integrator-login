@@ -204,10 +204,13 @@ export async function apiRequest<T = any>(
         if (isDevelopment) {
           console.error('🚨 401 UNAUTHORIZED: Принудительный выход');
         }
-        
+
         // Clear all auth data
         localStorage.removeItem('supabase_token');
-        localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token');
+        localStorage.removeItem('tripwire_supabase_token'); // ✅ FIX: Remove Tripwire token
+        localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token'); // Main Supabase
+        localStorage.removeItem('sb-pjmvxecykysfrzppdcto-auth-token'); // ✅ FIX: Tripwire Supabase
+        localStorage.removeItem('sb-tripwire-auth-token'); // ✅ FIX: Unified Tripwire key
         sessionStorage.clear();
         
         // Redirect to login after a short delay
