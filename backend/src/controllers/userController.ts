@@ -28,7 +28,7 @@ export async function syncUser(req: Request, res: Response) {
 
 export async function updateLastLogin(req: Request, res: Response) {
   try {
-    const userId = req.user?.sub;
+    const userId = (req as any).user?.userId;
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });

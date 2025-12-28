@@ -6,7 +6,7 @@ import { generateTranscription, getTranscription } from '../../services/transcri
 // Helper to check if user is admin
 const requireAdmin = async (req: Request, res: Response, next: Function) => {
   try {
-    const userId = req.user?.sub;
+    const userId = (req as any).user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }

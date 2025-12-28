@@ -1,0 +1,106 @@
+# ============================================
+# Traffic Dashboard - для таргетологов и админов
+# ============================================
+
+version: '3.8'
+
+services:
+  # Frontend Traffic Dashboard
+  traffic-frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: onai-traffic-frontend
+    ports:
+      - "81:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://traffic-backend:3001
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    depends_on:
+      - traffic-backend
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Backend Traffic Dashboard
+  traffic-backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: onai-traffic-backend
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REDIS_URL=redis://shared-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      shared-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ../backend/logs:/app/logs
+
+  # Worker Traffic Dashboard
+  traffic-worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.worker
+    container_name: onai-traffic-worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REDIS_URL=redis://shared-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      shared-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "const { createClient } = require('redis'); const client = createClient({ url: 'redis://shared-redis:6379' }); client.on('error', () => process.exit(1)); client.connect().then(() => client.quit()).then(() => process.exit(0))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ../backend/logs:/app/logs
+
+networks:
+  onai-network:
+    external: true

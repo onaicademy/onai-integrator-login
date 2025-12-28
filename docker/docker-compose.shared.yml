@@ -1,0 +1,55 @@
+# ============================================
+# Shared Services - общие сервисы для всех проектов
+# ============================================
+
+version: '3.8'
+
+services:
+  # Redis - общий для всех проектов
+  shared-redis:
+    image: redis:7-alpine
+    container_name: onai-shared-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # Telegram Bot - общий для всех проектов
+  telegram-bot:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: onai-telegram-bot
+    command: ["node", "dist/bot/index.js"]
+    environment:
+      - NODE_ENV=production
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REDIS_URL=redis://shared-redis:6379
+    depends_on:
+      shared-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - onai-network
+    profiles:
+      - telegram
+
+networks:
+  onai-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local

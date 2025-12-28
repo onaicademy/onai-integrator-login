@@ -103,11 +103,11 @@ export default defineConfig(({ mode }) => {
     },
     target: 'esnext',
     esbuild: {
-      // 🔥 SECURITY: Remove ALL console.* calls in production (including error/warn)
-      // Use proper logging service for production error tracking (e.g., Sentry)
-      drop: mode === 'production' ? ['console', 'debugger'] : [],
-      // Alternative: Keep only critical errors (uncomment if needed)
-      // pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info', 'console.trace'] : [],
+      // 🔥 SECURITY: В production удаляем все console.* кроме console.error
+      // console.error оставляем для отладки в production
+      // Используй logger из src/lib/logger.ts для всех логов
+      drop: mode === 'production' ? ['debugger'] : [],
+      pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info', 'console.trace', 'console.warn'] : [],
     },
     // ✅ Явно встраиваем env переменные в build (для production)
     define: {

@@ -1,0 +1,61 @@
+# ============================================
+# Dockerfile для Worker (BullMQ + Cron Jobs)
+# ============================================
+
+# Base image
+FROM node:20-alpine
+
+# Установка зависимостей для ffmpeg и других инструментов
+RUN apk add --no-cache \
+    ffmpeg \
+    imagemagick \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    musl-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование package файлов
+COPY package*.json ./
+
+# Установка всех зависимостей
+RUN npm ci
+
+# Копирование исходного кода
+COPY . .
+
+# Сборка TypeScript
+RUN npm run build
+
+# Удаление devDependencies для уменьшения размера
+RUN npm prune --production
+
+# Создание директории для logs
+RUN mkdir -p /app/logs
+
+# Создание пользователя для безопасности
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Изменение прав доступа
+RUN chown -R nodejs:nodejs /app /app/logs
+
+# Переключение на пользователя
+USER nodejs
+
+# Health check - проверка подключения к Redis
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "const { createClient } = require('redis'); const client = createClient({ url: process.env.REDIS_URL || 'redis://redis:6379' }); client.on('error', () => process.exit(1)); client.connect().then(() => client.quit()).then(() => process.exit(0))" || exit 1
+
+# Запуск worker
+CMD ["node", "dist/workers/index.js"]

@@ -1,0 +1,109 @@
+# ============================================
+# Tripwire Product - отдельный продукт
+# ============================================
+
+version: '3.8'
+
+services:
+  # Frontend Tripwire
+  tripwire-frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: onai-tripwire-frontend
+    ports:
+      - "82:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://tripwire-backend:3002
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    depends_on:
+      - tripwire-backend
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Backend Tripwire
+  tripwire-backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: onai-tripwire-backend
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REDIS_URL=redis://shared-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - AMO_CRM_SECRET_KEY=${AMO_CRM_SECRET_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      shared-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ../backend/logs:/app/logs
+      - ../backend/uploads:/app/uploads
+
+  # Worker Tripwire (специфичный для Tripwire)
+  tripwire-worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.worker
+    container_name: onai-tripwire-worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REDIS_URL=redis://shared-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - AMO_CRM_SECRET_KEY=${AMO_CRM_SECRET_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      shared-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - onai-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "const { createClient } = require('redis'); const client = createClient({ url: 'redis://shared-redis:6379' }); client.on('error', () => process.exit(1)); client.connect().then(() => client.quit()).then(() => process.exit(0))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ../backend/logs:/app/logs
+
+networks:
+  onai-network:
+    external: true
