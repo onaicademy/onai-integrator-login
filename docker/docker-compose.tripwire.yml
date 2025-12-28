@@ -18,6 +18,8 @@ services:
       - VITE_API_URL=https://api.onai.academy/api
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_TRIPWIRE_SUPABASE_URL=${VITE_TRIPWIRE_SUPABASE_URL}
+      - VITE_TRIPWIRE_SUPABASE_ANON_KEY=${VITE_TRIPWIRE_SUPABASE_ANON_KEY}
     depends_on:
       - tripwire-backend
     restart: unless-stopped
