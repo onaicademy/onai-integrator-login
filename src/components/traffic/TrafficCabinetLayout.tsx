@@ -7,9 +7,9 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, User, BarChart3, Menu, X, TrendingUp, Shield, PieChart, Building2, Activity } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { LogOut, Settings, User, Menu, X, TrendingUp, Shield, PieChart, Building2, Activity } from 'lucide-react';
 import { AuthManager } from '@/lib/auth';
+import { OnAILogo } from '@/components/OnAILogo';
 
 interface TrafficCabinetLayoutProps {
   children: React.ReactNode;
@@ -87,14 +87,8 @@ export function TrafficCabinetLayout({ children }: TrafficCabinetLayoutProps) {
       `}>
         <div className="p-4 flex flex-col h-full">
           {/* Logo / Brand */}
-          <div className="flex items-center gap-3 mb-8 p-3 bg-[#00FF88]/5 rounded-xl border border-[#00FF88]/20">
-            <div className="w-10 h-10 rounded-lg bg-[#00FF88]/20 flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-[#00FF88]" />
-            </div>
-            <div>
-              <h1 className="font-bold text-white text-sm">Traffic Command</h1>
-              <p className="text-xs text-[#00FF88]/60">Dashboard</p>
-            </div>
+          <div className="flex items-center justify-center mb-8 p-3">
+            <OnAILogo variant="full" className="h-10 w-auto text-white" />
           </div>
           
           {/* User Profile */}

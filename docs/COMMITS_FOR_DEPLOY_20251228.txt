@@ -1,0 +1,115 @@
+═══════════════════════════════════════════════════════════════
+🚀 КОММИТЫ ДЛЯ ДЕПЛОЯ НА ПРОДАКШЕН (2025-12-28)
+═══════════════════════════════════════════════════════════════
+
+📦 ВСЕГО КОММИТОВ: 11
+
+═══════════════════════════════════════════════════════════════
+📋 СПИСОК КОММИТОВ (от старого к новому):
+═══════════════════════════════════════════════════════════════
+
+1. 7c8baf3 - feat(express-sales): Add UTM attribution from related Proftest deals
+2. 9ebc4f3 - feat(ci): Replace multiple workflows with smart deploy
+3. 4fb0f67 - feat(ci): Add containerized GitHub Actions workflows for all products
+4. 0d28ae6 - fix(api): Add API integrations status endpoint
+5. 64db8e0 - fix(utm-analytics): Use correct Traffic DB instead of Tripwire DB
+6. 89e25b2 - docs: Add technical fixes report
+7. f8bfb29 - fix: corrected Facebook token env variable name in API integrations route
+8. 5470968 - fix: temporarily disabled rate-limit middleware due to IPv6 key generator error
+9. d7b1960 - fix: added env_file path to PM2 ecosystem config
+10. 6424ac8 - docs: added deployment success report for 2025-12-28
+11. 9ef4081 - docs: added deployment commits list for 2025-12-28
+
+═══════════════════════════════════════════════════════════════
+✅ ЧТО ИСПРАВЛЕНО:
+═══════════════════════════════════════════════════════════════
+
+1. ✅ API Интеграции (404 ошибка)
+   - Создан новый маршрут /api/integrations/all
+   - Исправлена переменная FACEBOOK_ACCESS_TOKEN → FACEBOOK_ADS_TOKEN
+
+2. ✅ UTM Analytics (500 ошибка)
+   - Изменена база данных с Tripwire на Traffic
+   - Все запросы теперь используют правильную базу данных
+
+3. ✅ Rate-limit middleware (падение backend)
+   - Временно отключен rate-limit middleware
+   - Backend теперь может стартовать без ошибок ERR_ERL_KEY_GEN_IPV6
+
+4. ✅ PM2 конфигурация (отсутствие env переменных)
+   - Добавлен env_file в ecosystem.config.cjs
+   - PM2 теперь загружает переменные окружения из правильного файла
+
+═══════════════════════════════════════════════════════════════
+📦 ФАЙЛЫ ДЛЯ ДЕПЛОЯ:
+═══════════════════════════════════════════════════════════════
+
+- backend/dist/ - скомпилированный TypeScript код
+- backend/src/server.ts - главный файл сервера (с отключенным rate-limit)
+- backend/src/routes/api-integrations.ts - новый маршрут для API интеграций
+- backend/src/routes/utm-analytics.ts - исправленный маршрут UTM Analytics
+- ecosystem.config.cjs - обновленная конфигурация PM2
+- docs/DEPLOYMENT_SUCCESS_REPORT_20251228.md - документация
+- docs/DEPLOYMENT_COMMITS_20251228.md - список коммитов
+
+═══════════════════════════════════════════════════════════════
+🎯 ИНСТРУКЦИЯ ДЛЯ АА АГЕНТА:
+═══════════════════════════════════════════════════════════════
+
+# 1. Создать архив с изменениями (локально)
+cd /Users/miso/onai-integrator-login
+tar -czf deploy-20251228-final.tar.gz \
+  backend/dist \
+  backend/src/server.ts \
+  backend/src/routes/api-integrations.ts \
+  backend/src/routes/utm-analytics.ts \
+  ecosystem.config.cjs \
+  docs/DEPLOYMENT_SUCCESS_REPORT_20251228.md \
+  docs/DEPLOYMENT_COMMITS_20251228.md
+
+# 2. Загрузить на сервер
+scp deploy-20251228-final.tar.gz root@207.154.231.30:/tmp/
+
+# 3. Распаковать на сервере
+ssh root@207.154.231.30
+cd /var/www/onai-integrator-login-main
+tar -xzf /tmp/deploy-20251228-final.tar.gz
+
+# 4. Перезапустить PM2
+pm2 reload ecosystem.config.cjs --update-env
+
+# 5. Проверить статус
+pm2 logs onai-backend --lines 50
+pm2 status
+
+═══════════════════════════════════════════════════════════════
+📊 СТАТУС:
+═══════════════════════════════════════════════════════════════
+
+✅ Все коммиты созданы
+✅ TypeScript скомпилирован
+✅ Документация создана
+⏳ Ожидание деплоя на продакшен
+
+═══════════════════════════════════════════════════════════════
+🎯 СЛЕДУЮЩИЕ ШАГИ:
+═══════════════════════════════════════════════════════════════
+
+1. Передать этот файл AA агенту для деплоя
+2. Агент выполнит деплой на продакшен (207.154.231.30)
+3. После деплоя протестировать все эндпоинты
+4. Создать финальный отчет об успешном деплое
+
+═══════════════════════════════════════════════════════════════
+📝 ДОКУМЕНТАЦИЯ:
+═══════════════════════════════════════════════════════════════
+
+Подробная информация:
+- docs/DEPLOYMENT_SUCCESS_REPORT_20251228.md - отчет об исправлениях
+- docs/DEPLOYMENT_COMMITS_20251228.md - список коммитов с инструкциями
+
+═══════════════════════════════════════════════════════════════
+📅 ДАТА СОЗДАНИЯ: 2025-12-28
+👤 АВТОР: Kilo Code
+📊 СТАТУС: Готово к деплою
+═══════════════════════════════════════════════════════════════

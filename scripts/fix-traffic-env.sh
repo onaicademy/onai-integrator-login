@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# 🔧 Автоматическое исправление .env для Traffic Dashboard
+# 🔧 Автоматическое исправление env.env для Traffic Dashboard
 # Добавляет недостающие переменные окружения для Supabase Traffic Dashboard
 
 set -e
 
 PRODUCTION_SERVER="root@207.154.231.30"
 PRODUCTION_PATH="/var/www/onai-integrator-login-main"
-ENV_FILE="$PRODUCTION_PATH/.env"
+ENV_FILE="$PRODUCTION_PATH/backend/env.env"
 
-echo "🔧 Исправление .env для Traffic Dashboard..."
+echo "🔧 Исправление env.env для Traffic Dashboard..."
 
 # ═════════════════════════════════════════════════════════════
 # 🎯 Traffic Dashboard Supabase Credentials
@@ -17,7 +17,7 @@ echo "🔧 Исправление .env для Traffic Dashboard..."
 
 # Проверяем, существует ли файл
 if ! ssh "$PRODUCTION_SERVER" "test -f $ENV_FILE"; then
-    echo "❌ ОШИБКА: .env не найден на сервере!"
+    echo "❌ ОШИБКА: env.env не найден на сервере!"
     exit 1
 fi
 
@@ -38,31 +38,22 @@ if [ -n "$TRAFFIC_URL" ] && [ -n "$TRAFFIC_ANON" ] && [ -n "$TRAFFIC_SERVICE" ];
 fi
 
 # ═══════════════════════════════════════════════════════════════
-# 🔑 Получаем ключи из Tripwire базы данных
+# 🔑 Используем дефолтные значения из продакшена
 # ═════════════════════════════════════════════════════════════
 
-echo "🔍 Получаем ключи из Tripwire базы данных..."
+echo "🔍 Используем корректные значения из Traffic Supabase..."
 
-# Получаем ключи через Supabase CLI
-TRAFFIC_URL_VALUE=$(npx -y supabase db execute --project-ref arqhkacellqbhjhbebfh --sql "SELECT value FROM api_tokens WHERE token_name = 'TRAFFIC_SUPABASE_URL' LIMIT 1;" 2>/dev/null | grep -oP 'TRAFFIC_SUPABASE_URL=\K.*' || echo "")
-TRAFFIC_ANON_VALUE=$(npx -y supabase db execute --project-ref arqhkacellqbhjhbebfh --sql "SELECT value FROM api_tokens WHERE token_name = 'TRAFFIC_SUPABASE_ANON_KEY' LIMIT 1;" 2>/dev/null | grep -oP 'TRAFFIC_SUPABASE_ANON_KEY=\K.*' || echo "")
-TRAFFIC_SERVICE_VALUE=$(npx -y supabase db execute --project-ref arqhkacellqbhjhbebfh --sql "SELECT value FROM api_tokens WHERE token_name = 'TRAFFIC_SERVICE_ROLE_KEY' LIMIT 1;" 2>/dev/null | grep -oP 'TRAFFIC_SERVICE_ROLE_KEY=\K.*' || echo "")
+TRAFFIC_URL_VALUE="https://oetodaexnjcunklkdlkv.supabase.co"
+TRAFFIC_ANON_VALUE="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ldG9kYWV4bmpjdW5rbGtkbGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ1MTg3MzYsImV4cCI6MjA1MDA5NDczNn0.bvl8tIXBwbPOZ5Ls3xHgCcCajcB06OyBEJqj_L7Vze8"
+TRAFFIC_SERVICE_VALUE="sb_secret_h7VM2nxmyNWtw9158fCDLA_t6by7McK"
 
-# Если ключи не найдены в базе, используем дефолтные значения
-if [ -z "$TRAFFIC_URL_VALUE" ]; then
-    echo "⚠️ Ключи не найдены в Tripwire, используем дефолтные значения"
-    TRAFFIC_URL_VALUE="https://oetodaexnjcunklkdlkv.supabase.co"
-    TRAFFIC_ANON_VALUE="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1hdXRoIiwic3ViIjoiMzY3YzNlYjMtZDZhZS00NjUyLTg0MzItOWU3YzIwM2M5ZTkiLCJyb2xlcyIpbXsicGVybWl0dGVkIjoic2VsZWN0In0sImF1dGhvcml0eV9pZCI6IjM2N2MzZWI4LWRmYWUtNDY1Mi04NDMyLTllN2M4MDM2OWU5OSIsInVzZXJfaWQiOiIzNjdjM2ViOC1kZmFlLTQ2NTItODQzMi05ZTdjODAzNjllOSJ9"
-    TRAFFIC_SERVICE_VALUE="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1hdXRoIiwic3ViIjoiMzY3YzNlYjMtZDZhZS00NjUyLTg0MzItOWU3YzIwM2M5ZTkiLCJyb2xlcyIpbXsicGVybWl0dGVkIjoic2VsZWN0In0sImF1dGhvcml0eV9pZCI6IjM2N2MzZWI4LWRmYWUtNDY1Mi04NDMyLTllN2M4MDM2OWU5OSIsInVzZXJfaWQiOiIzNjdjM2ViOC1kZmFlLTQ2NTItODQzMi05ZTdjODAzNjllOSJ9"
-fi
-
-echo "✅ Ключи получены:"
+echo "✅ Ключи для Traffic Dashboard:"
 echo "   TRAFFIC_SUPABASE_URL: ${TRAFFIC_URL_VALUE:0:50}..."
 echo "   TRAFFIC_SUPABASE_ANON_KEY: ${TRAFFIC_ANON_VALUE:0:50}..."
-echo "   TRAFFIC_SERVICE_ROLE_KEY: ${TRAFFIC_SERVICE_VALUE:0:50}..."
+echo "   TRAFFIC_SERVICE_ROLE_KEY: ${TRAFFIC_SERVICE_VALUE:0:30}..."
 
 # ═══════════════════════════════════════════════════════════════
-# 📝 Добавляем переменные в .env
+# 📝 Добавляем переменные в env.env
 # ═══════════════════════════════════════════════════════════════
 
 if [ -z "$TRAFFIC_URL" ]; then
@@ -80,7 +71,7 @@ if [ -z "$TRAFFIC_SERVICE" ]; then
     ssh "$PRODUCTION_SERVER" "echo 'TRAFFIC_SERVICE_ROLE_KEY=$TRAFFIC_SERVICE_VALUE' >> $ENV_FILE"
 fi
 
-echo "✅ Переменные Traffic Dashboard добавлены в .env"
+echo "✅ Переменные Traffic Dashboard добавлены в env.env"
 
 # ═══════════════════════════════════════════════════════════════
 # 🔄 Перезагружаем backend
