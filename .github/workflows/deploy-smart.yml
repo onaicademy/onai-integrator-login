@@ -1,0 +1,234 @@
+name: 🚀 Smart Deploy
+
+# Умный деплой: определяет что изменилось и деплоит только это
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'What to deploy'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - all
+          - backend
+          - frontend
+          - traffic
+          - main-platform
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      traffic: ${{ steps.changes.outputs.traffic }}
+      main_platform: ${{ steps.changes.outputs.main_platform }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changes
+        id: changes
+        run: |
+          # Manual override
+          if [ "${{ github.event.inputs.deploy_target }}" = "all" ]; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "traffic=true" >> $GITHUB_OUTPUT
+            echo "main_platform=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [ "${{ github.event.inputs.deploy_target }}" = "backend" ]; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [ "${{ github.event.inputs.deploy_target }}" = "traffic" ]; then
+            echo "traffic=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [ "${{ github.event.inputs.deploy_target }}" = "main-platform" ]; then
+            echo "main_platform=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Auto-detect from git diff
+          if git diff --name-only HEAD~1 HEAD | grep -q '^backend/'; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff --name-only HEAD~1 HEAD | grep -q '^src/pages/traffic/'; then
+            echo "traffic=true" >> $GITHUB_OUTPUT
+          else
+            echo "traffic=false" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff --name-only HEAD~1 HEAD | grep -qE '^src/(pages/(Course|Lesson|Module|Profile|Achievements|NeuroHub)|components/|hooks/)' && \
+             ! git diff --name-only HEAD~1 HEAD | grep -q '^src/pages/traffic/'; then
+            echo "main_platform=true" >> $GITHUB_OUTPUT
+          else
+            echo "main_platform=false" >> $GITHUB_OUTPUT
+          fi
+
+          # If frontend files changed (not traffic)
+          if git diff --name-only HEAD~1 HEAD | grep -qE '^src/' && \
+             ! git diff --name-only HEAD~1 HEAD | grep -q '^src/pages/traffic/'; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-backend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Backend via SSH
+        run: |
+          echo "${{ secrets.DO_SSH_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no root@207.154.231.30 << 'ENDSSH'
+          set -e
+          echo "🚀 Deploying Backend..."
+
+          cd /var/www/onai-integrator-login-main
+          git fetch origin main
+          git reset --hard origin/main
+
+          cd backend
+          npm install
+          npm run build
+
+          pm2 restart onai-backend --update-env
+          pm2 save
+
+          echo "✅ Backend deployed!"
+          ENDSSH
+
+          rm /tmp/ssh_key
+
+  deploy-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.traffic == 'true' || needs.detect-changes.outputs.main_platform == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_TRIPWIRE_SUPABASE_URL: ${{ secrets.VITE_TRIPWIRE_SUPABASE_URL }}
+          VITE_TRIPWIRE_SUPABASE_ANON_KEY: ${{ secrets.VITE_TRIPWIRE_SUPABASE_ANON_KEY }}
+          VITE_LANDING_SUPABASE_URL: ${{ secrets.VITE_LANDING_SUPABASE_URL }}
+          VITE_LANDING_SUPABASE_ANON_KEY: ${{ secrets.VITE_LANDING_SUPABASE_ANON_KEY }}
+          VITE_API_URL: https://api.onai.academy
+
+      - name: Create archive
+        run: tar -czf deploy.tar.gz dist/
+
+      - name: Upload and deploy
+        run: |
+          echo "${{ secrets.DO_SSH_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+
+          # Upload
+          scp -i /tmp/ssh_key -o StrictHostKeyChecking=no deploy.tar.gz root@207.154.231.30:/tmp/deploy-new.tar.gz
+
+          # Deploy
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no root@207.154.231.30 << 'ENDSSH'
+          set -e
+          echo "🚀 Deploying Frontend..."
+
+          # Traffic Dashboard (if changed)
+          if [ "${{ needs.detect-changes.outputs.traffic }}" = "true" ] || [ "${{ github.event.inputs.deploy_target }}" = "all" ]; then
+            echo "📊 Deploying Traffic Dashboard..."
+            cd /var/www/traffic.onai.academy
+            tar -czf /tmp/traffic-backup-$(date +%Y%m%d-%H%M%S).tar.gz assets/ index.html 2>/dev/null || true
+            rm -rf assets/* index.html
+            tar -xzf /tmp/deploy-new.tar.gz --strip-components=1
+            chown -R www-data:www-data .
+            chmod -R 755 .
+            echo "✅ Traffic Dashboard deployed!"
+          fi
+
+          # Main Platform (if changed)
+          if [ "${{ needs.detect-changes.outputs.main_platform }}" = "true" ] || [ "${{ github.event.inputs.deploy_target }}" = "all" ]; then
+            echo "🎓 Deploying Main Platform..."
+            cd /var/www/onai.academy
+            tar -czf /tmp/main-backup-$(date +%Y%m%d-%H%M%S).tar.gz assets/ index.html 2>/dev/null || true
+            rm -rf assets/* index.html
+            tar -xzf /tmp/deploy-new.tar.gz --strip-components=1
+            chown -R www-data:www-data .
+            chmod -R 755 .
+            echo "✅ Main Platform deployed!"
+          fi
+
+          # Reload Nginx
+          systemctl reload nginx
+
+          echo "✅ Frontend deployment complete!"
+          ENDSSH
+
+          rm /tmp/ssh_key
+
+  verify:
+    needs: [deploy-backend, deploy-frontend]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify deployments
+        run: |
+          echo "🔍 Verifying deployments..."
+
+          # Check backend
+          if curl -f https://api.onai.academy/api/health; then
+            echo "✅ Backend: OK"
+          else
+            echo "⚠️ Backend: Failed"
+          fi
+
+          # Check frontend
+          if curl -f https://onai.academy/ > /dev/null; then
+            echo "✅ Main Platform: OK"
+          else
+            echo "⚠️ Main Platform: Failed"
+          fi
+
+          if curl -f https://traffic.onai.academy/ > /dev/null; then
+            echo "✅ Traffic Dashboard: OK"
+          else
+            echo "⚠️ Traffic Dashboard: Failed"
+          fi
+
+          echo "🎉 Deployment verification complete!"
