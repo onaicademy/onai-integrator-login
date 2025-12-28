@@ -186,12 +186,13 @@ const PORT = process.env.PORT || 3000;
 initSentry(app);
 
 // ✅ Rate Limiting (защита от DDoS и brute-force)
-import { 
-  aiLimiter, 
-  apiLimiter, 
-  authLimiter,
-  trafficFacebookLimiter
-} from './middleware/rate-limit';
+// 🔴 TEMPORARILY DISABLED due to IPv6 key generator error
+// import {
+//   aiLimiter,
+//   apiLimiter,
+//   authLimiter,
+//   trafficFacebookLimiter
+// } from './middleware/rate-limit';
 
 // ✅ Enhanced Security Headers with Helmet
 app.use(helmet({
@@ -334,10 +335,11 @@ app.use(userActivityErrorLogger); // 📝 Log API errors to user_activity_logs
 
 // ✅ Apply Rate Limiting to API routes
 // ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes
-app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
-app.use('/api/tripwire/', apiLimiter); // 100 req/15min для tripwire
-app.use('/api/admin/', apiLimiter);    // 100 req/15min для admin
-app.use('/api/traffic-facebook/', trafficFacebookLimiter); // FB cache API limiter
+// 🔴 TEMPORARILY DISABLED due to IPv6 key generator error
+// app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
+// app.use('/api/tripwire/', apiLimiter); // 100 req/15min для tripwire
+// app.use('/api/admin/', apiLimiter);    // 100 req/15min для admin
+// app.use('/api/traffic-facebook/', trafficFacebookLimiter); // FB cache API limiter
 // AI endpoints получат строгий лимит в своих роутах (10 req/min)
 
 // Увеличиваем timeout для массовой загрузки видео
