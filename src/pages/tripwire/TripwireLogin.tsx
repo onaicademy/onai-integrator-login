@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { OnAILogo } from '@/components/OnAILogo';
 import { AnimatedBackground } from '@/components/tripwire/AnimatedBackground';
 import { TripwireLoginForm } from '@/components/tripwire/TripwireLoginForm';
-import { PasswordRecoveryModal } from '@/components/tripwire/PasswordRecoveryModal';
+import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
 
 export default function TripwireLogin() {
   const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
