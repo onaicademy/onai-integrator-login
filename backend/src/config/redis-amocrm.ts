@@ -39,7 +39,7 @@ export async function initAmoCRMRedis(): Promise<void> {
         setImmediate(async () => {
             try {
                 amocrmRedis.client = new Redis({
-                    url: process.env.REDIS_URL || 'redis://localhost:6379',
+                    url: process.env.REDIS_URL || 'redis://shared-redis:6379',
                     
                     // ⭐ CRITICAL for BullMQ
                     maxRetriesPerRequest: null,

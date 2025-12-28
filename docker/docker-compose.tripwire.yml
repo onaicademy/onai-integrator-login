@@ -15,7 +15,7 @@ services:
       - "82:80"
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=http://tripwire-backend:3002
+      - VITE_API_URL=https://api.onai.academy/api
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     depends_on:
@@ -41,18 +41,23 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=${DATABASE_URL}
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${TRIPWIRE_DATABASE_URL}
+      - SUPABASE_URL=${TRIPWIRE_SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${VITE_TRIPWIRE_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${TRIPWIRE_SERVICE_ROLE_KEY}
       - REDIS_URL=redis://shared-redis:6379
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${TRIPWIRE_JWT_SECRET}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - RESEND_API_KEY=${RESEND_API_KEY}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_DEBUGGER_API_KEY=${GROQ_DEBUGGER_API_KEY}
       - AMO_CRM_SECRET_KEY=${AMO_CRM_SECRET_KEY}
       - SENTRY_DSN=${SENTRY_DSN}
+      - MOBIZON_API_KEY=${MOBIZON_API_KEY}
+      - WHAPI_API_URL=${WHAPI_API_URL}
+      - WHAPI_TOKEN=${WHAPI_TOKEN}
     depends_on:
       shared-redis:
         condition: service_healthy

@@ -9,11 +9,10 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-// Redis connection for BullMQ
+// Redis connection for BullMQ - using REDIS_URL for Docker compatibility
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 const redisConnection = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD || undefined,
+  url: redisUrl,
 };
 
 // Worker instance
