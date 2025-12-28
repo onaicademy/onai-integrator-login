@@ -87,12 +87,14 @@ export default defineConfig(({ mode }) => {
     minify: 'esbuild', // Используем esbuild (быстрее, встроен в Vite)
     sourcemap: mode === "development", // Source maps только в development
     chunkSizeWarningLimit: 1000,
+    // ✅ CRITICAL: Generate manifest for cache busting
+    manifest: true,
     rollupOptions: {
       output: {
-        // 🔥 CACHE-BUSTING: Уникальные хеши для файлов
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // 🔥 CACHE-BUSTING: Уникальные хеши для файлов (8 символов для краткости)
+        entryFileNames: 'assets/[name].[hash:8].js',
+        chunkFileNames: 'assets/[name].[hash:8].js',
+        assetFileNames: 'assets/[name].[hash:8].[ext]',
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['framer-motion'],

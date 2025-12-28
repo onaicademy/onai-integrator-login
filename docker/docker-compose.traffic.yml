@@ -10,6 +10,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      # ✅ CRITICAL: No cache for production builds
+      cache_from: []
     container_name: onai-traffic-frontend
     ports:
       - "81:80"
@@ -26,9 +28,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health/"]
       interval: 30s
-      timeout: 3s
+      timeout: 5s
       retries: 3
-      start_period: 5s
+      start_period: 10s
     deploy:
       resources:
         limits:

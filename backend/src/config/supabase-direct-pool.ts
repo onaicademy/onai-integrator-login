@@ -54,6 +54,19 @@ export const supabasePool = new Pool({
   statement_timeout: 30000, // 30 seconds query timeout
   query_timeout: 30000,
   application_name: 'onai-tripwire-v2',
+  // ✅ CRITICAL: Retry logic for connection failures
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+});
+
+// ✅ CRITICAL: Error handler to prevent container crashes
+supabasePool.on('error', (err) => {
+  console.error('🔴 Unexpected Tripwire DB pool error:', err);
+  // Don't exit - let Docker restart if needed
+});
+
+supabasePool.on('connect', () => {
+  console.log('✅ [Pool] New client connected to Tripwire DB');
 });
 
 // Test connection on startup

@@ -139,23 +139,26 @@ export default function TrafficSettings() {
 
   // ═══════════════════════════════════════════════════════════════
   // INITIALIZATION
+  // ✅ FIXED: Remove double auth check - TrafficGuard handles authentication
   // ═══════════════════════════════════════════════════════════════
   
   useEffect(() => {
+    // ✅ No auth check here - TrafficGuard already validated the user
     const userData = localStorage.getItem('traffic_user');
     if (!userData) {
-      navigate('/traffic/login');
+      // This should never happen if TrafficGuard is working
+      console.error('No user data found - this should not happen!');
       return;
     }
     
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
     
-    // 🔥 СНАЧАЛА проверяем статус Facebook токена
+    // 🔥 FIRST check Facebook token status
     checkFacebookStatus().then(() => {
-      // 🔥 ПОТОМ загружаем настройки из БД
+      // 🔥 THEN load settings from DB
       loadSettings(parsedUser.id).then(() => {
-        // 🔥 И автоматически загружаем доступные кабинеты
+        // 🔥 And automatically load available accounts
         loadAvailableAccounts();
       });
     });

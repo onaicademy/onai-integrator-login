@@ -50,3 +50,7 @@ id_ed25519
 *.bak*
 backend/env.env.*
 *.bak
+
+# Production env backups - contains secrets
+env.env.PRODUCTION_BACKUP_*.txt
+*.PRODUCTION_BACKUP*.txt
