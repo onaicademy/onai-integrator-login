@@ -16,6 +16,7 @@ import express from 'express';
 import axios from 'axios';
 import { landingSupabase } from '../config/supabase-landing.js';
 import { validateExpressCourseWebhook } from '../middleware/validation';
+import { getOriginalUTM, extractPhoneFromDeal } from '../utils/amocrm-utils.js';
 
 const router = Router();
 
@@ -73,13 +74,23 @@ interface AmoCRMFunnelSale {
       status_id: number;
       pipeline_id: number;
       old_status_id: number;
-      custom_fields?: Array<{
-        id: number;
-        name: string;
+      price?: number;
+      closed_at?: number;
+      created_at?: number;
+      custom_fields_values?: Array<{
+        field_id: number;
+        field_name: string;
+        field_code?: string;
         values: Array<{
           value: string;
         }>;
       }>;
+      _embedded?: {
+        contacts?: Array<{
+          id: number;
+          custom_fields_values?: any[];
+        }>;
+      };
     }>;
   };
 }
@@ -164,69 +175,68 @@ router.post('/funnel-sale', validateExpressCourseWebhook, async (req: Request, r
     for (const lead of data.leads.status) {
       console.log(`[AmoCRM Funnel Webhook] 🔍 Processing lead ${lead.id}`);
 
-      // Extract phone from custom fields
-      const phone = getCustomFieldValue(lead.custom_fields || [], 'PHONE') ||
-                    getCustomFieldValue(lead.custom_fields || [], 'Телефон');
+      // ════════════════════════════════════════════════════════════════
+      // 🆕 STEP 1: Get Original UTM with phone-based attribution
+      // ════════════════════════════════════════════════════════════════
+      const attributionResult = await getOriginalUTM(lead, AMOCRM_ACCESS_TOKEN);
+
+      console.log('[AmoCRM Funnel Webhook] 📊 Attribution Result:', {
+        source: attributionResult.source,
+        phone: attributionResult.phone,
+        relatedDealId: attributionResult.relatedDealId,
+        utm: attributionResult.original
+      });
+
+      // Extract current UTM for last-touch tracking
+      const currentUtmData = extractUTMData(lead.custom_fields_values || []);
+      console.log('[AmoCRM Funnel Webhook] 🏷️ Current Deal UTM:', currentUtmData);
+
+      // ════════════════════════════════════════════════════════════════
+      // 🆕 STEP 2: Extract deal data (price, date, phone)
+      // ════════════════════════════════════════════════════════════════
+      const phone = extractPhoneFromDeal(lead);
+      const amount = lead.price || 4952; // ✅ FIX: Use real price from AmoCRM
+      const saleDate = lead.closed_at
+        ? new Date(lead.closed_at * 1000).toISOString()
+        : new Date().toISOString(); // ✅ FIX: Use real closed_at date
+
+      console.log('[AmoCRM Funnel Webhook] 💰 Amount:', amount, 'KZT');
+      console.log('[AmoCRM Funnel Webhook] 📅 Sale Date:', saleDate);
       console.log('[AmoCRM Funnel Webhook] 📞 Phone:', phone);
 
-      // Extract UTM data from current deal
-      const currentUtmData = extractUTMData(lead.custom_fields || []);
-      console.log('[AmoCRM Funnel Webhook] 🏷️ Current Deal UTM Data:', currentUtmData);
-
-      // 🔍 Search for related Proftest deal by phone
-      let relatedDeal = { dealId: null, utm_source: null, utm_campaign: null, utm_medium: null };
-      if (phone) {
-        relatedDeal = await findRelatedProftestDeal(phone);
-      }
-
-      // Determine which UTM to use (priority: related deal > current deal)
-      let finalUtmSource = currentUtmData.utm_source;
-      let finalUtmCampaign = currentUtmData.utm_campaign;
-      let finalUtmMedium = currentUtmData.utm_medium;
-      let attributionSource = 'current_deal';
-
-      if (relatedDeal.dealId && relatedDeal.utm_source) {
-        // Use UTM from related Proftest deal
-        finalUtmSource = relatedDeal.utm_source;
-        finalUtmCampaign = relatedDeal.utm_campaign;
-        finalUtmMedium = relatedDeal.utm_medium;
-        attributionSource = 'related_deal';
-        console.log(`[AmoCRM Funnel Webhook] ✅ Using UTM from related Proftest deal ${relatedDeal.dealId}`);
-      } else if (!currentUtmData.utm_source) {
-        // No UTM in both deals - use fallback
-        attributionSource = 'fallback';
-        console.log('[AmoCRM Funnel Webhook] ⚠️ No UTM found, using fallback');
-      }
-
-      // Determine targetologist based on final UTM
-      const targetologist = determineTargetologistFromUTM({
-        utm_source: finalUtmSource,
-        utm_campaign: finalUtmCampaign,
-        utm_medium: finalUtmMedium,
-      });
+      // ════════════════════════════════════════════════════════════════
+      // 🎯 STEP 3: Determine targetologist from ORIGINAL UTM
+      // ════════════════════════════════════════════════════════════════
+      const targetologist = determineTargetologistFromUTM(attributionResult.original);
       console.log('[AmoCRM Funnel Webhook] 🎯 Targetologist:', targetologist || 'Unknown');
 
-      // Prepare sale data with attribution fields
+      // ════════════════════════════════════════════════════════════════
+      // 💾 STEP 4: Prepare sale data with BOTH original + current UTM
+      // ════════════════════════════════════════════════════════════════
       const saleData = {
         deal_id: parseInt(lead.id.toString()),
         pipeline_id: lead.pipeline_id,
         status_id: lead.status_id,
-        amount: 5000, // Express course = 5K KZT
-        utm_source: finalUtmSource || null,
-        utm_campaign: finalUtmCampaign || null,
-        utm_medium: finalUtmMedium || null,
+        amount: amount,
+        // 🏷️ Current UTM (last touch)
+        utm_source: currentUtmData.utm_source || null,
+        utm_campaign: currentUtmData.utm_campaign || null,
+        utm_medium: currentUtmData.utm_medium || null,
         utm_content: currentUtmData.utm_content || null,
         utm_term: currentUtmData.utm_term || null,
-        sale_date: new Date().toISOString(),
+        // 📅 Sale metadata
+        sale_date: saleDate,
         webhook_received_at: new Date().toISOString(),
         raw_data: JSON.stringify(lead),
-        // 🆕 New attribution fields
-        phone: phone || null,
-        original_utm_source: relatedDeal.utm_source || null,
-        original_utm_campaign: relatedDeal.utm_campaign || null,
-        original_utm_medium: relatedDeal.utm_medium || null,
-        attribution_source: attributionSource,
-        related_deal_id: relatedDeal.dealId,
+        // 🆕 Original UTM (first touch attribution)
+        phone: phone || attributionResult.phone || null,
+        original_utm_source: attributionResult.original.utm_source || null,
+        original_utm_campaign: attributionResult.original.utm_campaign || null,
+        original_utm_medium: attributionResult.original.utm_medium || null,
+        original_utm_content: attributionResult.original.utm_content || null,
+        original_utm_term: attributionResult.original.utm_term || null,
+        attribution_source: attributionResult.source,
+        related_deal_id: attributionResult.relatedDealId || null,
       };
 
       console.log('[AmoCRM Funnel Webhook] 💾 Saving to DB:', JSON.stringify(saleData, null, 2));
@@ -296,107 +306,6 @@ router.get('/funnel-sale/health', async (req: Request, res: Response) => {
   });
 });
 
-/**
- * 🔍 Find related Proftest deal by phone number
- * Searches for the FIRST deal (oldest) in Proftest pipeline with the same phone
- */
-async function findRelatedProftestDeal(phone: string): Promise<{
-  dealId: number | null;
-  utm_source: string | null;
-  utm_campaign: string | null;
-  utm_medium: string | null;
-}> {
-  if (!phone || !AMOCRM_ACCESS_TOKEN) {
-    console.log('[AmoCRM] ⚠️ Cannot search related deal: missing phone or token');
-    return { dealId: null, utm_source: null, utm_campaign: null, utm_medium: null };
-  }
-
-  try {
-    console.log(`[AmoCRM] 🔍 Searching for related Proftest deal with phone: ${phone}`);
-
-    // Search leads by phone in Proftest pipeline
-    const response = await axios.get(`${AMOCRM_API_URL}/leads`, {
-      headers: {
-        'Authorization': `Bearer ${AMOCRM_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      params: {
-        'filter[pipeline_id]': PROFTEST_PIPELINE_ID,
-        'with': 'contacts',
-        'limit': 250,
-      },
-      timeout: 10000,
-    });
-
-    const leads = response.data?._embedded?.leads || [];
-    console.log(`[AmoCRM] Found ${leads.length} leads in Proftest pipeline`);
-
-    // Filter leads by phone and sort by created_at (oldest first)
-    const matchingLeads = [];
-
-    for (const lead of leads) {
-      // Get contact ID from lead
-      const contactId = lead._embedded?.contacts?.[0]?.id;
-
-      if (!contactId) continue;
-
-      try {
-        // Fetch contact details to get phone
-        const contactResponse = await axios.get(`${AMOCRM_API_URL}/contacts/${contactId}`, {
-          headers: {
-            'Authorization': `Bearer ${AMOCRM_ACCESS_TOKEN}`,
-          },
-          timeout: 5000,
-        });
-
-        const contact = contactResponse.data;
-        const phoneField = contact.custom_fields_values?.find((f: any) =>
-          f.field_code === 'PHONE' || f.field_name === 'Телефон'
-        );
-
-        const contactPhone = phoneField?.values?.[0]?.value;
-
-        // Normalize phones for comparison (remove spaces, dashes, etc)
-        const normalizePhone = (p: string) => p.replace(/[\s\-\(\)]/g, '');
-
-        if (contactPhone && normalizePhone(contactPhone) === normalizePhone(phone)) {
-          matchingLeads.push({
-            id: lead.id,
-            created_at: lead.created_at,
-            custom_fields_values: lead.custom_fields_values || [],
-          });
-        }
-      } catch (contactError: any) {
-        console.error(`[AmoCRM] Error fetching contact ${contactId}:`, contactError.message);
-      }
-    }
-
-    if (matchingLeads.length === 0) {
-      console.log('[AmoCRM] ⚠️ No matching Proftest deals found');
-      return { dealId: null, utm_source: null, utm_campaign: null, utm_medium: null };
-    }
-
-    // Sort by created_at ASC (oldest first) and take the first one
-    matchingLeads.sort((a, b) => a.created_at - b.created_at);
-    const firstDeal = matchingLeads[0];
-
-    console.log(`[AmoCRM] ✅ Found ${matchingLeads.length} matching deals, using oldest: ${firstDeal.id}`);
-
-    // Extract UTM from first deal
-    const utmData = extractUTMData(firstDeal.custom_fields_values);
-
-    return {
-      dealId: firstDeal.id,
-      utm_source: utmData.utm_source || null,
-      utm_campaign: utmData.utm_campaign || null,
-      utm_medium: utmData.utm_medium || null,
-    };
-
-  } catch (error: any) {
-    console.error('[AmoCRM] ❌ Error searching related deal:', error.message);
-    return { dealId: null, utm_source: null, utm_campaign: null, utm_medium: null };
-  }
-}
 
 /**
  * Helper: Get custom field value by field code or name
@@ -412,7 +321,16 @@ function getCustomFieldValue(customFields: any[], fieldCode: string): string | n
 
 /**
  * Helper: Extract UTM data from AmoCRM custom fields
+ * ✅ Uses CORRECT field IDs from AmoCRM
  */
+const UTM_FIELD_IDS = {
+  utm_source: 434731,
+  utm_campaign: 434729,
+  utm_medium: 434727,
+  utm_content: 434725,
+  utm_term: 434733
+};
+
 function extractUTMData(customFields: any[]): {
   utm_source?: string;
   utm_campaign?: string;
@@ -422,25 +340,21 @@ function extractUTMData(customFields: any[]): {
 } {
   const utmData: any = {};
 
-  const utmFieldNames: Record<string, string> = {
-    'UTM Source': 'utm_source',
-    'utm_source': 'utm_source',
-    'UTM Campaign': 'utm_campaign',
-    'utm_campaign': 'utm_campaign',
-    'UTM Medium': 'utm_medium',
-    'utm_medium': 'utm_medium',
-    'UTM Content': 'utm_content',
-    'utm_content': 'utm_content',
-    'UTM Term': 'utm_term',
-    'utm_term': 'utm_term',
-  };
+  if (!customFields) return utmData;
 
   for (const field of customFields) {
-    const fieldName = field.name;
-    const utmKey = utmFieldNames[fieldName];
+    const fieldId = field.field_id;
 
-    if (utmKey && field.values && field.values.length > 0) {
-      utmData[utmKey] = field.values[0].value;
+    if (fieldId === UTM_FIELD_IDS.utm_source && field.values?.[0]?.value) {
+      utmData.utm_source = field.values[0].value;
+    } else if (fieldId === UTM_FIELD_IDS.utm_campaign && field.values?.[0]?.value) {
+      utmData.utm_campaign = field.values[0].value;
+    } else if (fieldId === UTM_FIELD_IDS.utm_medium && field.values?.[0]?.value) {
+      utmData.utm_medium = field.values[0].value;
+    } else if (fieldId === UTM_FIELD_IDS.utm_content && field.values?.[0]?.value) {
+      utmData.utm_content = field.values[0].value;
+    } else if (fieldId === UTM_FIELD_IDS.utm_term && field.values?.[0]?.value) {
+      utmData.utm_term = field.values[0].value;
     }
   }
 
