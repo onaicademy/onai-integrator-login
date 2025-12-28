@@ -234,10 +234,27 @@ export async function closeRedis(): Promise<void> {
 /**
  * Get Redis connection object for BullMQ
  * BullMQ expects { url: string } or { host, port } object
+ * ioredis (used by redis-amocrm) expects { host, port, db }
  */
 export function getRedisConnection() {
   const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+  
+  // Parse Redis URL to extract host and port
+  // Format: redis://host:port/db or redis://host:port
+  const urlMatch = redisUrl.match(/redis:\/\/([^:]+):(\d+)(?:\/(\d+))?/);
+  
+  if (urlMatch) {
+    return {
+      host: urlMatch[1],
+      port: parseInt(urlMatch[2]),
+      db: urlMatch[3] ? parseInt(urlMatch[3]) : 0,
+    };
+  }
+  
+  // Fallback to host/port format
   return {
-    url: redisUrl,
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    db: parseInt(process.env.REDIS_DB || '0'),
   };
 }
