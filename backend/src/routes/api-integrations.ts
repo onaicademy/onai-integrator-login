@@ -128,7 +128,7 @@ async function checkFacebookAPI(): Promise<{
   lastChecked: string;
 }> {
   try {
-    const token = process.env.FACEBOOK_ACCESS_TOKEN;
+    const token = process.env.FACEBOOK_ADS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
     
     if (!token) {
       return {
