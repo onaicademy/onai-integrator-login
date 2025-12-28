@@ -46,6 +46,12 @@ services:
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - REDIS_URL=redis://shared-redis:6379
+      - REDIS_HOST=shared-redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_HOST=shared-redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
       - JWT_SECRET=${SUPABASE_JWT_SECRET}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - RESEND_API_KEY=${RESEND_API_KEY}
