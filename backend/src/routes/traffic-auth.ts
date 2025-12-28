@@ -12,20 +12,34 @@ import jwt from 'jsonwebtoken';
 import { trafficAdminSupabase, trafficSupabase } from '../config/supabase-traffic.js';
 import { logUserSession } from './traffic-security.js';
 import { callFunction } from '../config/traffic-db.js';
+import { trafficLoginRateLimit, trafficMutationRateLimit } from '../middleware/trafficRateLimit.js';
+import { validateEmail, validatePassword, sanitizeString } from '../utils/trafficValidation.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '7d';
 
 // 🔒 POST /api/traffic-auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', trafficLoginRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
-    
+
+    // ✅ Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      return res.status(400).json({ error: emailValidation.error });
+    }
+
+    // ✅ Validate password (basic check - 6 chars minimum for login)
+    const passwordValidation = validatePassword(password, { minLength: 6, requireUppercase: false, requireLowercase: false, requireNumbers: false });
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ error: passwordValidation.error });
+    }
+
     console.log(`🔐 Traffic login attempt: ${email}`);
     
     // ✅ РЕШЕНИЕ SCHEMA CACHE: Mock Mode для локальной разработки
@@ -337,16 +351,30 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // 🔑 POST /api/traffic-auth/change-password
-router.post('/change-password', authenticateToken, async (req, res) => {
+router.post('/change-password', authenticateToken, trafficMutationRateLimit, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    
+
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Current and new password are required' });
     }
-    
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+    // ✅ Validate new password (stronger requirements for password change)
+    const passwordValidation = validatePassword(newPassword, {
+      minLength: 8,
+      requireUppercase: true,
+      requireLowercase: true,
+      requireNumbers: true
+    });
+
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ error: passwordValidation.error });
+    }
+
+    if (passwordValidation.strength === 'weak') {
+      return res.status(400).json({
+        error: 'Пароль слишком слабый. Используйте минимум 8 символов с заглавными и строчными буквами и цифрами.'
+      });
     }
     
     // Get user with password hash
@@ -510,7 +538,7 @@ Traffic Command Dashboard
 
 // 🔑 POST /api/traffic-auth/reset-password
 // Reset password using reset token
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', trafficMutationRateLimit, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
 
@@ -518,8 +546,22 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Token and new password are required' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    // ✅ Validate new password (strong requirements)
+    const passwordValidation = validatePassword(newPassword, {
+      minLength: 8,
+      requireUppercase: true,
+      requireLowercase: true,
+      requireNumbers: true
+    });
+
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ error: passwordValidation.error });
+    }
+
+    if (passwordValidation.strength === 'weak') {
+      return res.status(400).json({
+        error: 'Пароль слишком слабый. Используйте минимум 8 символов с заглавными и строчными буквами и цифрами.'
+      });
     }
 
     // Verify reset token
