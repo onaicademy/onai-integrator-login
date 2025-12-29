@@ -129,7 +129,22 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
 
   // 🔥 DELETE HANDLER - для всех Sales Manager (admin + sales)
   const handleDelete = async (userId: string, email: string, fullName: string) => {
-    if (!window.confirm(`⚠️ ВНИМАНИЕ!\n\nВы уверены что хотите удалить студента?\n\nИмя: ${fullName}\nEmail: ${email}\n\n❌ Это действие НЕЛЬЗЯ отменить!\n✅ Будут удалены ВСЕ данные:\n- Профиль пользователя\n- Прогресс по модулям\n- Просмотренные видео\n- Разблокированные модули\n- История активности\n\nПродолжить удаление?`)) {
+    if (!window.confirm(`⚠️ ВНИМАНИЕ!
+
+Вы уверены что хотите удалить студента?
+
+Имя: ${fullName}
+Email: ${email}
+
+❌ Это действие НЕЛЬЗЯ отменить!
+✅ Будут удалены ВСЕ данные:
+- Профиль пользователя
+- Прогресс по модулям
+- Просмотренные видео
+- Разблокированные модули
+- История активности
+
+Продолжить удаление?`)) {
       return;
     }
 
@@ -147,7 +162,12 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
       setTotal(total - 1);
       
       // Показываем success message
-      alert(`✅ Успешно удалено!\n\nСтудент: ${fullName}\nEmail: ${email}\n\nВсе данные пользователя удалены из системы.`);
+      alert(`✅ Успешно удалено!
+
+Студент: ${fullName}
+Email: ${email}
+
+Все данные пользователя удалены из системы.`);
     } catch (error: any) {
       console.error('❌ [DELETE] Error deleting user:', error);
       
@@ -311,8 +331,8 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                       <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
                         ДОБАВЛЕН
                       </th>
-                      {/* 🔥 ДЕЙСТВИЯ - для всех Sales Manager (admin + sales) */}
-                      {(currentUserRole === 'admin' || currentUserRole === 'sales') && (
+                      {/* 🔥 ДЕЙСТВИЯ - для всех Sales Manager (admin + sales + sales_manager) */}
+                      {(currentUserRole === 'admin' || currentUserRole === 'sales' || currentUserRole === 'sales_manager') && (
                         <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
                           ДЕЙСТВИЯ
                         </th>
@@ -367,8 +387,8 @@ export default function UsersTable({ refreshTrigger, managerId, dateRange }: Use
                           {new Date(user.created_at).toLocaleDateString('ru-RU')}
                         </span>
                       </td>
-                      {/* 🔥 DELETE BUTTON - для всех Sales Manager (admin + sales) */}
-                      {(currentUserRole === 'admin' || currentUserRole === 'sales') && (
+                      {/* 🔥 DELETE BUTTON - для всех Sales Manager (admin + sales + sales_manager) */}
+                      {(currentUserRole === 'admin' || currentUserRole === 'sales' || currentUserRole === 'sales_manager') && (
                         <td className="py-4 px-4">
                           <div className="flex justify-center">
                             <button
