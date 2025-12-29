@@ -95,7 +95,7 @@ async function createTestStudent() {
     console.log('\n📋 КРЕДЕНШАЛЫ ДЛЯ ЛОГИНА:');
     console.log(`   Email: ${TEST_STUDENT.email}`);
     console.log(`   Пароль: ${TEST_STUDENT.password}`);
-    console.log(`\n🔗 Ссылка для логина: http://localhost:8080/integrator/login`);
+    console.log(`\n🔗 Ссылка для логина: https://expresscourse.onai.academy/login`);
     console.log('');
 
   } catch (error: any) {

@@ -200,7 +200,7 @@ export function getWelcomeEmailHtml(email: string, password: string, name: strin
                     <table border="0" cellspacing="0" cellpadding="0" style="background-color: #00FF94; border-radius: 8px;">
                       <tr>
                         <td align="center">
-                          <a href="https://onai.academy/tripwire/login" style="display: block; padding: 18px 45px; color: #000000; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; font-family: Arial, sans-serif;">
+                          <a href="https://expresscourse.onai.academy/login" style="display: block; padding: 18px 45px; color: #000000; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; font-family: Arial, sans-serif;">
                             ВОЙТИ В ПЛАТФОРМУ
                           </a>
                         </td>

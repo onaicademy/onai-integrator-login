@@ -27,7 +27,7 @@ const STUDENTS = [
 async function main() {
   console.log('╔════════════════════════════════════════════════════════════╗');
   console.log('║  📧 ПОВТОРНАЯ ОТПРАВКА EMAIL С ПРАВИЛЬНОЙ ССЫЛКОЙ         ║');
-  console.log('║  Link: https://onai.academy/integrator/login              ║');
+  console.log('║  Link: https://expresscourse.onai.academy/login              ║');
   console.log('╚════════════════════════════════════════════════════════════╝\n');
 
   console.log(`FROM: ${process.env.RESEND_FROM_EMAIL || 'platform@onai.academy'}`);

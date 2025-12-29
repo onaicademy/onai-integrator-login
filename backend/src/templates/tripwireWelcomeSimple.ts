@@ -45,7 +45,7 @@ export function getWelcomeEmailHtml(email: string, password: string, name: strin
           
           <tr>
             <td style="padding: 30px 20px; text-align: center;">
-              <a href="https://onai.academy/tripwire/login" 
+              <a href="https://expresscourse.onai.academy/login" 
                  style="display: inline-block; 
                         padding: 15px 40px; 
                         background-color: #00FF94; 

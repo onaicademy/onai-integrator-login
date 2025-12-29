@@ -241,7 +241,7 @@ export const tripwireStreamPostponedEmail = ({
                     <table border="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td align="center" style="border-radius: 8px; background: linear-gradient(135deg, #00FF88 0%, #00cc6e 100%); box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);">
-                          <a href="https://onai.academy/integrator" target="_blank" class="btn-primary" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #000000; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
+                          <a href="https://expresscourse.onai.academy" target="_blank" class="btn-primary" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #000000; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
                             🎓 ПРОЙТИ МОДУЛИ СЕЙЧАС
                           </a>
                         </td>

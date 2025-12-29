@@ -8,5 +8,5 @@
 
 // ✅ ВЫБРАННЫЙ ВАРИАНТ: Вариант 2 БЕЗ эмодзи (59 символов)
 export const tripwireStreamPostponedSMS = (): string => {
-  return `Эфир 20 декабря 20:00! Пройди модули onai.academy/integrator`;
+  return `Эфир 20 декабря 20:00! Пройди модули expresscourse.onai.academy`;
 };

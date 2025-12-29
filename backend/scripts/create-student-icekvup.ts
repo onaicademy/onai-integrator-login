@@ -119,7 +119,7 @@ async function createStudent() {
     console.log('\n📋 КРЕДЕНШАЛЫ ДЛЯ ЛОГИНА:');
     console.log(`   📧 Email: ${STUDENT.email}`);
     console.log(`   🔑 Пароль: ${STUDENT.password}`);
-    console.log(`\n🔗 http://localhost:8080/integrator/login`);
+    console.log(`\n🔗 https://expresscourse.onai.academy/login`);
     console.log(`\n📬 Email с доступами отправлен на: ${STUDENT.email}`);
     console.log(`   (Проверьте также папку СПАМ!)\n`);
 
