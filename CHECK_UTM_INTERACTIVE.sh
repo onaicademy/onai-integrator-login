@@ -54,7 +54,7 @@ case $choice in
     echo "ШАГ 1: Открой инкогнито (Cmd+Shift+N)"
     echo ""
     echo "ШАГ 2: Перейди по тестовой ссылке:"
-    echo "https://onai.academy/expresscourse?utm_source=TEST_BRO_CHECK&utm_id=999999&fbclid=TEST_CLICK_ID"
+    echo "https://expresscourse.onai.academy/expresscourse?utm_source=TEST_BRO_CHECK&utm_id=999999&fbclid=TEST_CLICK_ID"
     echo ""
     echo "ШАГ 3: Открой DevTools (F12 или Cmd+Option+I)"
     echo "  → Вкладка Application → Local Storage → https://onai.academy"

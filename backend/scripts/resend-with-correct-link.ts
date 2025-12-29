@@ -1,6 +1,6 @@
 /**
  * Повторная отправка email трём студентам с ПРАВИЛЬНОЙ ссылкой
- * /integrator/login вместо /tripwire/login
+ * https://expresscourse.onai.academy/login вместо старых ссылок
  */
 
 import { sendWelcomeEmail } from '../src/services/emailService';

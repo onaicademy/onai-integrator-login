@@ -76,12 +76,12 @@ Submit form and check request payload:
 
 ### Basic Test
 ```
-https://onai.academy/expresscourse?utm_source=TEST_BRO_CHECK&utm_id=999999&fbclid=TEST_CLICK_ID
+https://expresscourse.onai.academy/expresscourse?utm_source=TEST_BRO_CHECK&utm_id=999999&fbclid=TEST_CLICK_ID
 ```
 
 ### Facebook Ad Simulation
 ```
-https://onai.academy/expresscourse?utm_source=facebook&utm_campaign=expresscourse_q1_2025&utm_id=120211234567890&fbclid=IwAR1234567890
+https://expresscourse.onai.academy/expresscourse?utm_source=facebook&utm_campaign=expresscourse_q1_2025&utm_id=120211234567890&fbclid=IwAR1234567890
 ```
 
 ### Cross-Device Test (Desktop → Mobile)
@@ -93,7 +93,7 @@ Copy `client_id` from LocalStorage
 
 **Mobile (Express):**
 ```
-https://onai.academy/expresscourse?utm_source=TEST_DESKTOP&utm_id=111111&client_id=<COPIED_UUID>
+https://expresscourse.onai.academy/expresscourse?utm_source=TEST_DESKTOP&utm_id=111111&client_id=<COPIED_UUID>
 ```
 Verify same `client_id` in AmoCRM
 

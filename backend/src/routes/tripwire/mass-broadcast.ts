@@ -281,7 +281,7 @@ router.post('/send', authenticateTripwireJWT, requireTripwireAdmin, async (req, 
       console.log('📱 Начинаем SMS рассылку...');
       
       // Заменить переменную {SHORT_LINK} на реальную ссылку
-      const smsText = smsData.message.replace(/{SHORT_LINK}/g, smsData.shortLink || 'onai.academy/integrator');
+      const smsText = smsData.message.replace(/{SHORT_LINK}/g, smsData.shortLink || 'expresscourse.onai.academy');
 
       for (const student of allStudents) {
         // Получить телефон из phoneMap (ключ = email)

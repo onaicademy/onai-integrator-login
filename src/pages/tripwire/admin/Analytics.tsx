@@ -48,7 +48,7 @@ export default function TripwireAnalytics() {
       {/* ✅ HEADER */}
       <div className="relative z-10 px-8 py-8 border-b border-white/5">
         <Link 
-          to="/integrator/admin" 
+          to="/admin" 
           className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#00FF94] transition-colors"
         >
           <ArrowLeft size={20} />

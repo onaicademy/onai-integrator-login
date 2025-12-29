@@ -108,7 +108,7 @@ async function resetAdminAccount() {
     console.log('\n✅ ADMIN ACCOUNT RESET COMPLETE!');
     console.log('📌 Next steps:');
     console.log('1. Login as admin: smmmcwin@gmail.com');
-    console.log('2. Go to /integrator/profile');
+    console.log('2. Go to https://expresscourse.onai.academy/profile');
     console.log('3. Click "Получить сертификат"');
     console.log('4. Test certificate generation');
     

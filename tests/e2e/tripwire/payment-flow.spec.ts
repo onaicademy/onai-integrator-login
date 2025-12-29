@@ -32,7 +32,7 @@ test.describe('Tripwire Payment & Access Flow', () => {
 
   test('1. Admin creates new user via Sales Manager', async ({ page }) => {
     // Navigate to Sales Manager
-    await page.goto('/integrator/sales-manager');
+    await page.goto('/sales-manager');
     
     // Login as sales manager
     await page.fill('input[type="email"]', ADMIN_CREDENTIALS.email);
@@ -40,7 +40,7 @@ test.describe('Tripwire Payment & Access Flow', () => {
     await page.click('button[type="submit"]');
     
     // Wait for dashboard
-    await expect(page).toHaveURL(/\/integrator\/sales-manager/);
+    await expect(page).toHaveURL(/\/sales-manager/);
     
     // Click "Create User" button
     await page.click('text=Добавить ученика');
@@ -65,7 +65,7 @@ test.describe('Tripwire Payment & Access Flow', () => {
 
   test('2. User can login to Tripwire', async ({ page }) => {
     // Navigate to Tripwire login
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     
     // Fill credentials
     await page.fill('input[type="email"]', TEST_USER.email);
@@ -75,7 +75,7 @@ test.describe('Tripwire Payment & Access Flow', () => {
     await page.click('button[type="submit"]');
     
     // Wait for redirect to dashboard/course
-    await page.waitForURL(/\/integrator\/(dashboard|course)/);
+    await page.waitForURL(/\/$/);
     
     // Verify user is logged in
     const welcomeText = page.locator('text=/Добро пожаловать|Welcome/i');
@@ -86,18 +86,18 @@ test.describe('Tripwire Payment & Access Flow', () => {
 
   test('3. User can access first module', async ({ page }) => {
     // Login first
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/integrator\/(dashboard|course)/);
+    await page.waitForURL(/\/$/);
     
     // Navigate to first module
     const firstModule = page.locator('.module-card, [data-testid="module-1"]').first();
     await firstModule.click();
     
     // Verify module page loaded
-    await expect(page).toHaveURL(/\/integrator\/module/);
+    await expect(page).toHaveURL(/\/lesson\//);
     
     // Check if lesson/video is visible
     const videoPlayer = page.locator('video, iframe[src*="video"]');
@@ -108,14 +108,14 @@ test.describe('Tripwire Payment & Access Flow', () => {
 
   test('4. Video playback works', async ({ page }) => {
     // Login and navigate to module
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button[type="submit"]');
     await page.waitForTimeout(3000);
     
     // Go to first lesson
-    await page.goto('/integrator/module/16/lesson/67');
+    await page.goto('/lesson/67');
     
     // Wait for video player
     await page.waitForSelector('video, iframe', { timeout: 20000 });
@@ -134,14 +134,14 @@ test.describe('Tripwire Payment & Access Flow', () => {
 
   test('5. Progress is tracked', async ({ page }) => {
     // Login
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button[type="submit"]');
     await page.waitForTimeout(3000);
     
     // Go to profile/dashboard
-    await page.goto('/integrator/profile');
+    await page.goto('/profile');
     
     // Check progress indicators
     const progressBar = page.locator('[role="progressbar"], .progress-bar, text=/Прогресс|Progress/i');
@@ -154,7 +154,7 @@ test.describe('Tripwire Payment & Access Flow', () => {
 test.describe('Tripwire Error Handling', () => {
   
   test('6. Invalid email shows error', async ({ page }) => {
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     
     // Try invalid email
     await page.fill('input[type="email"]', 'invalid-email');
@@ -169,7 +169,7 @@ test.describe('Tripwire Error Handling', () => {
   });
 
   test('7. Wrong password shows error', async ({ page }) => {
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     
     // Try wrong password
     await page.fill('input[type="email"]', ADMIN_CREDENTIALS.email);
@@ -212,7 +212,7 @@ test.describe('Tripwire Performance', () => {
     await page.goto('/expresscourse');
     await page.waitForTimeout(2000);
     
-    await page.goto('/integrator/login');
+    await page.goto('/login');
     await page.waitForTimeout(2000);
     
     // Should have no JS errors

@@ -27,7 +27,7 @@ if (uuidRegex.test(testClientId)) {
 
 // Test 2: UTM Param Extraction
 console.log('\n✅ TEST 2: UTM Parameter Capture');
-const testUrl = 'https://onai.academy/expresscourse?utm_source=facebook&utm_campaign=expresscourse_q1_2025&utm_id=120211234567890&fbclid=IwAR1234567890';
+const testUrl = 'https://expresscourse.onai.academy/expresscourse?utm_source=facebook&utm_campaign=expresscourse_q1_2025&utm_id=120211234567890&fbclid=IwAR1234567890';
 const urlObj = new URL(testUrl);
 const params = new URLSearchParams(urlObj.search);
 
@@ -103,7 +103,7 @@ console.log('✅ Payload Structure: PASS');
 console.log('\n🎉 Implementation Ready!\n');
 
 console.log('🔍 MANUAL TESTING REQUIRED:');
-console.log('1. Visit: https://onai.academy/expresscourse?utm_source=facebook&utm_id=TEST123&fbclid=TEST456');
+console.log('1. Visit: https://expresscourse.onai.academy/expresscourse?utm_source=facebook&utm_id=TEST123&fbclid=TEST456');
 console.log('2. Open browser DevTools Console');
 console.log('3. Check for: "🆔 New client_id generated"');
 console.log('4. Submit form and verify "📊 UTM Tracking Data" in console');

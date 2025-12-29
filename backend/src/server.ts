@@ -252,7 +252,7 @@ app.use(cors({
     if (process.env.NODE_ENV === 'production') {
       const allowedProd = [
         'https://onai.academy',
-        'https://tripwire.onai.academy',
+        'https://expresscourse.onai.academy',
         'https://traffic.onai.academy',
         'https://referral.onai.academy', // 🎯 Referral System
       ];
@@ -286,7 +286,7 @@ app.use(cors({
     const allowedOrigins = [
       'https://onai.academy',
       'https://www.onai.academy',
-      'https://tripwire.onai.academy',
+      'https://expresscourse.onai.academy',
       'https://traffic.onai.academy',
       'https://referral.onai.academy', // 🎯 Referral System
       'https://onai-integrator-login.vercel.app',

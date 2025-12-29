@@ -214,7 +214,7 @@ async function main() {
   console.log('\n==========================================');
   console.log('🎯 NEXT STEPS:');
   console.log('==========================================');
-  console.log('1. Login to Tripwire Manager: https://onai.academy/admin/tripwire-manager');
+  console.log('1. Login to Tripwire Manager: https://expresscourse.onai.academy/sales-manager');
   console.log('2. Use credentials:');
   console.log('   - Alisher (Admin): smmmcwin@gmail.com / Saintcom');
   console.log('   - Amina (Sales): amina@onaiacademy.kz / Amina2134');
@@ -227,4 +227,3 @@ main().catch(error => {
   console.error('❌ Fatal error:', error);
   process.exit(1);
 });
-

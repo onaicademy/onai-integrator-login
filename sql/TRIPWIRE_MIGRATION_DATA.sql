@@ -169,7 +169,7 @@ VALUES
 
 INSERT INTO public.tripwire_certificates (id, user_id, certificate_number, full_name, course_name, certificate_url, issued_at, downloaded_at, download_count, created_at)
 VALUES
-('9a4d4121-ccd6-43c2-8153-159afa6a4e37', '1d063207-02ca-41e9-b17b-bf83830e66ca', 'ONAI-TW-2025-D19A47', 'Александр', 'ИНТЕГРАТОР (быстрый старт)', 'https://onai.academy/tripwire/certificate/ONAI-TW-2025-D19A47.pdf', '2025-12-03 18:33:58.118165+00', '2025-12-03 20:03:00.926+00', 5, '2025-12-03 18:33:58.118165+00');
+('9a4d4121-ccd6-43c2-8153-159afa6a4e37', '1d063207-02ca-41e9-b17b-bf83830e66ca', 'ONAI-TW-2025-D19A47', 'Александр', 'ИНТЕГРАТОР (быстрый старт)', 'https://expresscourse.onai.academy/certificate/ONAI-TW-2025-D19A47.pdf', '2025-12-03 18:33:58.118165+00', '2025-12-03 20:03:00.926+00', 5, '2025-12-03 18:33:58.118165+00');
 
 */
 

@@ -664,13 +664,13 @@ const TripwireLesson = () => {
             console.log('🗑️ Cache invalidated - will reload fresh unlocks');
           }
           
-          const redirectUrl = `/integrator?unlockedModule=${response.data.unlockedModuleId}`;
+          const redirectUrl = `/?unlockedModule=${response.data.unlockedModuleId}`;
           console.log(`🚀 Redirecting to: ${redirectUrl}`);
           // ✅ Используем window.location для надежного редиректа с state в URL
           window.location.href = redirectUrl;
         } else {
           console.log('🏠 Редирект на главную страницу (без анимации)...');
-          window.location.href = '/integrator';
+          window.location.href = '/';
         }
       }, 2500);
       
@@ -742,7 +742,7 @@ const TripwireLesson = () => {
 
           // Редиректим на профиль через 1 секунду (чтобы пользователь увидел confetti)
           setTimeout(() => {
-            navigate('/integrator/profile');
+            navigate('/profile');
           }, 1000);
         }
       }
@@ -881,7 +881,7 @@ const TripwireLesson = () => {
               🔄 ОБНОВИТЬ СТРАНИЦУ
             </button>
             <button
-              onClick={() => navigate('/integrator')}
+              onClick={() => navigate('/')}
               className="px-6 py-3 bg-[#1a1a1f] text-white border border-[#00FF88]/30 font-['JetBrains_Mono'] rounded-lg hover:bg-[#2a2a2f] transition-all"
             >
               ← НАЗАД К МОДУЛЯМ
@@ -917,7 +917,7 @@ const TripwireLesson = () => {
           className="mb-8"
         >
           <button
-            onClick={() => navigate('/integrator')}
+            onClick={() => navigate('/')}
             className="text-gray-500 hover:text-[#00FF88] transition-all duration-300 flex items-center gap-2 font-['Manrope'] text-sm group"
           >
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -1172,7 +1172,7 @@ const TripwireLesson = () => {
                     const nextLessonId = getNextLessonId(moduleId);
                     console.log(`🚀 Переход: Module ${moduleId} → Lesson ${nextLessonId}`);
                     if (nextLessonId) {
-                      navigate(`/integrator/lesson/${nextLessonId}`);
+                      navigate(`/lesson/${nextLessonId}`);
                     }
                   }}
                   className="flex-1 group relative px-4 sm:px-8 py-3 sm:py-4 font-sans font-bold uppercase tracking-wider text-sm sm:text-base lg:text-lg overflow-hidden transition-all duration-300 not-italic bg-[#00FF88] text-black border-2 border-[#00FF88] hover:shadow-[0_0_50px_rgba(0,255,136,0.5)]"
@@ -1533,7 +1533,7 @@ const TripwireLesson = () => {
           onNavigate={() => {
             // Navigate back to Integrator homepage where user will see unlocked modules
             setUnlockedModuleNumber(null);
-            navigate('/integrator');
+            navigate('/');
           }}
         />
       )}

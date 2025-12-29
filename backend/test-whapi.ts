@@ -80,7 +80,7 @@ async function testWhapi() {
     
     console.log('🎉 Система готова к работе!');
     console.log('\n📋 Следующие шаги:');
-    console.log('   1. Зайди в админку: /tripwire/admin/mass-broadcast');
+    console.log('   1. Зайди в админку: https://expresscourse.onai.academy/admin/mass-broadcast');
     console.log('   2. Нажми "Синхронизировать"');
     console.log('   3. Составь сообщение (см. WHATSAPP_MESSAGE_TEMPLATES.md)');
     console.log('   4. Отправь рассылку!\n');
@@ -93,7 +93,6 @@ async function testWhapi() {
 }
 
 testWhapi();
-
 
 
 

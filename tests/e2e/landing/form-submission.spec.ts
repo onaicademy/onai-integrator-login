@@ -99,7 +99,7 @@ test.describe('Landing Pages - Performance', () => {
     const page = await context.newPage();
     
     const startTime = Date.now();
-    await page.goto('https://onai.academy/expresscourse');
+    await page.goto('https://expresscourse.onai.academy/expresscourse');
     await page.waitForLoadState('networkidle');
     const loadTime = Date.now() - startTime;
     
@@ -153,7 +153,7 @@ test.describe('Landing Pages - Responsive Design', () => {
       });
       const page = await context.newPage();
       
-      await page.goto('https://onai.academy/expresscourse');
+      await page.goto('https://expresscourse.onai.academy/expresscourse');
       await page.waitForLoadState('networkidle');
       
       // Take screenshot

@@ -121,7 +121,7 @@ docker compose logs -f --tail=50 main-backend
 curl -I https://onai.academy/health
 curl -I https://api.onai.academy/health
 curl -I https://traffic.onai.academy/health
-curl -I https://integrator.onai.academy/health
+curl -I https://expresscourse.onai.academy/health
 ```
 
 ---

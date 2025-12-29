@@ -173,7 +173,7 @@ async function sendProftestEmailWithTracking(name, email, leadId) {
         // 🔗 Создаем КОРОТКУЮ ссылку для экономии и лучшего трекинга
         let trackingUrl = `https://api.onai.academy/api/landing/track/${leadId}?source=email`;
         // Полная ссылка с UTM параметрами
-        const originalUrl = `https://onai.academy/integrator/expresscourse?utm_source=email&utm_campaign=proftest&lead_id=${leadId}`;
+        const originalUrl = `https://expresscourse.onai.academy/expresscourse?utm_source=email&utm_campaign=proftest&lead_id=${leadId}`;
         console.log(`🔗 Creating short link for Email (lead ${leadId})...`);
         // Создаем короткую ссылку
         const shortCode = await (0, urlShortener_js_1.createShortLink)({

@@ -89,7 +89,7 @@ const EMAIL_HTML = `<!DOCTYPE html>
       <p>Если у вас возникнут какие-либо вопросы или сложности — пишите в поддержку, мы всегда на связи!</p>
       
       <center>
-        <a href="https://onai.academy/integrator" class="button">Продолжить обучение</a>
+        <a href="https://expresscourse.onai.academy" class="button">Продолжить обучение</a>
       </center>
       
       <p style="margin-top: 30px; font-size: 16px;">Приятного обучения! 🚀</p>

@@ -4,7 +4,7 @@
 -- Описание: Назначает роль 'sales' существующему пользователю
 --           для доступа к Sales Manager Dashboard
 --
--- URL доступа: /admin/tripwire-manager
+-- URL доступа: https://expresscourse.onai.academy/sales-manager
 -- Роли: admin, sales
 -- ═══════════════════════════════════════════════════════════════
 
@@ -64,7 +64,7 @@ ORDER BY created_at DESC;
 -- ═══════════════════════════════════════════════════════════════
 
 -- 1. Войдите на платформу с email пользователя (manager@test.com)
--- 2. Откройте URL: /admin/tripwire-manager
+-- 2. Откройте URL: https://expresscourse.onai.academy/sales-manager
 -- 3. Нажмите кнопку "ДОБАВИТЬ УЧЕНИКА"
 -- 4. Создайте тестового пользователя:
 --    - ФИО: Иван Тестов
@@ -102,5 +102,4 @@ SET raw_user_meta_data =
   COALESCE(raw_user_meta_data, '{}'::jsonb) || 
   '{"role": "student"}'::jsonb
 WHERE email = 'manager@test.com';
-
 

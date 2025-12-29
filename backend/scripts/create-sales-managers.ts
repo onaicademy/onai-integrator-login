@@ -144,8 +144,8 @@ async function createSalesManager(manager: typeof SALES_MANAGERS[0]) {
 
     console.log(`\n✅ Sales Manager created successfully: ${manager.email}`);
     console.log(`   Password: ${manager.password}`);
-    console.log(`   Login URL: https://onai.academy/login`);
-    console.log(`   Dashboard URL: https://onai.academy/admin/tripwire-manager`);
+    console.log(`   Login URL: https://expresscourse.onai.academy/login`);
+    console.log(`   Dashboard URL: https://expresscourse.onai.academy/sales-manager`);
 
   } catch (error: any) {
     console.error(`\n❌ Failed to create Sales Manager ${manager.email}:`, error.message);
@@ -159,8 +159,8 @@ async function main() {
   console.log('════════════════════════════════════════════════════════');
   console.log('\nThis script will create Sales Manager accounts in the');
   console.log('MAIN PLATFORM database (not Tripwire).\n');
-  console.log('Managers will login at: https://onai.academy/login');
-  console.log('And access Sales Dashboard at: /admin/tripwire-manager\n');
+  console.log('Managers will login at: https://expresscourse.onai.academy/login');
+  console.log('And access Sales Dashboard at: https://expresscourse.onai.academy/sales-manager\n');
   console.log('When they create users, those users will be created');
   console.log('in the TRIPWIRE database (isolated).\n');
 
@@ -182,8 +182,8 @@ async function main() {
       console.log('');
     });
 
-    console.log('🔗 LOGIN URL: https://onai.academy/login');
-    console.log('📊 SALES DASHBOARD: https://onai.academy/admin/tripwire-manager\n');
+    console.log('🔗 LOGIN URL: https://expresscourse.onai.academy/login');
+    console.log('📊 SALES DASHBOARD: https://expresscourse.onai.academy/sales-manager\n');
 
     console.log('✅ NEXT STEPS:');
     console.log('1. Managers can login at /login with their credentials');

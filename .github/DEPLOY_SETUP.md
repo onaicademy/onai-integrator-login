@@ -8,7 +8,7 @@
 |----------|---------|------------------|-------|
 | 📊 Traffic Dashboard | `src/pages/traffic/**` | `/var/www/traffic.onai.academy/` | https://traffic.onai.academy |
 | 🎓 Main Platform | `src/pages/Course*.tsx`, основные страницы | `/var/www/onai.academy/` | https://onai.academy |
-| 🎯 Tripwire | `src/pages/tripwire/**` | `/var/www/tripwire.onai.academy/` | https://tripwire.onai.academy |
+| 🎯 Tripwire | `src/pages/tripwire/**` | `/var/www/expresscourse.onai.academy/` | https://expresscourse.onai.academy |
 | 🔧 Backend API | `backend/**` | `/var/www/onai-integrator-login-main/backend/` | https://api.onai.academy |
 
 ## ✅ Шаг 1: Настройка GitHub Secrets
@@ -237,7 +237,7 @@ gh run list --workflow=all --limit 5
 - [ ] На сервере есть все директории:
   - `/var/www/onai.academy/`
   - `/var/www/traffic.onai.academy/`
-  - `/var/www/tripwire.onai.academy/` (если нужно)
+  - `/var/www/expresscourse.onai.academy/` (если нужно)
   - `/var/www/onai-integrator-login-main/backend/`
 - [ ] Nginx настроен для всех доменов
 - [ ] PM2 запущен для backend: `pm2 list`

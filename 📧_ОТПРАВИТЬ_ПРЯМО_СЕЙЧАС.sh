@@ -9,7 +9,7 @@ echo "════════════════════════�
 echo ""
 
 # ⚠️ ПОЛУЧИ ТОКЕН АДМИНА:
-# 1. Открой https://onai.academy/integrator/admin
+# 1. Открой https://expresscourse.onai.academy/admin
 # 2. F12 → Application → Local Storage → tripwire_supabase_token
 # 3. Скопируй значение токена
 # 4. Вставь ниже вместо "ВСТАВЬ_СЮДА_ТОКЕН"
@@ -20,7 +20,7 @@ if [ "$ADMIN_TOKEN" = "ВСТАВЬ_СЮДА_ТОКЕН" ]; then
   echo "❌ ОШИБКА: Токен не указан!"
   echo ""
   echo "📝 КАК ПОЛУЧИТЬ ТОКЕН:"
-  echo "1. Открой https://onai.academy/integrator/admin (залогинься)"
+  echo "1. Открой https://expresscourse.onai.academy/admin (залогинься)"
   echo "2. Нажми F12 (DevTools)"
   echo "3. Application → Local Storage → tripwire_supabase_token"
   echo "4. Скопируй значение (начинается с eyJ...)"

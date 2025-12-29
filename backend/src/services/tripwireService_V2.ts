@@ -357,7 +357,7 @@ async function unlockNextModuleInternal(
 
 async function issueCertificateInternal(client: PoolClient, user_id: string) {
   // Generate certificate URL (можно заменить на реальную логику)
-  const certificateUrl = `https://onai.academy/certificates/tripwire/${user_id}`;
+  const certificateUrl = `https://expresscourse.onai.academy/certificate/${user_id}`;
 
   // Step 1: Update tripwire_user_profile
   await client.query(

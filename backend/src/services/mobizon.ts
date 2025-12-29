@@ -53,11 +53,11 @@ export async function sendSMS(params: SendSMSParams): Promise<boolean> {
 export async function sendProftestResultSMS(phone: string, leadId?: string): Promise<boolean> {
   try {
     // 🔗 Создаем КОРОТКУЮ ссылку для экономии на SMS
-    let finalUrl = 'https://onai.academy/integrator/expresscourse';
+    let finalUrl = 'https://expresscourse.onai.academy/expresscourse';
 
     if (leadId) {
       // Полная ссылка с UTM параметрами и отслеживанием
-      const originalUrl = `https://onai.academy/integrator/expresscourse?utm_source=sms&utm_campaign=proftest&lead_id=${leadId}`;
+      const originalUrl = `https://expresscourse.onai.academy/expresscourse?utm_source=sms&utm_campaign=proftest&lead_id=${leadId}`;
       
       console.log(`🔗 Creating short link for lead ${leadId}...`);
       
@@ -91,7 +91,7 @@ export async function sendProftestResultSMS(phone: string, leadId?: string): Pro
     // Фоллбэк: отправляем SMS со старой ссылкой если что-то пошло не так
     const fallbackUrl = leadId 
       ? `https://api.onai.academy/api/landing/track/${leadId}?source=sms`
-      : 'https://onai.academy/integrator/expresscourse';
+      : 'https://expresscourse.onai.academy/expresscourse';
     
     const text = `Тест пройден. Ваша ссылка ${fallbackUrl}`;
     return await sendSMS({ recipient: phone, text });

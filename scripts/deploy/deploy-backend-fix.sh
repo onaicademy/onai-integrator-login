@@ -9,4 +9,4 @@ cd backend && npm install
 pm2 restart backend
 pm2 logs backend --lines 20 --nostream
 ENDSSH
-echo "✅ ГОТОВО! Проверь: https://onai.academy/integrator/admin/students"
+echo "✅ ГОТОВО! Проверь: https://expresscourse.onai.academy/admin/students"

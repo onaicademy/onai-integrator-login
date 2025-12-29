@@ -11,7 +11,7 @@
 1. **Открой Инкогнито** (Cmd+Shift+N в Chrome/Safari)
 2. **Перейди по тестовой ссылке:**
    ```
-   https://onai.academy/expresscourse?utm_source=TEST_BRO_CHECK&utm_id=999999&fbclid=TEST_CLICK_ID
+   https://expresscourse.onai.academy/expresscourse?utm_source=TEST_BRO_CHECK&utm_id=999999&fbclid=TEST_CLICK_ID
    ```
 
 3. **Открой DevTools:**
@@ -201,7 +201,7 @@
 2. **На Mobile:**
    Открой ссылку (которую получил бы по SMS):
    ```
-   https://onai.academy/expresscourse?utm_source=TEST_DESKTOP&utm_id=111111&client_id=<ТОТ_САМЫЙ_UUID>
+   https://expresscourse.onai.academy/expresscourse?utm_source=TEST_DESKTOP&utm_id=111111&client_id=<ТОТ_САМЫЙ_UUID>
    ```
    - Заполни форму ExpressCourse
    - Проверь в AmoCRM: `client_id` должен совпадать
@@ -220,7 +220,7 @@
 2. **Закрой браузер**
 3. **Через час** зайди на сайт без UTM:
    ```
-   https://onai.academy/expresscourse
+   https://expresscourse.onai.academy/expresscourse
    ```
 4. Проверь LocalStorage → должны быть старые UTM
 

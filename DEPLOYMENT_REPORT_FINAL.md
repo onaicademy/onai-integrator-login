@@ -129,8 +129,8 @@ $ pm2 list
 ### Frontend:
 - **Main:** https://onai.academy/
 - **Traffic Dashboard:** https://onai.academy/traffic
-- **Sales Manager:** https://onai.academy/integrator/sales-manager
-- **Tripwire:** https://onai.academy/tripwire/login
+- **Sales Manager:** https://expresscourse.onai.academy/sales-manager
+- **Tripwire:** https://expresscourse.onai.academy/login
 
 ### Backend API:
 - **Base:** https://onai.academy/api/

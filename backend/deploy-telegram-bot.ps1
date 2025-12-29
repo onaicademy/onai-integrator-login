@@ -132,7 +132,7 @@ Write-Host "🎉 Деплой завершен!" -ForegroundColor Green
 Write-Host ""
 Write-Host "📱 Следующие шаги:" -ForegroundColor Cyan
 Write-Host "   1. Проверьте Telegram (ID: 789638302) - там должны быть тестовые сообщения" -ForegroundColor White
-Write-Host "   2. Откройте https://onai.academy/integrator/expresscourse" -ForegroundColor White
+Write-Host "   2. Откройте https://expresscourse.onai.academy/expresscourse" -ForegroundColor White
 Write-Host "   3. Заполните форму с тестовыми данными" -ForegroundColor White
 Write-Host "   4. Проверьте что уведомление пришло в Telegram" -ForegroundColor White
 Write-Host ""

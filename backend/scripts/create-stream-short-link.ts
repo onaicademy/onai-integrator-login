@@ -14,7 +14,7 @@ const createStreamShortLink = async () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   try {
-    const originalUrl = 'https://onai.academy/integrator';
+    const originalUrl = 'https://expresscourse.onai.academy';
     
     console.log(`📎 Оригинальная ссылка: ${originalUrl}`);
     console.log(`📏 Длина: ${originalUrl.length} символов\n`);
@@ -64,7 +64,7 @@ const createStreamShortLink = async () => {
     console.log('📋 NEXT STEP:');
     console.log('1. Скопируй короткую ссылку: ' + shortUrl);
     console.log('2. Запусти массовую рассылку: npx tsx scripts/send-stream-postponed-mass.ts');
-    console.log('3. Отслеживай клики в админке: /integrator/admin/short-links\n');
+    console.log('3. Отслеживай клики в админке: https://expresscourse.onai.academy/admin/short-links\n');
 
   } catch (error: any) {
     console.error('❌ Ошибка:', error.message);

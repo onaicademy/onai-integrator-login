@@ -36,13 +36,13 @@ interface MenuItem {
 
 // 🎯 EXACT menu items from main platform (Russian names)
 const menuItems: MenuItem[] = [
-  { title: "Главная", url: "/integrator", icon: House, locked: false },
+  { title: "Главная", url: "/", icon: House, locked: false },
   { title: "NeuroHUB", url: "/neurohub", icon: Brain, locked: true },
-  { title: "Мой профиль", url: "/integrator/profile", icon: User, locked: false },
+  { title: "Мой профиль", url: "/profile", icon: User, locked: false },
   { title: "Достижения", url: "/achievements", icon: Trophy, locked: true },
   { title: "onAIgram", url: "/messages", icon: GridNine, locked: true },
-  { title: "Админ панель", url: "/integrator/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
-  { title: "Массовые рассылки", url: "/integrator/admin/mass-broadcast", icon: PaperPlaneTilt, locked: false, adminOnly: true }, // ✅ Только admin
+  { title: "Админ панель", url: "/admin", icon: ChartBar, locked: false, adminOnly: true }, // ✅ Только admin
+  { title: "Массовые рассылки", url: "/admin/mass-broadcast", icon: PaperPlaneTilt, locked: false, adminOnly: true }, // ✅ Только admin
   // ❌ Sales Manager НЕ должен быть в Tripwire сайдбаре! Только в основной админ-панели
 ];
 
@@ -181,7 +181,7 @@ export function TripwireSidebar({ onClose, isMobile = false }: TripwireSidebarPr
                     <NavLink
                       to={item.url}
                       onClick={() => isMobile && onClose?.()}
-                      end={item.url === "/integrator"}
+                      end={item.url === "/"}
                       className={({ isActive }) =>
                         cn(
                           "group relative flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-300",

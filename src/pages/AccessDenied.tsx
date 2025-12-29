@@ -23,11 +23,11 @@ export default function AccessDenied() {
             Эта страница доступна только для администраторов.
           </p>
           <div className="flex flex-col gap-2 mt-6">
-            <Button onClick={() => navigate('/integrator')} className="w-full">
+            <Button onClick={() => navigate('/')} className="w-full">
               Вернуться в профиль
             </Button>
             <Button 
-              onClick={() => navigate('/integrator/login')} 
+              onClick={() => navigate('/login')} 
               variant="outline" 
               className="w-full"
             >

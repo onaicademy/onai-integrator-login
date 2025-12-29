@@ -164,7 +164,7 @@ node scripts/test-utm-tracking.ts
 ### User Journey:
 ```
 1. User clicks Facebook Ad
-   URL: https://onai.academy/expresscourse?utm_source=facebook&utm_id=120211234567890&fbclid=IwAR...
+   URL: https://expresscourse.onai.academy/expresscourse?utm_source=facebook&utm_id=120211234567890&fbclid=IwAR...
    
 2. UTMTracker component runs on page load
    - Captures all URL params (utm_source, utm_id, fbclid)
@@ -212,7 +212,7 @@ node scripts/test-utm-tracking.ts
 - [x] Test script created and passes
 
 ### Post-Deployment (Manual Testing):
-- [ ] Visit landing page with test URL: `https://onai.academy/expresscourse?utm_source=facebook&utm_id=TEST123&fbclid=TEST456`
+- [ ] Visit landing page with test URL: `https://expresscourse.onai.academy/expresscourse?utm_source=facebook&utm_id=TEST123&fbclid=TEST456`
 - [ ] Check browser console for `🆔 New client_id generated: ...`
 - [ ] Check localStorage for `onai_client_id` key
 - [ ] Submit form and verify `📊 UTM Tracking Data:` in console

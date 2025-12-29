@@ -119,7 +119,7 @@ const testBroadcast = async () => {
     if (!emailError && smsSuccess) {
       console.log('🎉 ВСЕ ТЕСТЫ ПРОШЛИ УСПЕШНО!');
       console.log('\n✅ Система массовых рассылок готова к использованию!');
-      console.log('🌐 URL: https://onai.academy/integrator/admin/mass-broadcast\n');
+      console.log('🌐 URL: https://expresscourse.onai.academy/admin/mass-broadcast\n');
     } else {
       console.log('⚠️  Некоторые тесты не прошли. Проверь ошибки выше.');
     }

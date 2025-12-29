@@ -284,9 +284,9 @@ Tripwire (3002):
 
 **В браузере (БЕЗ ОШИБОК в F12 Console):**
 - https://onai.academy/ → Загружается
-- https://onai.academy/integrator → Форма логина
+- https://expresscourse.onai.academy → Форма логина
 - https://traffic.onai.academy/ → Dashboard или Login
-- https://tripwire.onai.academy/ → Курсы или Login
+- https://expresscourse.onai.academy/ → Курсы или Login
 
 ---
 

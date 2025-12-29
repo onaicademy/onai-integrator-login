@@ -75,13 +75,12 @@ export const initSentry = () => {
 
     // 🎯 Custom before send - фильтруем и обогащаем события
     beforeSend(event, hint) {
-      // Добавляем контекст для Tripwire процессов
-      if (event.request?.url?.includes('/tripwire') || 
-          event.request?.url?.includes('/integrator')) {
+      // Добавляем контекст для Tripwire (expresscourse.onai.academy)
+      if (event.request?.url?.includes('expresscourse.onai.academy')) {
         event.tags = {
           ...event.tags,
           product: 'tripwire',
-          platform: 'integrator',
+          platform: 'expresscourse',
         };
       }
 
@@ -189,4 +188,3 @@ export const trackAPIError = (
 
 // Export Sentry for direct usage
 export { Sentry };
-

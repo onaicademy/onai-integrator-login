@@ -95,13 +95,13 @@ export function useTripwireAuth() {
       if (userRole === 'sales') {
         console.log('✅ Sales manager logged in, redirecting to Sales Manager Dashboard...');
         setTimeout(() => {
-          navigate('/integrator/sales-manager', { replace: true });
+          navigate('/sales-manager', { replace: true });
         }, 500);
         return;
       }
 
-      // Students and others → Get returnUrl from query params (or default to /integrator)
-      const returnUrl = searchParams.get('returnUrl') || '/integrator';
+      // Students and others → Get returnUrl from query params (or default to /)
+      const returnUrl = searchParams.get('returnUrl') || '/';
       const decodedReturnUrl = decodeURIComponent(returnUrl);
       
       console.log('🔄 Redirecting to:', decodedReturnUrl);

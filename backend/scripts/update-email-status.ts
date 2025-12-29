@@ -125,7 +125,7 @@ async function updateEmailStatus() {
     console.log('\n✅ ВСЁ ГОТОВО!');
     console.log(`   Обновлено статусов: ${verifyUsers.length}/${STUDENT_EMAILS.length}`);
     console.log('   Теперь в UI должны отображаться зелёные галочки ✓');
-    console.log('\n💡 Обновите страницу: https://onai.academy/integrator/sales-manager');
+    console.log('\n💡 Обновите страницу: https://expresscourse.onai.academy/sales-manager');
   } else {
     console.log('\n⚠️  ВНИМАНИЕ: Не все записи обновлены!');
     console.log(`   Обновлено: ${verifyUsers?.filter(u => u.welcome_email_sent).length}/${STUDENT_EMAILS.length}`);

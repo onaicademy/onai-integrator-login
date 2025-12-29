@@ -49,7 +49,7 @@ export const SECURITY_CONFIG = {
   // CORS
   ALLOWED_ORIGINS: ENV.IS_PRODUCTION ? [
     'https://onai.academy',
-    'https://tripwire.onai.academy',
+    'https://expresscourse.onai.academy',
     'https://www.onai.academy',
   ] : [
     'http://localhost:3000',

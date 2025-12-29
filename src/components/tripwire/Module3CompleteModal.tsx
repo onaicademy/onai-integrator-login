@@ -19,7 +19,7 @@ export function Module3CompleteModal({ open, onOpenChange }: Module3CompleteModa
 
   const handleGetCertificate = () => {
     onOpenChange(false);
-    navigate('/integrator/profile');
+    navigate('/profile');
   };
 
   return (

@@ -93,7 +93,7 @@ async function createSalesAccount() {
     console.log(`   • Tripwire User ID: ${tripwireUser.id}\n`);
     
     console.log('🔑 Данные для входа:');
-    console.log(`   URL: https://onai.academy/integrator`);
+    console.log(`   URL: https://expresscourse.onai.academy`);
     console.log(`   Email: ${newSalesManager.email}`);
     console.log(`   Password: ${newSalesManager.password}\n`);
     

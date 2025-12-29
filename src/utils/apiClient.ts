@@ -216,11 +216,23 @@ export async function apiRequest<T = any>(
         // Redirect to login after a short delay
         setTimeout(() => {
           const currentPath = window.location.pathname;
-          const returnUrl = encodeURIComponent(currentPath);
-          
-          // Check if it's an Integrator route (or legacy Tripwire route)
-          if (currentPath.startsWith('/integrator') || currentPath.startsWith('/tripwire')) {
-            window.location.href = `/integrator/login?returnUrl=${returnUrl}`;
+          const isTripwireDomain = window.location.hostname === 'expresscourse.onai.academy';
+          const isLegacyTripwirePath = currentPath.startsWith('/integrator') || currentPath.startsWith('/tripwire');
+          let tripwirePath = currentPath;
+
+          if (currentPath.startsWith('/integrator')) {
+            tripwirePath = currentPath.replace('/integrator', '') || '/';
+          } else if (currentPath.startsWith('/tripwire')) {
+            tripwirePath = currentPath.replace('/tripwire', '') || '/';
+          }
+
+          const returnUrl = encodeURIComponent(tripwirePath);
+
+          if (isTripwireDomain || isLegacyTripwirePath) {
+            const loginPath = `/login?returnUrl=${returnUrl}`;
+            window.location.href = isTripwireDomain
+              ? loginPath
+              : `https://expresscourse.onai.academy${loginPath}`;
           } else {
             window.location.href = '/login';
           }
@@ -330,4 +342,3 @@ export const apiClient = api;
  * // DELETE запрос
  * await api.delete('/api/users/123');
  */
-

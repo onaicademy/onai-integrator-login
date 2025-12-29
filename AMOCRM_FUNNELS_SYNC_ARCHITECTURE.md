@@ -393,7 +393,7 @@ const attribution = await utmEngine.attribute({
 
 ### 2️⃣ **Landing Admin** (`/integrator/admin/leads`)
 
-**URL**: https://onai.academy/integrator/admin/leads
+**URL**: https://expresscourse.onai.academy/admin/leads
 
 **Функционал**:
 - Просмотр лидов с лендинга

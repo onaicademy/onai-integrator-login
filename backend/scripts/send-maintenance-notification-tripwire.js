@@ -141,7 +141,7 @@ const emailTemplate = (name) => `
             <p>После завершения работ платформа будет работать еще быстрее и стабильнее!</p>
             
             <div style="text-align: center;">
-                <a href="https://onai.academy/expresscourse" class="btn">Перейти к обучению</a>
+                <a href="https://expresscourse.onai.academy/expresscourse" class="btn">Перейти к обучению</a>
             </div>
         </div>
         
@@ -181,7 +181,7 @@ ${'='.repeat(60)}
 
 После завершения работ платформа будет работать еще быстрее и стабильнее!
 
-🔗 Перейти к обучению: https://onai.academy/expresscourse
+🔗 Перейти к обучению: https://expresscourse.onai.academy/expresscourse
 
 С уважением,
 Команда onAI Academy

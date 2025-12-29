@@ -87,7 +87,7 @@ function captureUTMParams(url: string): UTMParams {
 }
 
 // Simulate Facebook Ad Click
-const testUrl = 'https://onai.academy/expresscourse?utm_source=facebook&utm_campaign=expresscourse_q1_2025&utm_id=120211234567890&fbclid=IwAR1234567890';
+const testUrl = 'https://expresscourse.onai.academy/expresscourse?utm_source=facebook&utm_campaign=expresscourse_q1_2025&utm_id=120211234567890&fbclid=IwAR1234567890';
 const captured = captureUTMParams(testUrl);
 
 console.log('   📊 Captured from URL:', captured);

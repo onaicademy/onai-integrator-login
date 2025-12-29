@@ -47,10 +47,10 @@ async function sendSMS(params) {
 async function sendProftestResultSMS(phone, leadId) {
     try {
         // 🔗 Создаем КОРОТКУЮ ссылку для экономии на SMS
-        let finalUrl = 'https://onai.academy/integrator/expresscourse';
+        let finalUrl = 'https://expresscourse.onai.academy/expresscourse';
         if (leadId) {
             // Полная ссылка с UTM параметрами и отслеживанием
-            const originalUrl = `https://onai.academy/integrator/expresscourse?utm_source=sms&utm_campaign=proftest&lead_id=${leadId}`;
+            const originalUrl = `https://expresscourse.onai.academy/expresscourse?utm_source=sms&utm_campaign=proftest&lead_id=${leadId}`;
             console.log(`🔗 Creating short link for lead ${leadId}...`);
             // Создаем короткую ссылку
             const shortCode = await (0, urlShortener_js_1.createShortLink)({
@@ -79,7 +79,7 @@ async function sendProftestResultSMS(phone, leadId) {
         // Фоллбэк: отправляем SMS со старой ссылкой если что-то пошло не так
         const fallbackUrl = leadId
             ? `https://api.onai.academy/api/landing/track/${leadId}?source=sms`
-            : 'https://onai.academy/integrator/expresscourse';
+            : 'https://expresscourse.onai.academy/expresscourse';
         const text = `Тест пройден. Ваша ссылка ${fallbackUrl}`;
         return await sendSMS({ recipient: phone, text });
     }

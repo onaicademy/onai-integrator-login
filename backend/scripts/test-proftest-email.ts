@@ -44,7 +44,7 @@ async function testProftestEmail() {
   // Тестовые данные
   const testEmail = 'smmmcwin@gmail.com'; // Email пользователя
   const testName = 'Тест Пользователь';
-  const testProductUrl = 'https://onai.academy/integrator/expresscourse?utm_source=proftest_email_test';
+  const testProductUrl = 'https://expresscourse.onai.academy/expresscourse?utm_source=proftest_email_test';
 
   console.log('📨 Отправка тестового письма...');
   console.log('   TO:', testEmail);

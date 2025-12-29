@@ -874,13 +874,13 @@ For each project, verify the following:
 - [ ] Site URL: `https://onai.academy`
 - [ ] Redirect URLs:
   - [ ] `https://onai.academy/*`
-  - [ ] `https://onai.academy/tripwire/*`
+  - [ ] `https://expresscourse.onai.academy/*`
   - [ ] `https://onai.academy/traffic/*`
 
 #### Tripwire (pjmvxecykysfrzppdcto)
-- [ ] Site URL: `https://onai.academy/tripwire`
+- [ ] Site URL: `https://expresscourse.onai.academy`
 - [ ] Redirect URLs:
-  - [ ] `https://onai.academy/tripwire/*`
+  - [ ] `https://expresscourse.onai.academy/*`
 
 #### Landing (nwkggvfhzekjjluvdubz)
 - [ ] Site URL: `https://onai.academy`

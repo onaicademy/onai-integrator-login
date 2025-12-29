@@ -89,7 +89,7 @@ case $choice in
         deploy_product "main" "/var/www/onai.academy" "frontend"
         ;;
     3)
-        deploy_product "tripwire" "/var/www/tripwire.onai.academy" "frontend"
+        deploy_product "tripwire" "/var/www/expresscourse.onai.academy" "frontend"
         ;;
     4)
         deploy_product "backend" "/var/www/onai-integrator-login-main/backend" "backend"
@@ -104,7 +104,7 @@ case $choice in
         # Frontend products
         deploy_product "traffic" "/var/www/traffic.onai.academy" "frontend"
         deploy_product "main" "/var/www/onai.academy" "frontend"
-        deploy_product "tripwire" "/var/www/tripwire.onai.academy" "frontend"
+        deploy_product "tripwire" "/var/www/expresscourse.onai.academy" "frontend"
 
         echo -e "${GREEN}🎉 Полный деплой завершён!${NC}"
         ;;

@@ -202,8 +202,8 @@ curl -X POST https://onai.academy/api/traffic-auth/login \
 
 ### Production URLs:
 - **Traffic Dashboard**: https://onai.academy/traffic
-- **Landing Admin**: https://onai.academy/integrator/admin/leads
-- **Tripwire**: https://onai.academy/tripwire
+- **Landing Admin**: https://expresscourse.onai.academy/admin/leads
+- **Tripwire**: https://expresscourse.onai.academy
 
 ### Admin Credentials:
 ```

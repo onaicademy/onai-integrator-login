@@ -446,7 +446,7 @@ export default function TripwireProfile() {
       <MatrixRain opacity={0.10} />
 
       {/* ═══════════════════════════════════════════════════════════
-          CYBER GRID BACKGROUND (КАК НА /integrator)
+          CYBER GRID BACKGROUND (КАК НА /)
           ═══════════════════════════════════════════════════════ */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
       <div 
@@ -462,7 +462,7 @@ export default function TripwireProfile() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
-          AMBIENT GLOW EFFECTS (КАК НА /integrator)
+          AMBIENT GLOW EFFECTS (КАК НА /)
           ═══════════════════════════════════════════════════════ */}
       <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-[#00FF88]/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-0 right-1/4 w-[600px] h-[600px] bg-[#00FF88]/3 rounded-full blur-[150px] pointer-events-none" />

@@ -171,7 +171,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
   // Detect platform (Tripwire, Traffic, Landing)
   detectPlatform = (): 'Tripwire' | 'Traffic' | 'Landing' => {
     const path = window.location.pathname;
-    if (path.includes('/tripwire') || path.includes('/lessons')) return 'Tripwire';
+    if (window.location.hostname === 'expresscourse.onai.academy') return 'Tripwire';
+    if (path.includes('/tripwire') || path.startsWith('/lesson')) return 'Tripwire';
     if (path.includes('/traffic') || path.includes('/cabinet')) return 'Traffic';
     return 'Landing';
   };
@@ -324,4 +325,3 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return this.props.children;
   }
 }
-
