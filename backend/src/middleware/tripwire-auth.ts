@@ -53,6 +53,12 @@ export async function authenticateTripwireJWT(req: TripwireAuthRequest, res: Res
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
+    // 🔥 FIX: Validate user ID exists (prevents "missing user ID" error)
+    if (!data.user.id) {
+      console.error('[Tripwire Auth] User authenticated but ID is missing:', data.user);
+      return res.status(401).json({ error: 'Invalid token: user ID not found' });
+    }
+
     console.log(`✅ [Tripwire Auth] User authenticated: ${data.user.email} (${data.user.id})`);
 
     // Attach user info to request (with JWT standard claims)

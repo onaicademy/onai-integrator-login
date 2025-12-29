@@ -144,6 +144,16 @@ export async function getTripwireUsers(req: Request, res: Response) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // 🔥 DEBUG: Log user object for troubleshooting
+    console.log('[getTripwireUsers] currentUser:', JSON.stringify({
+      sub: currentUser.sub,
+      id: currentUser.id,
+      userId: currentUser.userId,
+      email: currentUser.email,
+      role: currentUser.role,
+      user_metadata_role: currentUser.user_metadata?.role
+    }));
+
     // Проверяем роль
     const userRole = currentUser.user_metadata?.role || currentUser.role;
     if (userRole !== 'admin' && userRole !== 'sales') {
