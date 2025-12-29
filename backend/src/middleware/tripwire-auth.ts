@@ -22,9 +22,12 @@ console.log('✅ [Tripwire Auth] Middleware initialized with URL:', tripwireUrl)
 
 interface TripwireAuthRequest extends Request {
   user?: {
-    userId: string;
+    sub: string;      // ✅ JWT standard claim for user ID
+    id: string;       // ✅ Alias for compatibility
+    userId: string;   // ✅ Legacy field
     email: string;
     role?: string;
+    user_metadata?: any;
   };
 }
 
@@ -52,11 +55,14 @@ export async function authenticateTripwireJWT(req: TripwireAuthRequest, res: Res
 
     console.log(`✅ [Tripwire Auth] User authenticated: ${data.user.email} (${data.user.id})`);
 
-    // Attach user info to request
+    // Attach user info to request (with JWT standard claims)
     req.user = {
-      userId: data.user.id,
+      sub: data.user.id,        // ✅ JWT standard claim for user ID
+      id: data.user.id,         // ✅ Alias for compatibility
+      userId: data.user.id,     // ✅ Legacy field
       email: data.user.email || '',
       role: data.user.user_metadata?.role || 'student',
+      user_metadata: data.user.user_metadata,
     };
 
     next();
