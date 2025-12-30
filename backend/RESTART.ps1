@@ -20,7 +20,7 @@ pm2 logs onai-backend --lines 30 --nostream
 
 Write-Host ""
 Write-Host "✅ ГОТОВО! Теперь отправь тестовую заявку на сайте!" -ForegroundColor Green
-Write-Host "   https://onai.academy/integrator/expresscourse" -ForegroundColor White
+Write-Host "   https://expresscourse.onai.academy/expresscourse" -ForegroundColor White
 Write-Host ""
 Write-Host "📱 Проверь Telegram ID: 789638302" -ForegroundColor Cyan
 Write-Host ""

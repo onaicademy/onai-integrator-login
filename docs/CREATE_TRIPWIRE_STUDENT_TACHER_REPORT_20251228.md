@@ -196,7 +196,7 @@
 
 ## 🌐 ССЫЛКИ ДЛЯ ДОСТУПА
 
-- **Tripwire Login:** https://api.onai.academy/tripwire
+- **Tripwire Login:** https://expresscourse.onai.academy
 - **Supabase Dashboard:** https://app.supabase.com/project/pjmvxecykysfrzppdcto
 
 ---
@@ -204,7 +204,7 @@
 ## 📧 ИНСТРУКЦИЯ ДЛЯ СТУДЕНТА
 
 ### Как войти в систему:
-1. Перейдите на: https://api.onai.academy/tripwire
+1. Перейдите на: https://expresscourse.onai.academy
 2. Введите email: Tacher12122005@gmail.com
 3. Введите пароль: Tripwire2024!
 4. Нажмите кнопку "Войти"

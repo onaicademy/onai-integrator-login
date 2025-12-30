@@ -128,7 +128,7 @@ async function sendWelcomeEmail() {
               <p>Для входа в систему, перейдите по ссылке ниже:</p>
               
               <p style="text-align: center;">
-                <a href="https://api.onai.academy/tripwire" class="button">Войти в Tripwire</a>
+                <a href="https://expresscourse.onai.academy" class="button">Войти в Tripwire</a>
               </p>
               
               <p><strong>ℹ️ Важно:</strong></p>
@@ -162,7 +162,7 @@ async function sendWelcomeEmail() {
         Пароль: ${studentData.password}
         
         Для входа в систему, перейдите по ссылке:
-        https://api.onai.academy/tripwire
+        https://expresscourse.onai.academy
         
         Важно:
         - Рекомендуем сменить пароль после первого входа

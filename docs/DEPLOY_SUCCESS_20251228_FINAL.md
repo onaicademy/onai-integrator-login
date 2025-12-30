@@ -50,7 +50,7 @@
 **Проблема**: Файлы удалены, но на них остались ссылки
 **Исправлено**:
 - Удалён импорт `TripwireUpdatePassword` из `App.tsx`
-- Удалены роуты `/integrator/update-password` и `/tripwire/update-password`
+- Удалены роуты `//update-password` и `/tripwire/update-password`
 - Исправлен импорт `PasswordRecoveryModal` в `TripwireLogin.tsx`
 
 **Удалённые файлы**:

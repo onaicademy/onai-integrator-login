@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"; // 🚀 ОПТИМИЗАЦИЯ: Lazy loading
+import { lazy, Suspense, useEffect } from "react"; // 🚀 ОПТИЗАЦИЯ: Lazy loading
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +14,7 @@ import { SalesGuard } from "./components/SalesGuard"; // ✅ Guard для admin 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initSentry, Sentry } from "@/config/sentryInit"; // 🛡️ Sentry Monitoring
+import { AmoCRMSyncStatus } from "@/components/AmoCRMSyncStatus"; // 📊 AmoCRM Rate Limiter Status
 // Integrator Guards
 import { TripwireGuard } from "./components/tripwire/TripwireGuard";
 import { StudentGuard } from "./components/tripwire/StudentGuard"; // ✅ Student Guard (Integrator)
@@ -131,11 +132,22 @@ const SuspenseLoader = () => (
   </div>
 );
 
-// Helper component for redirecting with params
-const RedirectWithParams = ({ from, to }: { from: string; to: string }) => {
+// Legacy Tripwire redirect helper
+const LegacyTripwireRedirect = ({ legacyBase, forcedPath }: { legacyBase: string; forcedPath?: string }) => {
   const location = useLocation();
-  const newPath = location.pathname.replace(from, to);
-  return <Navigate replace to={newPath + location.search} />;
+  const strippedPath = location.pathname.replace(legacyBase, '') || '/';
+  const targetPath = forcedPath || strippedPath;
+  const targetWithSearch = `${targetPath}${location.search || ''}`;
+  const isTripwireDomain = window.location.hostname === 'expresscourse.onai.academy';
+
+  useEffect(() => {
+    if (isTripwireDomain) {
+      return;
+    }
+    window.location.replace(`https://expresscourse.onai.academy${targetWithSearch}`);
+  }, [isTripwireDomain, targetWithSearch]);
+
+  return isTripwireDomain ? <Navigate replace to={targetWithSearch} /> : null;
 };
 
 const AppRoutes = () => {
@@ -145,14 +157,20 @@ const AppRoutes = () => {
   const isTrafficDomain = window.location.hostname === 'traffic.onai.academy';
   // ✅ Domain detection for Referral System
   const isReferralDomain = window.location.hostname === 'referral.onai.academy';
+  // ✅ Domain detection for Tripwire product
+  const isTripwireDomain = window.location.hostname === 'expresscourse.onai.academy';
+  const showMainRoutes = !isTrafficDomain && !isReferralDomain && !isTripwireDomain;
 
   return (
     <Suspense fallback={<SuspenseLoader />}>
       <Routes>
       {/* Публичные страницы (без авторизации) */}
       {/* ✅ MAIN PLATFORM LOGIN (only on main domains) */}
-      {!isTrafficDomain && !isReferralDomain && <Route path="/login" element={<Login />} />}
-      {!isTrafficDomain && !isReferralDomain && <Route path="/" element={<Navigate to="/login" replace />} />}
+      {showMainRoutes && <Route path="/login" element={<Login />} />}
+      {showMainRoutes && <Route path="/" element={<Navigate to="/login" replace />} />}
+
+      {/* ✅ TRIPWIRE DOMAIN: use Tripwire login at root */}
+      {isTripwireDomain && <Route path="/login" element={<TripwireLogin />} />}
       
       {/* 🎯 REFERRAL DOMAIN: Show referral page at root */}
       {isReferralDomain && <Route path="/" element={<ReferralGeneratorPage />} />}
@@ -165,133 +183,235 @@ const AppRoutes = () => {
       {/* 🎯 REFERRAL SYSTEM (Public - no auth required) */}
       {!isReferralDomain && <Route path="/referral" element={<ReferralGeneratorPage />} />}
       
-      {/* Welcome - требует авторизацию, но доступна для новых пользователей */}
-      <Route path="/welcome" element={
-        <ProtectedRoute>
-          <Welcome />
-        </ProtectedRoute>
-      } />
-      
-      {/* Защищённые страницы (требуют авторизацию) */}
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          {isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>}
-        </ProtectedRoute>
-      } />
-      <Route path="/neurohub" element={
-        <ProtectedRoute>
-          <MainLayout><NeuroHub /></MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/achievements" element={
-        <ProtectedRoute>
-          <MainLayout><Achievements /></MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/courses" element={
-        <ProtectedRoute>
-          <MainLayout><Courses /></MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/course/:id" element={
-        <ProtectedRoute>
-          <MainLayout><Course /></MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/course/:id/module/:moduleId" element={
-        <ProtectedRoute>
-          <MainLayout><Module /></MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={
-        <ProtectedRoute>
-          <MainLayout><Lesson /></MainLayout>
-        </ProtectedRoute>
-      } />
-      
-      {/* ✅ ADMIN ROUTES WITH SIDEBAR */}
-      <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
-      <Route path="/admin/dashboard" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
-      <Route path="/admin/analytics" element={<AdminGuard><Analytics /></AdminGuard>} />
-      <Route path="/admin/students" element={<AdminGuard><Students /></AdminGuard>} />
-      <Route path="/admin/transcriptions" element={<AdminGuard><MainPlatformTranscriptions /></AdminGuard>} />
-      <Route path="/admin/costs" element={<AdminGuard><Costs /></AdminGuard>} />
-      {/* ❌ УБРАНО: /target moved to /integrator/admin/leads */}
-      <Route path="/admin/leads" element={<AdminGuard><LeadTracking /></AdminGuard>} />
-      <Route path="/admin/short-links" element={<AdminGuard><ShortLinksStats /></AdminGuard>} />
-      
-      {/* ❌ OLD ADMIN ROUTES (Keeping for backwards compatibility) */}
-      <Route path="/admin/old" element={
-        <ProtectedRoute>
-          <OldAdminGuard><MainLayout><AdminDashboard /></MainLayout></OldAdminGuard>
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/activity" element={
-        <ProtectedRoute>
-          <OldAdminGuard><MainLayout><Activity /></MainLayout></OldAdminGuard>
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/students-activity" element={
-        <ProtectedRoute>
-          <OldAdminGuard><MainLayout><StudentsActivity /></MainLayout></OldAdminGuard>
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/ai-analytics" element={
-        <ProtectedRoute>
-          <OldAdminGuard><MainLayout><AIAnalytics /></MainLayout></OldAdminGuard>
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/ai-curator-chats" element={
-        <ProtectedRoute>
-          <OldAdminGuard><MainLayout><AICuratorChats /></MainLayout></OldAdminGuard>
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/token-usage" element={
-        <ProtectedRoute>
-          <OldAdminGuard><MainLayout><TokenUsage /></MainLayout></OldAdminGuard>
-        </ProtectedRoute>
-      } />
-      
-      {/* Sales Manager Dashboard (ЗАЩИЩЕНО: admin и sales роли) */}
-      <Route path="/integrator/sales-manager" element={
-        <SalesGuard><TripwireManager /></SalesGuard>
-      } />
-      
-      {/* REDIRECT: Old URL → New URL */}
-      <Route path="/admin/tripwire-manager" element={
-        <Navigate to="/integrator/sales-manager" replace />
-      } />
-      
-      {/* Чат (требует авторизацию) */}
-      <Route path="/messages" element={
-        <ProtectedRoute>
-          <MainLayout><Messages /></MainLayout>
-        </ProtectedRoute>
-      } />
+      {showMainRoutes && (
+        <>
+          {/* Welcome - требует авторизацию, но доступна для новых пользователей */}
+          <Route path="/welcome" element={
+            <ProtectedRoute>
+              <Welcome />
+            </ProtectedRoute>
+          } />
+          
+          {/* Защищённые страницы (требуют авторизацию) */}
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              {isWelcomePage ? <Profile /> : <MainLayout><Profile /></MainLayout>}
+            </ProtectedRoute>
+          } />
+          <Route path="/neurohub" element={
+            <ProtectedRoute>
+              <MainLayout><NeuroHub /></MainLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/achievements" element={
+            <ProtectedRoute>
+              <MainLayout><Achievements /></MainLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/courses" element={
+            <ProtectedRoute>
+              <MainLayout><Courses /></MainLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/course/:id" element={
+            <ProtectedRoute>
+              <MainLayout><Course /></MainLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/course/:id/module/:moduleId" element={
+            <ProtectedRoute>
+              <MainLayout><Module /></MainLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/course/:id/module/:moduleId/lesson/:lessonId" element={
+            <ProtectedRoute>
+              <MainLayout><Lesson /></MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          {/* ✅ ADMIN ROUTES WITH SIDEBAR */}
+          <Route path="/admin" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
+          <Route path="/admin/dashboard" element={<AdminGuard><MainLayout><AdminDashboard /></MainLayout></AdminGuard>} />
+          <Route path="/admin/analytics" element={<AdminGuard><Analytics /></AdminGuard>} />
+          <Route path="/admin/students" element={<AdminGuard><Students /></AdminGuard>} />
+          <Route path="/admin/transcriptions" element={<AdminGuard><MainPlatformTranscriptions /></AdminGuard>} />
+          <Route path="/admin/costs" element={<AdminGuard><Costs /></AdminGuard>} />
+          {/* ❌ УБРАНО: /target moved to /admin/leads */}
+          <Route path="/admin/leads" element={<AdminGuard><LeadTracking /></AdminGuard>} />
+          <Route path="/admin/short-links" element={<AdminGuard><ShortLinksStats /></AdminGuard>} />
+          
+          {/* ❌ OLD ADMIN ROUTES (Keeping for backwards compatibility) */}
+          <Route path="/admin/old" element={
+            <ProtectedRoute>
+              <OldAdminGuard><MainLayout><AdminDashboard /></MainLayout></OldAdminGuard>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/activity" element={
+            <ProtectedRoute>
+              <OldAdminGuard><MainLayout><Activity /></MainLayout></OldAdminGuard>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/students-activity" element={
+            <ProtectedRoute>
+              <OldAdminGuard><MainLayout><StudentsActivity /></MainLayout></OldAdminGuard>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ai-analytics" element={
+            <ProtectedRoute>
+              <OldAdminGuard><MainLayout><AIAnalytics /></MainLayout></OldAdminGuard>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ai-curator-chats" element={
+            <ProtectedRoute>
+              <OldAdminGuard><MainLayout><AICuratorChats /></MainLayout></OldAdminGuard>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/token-usage" element={
+            <ProtectedRoute>
+              <OldAdminGuard><MainLayout><TokenUsage /></MainLayout></OldAdminGuard>
+            </ProtectedRoute>
+          } />
+
+          {/* Чат (требует авторизацию) */}
+          <Route path="/messages" element={
+            <ProtectedRoute>
+              <MainLayout><Messages /></MainLayout>
+            </ProtectedRoute>
+          } />
+        </>
+      )}
       
       {/* ========================================
-          INTEGRATOR ROUTES (NEW)
+          TRIPWIRE ROUTES (expresscourse.onai.academy)
           ======================================== */}
 
       {/* Public: Clear Cache page */}
       <Route path="/clear-cache" element={<ClearCache />} />
 
-      {/* Public: Login page */}
-      <Route path="/integrator/login" element={<TripwireLogin />} />
-      
-      {/* Public: Landing page (no auth required) - для сбора заявок */}
-      <Route path="/expresscourse" element={<TripwireLanding />} />
-      <Route path="/integrator/expresscourse" element={<TripwireLanding />} />
-      {/* Public: Certificate page (no auth required for sharing) */}
-      <Route path="/integrator/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
-      
-      {/* Public: Professional Test pages (no auth required) */}
-      <Route path="/integrator/proftest" element={<ProfTest />} />
-      <Route path="/integrator/proftest/:slug" element={<ProfTest />} />
-      <Route path="/proftest/:slug" element={<ProfTest />} />
-      
-      {/* Public: Traffic Command Dashboard (no auth required) */}
-      <Route path="/integrator/traficcommand" element={<TrafficCommandDashboard />} />
+      {isTripwireDomain && (
+        <>
+          {/* Public: Landing page (no auth required) */}
+          <Route path="/expresscourse" element={<TripwireLanding />} />
+          <Route path="/expresscourse/:campaignSlug" element={<TripwireLanding />} />
+          {/* Public: Certificate page (no auth required for sharing) */}
+          <Route path="/certificate/:certificateNumber" element={<TripwireCertificatePage />} />
+          
+          {/* Public: Professional Test pages (no auth required) */}
+          <Route path="/proftest" element={<ProfTest />} />
+          <Route path="/proftest/:slug" element={<ProfTest />} />
+          
+          {/* Public: Traffic Command Dashboard (no auth required) */}
+          <Route path="/traficcommand" element={<TrafficCommandDashboard />} />
+          
+          {/* Sales Manager Dashboard (ЗАЩИЩЕНО: admin и sales роли) */}
+          <Route path="/sales-manager" element={
+            <SalesGuard><TripwireManager /></SalesGuard>
+          } />
+          
+          {/* STUDENT ROUTES: Tripwire student routes */}
+          <Route path="/" element={
+            <StudentGuard>
+              <TripwireLayout>
+                <TripwireProductPage />
+              </TripwireLayout>
+            </StudentGuard>
+          } />
+          <Route path="/lesson/:lessonId" element={
+            <StudentGuard>
+              <TripwireLayout>
+                <TripwireLesson />
+              </TripwireLayout>
+            </StudentGuard>
+          } />
+          <Route path="/profile" element={
+            <StudentGuard>
+              <TripwireLayout>
+                <TripwireProfile />
+              </TripwireLayout>
+            </StudentGuard>
+          } />
+          
+          {/* ADMIN ROUTES: Tripwire admin routes */}
+          <Route path="/admin" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <TripwireAdminDashboard />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+          <Route path="/admin/analytics" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <TripwireAnalytics />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+          <Route path="/admin/students" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <TripwireStudents />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+          <Route path="/admin/costs" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <TripwireCosts />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+          <Route path="/admin/transcriptions" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <Transcriptions />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+          
+          {/* ✅ NEW: Landing заявки */}
+          <Route path="/admin/leads" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <LeadsAdmin />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+          
+          {/* 🔗 NEW: Статистика коротких ссылок для SMS */}
+          <Route path="/admin/short-links" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <ShortLinksStats />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+
+          {/* 📧📱 NEW: Массовые рассылки (EMAIL + SMS) */}
+          <Route path="/admin/mass-broadcast" element={
+            <TripwireAdminGuard>
+              <TripwireLayout>
+                <MassBroadcast />
+              </TripwireLayout>
+            </TripwireAdminGuard>
+          } />
+
+          {/* 🚔 DEBUG PANEL: System Health & Operation Logging */}
+          <Route path="/admin/system-health" element={
+            <SalesGuard>
+              <SystemHealth />
+            </SalesGuard>
+          } />
+
+          <Route path="/admin/debug" element={
+            <SalesGuard>
+              <DebugPanel />
+            </SalesGuard>
+          } />
+
+          {/* ❌ Access Denied for Tripwire */}
+          <Route path="/access-denied" element={<AccessDenied />} />
+        </>
+      )}
       
       {/* 🚀 TRAFFIC DASHBOARD - Personal Cabinets System */}
       {/* ✅ PRODUCTION: subdomain traffic.onai.academy (routes WITHOUT prefix) */}
@@ -422,134 +542,14 @@ const AppRoutes = () => {
         </TrafficGuard>
       } />
       
-      {/* STUDENT ROUTES: Integrator студенческие маршруты (student, admin, sales могут заходить) */}
-      <Route path="/integrator" element={
-        <StudentGuard>
-          <TripwireLayout>
-            <TripwireProductPage />
-          </TripwireLayout>
-        </StudentGuard>
-      } />
-      {/* ✅ Единственный роут для Integrator уроков */}
-      <Route path="/integrator/lesson/:lessonId" element={
-        <StudentGuard>
-          <TripwireLayout>
-            <TripwireLesson />
-          </TripwireLayout>
-        </StudentGuard>
-      } />
-      <Route path="/integrator/profile" element={
-        <StudentGuard>
-          <TripwireLayout>
-            <TripwireProfile />
-          </TripwireLayout>
-        </StudentGuard>
-      } />
-      
-      {/* ADMIN ROUTES: Integrator админские маршруты - ТОЛЬКО для admin роли */}
-      <Route path="/integrator/admin" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <TripwireAdminDashboard />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-      <Route path="/integrator/admin/analytics" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <TripwireAnalytics />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-      <Route path="/integrator/admin/students" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <TripwireStudents />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-      <Route path="/integrator/admin/costs" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <TripwireCosts />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-      <Route path="/integrator/admin/transcriptions" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <Transcriptions />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-      
-      {/* ✅ NEW: Landing заявки */}
-      <Route path="/integrator/admin/leads" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <LeadsAdmin />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-      
-      {/* 🔗 NEW: Статистика коротких ссылок для SMS */}
-      <Route path="/integrator/admin/short-links" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <ShortLinksStats />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-
-      {/* 📧📱 NEW: Массовые рассылки (EMAIL + SMS) */}
-      <Route path="/integrator/admin/mass-broadcast" element={
-        <TripwireAdminGuard>
-          <TripwireLayout>
-            <MassBroadcast />
-          </TripwireLayout>
-        </TripwireAdminGuard>
-      } />
-
-      {/* 🚔 DEBUG PANEL: System Health & Operation Logging */}
-      <Route path="/integrator/admin/system-health" element={
-        <SalesGuard>
-          <SystemHealth />
-        </SalesGuard>
-      } />
-
-      <Route path="/integrator/admin/debug" element={
-        <SalesGuard>
-          <DebugPanel />
-        </SalesGuard>
-      } />
-
       {/* 🛡️ DEBUG: System monitoring dashboard */}
       <Route path="/debug/report" element={<DebugDashboard />} />
       <Route path="/admin/debug/report" element={<DebugDashboard />} />
 
-      {/* ❌ Access Denied for Tripwire */}
-      <Route path="/integrator/access-denied" element={<AccessDenied />} />
-      
-      {/* ========================================
-          LEGACY TRIPWIRE REDIRECTS
-          DO NOT DELETE - Required for old links
-          ======================================== */}
-      
-      {/* Public routes - redirect to /integrator */}
-      <Route path="/tripwire/login" element={<Navigate replace to="/integrator/login" />} />
-      <Route path="/tripwire/certificate/:certificateNumber" element={<RedirectWithParams from="/tripwire" to="/integrator" />} />
-      
-      {/* Student routes - redirect to /integrator */}
-      <Route path="/tripwire" element={<Navigate replace to="/integrator" />} />
-      <Route path="/tripwire/lesson/:lessonId" element={<RedirectWithParams from="/tripwire" to="/integrator" />} />
-      <Route path="/tripwire/profile" element={<Navigate replace to="/integrator/profile" />} />
-      
-      {/* Admin routes - redirect to /integrator/admin */}
-      <Route path="/tripwire/admin" element={<Navigate replace to="/integrator/admin" />} />
-      <Route path="/tripwire/admin/analytics" element={<Navigate replace to="/integrator/admin/analytics" />} />
-      <Route path="/tripwire/admin/students" element={<Navigate replace to="/integrator/admin/students" />} />
-      <Route path="/tripwire/admin/costs" element={<Navigate replace to="/integrator/admin/costs" />} />
-      <Route path="/tripwire/admin/transcriptions" element={<Navigate replace to="/integrator/admin/transcriptions" />} />
+      {/* Legacy Tripwire paths → expresscourse.onai.academy */}
+      <Route path="//*" element={<LegacyTripwireRedirect legacyBase="/" />} />
+      <Route path="/tripwire/*" element={<LegacyTripwireRedirect legacyBase="/tripwire" />} />
+      <Route path="/admin/tripwire-manager" element={<LegacyTripwireRedirect legacyBase="/admin/tripwire-manager" forcedPath="/sales-manager" />} />
       
       {/* 🔥 БЕЗОПАСНОСТЬ: /test-query УДАЛЁН - не должен быть доступен в production */}
       {/* <Route path="/test-query" element={<TestQuery />} /> */}
@@ -563,6 +563,11 @@ const AppRoutes = () => {
 
 // 🔥 ИСПРАВЛЕНИЕ: AppContent с тремя состояниями (Loading → Login → Dashboard)
 const AppContent = () => {
+  const isTripwireDomain = window.location.hostname === 'expresscourse.onai.academy';
+  if (isTripwireDomain) {
+    return <AppRoutes />;
+  }
+
   const { isInitialized, isLoading } = useAuth();
 
   // СОСТОЯНИЕ 1: LOADING - НЕ РЕНДЕРИМ НИЧЕГО пока AuthContext не инициализирован!
@@ -588,60 +593,67 @@ const AppContent = () => {
 };
 
 // 🛡️ Wrap App with Sentry ErrorBoundary для отлова всех ошибок
-const App = () => (
-  <Sentry.ErrorBoundary 
-    fallback={({ error, resetError }) => (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
-        <div className="max-w-md w-full bg-gray-800/50 backdrop-blur border border-red-500/20 rounded-lg p-6 space-y-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Произошла ошибка</h2>
-              <p className="text-sm text-gray-400">Мы уже получили уведомление</p>
-            </div>
-          </div>
-          
-          <div className="bg-red-500/10 border border-red-500/20 rounded p-3">
-            <p className="text-sm text-red-300 font-mono">{error?.message}</p>
-          </div>
+const App = () => {
+  const isTripwireDomain = window.location.hostname === 'expresscourse.onai.academy';
 
-          <div className="flex space-x-3">
-            <button
-              onClick={resetError}
-              className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
-            >
-              Попробовать снова
-            </button>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
-            >
-              На главную
-            </button>
+  const appTree = (
+    <OnboardingProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </OnboardingProvider>
+  );
+
+  return (
+    <Sentry.ErrorBoundary 
+      fallback={({ error, resetError }) => (
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
+          <div className="max-w-md w-full bg-gray-800/50 backdrop-blur border border-red-500/20 rounded-lg p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Произошла ошибка</h2>
+                <p className="text-sm text-gray-400">Мы уже получили уведомление</p>
+              </div>
+            </div>
+            
+            <div className="bg-red-500/10 border border-red-500/20 rounded p-3">
+              <p className="text-sm text-red-300 font-mono">{error?.message}</p>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={resetError}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+              >
+                Попробовать снова
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+              >
+                На главную
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
-    showDialog={false}
-  >
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AuthProvider>
-            <OnboardingProvider>
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </OnboardingProvider>
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
-  </Sentry.ErrorBoundary>
-);
+      )}
+      showDialog={false}
+    >
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AmoCRMSyncStatus />
+            {isTripwireDomain ? appTree : <AuthProvider>{appTree}</AuthProvider>}
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </Sentry.ErrorBoundary>
+  );
+};
 
 export default App;

@@ -193,7 +193,7 @@ export function generateCacheResetEmail(studentName: string): string {
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="background: rgba(255, 255, 255, 0.1); border: 2px solid #00FF88; border-radius: 12px;">
-                    <a href="https://onai.academy/integrator" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #00FF88; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
+                    <a href="https://expresscourse.onai.academy" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #00FF88; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
                       🚀 ВОЙТИ НА ПЛАТФОРМУ (ШАГ 3)
                     </a>
                   </td>

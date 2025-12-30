@@ -13,7 +13,7 @@
 | Workers | ✅ PASS | None |
 | Redis | ✅ PASS | None |
 | **Frontends** | ❌ FAIL | **Nginx config syntax error** |
-| DNS | ⚠️ PARTIAL | Missing: integrator.onai.academy, tripwire.onai.academy |
+| DNS | ⚠️ PARTIAL | Missing: expresscourse.onai.academy, expresscourse.onai.academy |
 | ENV Variables | ⚠️ PARTIAL | Some missing in non-primary backends |
 
 ---
@@ -182,8 +182,8 @@ location /api/tripwire/ {
 
 ### Domain Status
 ```
-❌ FAIL  integrator.onai.academy  → NXDOMAIN (does not exist)
-❌ FAIL  tripwire.onai.academy    → NXDOMAIN (does not exist)
+❌ FAIL  expresscourse.onai.academy  → NXDOMAIN (does not exist)
+❌ FAIL  expresscourse.onai.academy    → NXDOMAIN (does not exist)
 ✅ PASS  traffic.onai.academy     → 207.154.231.30
 ✅ PASS  onai.academy             → 207.154.231.30
 ✅ PASS  api.onai.academy         → 207.154.231.30
@@ -191,8 +191,8 @@ location /api/tripwire/ {
 
 ### Analysis
 **Missing DNS Records:**
-- `integrator.onai.academy` (mentioned in docs as Tripwire frontend URL)
-- `tripwire.onai.academy` (mentioned in docs)
+- `expresscourse.onai.academy` (mentioned in docs as Tripwire frontend URL)
+- `expresscourse.onai.academy` (mentioned in docs)
 
 **Current Working Setup:**
 - Frontend domains resolve to same IP (207.154.231.30)
@@ -260,8 +260,8 @@ location /api/tripwire/ {
 
 ### Medium Priority (Clean Architecture)
 3. **Add missing DNS records**
-   - Create `integrator.onai.academy` → 207.154.231.30
-   - Create `tripwire.onai.academy` → 207.154.231.30
+   - Create `expresscourse.onai.academy` → 207.154.231.30
+   - Create `expresscourse.onai.academy` → 207.154.231.30
    - OR update docs to use existing domains
 
 4. **Add missing ENV vars**

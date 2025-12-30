@@ -9,20 +9,20 @@ test.describe('User Activity Tracking System', () => {
   
   test('should track new user creation event', async ({ page }) => {
     // 1. Login as admin
-    await page.goto('https://onai.academy/integrator/login');
+    await page.goto('https://expresscourse.onai.academy/login');
     await page.fill('input[type="email"]', process.env.ADMIN_EMAIL || 'amina@onaiacademy.kz');
     await page.fill('input[type="password"]', process.env.ADMIN_PASSWORD || '');
     await page.click('button[type="submit"]');
     
     // Wait for redirect to dashboard
-    await page.waitForURL(/\/integrator\/admin/);
+    await page.waitForURL(/\/\/admin/);
     
     // 2. Navigate to create user page (adjust selector based on actual UI)
     // This is a placeholder - adjust based on your actual UI
     const testEmail = `test-user-${Date.now()}@example.com`;
     
     // 3. Go to Debug Panel
-    await page.goto('https://onai.academy/integrator/admin/debug');
+    await page.goto('https://expresscourse.onai.academy/admin/debug');
     await page.waitForLoadState('networkidle');
     
     // 4. Switch to Users tab
@@ -42,15 +42,15 @@ test.describe('User Activity Tracking System', () => {
   
   test('should display user activity logs when user is selected', async ({ page }) => {
     // 1. Login as admin
-    await page.goto('https://onai.academy/integrator/login');
+    await page.goto('https://expresscourse.onai.academy/login');
     await page.fill('input[type="email"]', process.env.ADMIN_EMAIL || 'amina@onaiacademy.kz');
     await page.fill('input[type="password"]', process.env.ADMIN_PASSWORD || '');
     await page.click('button[type="submit"]');
     
-    await page.waitForURL(/\/integrator\/admin/);
+    await page.waitForURL(/\/\/admin/);
     
     // 2. Go to Debug Panel
-    await page.goto('https://onai.academy/integrator/admin/debug');
+    await page.goto('https://expresscourse.onai.academy/admin/debug');
     await page.waitForLoadState('networkidle');
     
     // 3. Switch to Users tab
@@ -101,15 +101,15 @@ test.describe('User Activity Tracking System', () => {
   
   test('should handle search with minimum character validation', async ({ page }) => {
     // 1. Login as admin
-    await page.goto('https://onai.academy/integrator/login');
+    await page.goto('https://expresscourse.onai.academy/login');
     await page.fill('input[type="email"]', process.env.ADMIN_EMAIL || 'amina@onaiacademy.kz');
     await page.fill('input[type="password"]', process.env.ADMIN_PASSWORD || '');
     await page.click('button[type="submit"]');
     
-    await page.waitForURL(/\/integrator\/admin/);
+    await page.waitForURL(/\/\/admin/);
     
     // 2. Go to Debug Panel
-    await page.goto('https://onai.academy/integrator/admin/debug');
+    await page.goto('https://expresscourse.onai.academy/admin/debug');
     await page.waitForLoadState('networkidle');
     
     // 3. Switch to Users tab
@@ -130,15 +130,15 @@ test.describe('User Activity Tracking System', () => {
   
   test('should display user statistics correctly', async ({ page }) => {
     // 1. Login as admin
-    await page.goto('https://onai.academy/integrator/login');
+    await page.goto('https://expresscourse.onai.academy/login');
     await page.fill('input[type="email"]', process.env.ADMIN_EMAIL || 'amina@onaiacademy.kz');
     await page.fill('input[type="password"]', process.env.ADMIN_PASSWORD || '');
     await page.click('button[type="submit"]');
     
-    await page.waitForURL(/\/integrator\/admin/);
+    await page.waitForURL(/\/\/admin/);
     
     // 2. Go to Debug Panel > Users tab
-    await page.goto('https://onai.academy/integrator/admin/debug');
+    await page.goto('https://expresscourse.onai.academy/admin/debug');
     await page.waitForLoadState('networkidle');
     await page.click('button:has-text("Users")');
     
@@ -170,15 +170,15 @@ test.describe('User Activity Tracking System', () => {
 test.describe('User Activity Tracking - Tab Navigation', () => {
   test('should switch between Overview and Users tabs', async ({ page }) => {
     // 1. Login as admin
-    await page.goto('https://onai.academy/integrator/login');
+    await page.goto('https://expresscourse.onai.academy/login');
     await page.fill('input[type="email"]', process.env.ADMIN_EMAIL || 'amina@onaiacademy.kz');
     await page.fill('input[type="password"]', process.env.ADMIN_PASSWORD || '');
     await page.click('button[type="submit"]');
     
-    await page.waitForURL(/\/integrator\/admin/);
+    await page.waitForURL(/\/\/admin/);
     
     // 2. Go to Debug Panel
-    await page.goto('https://onai.academy/integrator/admin/debug');
+    await page.goto('https://expresscourse.onai.academy/admin/debug');
     await page.waitForLoadState('networkidle');
     
     // 3. Verify Overview tab is active by default

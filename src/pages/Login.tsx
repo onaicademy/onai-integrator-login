@@ -141,12 +141,12 @@ export default function Login() {
         // ✅ ОНБОРДИНГ ТОЛЬКО ДЛЯ СТУДЕНТОВ
         // 🔥 AUTO-REDIRECT: Sales менеджеры → Sales Manager Panel
         if (userData?.role === 'sales') {
-          console.log('👨‍💼 Sales менеджер, редирект на /integrator/sales-manager');
+          console.log('👨‍💼 Sales менеджер, редирект на expresscourse.onai.academy/sales-manager');
           toast({
             title: '✅ Добро пожаловать!',
             description: 'Панель управления продажами Tripwire',
           });
-          navigate('/integrator/sales-manager', { replace: true });
+          window.location.href = 'https://expresscourse.onai.academy/sales-manager';
           return;
         }
 

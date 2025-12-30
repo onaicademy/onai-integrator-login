@@ -32,14 +32,14 @@ MESSAGE='Привет!
 Команда OnAI Academy'
 
 # ⚠️ ВАЖНО: Вставь сюда свой JWT токен админа!
-# Получить: https://onai.academy/integrator/admin → открой DevTools → Application → Local Storage → tripwire_supabase_token
+# Получить: https://expresscourse.onai.academy/admin → открой DevTools → Application → Local Storage → tripwire_supabase_token
 ADMIN_TOKEN="ВСТАВЬ_СЮДА_ТОКЕН_АДМИНА"
 
 if [ "$ADMIN_TOKEN" = "ВСТАВЬ_СЮДА_ТОКЕН_АДМИНА" ]; then
   echo "❌ ОШИБКА: Не указан ADMIN_TOKEN!"
   echo ""
   echo "📝 КАК ПОЛУЧИТЬ ТОКЕН:"
-  echo "1. Зайди на https://onai.academy/integrator/admin"
+  echo "1. Зайди на https://expresscourse.onai.academy/admin"
   echo "2. Открой DevTools (F12)"
   echo "3. Application → Local Storage → tripwire_supabase_token"
   echo "4. Скопируй значение токена"

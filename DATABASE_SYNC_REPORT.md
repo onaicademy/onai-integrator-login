@@ -25,7 +25,7 @@ landingSupabase
 ### 2. ПРАВИЛЬНАЯ ТАБЛИЦА: `lead_tracking`
 
 **Где данные на самом деле:**
-- Админ-панель: `https://onai.academy/integrator/admin/leads` → 688 лидов
+- Админ-панель: `https://expresscourse.onai.academy/admin/leads` → 688 лидов
 - API: `/api/lead-tracking/leads`
 - Таблица: `lead_tracking` (в Landing DB)
 - **Production:** 688 лидов ✅

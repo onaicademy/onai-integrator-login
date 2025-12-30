@@ -1,14 +1,15 @@
 /**
  * 🔄 AmoCRM Leads Fetcher Service
- * 
+ *
  * Сервис для получения лидов из AmoCRM:
  * - Express Course (pipeline_id: 10350882)
  * - Flagship Course (pipeline_id: 10418746)
- * 
+ *
  * Лиды получаются через AmoCRM API и синхронизируются с Traffic DB.
  */
 
 import axios from 'axios';
+import { amoCRMRateLimiter } from './amocrm-rate-limiter.js';
 
 // Конфигурация AmoCRM
 const AMOCRM_DOMAIN = process.env.AMOCRM_DOMAIN || 'onaiagencykz';
@@ -124,13 +125,17 @@ export class AmoCRMLeadsFetcher {
         params.filter.created_at.to = options.date_to;
       }
 
-      const response = await axios.get<AmoCRMLeadResponse>(
-        `${AMOCRM_BASE_URL}/leads`,
-        {
-          headers: this.headers,
-          params,
-          timeout: 30000,
-        }
+      const response = await amoCRMRateLimiter.enqueue(
+        'fetch-leads-from-funnel',
+        () => axios.get<AmoCRMLeadResponse>(
+          `${AMOCRM_BASE_URL}/leads`,
+          {
+            headers: this.headers,
+            params,
+            timeout: 30000,
+          }
+        ),
+        'MEDIUM' // ⚠️ Средний приоритет для получения данных
       );
 
       console.log(`✅ [AmoCRM Leads Fetcher] Fetched ${response.data._embedded.leads.length} leads`);

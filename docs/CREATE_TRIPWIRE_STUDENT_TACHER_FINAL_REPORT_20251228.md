@@ -91,7 +91,7 @@
 
 ## 🌐 Ссылки для доступа:
 
-- **Tripwire Login:** https://api.onai.academy/tripwire
+- **Tripwire Login:** https://expresscourse.onai.academy
 - **Supabase Dashboard:** https://app.supabase.com/project/pjmvxecykysfrzppdcto
 
 ---

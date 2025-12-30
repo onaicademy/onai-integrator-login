@@ -82,7 +82,7 @@
 ### 3. **Landing DB Integration** ✅
 
 #### Admin Panel
-**URL**: https://onai.academy/integrator/admin/leads
+**URL**: https://expresscourse.onai.academy/admin/leads
 
 **Функционал**:
 - ✅ Просмотр лидов с лендинга
@@ -100,7 +100,7 @@
 
 ### 4. **Tripwire System** ✅
 
-**URL**: https://onai.academy/tripwire
+**URL**: https://expresscourse.onai.academy
 **DB**: Tripwire Supabase
 
 **Функционал**:
@@ -360,7 +360,7 @@ main_product_sales (
          ▼                        ▼
 ┌──────────────────┐    ┌──────────────────┐
 │ Landing Admin    │    │ Traffic Dashboard│
-│ /integrator/     │    │ /traffic/admin   │
+│ //     │    │ /traffic/admin   │
 │ admin/leads      │    │                  │
 └──────────────────┘    └──────────────────┘
 ```

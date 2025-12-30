@@ -470,7 +470,7 @@ class ReferralService {
   // ═══════════════════════════════════════════════════════════════
   
   private async sendWelcomeEmail(referrer: Referrer): Promise<void> {
-    const salesPageUrl = 'https://onai.academy/integrator/expresscourse';
+    const salesPageUrl = 'https://expresscourse.onai.academy/expresscourse';
     const utmLink = `${salesPageUrl}?utm_source=${referrer.utm_source}`;
     const dashboardUrl = process.env.DASHBOARD_URL || 'https://traffic.onai.academy/referral';
     const videoTutorialUrl = 'https://www.youtube.com/watch?v=TUTORIAL_ID'; // Заглушка для видео

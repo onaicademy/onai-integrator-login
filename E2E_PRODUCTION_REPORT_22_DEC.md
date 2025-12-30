@@ -41,7 +41,7 @@ curl https://onai.academy/api/traffic-dashboard/funnel
 ## ✅ ЧАСТЬ 2: SALES MANAGER AUTH FIX - ГОТОВО!
 
 ### Проблема (была):
-- Sales Manager редиректило на `/integrator/login`
+- Sales Manager редиректило на `/login`
 - `SalesGuard` искал таблицу `users` в Tripwire DB (которой нет)
 - Проверка роли не работала
 
@@ -60,7 +60,7 @@ curl https://onai.academy/api/traffic-dashboard/funnel
 
 ### Production Route:
 ```
-URL: https://onai.academy/integrator/sales-manager
+URL: https://expresscourse.onai.academy/sales-manager
 Guard: SalesGuard (проверяет Tripwire Supabase auth + user_metadata.role)
 Allowed roles: 'admin', 'sales'
 ```
@@ -75,11 +75,11 @@ Allowed roles: 'admin', 'sales'
 ### Требуется протестировать:
 
 #### Шаг 1: Login Sales Manager
-1. Открыть: https://onai.academy/integrator/login
+1. Открыть: https://expresscourse.onai.academy/login
 2. Email: `ayaulym@onaiacademy.kz` или `aselya@onaiacademy.kz`
 3. Password: (запросить у пользователя)
 4. ✅ Должно логиниться без редиректа
-5. ✅ Должно открыться: `/integrator/sales-manager`
+5. ✅ Должно открыться: `/sales-manager`
 
 #### Шаг 2: Create Student
 1. На панели Sales Manager найти кнопку "Создать студента"
@@ -152,7 +152,7 @@ POST https://onai.academy/api/tripwire-manager/create-student
 
 ### E2E Test Steps:
 - [ ] Login Sales Manager (ayaulym/aselya)
-- [ ] Access `/integrator/sales-manager` panel
+- [ ] Access `/sales-manager` panel
 - [ ] Create test student
 - [ ] Verify student created in DB
 - [ ] Verify email sent to student
@@ -175,7 +175,7 @@ POST https://onai.academy/api/tripwire-manager/create-student
 
 **Инструкции для пользователя:**
 ```
-1. Зайди на: https://onai.academy/integrator/login
+1. Зайди на: https://expresscourse.onai.academy/login
 2. Логин: ayaulym@onaiacademy.kz (или aselya@onaiacademy.kz)
 3. Пароль: <запроси у Saint>
 4. Создай тестового студента

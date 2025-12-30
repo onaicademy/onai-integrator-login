@@ -205,7 +205,7 @@ ROI: 212% (если затраты = $123)
 ```
 
 ### Админ-панель студентов:
-- Открыть https://onai.academy/integrator/admin
+- Открыть https://expresscourse.onai.academy/admin
 - Перейти в "Студенты"
 - Должно показывать **77 студентов** (было "В разработке")
 
@@ -305,7 +305,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
    - ✅ Конверсия 43.50%
    - ✅ Затраты > $0
 
-2. **Admin Panel** (https://onai.academy/integrator/admin)
+2. **Admin Panel** (https://expresscourse.onai.academy/admin)
    - ✅ "Студенты" показывает 77 (не "В разработке")
    - ✅ Lead Tracking работает
    - ✅ source='expresscourse' помечен как "Напрямую (без UTM)"

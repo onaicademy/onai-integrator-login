@@ -858,13 +858,13 @@ router.get('/track/:leadId', async (req, res) => {
             console.log('✅ Journey stage tracked: expresscourse_clicked');
         }
         // Redirect to ExpressCourse landing
-        const redirectUrl = `https://onai.academy/integrator/expresscourse?utm_source=${source}&utm_campaign=proftest&lead_id=${leadId}`;
+        const redirectUrl = `https://expresscourse.onai.academy/expresscourse?utm_source=${source}&utm_campaign=proftest&lead_id=${leadId}`;
         return res.redirect(302, redirectUrl);
     }
     catch (error) {
         console.error('❌ Error tracking click:', error);
         // Redirect anyway, don't show error to user
-        return res.redirect(302, 'https://onai.academy/integrator/expresscourse');
+        return res.redirect(302, 'https://expresscourse.onai.academy/expresscourse');
     }
 });
 // ============================================

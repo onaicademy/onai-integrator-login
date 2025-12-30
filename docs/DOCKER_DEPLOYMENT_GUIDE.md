@@ -36,7 +36,7 @@ Internet
 Nginx (на хосте) :80, :443
     ├── onai.academy → main-frontend:80
     ├── traffic.onai.academy → traffic-frontend:80
-    ├── integrator.onai.academy → tripwire-frontend:80
+    ├── expresscourse.onai.academy → tripwire-frontend:80
     └── api.onai.academy → main-backend:3000
                          → traffic-backend:3001
                          → tripwire-backend:3002

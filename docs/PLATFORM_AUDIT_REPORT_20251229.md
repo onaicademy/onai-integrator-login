@@ -308,7 +308,7 @@ $ docker compose down && docker compose up -d --build
 ## 📋 CHECKLIST ДЛЯ ПРОВЕРКИ ПОСЛЕ ДЕПЛОЯ
 
 ### Sales Manager Dashboard
-- [ ] Зайти на https://onai.academy/integrator/sales-manager
+- [ ] Зайти на https://expresscourse.onai.academy/sales-manager
 - [ ] Проверить что загружаются статистика (без ошибок "missing user ID")
 - [ ] Проверить что загружается список пользователей
 - [ ] Проверить что загружается Activity Log

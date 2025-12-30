@@ -28,7 +28,7 @@ const EXCLUDED_EMAILS = [
 ];
 
 // 📱 SMS текст (БЕЗ ЭМОДЗИ! Mobizon их не поддерживает)
-const SMS_MESSAGE = 'Efir perenesen na subbotu 20 dekabrya 20:00! Uspey proyti moduli: onai.academy/integrator';
+const SMS_MESSAGE = 'Efir perenesen na subbotu 20 dekabrya 20:00! Uspey proyti moduli: expresscourse.onai.academy';
 
 const sendSMSStreamPostponed = async () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

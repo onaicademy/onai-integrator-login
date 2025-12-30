@@ -10,7 +10,7 @@ import { getPixelConfig } from '@/config/pixels';
 import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
 
 export default function TripwireLanding() {
-  const { campaignSlug = 'kenesary' } = useParams<{ campaignSlug?: string }>(); // Default to kenesary for /integrator/expresscourse
+  const { campaignSlug = 'kenesary' } = useParams<{ campaignSlug?: string }>(); // Default to kenesary for /expresscourse
   const pixelConfig = getPixelConfig(campaignSlug);
   
   const [countdown, setCountdown] = useState('--:--:--');

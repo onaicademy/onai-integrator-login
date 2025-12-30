@@ -7,6 +7,8 @@
  * 🚀 ОПТИМИЗАЦИЯ: In-memory кэш для GET запросов
  */
 
+import { getApiBaseUrl } from '@/lib/runtime-config';
+
 interface ApiRequestOptions extends RequestInit {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
@@ -118,7 +120,7 @@ export async function apiRequest<T = any>(
     ? 'http://localhost:3000'      // localhost для development
     : 'https://api.onai.academy';  // production для prod
   
-  const baseUrl = import.meta.env.VITE_API_URL || defaultApiUrl;
+  const baseUrl = getApiBaseUrl() || defaultApiUrl;
   
   // 🔌 Логирование для отладки (ТОЛЬКО в development!)
   if (!window.__apiClientInitialized && isDevelopment) {
@@ -208,6 +210,7 @@ export async function apiRequest<T = any>(
         // Clear all auth data
         localStorage.removeItem('supabase_token');
         localStorage.removeItem('tripwire_supabase_token'); // ✅ FIX: Remove Tripwire token
+        localStorage.removeItem('tripwire_supabase_session');
         localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token'); // Main Supabase
         localStorage.removeItem('sb-pjmvxecykysfrzppdcto-auth-token'); // ✅ FIX: Tripwire Supabase
         localStorage.removeItem('sb-tripwire-auth-token'); // ✅ FIX: Unified Tripwire key
@@ -218,9 +221,9 @@ export async function apiRequest<T = any>(
           const currentPath = window.location.pathname;
           const returnUrl = encodeURIComponent(currentPath);
           
-          // Check if it's an Integrator route (or legacy Tripwire route)
-          if (currentPath.startsWith('/integrator') || currentPath.startsWith('/tripwire')) {
-            window.location.href = `/integrator/login?returnUrl=${returnUrl}`;
+          // Tripwire domain → Tripwire login, иначе main login
+          if (window.location.hostname === 'expresscourse.onai.academy') {
+            window.location.href = `/login?returnUrl=${returnUrl}`;
           } else {
             window.location.href = '/login';
           }
@@ -330,4 +333,3 @@ export const apiClient = api;
  * // DELETE запрос
  * await api.delete('/api/users/123');
  */
-

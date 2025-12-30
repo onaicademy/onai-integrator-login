@@ -40,7 +40,7 @@ The project consists of multiple interconnected systems:
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│              Integrator System (tripwire.onai.academy)        │
+│              Integrator System (expresscourse.onai.academy)        │
 │  - Express Course Sales Funnel                               │
 │  - Student Management & Progress                             │
 │  - Certificate System                                        │

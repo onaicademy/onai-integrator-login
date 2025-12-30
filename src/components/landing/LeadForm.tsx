@@ -64,7 +64,7 @@ export function LeadForm({ isOpen, onClose, source = 'expresscourse' }: LeadForm
 
       // Редирект убран - форма теперь встроена в popup на лендинге
       // setTimeout(() => {
-      //   navigate('/integrator/expresscourse');
+      //   navigate('/expresscourse');
       // }, 1500);
 
     } catch (error: any) {

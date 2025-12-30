@@ -11,7 +11,7 @@ interface TripwireGuardProps {
  * TripwireGuard - Authentication Guard for Tripwire Routes
  * 
  * Проверяет Tripwire Supabase auth (отдельная база данных)
- * Если не авторизован, редиректит на /tripwire/login
+ * Если не авторизован, редиректит на /login
  */
 export function TripwireGuard({ children }: TripwireGuardProps) {
   const location = useLocation();
@@ -51,6 +51,7 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
       if (expiresAt < now) {
         console.error('❌ TripwireGuard: Токен истек');
         localStorage.removeItem('tripwire_supabase_token');
+        localStorage.removeItem('tripwire_supabase_session');
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -87,11 +88,11 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
   // STEP 2: Not authorized - redirect to login
   if (!isAuthorized) {
     const returnUrl = encodeURIComponent(location.pathname + location.search);
-    console.log('❌ TripwireGuard: Редирект на /integrator/login');
+    console.log('❌ TripwireGuard: Редирект на /login');
     
     return (
       <Navigate 
-        to={`/integrator/login?returnUrl=${returnUrl}`} 
+        to={`/login?returnUrl=${returnUrl}`} 
         replace 
       />
     );
@@ -101,4 +102,3 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
   console.log('✅ TripwireGuard: Доступ разрешён для', userEmail);
   return <>{children}</>;
 }
-

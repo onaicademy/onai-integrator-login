@@ -28,7 +28,7 @@ interface GeneratedCode {
 // ═══════════════════════════════════════════════════════════════
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
-const SALES_PAGE_URL = 'https://onai.academy/integrator/expresscourse';
+const SALES_PAGE_URL = 'https://expresscourse.onai.academy/expresscourse';
 
 // Система выплат (фиксированные суммы в долларах)
 const COMMISSION_TIERS = [

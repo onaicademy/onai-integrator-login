@@ -6,6 +6,7 @@ import { scheduleProftestNotifications, sendProftestEmailWithTracking } from '..
 import { PIXEL_CONFIGS, sendConversionApiEvent } from './facebook-conversion.js';
 import { sendProftestResultSMS } from '../services/mobizon.js';
 import { sendLeadNotification } from '../services/telegramService.js';
+import { amoCRMRateLimiter } from '../services/amocrm-rate-limiter.js';
 
 const router = express.Router();
 
@@ -444,14 +445,18 @@ router.post('/submit', async (req: Request, res: Response) => {
         // 2a. Create or update in AmoCRM with deduplication and stage update (with retry)
         // 🔥 ENHANCED: Pass UTM params and campaign slug to AmoCRM
         const amocrmResult = await retryWithBackoff(
-          () => createOrUpdateLead({
-            name,
-            email: email || undefined,
-            phone,
-            utmParams: utmParams || metadata?.utmParams || {},
-            campaignSlug,
-            paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
-          }),
+          () => amoCRMRateLimiter.enqueue(
+            'create-lead-from-landing-expresscourse',
+            () => createOrUpdateLead({
+              name,
+              email: email || undefined,
+              phone,
+              utmParams: utmParams || metadata?.utmParams || {},
+              campaignSlug,
+              paymentMethod: paymentMethod as 'kaspi' | 'card' | 'manager' | undefined,
+            }),
+            'CRITICAL' // 🔴 Максимальный приоритет для лидов с лендинга
+          ),
           3, // 3 retries
           2000 // 2s initial delay
         );
@@ -882,14 +887,18 @@ router.post('/proftest', async (req: Request, res: Response) => {
         
         // 3a. Create or update in AmoCRM with deduplication (with retry)
         const amocrmResult = await retryWithBackoff(
-          () => createOrUpdateLead({
-            name,
-            email, // Email обязательный
-            phone,
-            utmParams,
-            proftestAnswers: proftestAnswers || answers,
-            campaignSlug,
-          }),
+          () => amoCRMRateLimiter.enqueue(
+            'create-lead-from-landing-proftest',
+            () => createOrUpdateLead({
+              name,
+              email, // Email обязательный
+              phone,
+              utmParams,
+              proftestAnswers: proftestAnswers || answers,
+              campaignSlug,
+            }),
+            'CRITICAL' // 🔴 Максимальный приоритет для лидов с лендинга
+          ),
           3, // 3 retries
           2000 // 2s initial delay
         );
@@ -1047,13 +1056,13 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
     }
 
     // Redirect to ExpressCourse landing
-    const redirectUrl = `https://onai.academy/integrator/expresscourse?utm_source=${source}&utm_campaign=proftest&lead_id=${leadId}`;
+    const redirectUrl = `https://expresscourse.onai.academy/expresscourse?utm_source=${source}&utm_campaign=proftest&lead_id=${leadId}`;
     return res.redirect(302, redirectUrl);
 
   } catch (error: any) {
     console.error('❌ Error tracking click:', error);
     // Redirect anyway, don't show error to user
-    return res.redirect(302, 'https://onai.academy/integrator/expresscourse');
+    return res.redirect(302, 'https://expresscourse.onai.academy/expresscourse');
   }
 });
 
@@ -1438,15 +1447,19 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     });
     
     const amocrmResult = await retryWithBackoff(
-      () => createOrUpdateLead({
-        name: lead.name,
-        email: lead.email || undefined,
-        phone: lead.phone,
-        utmParams: aggregatedUTM,
-        proftestAnswers,
-        paymentMethod,
-        campaignSlug,
-      }),
+      () => amoCRMRateLimiter.enqueue(
+        'manual-sync-lead-to-amocrm',
+        () => createOrUpdateLead({
+          name: lead.name,
+          email: lead.email || undefined,
+          phone: lead.phone,
+          utmParams: aggregatedUTM,
+          proftestAnswers,
+          paymentMethod,
+          campaignSlug,
+        }),
+        'HIGH' // 🟠 Высокий приоритет для ручной синхронизации
+      ),
       3, // 3 retries
       2000 // 2s initial delay
     );

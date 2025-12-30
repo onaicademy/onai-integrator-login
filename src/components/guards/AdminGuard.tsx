@@ -31,10 +31,9 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   // Если не админ/saint - редирект на главную
   if (userRole !== 'admin' && userRole !== 'saint') {
-    return <Navigate to="/integrator" replace />;
+    return <Navigate to="/profile" replace />;
   }
 
   // Все проверки прошли - показываем контент
   return <>{children}</>;
 }
-

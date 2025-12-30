@@ -1,6 +1,6 @@
 /**
  * Повторная отправка email трём студентам с ПРАВИЛЬНОЙ ссылкой
- * /integrator/login вместо /tripwire/login
+ * /login вместо /tripwire/login
  */
 
 import { sendWelcomeEmail } from '../src/services/emailService';

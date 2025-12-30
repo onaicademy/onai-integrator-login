@@ -78,6 +78,7 @@ import diagnosticsRouter from './routes/diagnostics';
 import openaiRouter from './routes/openai';
 import telegramRouter from './routes/telegram';
 import telegramLeadsRouter from './routes/telegram-leads'; // 🤖 Telegram Leads Bot (код активации 2134)
+import amoCRMStatsRouter from './routes/amocrm-stats.js'; // 📊 AmoCRM Rate Limiter Stats
 import supabaseRouter from './routes/supabase';
 import studentsRouter from './routes/students';
 import tokensRouter from './routes/tokens';
@@ -124,6 +125,7 @@ import unifiedTrackingRouter from './routes/unified-tracking'; // 🎯 Unified T
 import facebookConversionRouter from './routes/facebook-conversion'; // ✅ Facebook Conversion API
 import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
 import apiHealthRouter from './routes/api-health'; // 🏥 API Health Check & Token Management
+import configRouter from './routes/config'; // ⚙️ Runtime public config
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
 import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
@@ -252,7 +254,7 @@ app.use(cors({
     if (process.env.NODE_ENV === 'production') {
       const allowedProd = [
         'https://onai.academy',
-        'https://tripwire.onai.academy',
+        'https://expresscourse.onai.academy',
         'https://traffic.onai.academy',
         'https://referral.onai.academy', // 🎯 Referral System
       ];
@@ -286,7 +288,7 @@ app.use(cors({
     const allowedOrigins = [
       'https://onai.academy',
       'https://www.onai.academy',
-      'https://tripwire.onai.academy',
+      'https://expresscourse.onai.academy',
       'https://traffic.onai.academy',
       'https://referral.onai.academy', // 🎯 Referral System
       'https://onai-integrator-login.vercel.app',
@@ -388,6 +390,8 @@ console.log('🔥 Registering special routes BEFORE express.json()');
 // ✅ Health check route (первым, без body parsing)
 import healthRouter from './routes/health.js';
 app.use('/api/health', healthRouter); // 🏥 Health checks
+app.use('/api', configRouter); // ⚙️ Runtime config (public)
+app.use('/api/amocrm', amoCRMStatsRouter); // 📊 AmoCRM Rate Limiter Stats
 
 // ✅ File upload routes (Multer)
 app.use('/api/materials', materialsRouter);

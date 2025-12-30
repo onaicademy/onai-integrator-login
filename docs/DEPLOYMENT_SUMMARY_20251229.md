@@ -300,7 +300,7 @@ curl -I https://api.onai.academy/api/tripwire/health
 ```
 
 ### 3. Проверить Sales Manager:
-- Зайти на https://onai.academy/integrator/sales-manager
+- Зайти на https://expresscourse.onai.academy/sales-manager
 - Убедиться что статистика загружается
 - Проверить что нет ошибок "missing user ID"
 

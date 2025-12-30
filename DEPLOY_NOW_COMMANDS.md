@@ -196,7 +196,7 @@ curl -s https://api.onai.academy/api/traffic-dashboard/funnel | jq '.stages[0].m
    - Затраты > $0 (после загрузки данных)
 
 2. **Admin Panel:**  
-   https://onai.academy/integrator/admin
+   https://expresscourse.onai.academy/admin
    - "Студенты" → должно показать 77 студентов
 
 3. **Traffic Settings:**  

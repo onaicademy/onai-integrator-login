@@ -126,13 +126,13 @@ Response: {"status":"ok"} ✅
 ### 3. Frontend ✅
 ```
 https://onai.academy/
-https://onai.academy/integrator/login
+https://expresscourse.onai.academy/login
 https://onai.academy/traffic/cabinet/kenesary
 ```
 
 ### 4. Admin Panel ✅
 ```
-https://onai.academy/integrator/admin
+https://expresscourse.onai.academy/admin
 - Lead Tracking
 - Students (77 студентов)
 ```

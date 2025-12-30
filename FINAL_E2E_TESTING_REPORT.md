@@ -89,7 +89,7 @@ GET https://onai.academy/api/traffic-settings/{team}
 ## 2️⃣ SALES MANAGER PANEL - ✅ ДОСТУП ИСПРАВЛЕН
 
 ### Auth Fix:
-- ❌ **Было:** Редиректило на `/integrator/login` (таблица `users` не существовала)
+- ❌ **Было:** Редиректило на `/login` (таблица `users` не существовала)
 - ✅ **Стало:** Роль читается из `user_metadata` (JWT от Supabase)
 
 ### Sales Manager Accounts:
@@ -149,7 +149,7 @@ Authorization: Bearer {JWT_TOKEN}
 
 ### Frontend URL:
 ```
-https://onai.academy/integrator/sales-manager
+https://expresscourse.onai.academy/sales-manager
 ```
 
 **Status:** ✅ **ДОСТУП РАБОТАЕТ!** (требуется user тестирование)
@@ -160,7 +160,7 @@ https://onai.academy/integrator/sales-manager
 
 ### Student Login:
 ```bash
-URL: https://onai.academy/tripwire/login
+URL: https://expresscourse.onai.academy/login
 ```
 
 ### API Endpoints:
@@ -189,10 +189,10 @@ Authorization: Bearer {JWT_TOKEN}
 ```
 
 ### Frontend URLs:
-- Login: https://onai.academy/tripwire/login
-- Dashboard: https://onai.academy/tripwire/dashboard
-- Lessons: https://onai.academy/tripwire/lessons/{id}
-- Profile: https://onai.academy/tripwire/profile
+- Login: https://expresscourse.onai.academy/login
+- Dashboard: https://expresscourse.onai.academy/dashboard
+- Lessons: https://expresscourse.onai.academy/lessons/{id}
+- Profile: https://expresscourse.onai.academy/profile
 
 **Status:** ⏳ **REQUIRES USER TESTING**
 
@@ -287,12 +287,12 @@ https://onai.academy/traffic
 ### 2. Sales Manager Test:
 ```bash
 # Step 1: Login
-URL: https://onai.academy/integrator/login
+URL: https://expresscourse.onai.academy/login
 Email: ayaulym@onaiacademy.kz (or aselya@onaiacademy.kz)
 Password: <запросить у Saint>
 
 # Step 2: Access Panel
-✅ Должно открыться: /integrator/sales-manager
+✅ Должно открыться: /sales-manager
 ✅ Не должно редиректить на login
 
 # Step 3: Create Student
@@ -311,7 +311,7 @@ Password: <запросить у Saint>
 ### 3. Tripwire Student Test:
 ```bash
 # Step 1: Login as Student
-URL: https://onai.academy/tripwire/login
+URL: https://expresscourse.onai.academy/login
 Email: <from step 2.3>
 Password: TestPass123!
 

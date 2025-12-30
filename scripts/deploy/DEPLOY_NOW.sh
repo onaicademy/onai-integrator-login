@@ -60,7 +60,7 @@ echo ""
 echo "✅ ДЕПЛОЙ УСПЕШЕН!"
 echo "=================================="
 echo ""
-echo "Проверь: https://onai.academy/integrator/admin/students"
+echo "Проверь: https://expresscourse.onai.academy/admin/students"
 echo ""
 
 

@@ -51,7 +51,7 @@ async function checkStudent() {
   console.log('💡 РЕШЕНИЕ:');
   if (!target) {
     console.log('Студент не создан в системе.');
-    console.log('Нужно создать через панель: https://onai.academy/integrator/sales-manager');
+    console.log('Нужно создать через панель: https://expresscourse.onai.academy/sales-manager');
     console.log('Или запросить у пользователя правильный email адрес.');
   }
   console.log('═'.repeat(60));

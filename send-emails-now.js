@@ -42,7 +42,7 @@ if (!ADMIN_TOKEN) {
   console.error('  node send-emails-now.js "ваш_токен"');
   console.error('');
   console.error('🔑 Получить токен:');
-  console.error('  1. Зайди на https://onai.academy/integrator/admin');
+  console.error('  1. Зайди на https://expresscourse.onai.academy/admin');
   console.error('  2. F12 → Application → Local Storage → tripwire_supabase_token');
   console.error('  3. Скопируй значение');
   process.exit(1);

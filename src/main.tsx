@@ -13,15 +13,10 @@ import "./index.css";
 
 // 🚀 Initialize Unified Supabase Manager (BEFORE App)
 import { initializeSupabase } from './lib/supabase-manager';
+import { initRuntimeConfig } from './lib/runtime-config';
 
 // Initialize production error tracking
 import { initErrorTracking } from './lib/error-tracker';
-initErrorTracking();
-
-// 🔥 Initialize Supabase clients ONCE
-console.log('🚀 [Main] Initializing Supabase Manager...');
-initializeSupabase();
-console.log('✅ [Main] Supabase Manager initialized');
 
 // 🛡️ ERROR RECOVERY: Import utilities
 import { retryChunkLoad } from "@/utils/error-recovery";
@@ -219,4 +214,18 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-createRoot(rootElement).render(<App />);
+async function bootstrap() {
+  await initRuntimeConfig();
+  initErrorTracking();
+
+  console.log('🚀 [Main] Initializing Supabase Manager...');
+  await initializeSupabase();
+  console.log('✅ [Main] Supabase Manager initialized');
+
+  createRoot(rootElement).render(<App />);
+}
+
+bootstrap().catch((error) => {
+  console.error('❌ [Main] Bootstrap failed:', error);
+  createRoot(rootElement).render(<App />);
+});

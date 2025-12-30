@@ -179,7 +179,7 @@ const EMAIL_HTML = `<!DOCTYPE html>
       <p>При возникновении вопросов обращайтесь в службу поддержки - мы всегда на связи.</p>
       
       <center>
-        <a href="https://onai.academy/integrator" class="button">Продолжить обучение</a>
+        <a href="https://expresscourse.onai.academy" class="button">Продолжить обучение</a>
       </center>
       
       <p style="margin-top: 30px;">Успешного обучения!</p>

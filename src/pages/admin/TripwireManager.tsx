@@ -206,12 +206,12 @@ export default function TripwireManager() {
                     console.log('✅ [LOGOUT] localStorage cleared');
                     
                     // 3. Redirect to login
-                    console.log('🔄 [LOGOUT] Redirecting to /tripwire/login');
-                    window.location.href = '/tripwire/login';
+                    console.log('🔄 [LOGOUT] Redirecting to /login');
+                    window.location.href = '/login';
                   } catch (err) {
                     console.error('❌ [LOGOUT] Unexpected error:', err);
                     // Force redirect anyway
-                    window.location.href = '/tripwire/login';
+                    window.location.href = '/login';
                   }
                 }
               }}
@@ -306,4 +306,3 @@ export default function TripwireManager() {
     </div>
   );
 }
-

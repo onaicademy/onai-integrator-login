@@ -74,10 +74,10 @@ export function SalesGuard({ children }: SalesGuardProps) {
     );
   }
 
-  // ШАГ 2: Если не авторизован - редирект на Integrator Login
+  // ШАГ 2: Если не авторизован - редирект на Tripwire Login
   if (!isAuthorized || !userRole) {
-    console.log('❌ SalesGuard: Редирект на /integrator/login');
-    return <Navigate to="/integrator/login" replace />;
+    console.log('❌ SalesGuard: Редирект на /login');
+    return <Navigate to="/login" replace />;
   }
 
   // ШАГ 3: Проверяем роль
@@ -89,4 +89,3 @@ export function SalesGuard({ children }: SalesGuardProps) {
   // ШАГ 4: Доступ разрешён
   return <>{children}</>;
 }
-

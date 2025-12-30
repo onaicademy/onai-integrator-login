@@ -74,6 +74,11 @@ export function useTripwireAuth() {
 
       // Save JWT token with TRIPWIRE prefix to avoid conflicts with Main Platform
       localStorage.setItem('tripwire_supabase_token', authData.session.access_token);
+      localStorage.setItem('tripwire_supabase_session', JSON.stringify({
+        access_token: authData.session.access_token,
+        refresh_token: authData.session.refresh_token,
+        expires_at: authData.session.expires_at,
+      }));
 
       // Handle "Remember Me"
       if (data.remember) {
@@ -95,14 +100,15 @@ export function useTripwireAuth() {
       if (userRole === 'sales') {
         console.log('✅ Sales manager logged in, redirecting to Sales Manager Dashboard...');
         setTimeout(() => {
-          navigate('/integrator/sales-manager', { replace: true });
+          navigate('/sales-manager', { replace: true });
         }, 500);
         return;
       }
 
-      // Students and others → Get returnUrl from query params (or default to /integrator)
-      const returnUrl = searchParams.get('returnUrl') || '/integrator';
-      const decodedReturnUrl = decodeURIComponent(returnUrl);
+      // Students and others → Get returnUrl from query params (or default to /)
+      const returnUrl = searchParams.get('returnUrl') || '/';
+      const decodedReturnUrl = decodeURIComponent(returnUrl)
+        .replace(/^\/(integrator|tripwire)/, '') || '/';
       
       console.log('🔄 Redirecting to:', decodedReturnUrl);
 
@@ -144,4 +150,3 @@ export function useTripwireAuth() {
     clearError,
   };
 }
-

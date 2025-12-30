@@ -100,7 +100,8 @@ export default function ClearCache() {
       setCountdown(1);
       await sleep(1000);
 
-      window.location.href = '/integrator/modules?nocache=' + Date.now();
+      const targetPath = window.location.hostname === 'expresscourse.onai.academy' ? '/' : '/courses';
+      window.location.href = `${targetPath}?nocache=${Date.now()}`;
 
     } catch (error: any) {
       addLog('❌ Ошибка: ' + error.message, 'error');
@@ -112,7 +113,8 @@ export default function ClearCache() {
     setLogs([]);
     addLog('⚡ Выполняю жёсткую перезагрузку...', 'info');
     setTimeout(() => {
-      window.location.href = '/integrator/modules?v=' + Date.now();
+      const targetPath = window.location.hostname === 'expresscourse.onai.academy' ? '/' : '/courses';
+      window.location.href = `${targetPath}?v=${Date.now()}`;
       location.reload();
     }, 500);
   };
@@ -268,7 +270,6 @@ export default function ClearCache() {
     </div>
   );
 }
-
 
 
 

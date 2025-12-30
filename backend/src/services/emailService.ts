@@ -318,7 +318,7 @@ export async function sendEmailChangeNotification(params: EmailChangeNotificatio
             </div>
 
             <div style="text-align: center; margin-top: 40px;">
-              <a href="https://onai.academy/tripwire/profile" class="btn">ПЕРЕЙТИ В ПРОФИЛЬ</a>
+              <a href="https://expresscourse.onai.academy/profile" class="btn">ПЕРЕЙТИ В ПРОФИЛЬ</a>
             </div>
           </div>
 
@@ -427,7 +427,7 @@ export async function sendPasswordChangeNotification(params: PasswordChangeNotif
             </div>
 
             <div style="text-align: center; margin-top: 40px;">
-              <a href="https://onai.academy/tripwire/profile" class="btn">ПЕРЕЙТИ В ПРОФИЛЬ</a>
+              <a href="https://expresscourse.onai.academy/profile" class="btn">ПЕРЕЙТИ В ПРОФИЛЬ</a>
             </div>
           </div>
 

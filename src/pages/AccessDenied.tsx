@@ -5,6 +5,9 @@ import { ShieldAlert } from 'lucide-react';
 
 export default function AccessDenied() {
   const navigate = useNavigate();
+  const isTripwireDomain = window.location.hostname === 'expresscourse.onai.academy';
+  const profilePath = isTripwireDomain ? '/' : '/profile';
+  const loginPath = '/login';
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
@@ -23,11 +26,11 @@ export default function AccessDenied() {
             Эта страница доступна только для администраторов.
           </p>
           <div className="flex flex-col gap-2 mt-6">
-            <Button onClick={() => navigate('/integrator')} className="w-full">
+            <Button onClick={() => navigate(profilePath)} className="w-full">
               Вернуться в профиль
             </Button>
             <Button 
-              onClick={() => navigate('/integrator/login')} 
+              onClick={() => navigate(loginPath)} 
               variant="outline" 
               className="w-full"
             >

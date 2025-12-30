@@ -48,11 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 🔇 Отключаем логи на публичных страницах (лендинг, логин, сертификаты)
   const isPublicPage = typeof window !== 'undefined' && (
     window.location.pathname === '/expresscourse' ||
-    window.location.pathname === '/integrator/expresscourse' ||
-    window.location.pathname === '/integrator/login' ||
-    window.location.pathname === '/tripwire/login' || // Legacy support
-    window.location.pathname.startsWith('/integrator/certificate/') ||
-    window.location.pathname.startsWith('/tripwire/certificate/') // Legacy support
+    window.location.pathname.startsWith('/expresscourse/') ||
+    window.location.pathname === '/login' ||
+    window.location.pathname.startsWith('/certificate/')
   );
   
   // Утилита для логирования (только если не публичная страница)

@@ -1,16 +1,12 @@
 /**
  * 🚀 LANDING SUPABASE CLIENT (UNIFIED)
  * 
- * ⚠️ This file now exports from Unified Supabase Manager
- * ⚠️ No longer creates separate client
- * ⚠️ No longer sets up separate auth listener
- * 
- * All clients are managed by supabase-manager.ts
+ * ⚠️ Uses PostgREST client to avoid GoTrueClient warnings
+ * ⚠️ No auth/session handling on the frontend
  */
 
-import { getSupabaseClient } from './supabase-manager';
 import { devLog } from './env-utils';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import PostgrestClient from '@supabase/postgrest-js';
 
 devLog('✅ [supabase-landing.ts] Exporting unified landing client getter');
 
@@ -21,25 +17,41 @@ devLog('✅ [supabase-landing.ts] Exporting unified landing client getter');
  * ✅ No duplicate auth listeners
  * ✅ Backward compatible with existing code
  */
-let _landingClient: any = null;
+let _landingClient: PostgrestClient | null = null;
 
-export const landingSupabase = new Proxy({} as any, {
-  get(target, prop) {
-    if (!_landingClient) {
-      _landingClient = getSupabaseClient('landing');
-    }
-    return _landingClient[prop];
+const initLandingClient = (): PostgrestClient | null => {
+  if (_landingClient) return _landingClient;
+
+  const landingUrl = import.meta.env.VITE_LANDING_SUPABASE_URL;
+  const landingKey = import.meta.env.VITE_LANDING_SUPABASE_ANON_KEY;
+
+  if (!landingUrl || !landingKey) {
+    console.warn('[supabase-landing.ts] Missing landing Supabase credentials');
+    return null;
+  }
+
+  _landingClient = new PostgrestClient(`${landingUrl}/rest/v1`, {
+    headers: {
+      apikey: landingKey,
+      Authorization: `Bearer ${landingKey}`,
+    },
+  });
+
+  return _landingClient;
+};
+
+export const landingSupabase = new Proxy({} as PostgrestClient, {
+  get(_target, prop) {
+    const client = initLandingClient();
+    if (!client) return undefined;
+    const value = (client as any)[prop];
+    return typeof value === 'function' ? value.bind(client) : value;
   }
 });
 
 /**
  * Get Landing Supabase (for backward compatibility)
  */
-export function getLandingSupabase(): SupabaseClient | null {
-  try {
-    return getSupabaseClient('landing');
-  } catch (e) {
-    console.warn('[supabase-landing.ts] Could not get landing client');
-    return null;
-  }
+export function getLandingSupabase(): PostgrestClient | null {
+  return initLandingClient();
 }

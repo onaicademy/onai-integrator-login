@@ -72,11 +72,10 @@ export function StudentGuard({ children }: StudentGuardProps) {
 
   // Если не авторизован - редирект на Integrator Login
   if (!isAuthorized || !userRole) {
-    console.log('❌ StudentGuard: Редирект на /integrator/login');
-    return <Navigate to="/integrator/login" replace />;
+    console.log('❌ StudentGuard: Редирект на /login');
+    return <Navigate to="/login" replace />;
   }
 
   // Доступ разрешён
   return <>{children}</>;
 }
-

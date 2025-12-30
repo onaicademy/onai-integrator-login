@@ -25,8 +25,8 @@ const EXCLUDED_EMAILS = [
 ];
 
 // 📱 SMS текст (ИЗМЕНИ ЭТО!)
-const SMS_MESSAGE = 'Эфир 20 декабря 20:00! Пройди модули onai.academy/integrator';
-const SHORT_LINK = 'onai.academy/integrator'; // короткая ссылка
+const SMS_MESSAGE = 'Эфир 20 декабря 20:00! Пройди модули expresscourse.onai.academy';
+const SHORT_LINK = 'expresscourse.onai.academy'; // короткая ссылка
 
 const sendSMSBroadcast = async () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

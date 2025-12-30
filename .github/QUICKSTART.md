@@ -105,7 +105,7 @@ GitHub Push → GitHub Actions → Build → SSH → DigitalOcean Server
 |-------|-----------|
 | `traffic.onai.academy` | `/var/www/traffic.onai.academy/` |
 | `onai.academy` | `/var/www/onai.academy/` |
-| `tripwire.onai.academy` | `/var/www/tripwire.onai.academy/` |
+| `expresscourse.onai.academy` | `/var/www/expresscourse.onai.academy/` |
 | `api.onai.academy` (backend) | `/var/www/onai-integrator-login-main/backend/` |
 
 ---
