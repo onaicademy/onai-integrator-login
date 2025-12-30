@@ -178,7 +178,7 @@ export function generateCacheResetEmail(studentName: string): string {
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="background: linear-gradient(135deg, #00FF88 0%, #00CC6A 100%); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);">
-                    <a href="https://onai.academy/clear-cache.html" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #000000; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
+                    <a href="https://expresscourse.onai.academy/clear-cache.html" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #000000; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
                       🔄 ОЧИСТИТЬ КЭШ (ШАГ 1)
                     </a>
                   </td>

@@ -124,6 +124,7 @@ import unifiedTrackingRouter from './routes/unified-tracking'; // 🎯 Unified T
 import facebookConversionRouter from './routes/facebook-conversion'; // ✅ Facebook Conversion API
 import aiAnalyticsRouter from './routes/ai-analytics'; // ✅ AI Analytics Reports
 import apiHealthRouter from './routes/api-health'; // 🏥 API Health Check & Token Management
+import configRouter from './routes/config'; // ⚙️ Runtime public config
 import telegramConnectionRouter from './routes/telegram-connection'; // ✅ Telegram Connection Management
 import webhooksRouter from './routes/webhooks'; // ✅ BunnyCDN & External Webhooks
 import adminResetPasswordRouter from './routes/admin-reset-password'; // 🔑 TEMPORARY: Admin Password Reset
@@ -388,6 +389,7 @@ console.log('🔥 Registering special routes BEFORE express.json()');
 // ✅ Health check route (первым, без body parsing)
 import healthRouter from './routes/health.js';
 app.use('/api/health', healthRouter); // 🏥 Health checks
+app.use('/api', configRouter); // ⚙️ Runtime config (public)
 
 // ✅ File upload routes (Multer)
 app.use('/api/materials', materialsRouter);

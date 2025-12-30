@@ -4,6 +4,7 @@ import { X, Mail, User, Loader2, CheckCircle, Key, RefreshCw, AlertCircle, Check
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { api } from '@/utils/apiClient';
 import { tripwireSupabase } from '@/lib/supabase-tripwire';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // 📊 Статусы создания пользователя
 interface CreationStatus {
@@ -103,7 +104,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
         }
 
         // 🚀 SSE endpoint для real-time статусов
-        const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+        const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
         
         if (retryCount > 0) {
           setCreationStatuses(prev => [...prev, {

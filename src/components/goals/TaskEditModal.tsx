@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // 🚩 Priority Levels with Beautiful Flag Icons
 export const TASK_PRIORITIES = {
@@ -106,7 +107,7 @@ interface TaskEditModalProps {
   onDelete: (taskId: string) => Promise<void>;
 }
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BACKEND_URL = getApiBaseUrl() || 'http://localhost:3000';
 const TELEGRAM_BOT_USERNAME = 'onaimentor_bot';
 
 export function TaskEditModal({ isOpen, onClose, task, onUpdate, onDelete }: TaskEditModalProps) {

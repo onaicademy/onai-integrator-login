@@ -52,9 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.location.pathname === '/login' ||
       window.location.pathname.startsWith('/certificate/') ||
       window.location.pathname.startsWith('/proftest')
-    )) ||
-    window.location.pathname.startsWith('/tripwire/certificate/') || // Legacy support
-    window.location.pathname === '/tripwire/login' // Legacy login path
+    ))
   );
   
   // Утилита для логирования (только если не публичная страница)

@@ -74,6 +74,11 @@ export function useTripwireAuth() {
 
       // Save JWT token with TRIPWIRE prefix to avoid conflicts with Main Platform
       localStorage.setItem('tripwire_supabase_token', authData.session.access_token);
+      localStorage.setItem('tripwire_supabase_session', JSON.stringify({
+        access_token: authData.session.access_token,
+        refresh_token: authData.session.refresh_token,
+        expires_at: authData.session.expires_at,
+      }));
 
       // Handle "Remember Me"
       if (data.remember) {
@@ -144,4 +149,3 @@ export function useTripwireAuth() {
     clearError,
   };
 }
-

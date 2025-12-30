@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Upload, X, FileText } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { api } from '@/utils/apiClient';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface TripwireLessonEditDialogProps {
   open: boolean;
@@ -159,7 +160,7 @@ export function TripwireLessonEditDialog({
    * Когда готово - перезагружает страницу
    */
   const monitorVideoProcessing = async (videoId: string, lessonId: number) => {
-    const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const uploadApiUrl = getApiBaseUrl() || 'http://localhost:3000';
     const MAX_ATTEMPTS = 120; // 6 минут (120 * 3сек)
     let attempt = 0;
     
@@ -283,7 +284,7 @@ export function TripwireLessonEditDialog({
           const durationSeconds = await getVideoDuration(videoFile);
           
           // 🚀 DIRECT UPLOAD TO BUNNY CDN (bypass server)
-          const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const uploadApiUrl = getApiBaseUrl() || 'http://localhost:3000';
           
           // Шаг 1: Получить Upload URL от backend
           setUploadStatus('🔑 Получаем ссылку для загрузки...');
@@ -415,7 +416,7 @@ export function TripwireLessonEditDialog({
         const durationSeconds = await getVideoDuration(videoFile);
         
         // 🚀 DIRECT UPLOAD TO BUNNY CDN (bypass server)
-        const uploadApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const uploadApiUrl = getApiBaseUrl() || 'http://localhost:3000';
         
         // Шаг 1: Получить Upload URL от backend
         setUploadStatus('🔑 Получаем ссылку для загрузки...');

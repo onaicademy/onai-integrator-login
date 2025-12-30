@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, MessageCircle, Smartphone } from 'lucide-react';
 import { trackLead } from '@/lib/facebook-pixel';
 import { getAllUTMParams } from '@/lib/utm-tracker';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface CheckoutFormProps {
   isOpen: boolean;
@@ -228,7 +229,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
     setIsSubmitting(true);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      const apiBaseUrl = getApiBaseUrl() || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
       
       // ✅ Захватываем UTM параметры
       const utmParams = getAllUTMParams();

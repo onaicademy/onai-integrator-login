@@ -41,7 +41,7 @@ curl https://onai.academy/api/traffic-dashboard/funnel
 ## ✅ ЧАСТЬ 2: SALES MANAGER AUTH FIX - ГОТОВО!
 
 ### Проблема (была):
-- Sales Manager редиректило на `/integrator/login`
+- Sales Manager редиректило на `https://expresscourse.onai.academy/login`
 - `SalesGuard` искал таблицу `users` в Tripwire DB (которой нет)
 - Проверка роли не работала
 

@@ -2,6 +2,7 @@
  * Custom hook for real-time bulk sync progress tracking via SSE
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 export interface SyncProgress {
   syncId: string;
@@ -25,7 +26,7 @@ interface UseBulkSyncProgressResult {
   retry: () => void;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
 
 export function useBulkSyncProgress(syncId: string | null): UseBulkSyncProgressResult {
   const [progress, setProgress] = useState<SyncProgress | null>(null);

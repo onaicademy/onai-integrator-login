@@ -14,6 +14,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DollarSign, Users, ShoppingCart, Award, Loader2, ChevronDown } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface FunnelStage {
   id: string;
@@ -48,7 +49,7 @@ export function PremiumFunnelPyramid({ teamFilter, userId, compact = false, pres
     try {
       setLoading(true);
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiBaseUrl() || 'http://localhost:3000';
       const params = new URLSearchParams();
       if (teamFilter) params.set('team', teamFilter);
       if (userId) params.set('userId', userId);

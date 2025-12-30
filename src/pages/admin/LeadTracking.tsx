@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Clock, Mail, MessageSquare, RefreshCw, AlertCircle, Trash2, BarChart3 } from 'lucide-react';
 import axios from 'axios';
 import LeadSyncModal from './components/LeadSyncModal';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface LeadData {
   id: string;
@@ -64,7 +65,7 @@ export default function LeadTracking() {
   const [error, setError] = useState<string | null>(null);
   const [showSyncModal, setShowSyncModal] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+  const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
 
   const fetchLeads = async () => {
     try {

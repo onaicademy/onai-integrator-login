@@ -12,6 +12,7 @@
 import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
 import { devLog } from './env-utils';
 import { setupSupabaseReconnection } from '@/utils/error-recovery';
+import { getRuntimeConfig } from './runtime-config';
 
 interface SupabaseClients {
   main: SupabaseClient;     // Main platform (with auth)
@@ -23,26 +24,106 @@ interface SupabaseClients {
 let clients: SupabaseClients | null = null;
 let authSession: Session | null = null;
 let authUnsubscribe: (() => void) | null = null;
+let tripwireAuthUnsubscribe: (() => void) | null = null;
+
+const TRIPWIRE_SESSION_STORAGE_KEY = 'tripwire_supabase_session';
+
+type StoredTripwireSession = {
+  access_token: string;
+  refresh_token: string;
+  expires_at?: number;
+};
+
+const createMemoryStorage = () => {
+  const store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => (key in store ? store[key] : null),
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+  };
+};
+
+const tripwireMemoryStorage = createMemoryStorage();
+
+const readStoredTripwireSession = (): StoredTripwireSession | null => {
+  if (typeof window === 'undefined') return null;
+  const raw = window.localStorage.getItem(TRIPWIRE_SESSION_STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as StoredTripwireSession;
+    if (!parsed?.access_token || !parsed?.refresh_token) {
+      return null;
+    }
+    if (parsed.expires_at && parsed.expires_at * 1000 < Date.now()) {
+      window.localStorage.removeItem(TRIPWIRE_SESSION_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    console.warn('⚠️ [Supabase Manager] Failed to parse stored Tripwire session');
+    return null;
+  }
+};
+
+const restoreTripwireSession = async (client: SupabaseClient) => {
+  const stored = readStoredTripwireSession();
+  if (!stored) return;
+
+  const { error } = await client.auth.setSession({
+    access_token: stored.access_token,
+    refresh_token: stored.refresh_token,
+  });
+
+  if (error) {
+    console.warn('⚠️ [Supabase Manager] Tripwire session restore failed:', error.message);
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(TRIPWIRE_SESSION_STORAGE_KEY);
+    }
+  }
+};
+
+const persistTripwireSession = (session: Session | null) => {
+  if (typeof window === 'undefined') return;
+
+  if (session?.access_token && session.refresh_token) {
+    window.localStorage.setItem('tripwire_supabase_token', session.access_token);
+    window.localStorage.setItem(TRIPWIRE_SESSION_STORAGE_KEY, JSON.stringify({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at: session.expires_at,
+    }));
+    return;
+  }
+
+  window.localStorage.removeItem('tripwire_supabase_token');
+  window.localStorage.removeItem(TRIPWIRE_SESSION_STORAGE_KEY);
+};
 
 /**
  * Initialize all Supabase clients with unified auth
  * 
  * CALL THIS ONLY ONCE at app startup!
  */
-export function initializeSupabase(): SupabaseClients {
+export async function initializeSupabase(): Promise<SupabaseClients> {
   if (clients) {
     devLog('[Supabase Manager] Clients already initialized, returning cached');
     return clients;
   }
 
   console.log('🚀 [Supabase Manager] Initializing unified client manager...');
+  const runtimeConfig = getRuntimeConfig();
 
   // ═══════════════════════════════════════════════════════════════
   // PRIMARY CLIENT (MAIN PLATFORM) - With Auth
   // ═══════════════════════════════════════════════════════════════
   
-  const mainUrl = import.meta.env.VITE_SUPABASE_URL;
-  const mainKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const mainUrl = runtimeConfig.supabaseUrl;
+  const mainKey = runtimeConfig.supabaseAnonKey || runtimeConfig.supabasePublishableKey;
 
   if (!mainUrl || !mainKey) {
     throw new Error('[Supabase Manager] Main Supabase credentials not found');
@@ -70,28 +151,28 @@ export function initializeSupabase(): SupabaseClients {
   // TRIPWIRE CLIENT - WITH AUTH (separate database, separate auth)
   // ═══════════════════════════════════════════════════════════════
 
-  const tripwireUrl = import.meta.env.VITE_TRIPWIRE_SUPABASE_URL;
-  const tripwireKey = import.meta.env.VITE_TRIPWIRE_SUPABASE_ANON_KEY;
+  const tripwireUrl = runtimeConfig.tripwireSupabaseUrl;
+  const tripwireKey = runtimeConfig.tripwireSupabaseAnonKey;
 
   let tripwireClient: SupabaseClient;
 
   if (tripwireUrl && tripwireKey) {
     tripwireClient = createClient(tripwireUrl, tripwireKey, {
       auth: {
-        autoRefreshToken: true, // ✅ Enable auto refresh for Tripwire auth
-        persistSession: true,   // ✅ CRITICAL: Persist session in localStorage
+        autoRefreshToken: true,
+        persistSession: false, // Manual persistence to avoid multiple GoTrueClient warnings
         detectSessionInUrl: true,
-        storage: window.localStorage,
-        storageKey: 'sb-tripwire-auth-token', // 🔥 Separate key for Tripwire
+        storage: tripwireMemoryStorage,
+        storageKey: 'sb-tripwire-auth-memory',
         flowType: 'pkce',
       },
       global: {
         headers: {
-          'x-client-info': 'onai-tripwire-integrator', // Suppress multiple instances warning
+          'x-client-info': 'onai-tripwire-integrator',
         },
       },
     });
-    devLog('[Supabase Manager] ✅ Tripwire client created (with independent auth)');
+    devLog('[Supabase Manager] ✅ Tripwire client created (manual session persistence)');
   } else {
     console.warn('[Supabase Manager] ⚠️ Tripwire credentials not found, using mock');
     tripwireClient = mainClient; // Fallback to main
@@ -101,8 +182,8 @@ export function initializeSupabase(): SupabaseClients {
   // LANDING CLIENT - Data only, NO AUTH
   // ═══════════════════════════════════════════════════════════════
   
-  const landingUrl = import.meta.env.VITE_LANDING_SUPABASE_URL;
-  const landingKey = import.meta.env.VITE_LANDING_SUPABASE_ANON_KEY;
+  const landingUrl = runtimeConfig.landingSupabaseUrl;
+  const landingKey = runtimeConfig.landingSupabaseAnonKey;
 
   let landingClient: SupabaseClient;
 
@@ -128,6 +209,19 @@ export function initializeSupabase(): SupabaseClients {
     tripwire: tripwireClient,
     landing: landingClient,
   };
+
+  if (tripwireClient && tripwireClient !== mainClient) {
+    await restoreTripwireSession(tripwireClient);
+
+    if (!tripwireAuthUnsubscribe) {
+      const { data } = tripwireClient.auth.onAuthStateChange((_event, session) => {
+        persistTripwireSession(session);
+      });
+      tripwireAuthUnsubscribe = () => {
+        data?.subscription.unsubscribe();
+      };
+    }
+  }
 
   console.log('✅ [Supabase Manager] All clients initialized (unified auth)');
 
@@ -287,6 +381,7 @@ export async function logoutFromAll() {
     localStorage.removeItem('tripwire_supabase_token');
     localStorage.removeItem('sb-unified-auth-token'); // Main auth
     localStorage.removeItem('sb-tripwire-auth-token'); // Tripwire auth
+    localStorage.removeItem(TRIPWIRE_SESSION_STORAGE_KEY);
   } catch (e) {
     console.warn('⚠️ Failed to clear tokens');
   }
@@ -301,6 +396,10 @@ export function cleanupSupabaseManager() {
   if (authUnsubscribe) {
     authUnsubscribe();
     authUnsubscribe = null;
+  }
+  if (tripwireAuthUnsubscribe) {
+    tripwireAuthUnsubscribe();
+    tripwireAuthUnsubscribe = null;
   }
   
   clients = null;

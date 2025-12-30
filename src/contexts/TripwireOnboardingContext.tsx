@@ -8,8 +8,9 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { tripwireSupabase } from '@/lib/supabase-tripwire';
 import axios from 'axios';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
 
 interface TripwireOnboardingContextType {
   // Состояние onboarding

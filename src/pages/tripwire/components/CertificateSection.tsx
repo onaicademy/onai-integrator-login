@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TripwireUserProfile, TripwireCertificate } from '@/lib/tripwire-utils';
 import { CertificatePreview } from './CertificatePreview';
 import { useState, useEffect } from 'react';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface CertificateSectionProps {
   profile: TripwireUserProfile;
@@ -75,7 +76,7 @@ export default function CertificateSection({ profile, certificate, onGenerateCer
     
     try {
       // 🔥 SSE: Реальный прогресс с бэкенда
-      const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+      const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
       const token = localStorage.getItem('tripwire_supabase_token');
 
       console.log('🚀 [SSE] Starting certificate generation...');

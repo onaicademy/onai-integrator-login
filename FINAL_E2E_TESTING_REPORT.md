@@ -89,7 +89,7 @@ GET https://onai.academy/api/traffic-settings/{team}
 ## 2️⃣ SALES MANAGER PANEL - ✅ ДОСТУП ИСПРАВЛЕН
 
 ### Auth Fix:
-- ❌ **Было:** Редиректило на `/integrator/login` (таблица `users` не существовала)
+- ❌ **Было:** Редиректило на `https://expresscourse.onai.academy/login` (таблица `users` не существовала)
 - ✅ **Стало:** Роль читается из `user_metadata` (JWT от Supabase)
 
 ### Sales Manager Accounts:

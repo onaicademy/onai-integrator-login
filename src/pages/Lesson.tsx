@@ -31,6 +31,7 @@ import { useHonestVideoTracking } from "@/hooks/useHonestVideoTracking";
 import { AIChatDialog } from "@/components/profile/v2/AIChatDialog";
 import { AchievementUnlockModal } from "@/components/AchievementUnlockModal";
 import { ModuleUnlockModal } from "@/components/ModuleUnlockModal";
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 const Lesson = () => {
   const { id, moduleId, lessonId } = useParams();
@@ -170,7 +171,7 @@ const Lesson = () => {
         
         const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
         // ✅ FIX: Отправляем на Backend API (динамический URL для localhost и production)
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const apiUrl = getApiBaseUrl() || 'http://localhost:3000';
         navigator.sendBeacon(`${apiUrl}/api/analytics/video-session/end`, blob);
       }
     };
@@ -200,7 +201,7 @@ const Lesson = () => {
         const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
         
         // ✅ FIX: Отправляем на Backend API (динамический URL для localhost и production)
-        const beaconApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const beaconApiUrl = getApiBaseUrl() || 'http://localhost:3000';
         navigator.sendBeacon(`${beaconApiUrl}/api/analytics/video-session/end`, blob);
         
         console.log('📡 sendBeacon (beforeunload): Метрики отправлены', payload);

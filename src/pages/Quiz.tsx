@@ -4,6 +4,7 @@ import { ChevronRight, CheckCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // Тестовые вопросы (потом заменишь на свои)
 const QUIZ_QUESTIONS = [
@@ -98,7 +99,7 @@ export default function Quiz() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/landing/submit`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/landing/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

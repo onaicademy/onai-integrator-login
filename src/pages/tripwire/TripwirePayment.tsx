@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { showInfo, showSuccess, showError } from '@/lib/notifications';
 import { getAllUTMParams } from '@/lib/utm-tracker';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 export default function TripwirePayment() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -159,7 +160,7 @@ export default function TripwirePayment() {
       const utmParams = getAllUTMParams();
       console.log('📊 UTM Tracking Data:', utmParams);
       
-      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      const apiBaseUrl = getApiBaseUrl() || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
       const response = await fetch(`${apiBaseUrl}/api/landing/submit`, {
         method: 'POST',
         headers: {

@@ -4,6 +4,7 @@ import { Mail, User, Phone, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { getAllUTMParams } from '@/lib/utm-tracker';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface LeadFormProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export function LeadForm({ isOpen, onClose, source = 'expresscourse' }: LeadForm
     setIsSubmitting(true);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      const apiBaseUrl = getApiBaseUrl() || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
       
       // ✅ Capture UTM params + client_id
       const utmParams = getAllUTMParams();

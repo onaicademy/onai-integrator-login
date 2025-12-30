@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from '@/lib/runtime-config';
 /**
  * API Client для работы с Backend API
  * 
@@ -118,7 +119,7 @@ export async function apiRequest<T = any>(
     ? 'http://localhost:3000'      // localhost для development
     : 'https://api.onai.academy';  // production для prod
   
-  const baseUrl = import.meta.env.VITE_API_URL || defaultApiUrl;
+  const baseUrl = getApiBaseUrl() || defaultApiUrl;
   
   // 🔌 Логирование для отладки (ТОЛЬКО в development!)
   if (!window.__apiClientInitialized && isDevelopment) {
@@ -208,6 +209,7 @@ export async function apiRequest<T = any>(
         // Clear all auth data
         localStorage.removeItem('supabase_token');
         localStorage.removeItem('tripwire_supabase_token'); // ✅ FIX: Remove Tripwire token
+        localStorage.removeItem('tripwire_supabase_session');
         localStorage.removeItem('sb-arqhkacellqbhjhbebfh-auth-token'); // Main Supabase
         localStorage.removeItem('sb-pjmvxecykysfrzppdcto-auth-token'); // ✅ FIX: Tripwire Supabase
         localStorage.removeItem('sb-tripwire-auth-token'); // ✅ FIX: Unified Tripwire key

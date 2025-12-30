@@ -8,6 +8,7 @@ import { Upload, X, FileText } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { api } from '@/utils/apiClient';
 import { MaterialsManager } from './MaterialsManager';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface LessonEditDialogProps {
   open: boolean;
@@ -189,7 +190,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
             });
             
             // Получить базовый URL из apiClient
-            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            const baseUrl = getApiBaseUrl() || 'http://localhost:3000';
             xhr.open('POST', `${baseUrl}/api/stream/upload`);
             
             // ✅ Устанавливаем CORS заголовки явно
@@ -282,7 +283,7 @@ export function LessonEditDialog({ open, onClose, onSave, lesson, moduleId, onVi
           });
           
           // Получить базовый URL из apiClient
-          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const baseUrl = getApiBaseUrl() || 'http://localhost:3000';
           xhr.open('POST', `${baseUrl}/api/stream/upload`);
           
           // ✅ Устанавливаем CORS заголовки явно

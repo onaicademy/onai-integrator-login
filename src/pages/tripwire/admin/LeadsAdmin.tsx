@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { landingSupabase } from '@/lib/supabase-landing'; // ✅ Use singleton instance
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface JourneyStage {
   id: string;
@@ -178,7 +179,7 @@ export default function LeadsAdmin() {
   const resendMutation = useMutation({
     mutationFn: async (leadId: string) => {
       // ✅ FIX: Use API_URL from env to ensure correct backend URL
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = getApiBaseUrl() || 'http://localhost:5000';
       const response = await axios.post(`${apiUrl}/api/landing/resend/${leadId}`);
       return response.data;
     },
@@ -192,7 +193,7 @@ export default function LeadsAdmin() {
   const deleteMutation = useMutation({
     mutationFn: async (leadId: string) => {
       // ✅ FIX: Use API_URL from env to ensure correct backend URL
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = getApiBaseUrl() || 'http://localhost:5000';
       const response = await axios.delete(`${apiUrl}/api/landing/delete/${leadId}`);
       return response.data;
     },
@@ -206,7 +207,7 @@ export default function LeadsAdmin() {
   const syncAmoCRMMutation = useMutation({
     mutationFn: async (leadId: string) => {
       // ✅ FIX: Use API_URL from env to ensure correct backend URL
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = getApiBaseUrl() || 'http://localhost:5000';
       const response = await axios.post(`${apiUrl}/api/landing/sync-to-amocrm/${leadId}`);
       return response.data;
     },
@@ -556,7 +557,7 @@ export default function LeadsAdmin() {
                 
                 try {
                   setSyncing(true);
-                  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                  const apiUrl = getApiBaseUrl() || 'http://localhost:5000';
                   
                   // 🔥 FIX: Правильный endpoint для синхронизации
                   const response = await axios.post(`${apiUrl}/api/landing/sync-all-to-amocrm`, {}, {

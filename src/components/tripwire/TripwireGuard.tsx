@@ -51,6 +51,7 @@ export function TripwireGuard({ children }: TripwireGuardProps) {
       if (expiresAt < now) {
         console.error('❌ TripwireGuard: Токен истек');
         localStorage.removeItem('tripwire_supabase_token');
+        localStorage.removeItem('tripwire_supabase_session');
         setIsAuthorized(false);
         setIsLoading(false);
         return;

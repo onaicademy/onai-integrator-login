@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 /**
  * 🔗 SHORT LINK REDIRECT COMPONENT
@@ -19,7 +20,7 @@ export default function ShortLinkRedirect() {
 
     // Редиректим на backend endpoint, который сделает редирект
     // Backend отследит клик и редиректнет на оригинальную ссылку
-    const backendUrl = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+    const backendUrl = getApiBaseUrl() || 'https://api.onai.academy';
     window.location.href = `${backendUrl}/l/${shortCode}`;
   }, [shortCode]);
 

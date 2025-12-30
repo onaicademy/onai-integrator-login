@@ -10,6 +10,7 @@ import {
   Trophy, Crown, Medal, Flame, X, ExternalLink, MessageCircle, PlayCircle, AlertTriangle
 } from 'lucide-react';
 import './referral.css';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // ═══════════════════════════════════════════════════════════════
 // ИНТЕРФЕЙСЫ
@@ -27,7 +28,7 @@ interface GeneratedCode {
 // КОНФИГУРАЦИЯ
 // ═══════════════════════════════════════════════════════════════
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
 const SALES_PAGE_URL = 'https://expresscourse.onai.academy/expresscourse';
 
 // Система выплат (фиксированные суммы в долларах)

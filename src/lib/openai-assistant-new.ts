@@ -7,9 +7,10 @@ import {
   type ChatMessage as SupabaseChatMessage,
 } from './supabase-chat';
 import { detectConflicts } from './conflict-detector';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // API базовый URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = getApiBaseUrl() || 'http://localhost:3000';
 
 // Локальное хранилище для ID Assistant и Thread
 const ASSISTANT_ID_KEY = "openai_assistant_id";

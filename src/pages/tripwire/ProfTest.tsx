@@ -8,6 +8,7 @@ import UTMTracker from '@/components/UTMTracker';
 import { getPixelConfig } from '@/config/pixels';
 import { trackLead } from '@/lib/facebook-pixel';
 import { getAllUTMParams } from '@/lib/utm-tracker';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // Quiz Questions Data
 const questions = [
@@ -419,7 +420,7 @@ export default function ProfTest() {
 
     try {
       // 1. Get API base URL
-      const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
+      const apiBaseUrl = getApiBaseUrl() || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://api.onai.academy');
       
       // 2. Get UTM params
       const utmParams = getAllUTMParams();

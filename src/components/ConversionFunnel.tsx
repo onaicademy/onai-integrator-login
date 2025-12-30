@@ -11,6 +11,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Award, Target, Loader2, AlertCircle } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -80,7 +81,7 @@ export default function ConversionFunnel({ compact = false, teamFilter }: Conver
       setLoading(true);
       setError(null);
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiBaseUrl() || 'http://localhost:3000';
       const url = teamFilter 
         ? `${apiUrl}/api/traffic-dashboard/funnel?team=${teamFilter}`
         : `${apiUrl}/api/traffic-dashboard/funnel`;

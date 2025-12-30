@@ -6,6 +6,7 @@ import {
   type ChatMessage as SupabaseChatMessage,
 } from './supabase-chat';
 import { detectConflicts } from './conflict-detector';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // Локальное хранилище для ID Assistant и Thread
 const ASSISTANT_ID_KEY = "openai_assistant_id";
@@ -516,7 +517,7 @@ export async function transcribeAudioToText(audioBlob: Blob, userId?: string, th
       throw new Error("Отсутствует JWT токен. Авторизуйтесь заново.");
     }
 
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const baseUrl = getApiBaseUrl() || 'http://localhost:3000';
 
     // Отправляем на Backend
     const response = await fetch(`${baseUrl}/api/openai/audio/transcriptions`, {

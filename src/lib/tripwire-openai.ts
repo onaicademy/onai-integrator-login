@@ -7,6 +7,7 @@ import {
 } from './tripwire-chat';
 import { detectConflicts } from './conflict-detector';
 import { tripwireSupabase } from './supabase-tripwire'; // 🔥 НОВЫЙ КЛИЕНТ
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 // Локальное хранилище для ID Thread (Tripwire specific)
 const THREAD_ID_KEY = "tripwire_openai_thread_id";
@@ -278,7 +279,7 @@ export async function transcribeAudioToText(audioBlob: Blob, userId?: string): P
         formData.append('user_id', userId || 'unknown');
         
         const token = getAuthToken();
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const baseUrl = getApiBaseUrl() || 'http://localhost:3000';
 
         // ✅ НОВЫЙ ENDPOINT: /transcribe (ТОЛЬКО транскрипция)
         const response = await fetch(`${baseUrl}/api/tripwire/ai/transcribe`, {
@@ -323,7 +324,7 @@ export async function sendFileToAI(file: File, userId: string, question?: string
         }
         
         const token = getAuthToken();
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const baseUrl = getApiBaseUrl() || 'http://localhost:3000';
 
         const response = await fetch(`${baseUrl}/api/tripwire/ai/file`, {
             method: 'POST',

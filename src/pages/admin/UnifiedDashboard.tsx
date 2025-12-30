@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useState } from 'react';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+const API_URL = getApiBaseUrl() || 'https://api.onai.academy';
 
 function getEmailStatusDisplay(lead: any) {
   if (lead.email_failed || lead.email_error) {

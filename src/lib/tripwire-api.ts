@@ -1,8 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import type { TripwireLoginRequest, TripwireLoginResponse, TripwireErrorResponse } from '@/types/tripwire';
 import { safeLocalStorage, safeJSONStringify } from '@/utils/error-recovery';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = getApiBaseUrl() || 'http://localhost:3000';
 
 // Axios instance для Tripwire API
 const tripwireAPI = axios.create({

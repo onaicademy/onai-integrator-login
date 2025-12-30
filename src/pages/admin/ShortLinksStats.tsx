@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Link2, TrendingUp, Users, Clock, Search, ExternalLink, Copy, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { getApiBaseUrl } from '@/lib/runtime-config';
 
 interface ShortLinkStats {
   id: string;
@@ -66,7 +67,7 @@ export default function ShortLinksStats() {
       setLoading(true);
 
       // Получаем все короткие ссылки из Supabase
-      const backendUrl = import.meta.env.VITE_API_URL || 'https://api.onai.academy';
+      const backendUrl = getApiBaseUrl() || 'https://api.onai.academy';
       const response = await fetch(`${backendUrl}/api/supabase/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
