@@ -126,6 +126,14 @@ function deactivateChat(chatId: number, messageThreadId?: number) {
 
 // Отправка сообщения во все активные чаты (с поддержкой Topics)
 export async function sendToAllChats(message: string, parseMode: 'Markdown' | 'HTML' = 'Markdown') {
+  // Проверяем, включена ли отправка отчетов
+  const reportsEnabled = process.env.TELEGRAM_REPORTS_ENABLED !== 'false';
+  
+  if (!reportsEnabled) {
+    console.log('⚠️ Отправка отчетов отключена через переменную окружения TELEGRAM_REPORTS_ENABLED=false');
+    return [];
+  }
+  
   const chats = getActiveChats();
   const results = [];
   
