@@ -153,7 +153,7 @@ router.post('/force-sync', async (req: Request, res: Response) => {
 
     // Log successful sync
     if (results.success) {
-      await integrationLogger.log({
+      await IntegrationLogger.log({
         service_name: 'traffic_dashboard',
         action: 'force_sync',
         status: 'success',
@@ -176,7 +176,7 @@ router.post('/force-sync', async (req: Request, res: Response) => {
 
     console.error('❌ Force Sync failed:', error);
 
-    await integrationLogger.log({
+    await IntegrationLogger.log({
       service_name: 'traffic_dashboard',
       action: 'force_sync',
       status: 'failed',
