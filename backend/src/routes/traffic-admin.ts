@@ -243,17 +243,48 @@ router.get('/dashboard-stats', authenticateToken, adminOnly, async (req, res) =>
 });
 
 // 🔄 POST /api/traffic-admin/generate-all-plans
-// Generate weekly plans for all teams
+// Generate weekly plans for all teams (DYNAMIC from DB)
 router.post('/generate-all-plans', authenticateToken, adminOnly, async (req, res) => {
   try {
-    console.log('🔄 Generating plans for all teams');
-    
-    const teams = ['Kenesary', 'Arystan', 'Traf4', 'Muha'];
+    console.log('🔄 Generating plans for all teams (dynamic from DB)');
+
+    // Get teams dynamically from database
+    const { data: teamsData, error: teamsError } = await trafficAdminSupabase
+      .from('traffic_teams')
+      .select('name')
+      .eq('is_active', true)
+      .order('name');
+
+    if (teamsError) {
+      console.error('❌ Error fetching teams:', teamsError);
+      // Fallback: get unique team_name from traffic_users
+      const { data: usersTeams } = await trafficAdminSupabase
+        .from('traffic_users')
+        .select('team_name')
+        .eq('is_active', true)
+        .not('team_name', 'is', null);
+
+      const uniqueTeams = [...new Set(usersTeams?.map(u => u.team_name).filter(Boolean) || [])];
+      console.log(`📋 Fallback: found ${uniqueTeams.length} teams from users`);
+      var teams = uniqueTeams;
+    } else {
+      var teams = teamsData?.map(t => t.name) || [];
+    }
+
+    if (teams.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No active teams found in database. Please add teams first.'
+      });
+    }
+
+    console.log(`📋 Found ${teams.length} teams: ${teams.join(', ')}`);
+
     const results: any[] = [];
-    
+
     // Import dynamically
     const { calculateWeeklyPlan } = await import('../services/trafficPlanService.js');
-    
+
     for (const team of teams) {
       try {
         const plan = await calculateWeeklyPlan(team);
@@ -264,12 +295,12 @@ router.post('/generate-all-plans', authenticateToken, adminOnly, async (req, res
         results.push({ team, success: false, error: error.message });
       }
     }
-    
+
     const successCount = results.filter(r => r.success).length;
     console.log(`✅ Generated ${successCount}/${teams.length} plans`);
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       results,
       summary: {
         total: teams.length,
@@ -280,6 +311,191 @@ router.post('/generate-all-plans', authenticateToken, adminOnly, async (req, res
   } catch (error) {
     console.error('❌ Generate all plans error:', error);
     res.status(500).json({ error: 'Failed to generate plans' });
+  }
+});
+
+// 📋 GET /api/traffic-admin/teams
+// Get all teams (dynamic)
+router.get('/teams', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    console.log('📋 Fetching all teams');
+
+    // Try to get from traffic_teams table first
+    const { data: teams, error } = await trafficAdminSupabase
+      .from('v_teams_with_stats')
+      .select('*');
+
+    if (error) {
+      // Fallback: aggregate from traffic_users
+      console.warn('⚠️ v_teams_with_stats not available, using fallback');
+      const { data: users } = await trafficAdminSupabase
+        .from('traffic_users')
+        .select('team_name, role, is_active, last_login_at')
+        .eq('is_active', true)
+        .not('team_name', 'is', null);
+
+      const teamMap: Record<string, any> = {};
+      users?.forEach(u => {
+        if (!teamMap[u.team_name]) {
+          teamMap[u.team_name] = {
+            name: u.team_name,
+            display_name: u.team_name,
+            user_count: 0,
+            targetologist_count: 0,
+            is_active: true
+          };
+        }
+        teamMap[u.team_name].user_count++;
+        if (u.role === 'targetologist') {
+          teamMap[u.team_name].targetologist_count++;
+        }
+      });
+
+      return res.json({ teams: Object.values(teamMap) });
+    }
+
+    res.json({ teams: teams || [] });
+  } catch (error) {
+    console.error('❌ Get teams error:', error);
+    res.status(500).json({ error: 'Failed to get teams' });
+  }
+});
+
+// 📝 POST /api/traffic-admin/teams
+// Create a new team
+router.post('/teams', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { name, display_name, description, color } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Team name is required' });
+    }
+
+    console.log(`📝 Creating team: ${name}`);
+
+    const { data, error } = await trafficAdminSupabase
+      .from('traffic_teams')
+      .insert({
+        name,
+        display_name: display_name || name,
+        description,
+        color: color || '#00FF88',
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error creating team:', error);
+      throw error;
+    }
+
+    res.json({ success: true, team: data });
+  } catch (error) {
+    console.error('❌ Create team error:', error);
+    res.status(500).json({ error: 'Failed to create team' });
+  }
+});
+
+// 🔗 GET /api/traffic-admin/ad-account-bindings
+// Get all ad account bindings
+router.get('/ad-account-bindings', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    console.log('🔗 Fetching ad account bindings');
+
+    const { data, error } = await trafficAdminSupabase
+      .from('v_ad_account_bindings')
+      .select('*');
+
+    if (error) {
+      // Fallback if view doesn't exist
+      const { data: bindings } = await trafficAdminSupabase
+        .from('traffic_ad_account_bindings')
+        .select('*')
+        .eq('is_active', true);
+
+      return res.json({ bindings: bindings || [] });
+    }
+
+    res.json({ bindings: data || [] });
+  } catch (error) {
+    console.error('❌ Get ad account bindings error:', error);
+    res.status(500).json({ error: 'Failed to get ad account bindings' });
+  }
+});
+
+// 🔗 POST /api/traffic-admin/ad-account-bindings
+// Create ad account binding
+router.post('/ad-account-bindings', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { ad_account_id, team_name, ad_platform = 'facebook', notes } = req.body;
+
+    if (!ad_account_id || !team_name) {
+      return res.status(400).json({
+        error: 'ad_account_id and team_name are required',
+        hint: 'ad_account_id format: act_123456789'
+      });
+    }
+
+    // Validate ad_account_id format
+    if (!ad_account_id.startsWith('act_')) {
+      return res.status(400).json({
+        error: 'Invalid ad_account_id format',
+        hint: 'Facebook Ad Account ID should start with "act_" (e.g., act_123456789)'
+      });
+    }
+
+    console.log(`🔗 Creating ad account binding: ${ad_account_id} -> ${team_name}`);
+
+    const { data, error } = await trafficAdminSupabase
+      .from('traffic_ad_account_bindings')
+      .insert({
+        ad_account_id,
+        team_name,
+        ad_platform,
+        notes,
+        created_by: req.user.userId,
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') { // Unique violation
+        return res.status(409).json({
+          error: 'This ad account is already bound to a team',
+          hint: 'Each ad account can only be bound to one team'
+        });
+      }
+      throw error;
+    }
+
+    res.json({ success: true, binding: data });
+  } catch (error) {
+    console.error('❌ Create ad account binding error:', error);
+    res.status(500).json({ error: 'Failed to create ad account binding' });
+  }
+});
+
+// 🗑️ DELETE /api/traffic-admin/ad-account-bindings/:id
+// Remove ad account binding
+router.delete('/ad-account-bindings/:id', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log(`🗑️ Removing ad account binding: ${id}`);
+
+    const { error } = await trafficAdminSupabase
+      .from('traffic_ad_account_bindings')
+      .update({ is_active: false })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Remove ad account binding error:', error);
+    res.status(500).json({ error: 'Failed to remove ad account binding' });
   }
 });
 

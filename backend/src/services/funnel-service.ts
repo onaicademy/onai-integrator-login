@@ -38,7 +38,11 @@ const EXCLUDED_EMAILS = [
 // ════════════════════════════════════════════════════════════════════════
 // TEAM MAPPING (team name → UTM attribution rules)
 // ════════════════════════════════════════════════════════════════════════
-interface TeamUtmRule {
+// UTM RULES - ДИНАМИЧЕСКОЕ ЧТЕНИЕ ИЗ БД
+// ════════════════════════════════════════════════════════════════════════
+import { getDynamicTeamUtmRule, matchesTeamUtmDynamic, DynamicTeamUtmRule } from './utm-mapping-service.js';
+
+export interface TeamUtmRule {
   sources: string[];          // utm_source values
   medium?: string;            // utm_medium (optional, for source+medium matching)
   matchMode: 'source_only' | 'source_and_medium';
@@ -51,27 +55,14 @@ interface FunnelDateRange {
   singleDate?: string | null;
 }
 
-const TEAM_UTM_MAPPING: Record<string, TeamUtmRule> = {
-  'kenesary': { 
-    sources: ['kenjifb'], 
-    matchMode: 'source_only' 
-  },
-  'arystan': { 
-    sources: ['fbarystan'], 
-    matchMode: 'source_only' 
-  },
-  'tf4': { 
-    sources: ['alex_FB', 'alex_inst', 'alexinst'], 
-    matchMode: 'source_only' 
-  },
-  'muha': { 
-    sources: ['facebook'], 
-    medium: 'yourmarketolog',
-    matchMode: 'source_and_medium' 
-  }
+// ⚠️ LEGACY FALLBACK - используется только если БД недоступна
+// В нормальном режиме UTM читаются из таблицы traffic_user_utm_sources
+const LEGACY_TEAM_UTM_MAPPING: Record<string, TeamUtmRule> = {
+  // Пустой объект - все UTM должны браться из БД
+  // Хардкод полностью удален согласно требованиям
 };
 
-// Team slug aliases
+// Legacy team aliases (для обратной совместимости API)
 const TEAM_ALIASES: Record<string, string> = {
   'traf4': 'tf4',
   'alex': 'tf4',
@@ -80,11 +71,37 @@ const TEAM_ALIASES: Record<string, string> = {
   'muha': 'muha'
 };
 
-// Get UTM rule for team
-export function getTeamUtmRule(teamName?: string): TeamUtmRule | null {
+// ════════════════════════════════════════════════════════════════════════
+// GET UTM RULE - ДИНАМИЧЕСКАЯ ВЕРСИЯ
+// ════════════════════════════════════════════════════════════════════════
+/**
+ * Получить UTM rule для пользователя/команды
+ * Теперь читает из БД через utm-mapping-service
+ *
+ * @param teamName - название команды или userId
+ * @param userId - ID пользователя (приоритет над teamName)
+ */
+export async function getTeamUtmRuleAsync(teamName?: string, userId?: string): Promise<TeamUtmRule | null> {
+  // Пробуем получить из БД
+  const dynamicRule = await getDynamicTeamUtmRule(userId, teamName);
+
+  if (dynamicRule) {
+    console.log(`[Funnel] UTM Rule from DB: ${dynamicRule.sources.join(', ')}`);
+    return dynamicRule;
+  }
+
+  // Fallback на legacy (пустой объект - вернет null)
   if (!teamName) return null;
   const normalized = TEAM_ALIASES[teamName.toLowerCase()] || teamName.toLowerCase();
-  return TEAM_UTM_MAPPING[normalized] || null;
+  return LEGACY_TEAM_UTM_MAPPING[normalized] || null;
+}
+
+// Синхронная версия для обратной совместимости (возвращает null, нужно использовать async версию)
+export function getTeamUtmRule(teamName?: string): TeamUtmRule | null {
+  console.warn('[Funnel] ⚠️ Using sync getTeamUtmRule - migrate to getTeamUtmRuleAsync for dynamic UTM support');
+  if (!teamName) return null;
+  const normalized = TEAM_ALIASES[teamName.toLowerCase()] || teamName.toLowerCase();
+  return LEGACY_TEAM_UTM_MAPPING[normalized] || null;
 }
 
 // Check if a lead matches team's UTM rules
@@ -1117,7 +1134,7 @@ function buildChallenge3dFunnel(
       id: 'challenge3d_prepayments',
       title: 'Предоплаты',
       emoji: '💳',
-      description: 'Депозиты (≤5000₸)',
+      description: '5000',
       metrics: {
         challenge3d_prepayments: total_prepayments,
         challenge3d_prepayment_revenue: prepayment_revenue
@@ -1127,9 +1144,9 @@ function buildChallenge3dFunnel(
     },
     {
       id: 'challenge3d_full_purchases',
-      title: 'Полные покупки',
+      title: 'Покупки',
       emoji: '🎯',
-      description: 'Полная оплата (>5000₸)',
+      description: 'Полная оплата',
       metrics: {
         challenge3d_full_purchases: total_full_purchases,
         challenge3d_full_revenue: full_purchase_revenue

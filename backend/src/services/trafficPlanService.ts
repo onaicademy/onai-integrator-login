@@ -6,7 +6,7 @@
  */
 
 import Groq from 'groq-sdk';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import axios from 'axios';
 
 const groq = new Groq({ 
@@ -29,7 +29,7 @@ export async function calculateWeeklyPlan(teamName: string) {
   console.log(`📊 Previous week data:`, prevWeekData);
   
   // 2️⃣ Get admin settings (growth %, prompt template, etc.)
-  const { data: settings } = await tripwireAdminSupabase
+  const { data: settings } = await trafficAdminSupabase
     .from('traffic_admin_settings')
     .select('*');
   
@@ -114,7 +114,7 @@ RESPOND WITH ONLY THIS JSON (no markdown, no explanation):
   aiResponse = sanitizePlan(aiResponse, prevWeekData, minRoas, maxCpa);
   
   // 5️⃣ Insert plan into database
-  const { data: newPlan, error } = await tripwireAdminSupabase
+  const { data: newPlan, error } = await trafficAdminSupabase
     .from('traffic_weekly_plans')
     .insert({
       team_name: teamName,
