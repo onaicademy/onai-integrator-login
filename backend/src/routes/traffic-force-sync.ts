@@ -6,8 +6,6 @@
 import { Router, Request, Response } from 'express';
 import { trafficSupabase } from '../services/traffic-sales-aggregator.js';
 import { landingSupabase } from '../config/supabase-landing.js';
-import { IntegrationLogger } from '../services/integrationLogger.js';
-
 const router = Router();
 
 /**
@@ -151,18 +149,6 @@ router.post('/force-sync', async (req: Request, res: Response) => {
     results.duration_ms = Date.now() - startTime;
     results.success = results.errors.length === 0;
 
-    // Log successful sync
-    if (results.success) {
-      await IntegrationLogger.log({
-        service_name: 'traffic_dashboard',
-        action: 'force_sync',
-        status: 'success',
-        duration_ms: results.duration_ms,
-        request_payload: { sources, recalculate, dateRange },
-        response_payload: results
-      });
-    }
-
     console.log(`\n✅ Force Sync completed in ${results.duration_ms}ms\n`);
 
     res.json({
@@ -175,14 +161,6 @@ router.post('/force-sync', async (req: Request, res: Response) => {
     const duration = Date.now() - startTime;
 
     console.error('❌ Force Sync failed:', error);
-
-    await IntegrationLogger.log({
-      service_name: 'traffic_dashboard',
-      action: 'force_sync',
-      status: 'failed',
-      error_message: error.message,
-      duration_ms: duration
-    });
 
     res.status(500).json({
       success: false,
