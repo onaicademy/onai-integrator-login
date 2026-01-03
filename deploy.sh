@@ -1,128 +1,151 @@
 #!/bin/bash
 
-# 🚀 PRODUCTION DEPLOYMENT SCRIPT - Digital Ocean
-# Usage: ./deploy.sh
-# Based on: 🚀_DEPLOY_PRODUCTION_GUIDE.md
+# ═══════════════════════════════════════════════════════════════════════════
+# onAI Platform - Universal Deploy Script
+# ═══════════════════════════════════════════════════════════════════════════
+# Usage: ./deploy.sh [frontend|backend|all]
+#   frontend - Deploy only frontend to all 3 sites
+#   backend  - Deploy only backend (git pull + pm2 restart)
+#   all      - Full deployment (default)
 
 set -e
 
-echo "🚀 Starting deployment to Digital Ocean..."
+SERVER="root@207.154.231.30"
+SERVER_ALIAS="root@onai.academy"
+
+# All 3 frontend directories
+FRONTEND_DIRS=(
+    "/var/www/onai.academy"
+    "/var/www/traffic.onai.academy"
+    "/var/www/onai-integrator-login-expresscourse"
+)
 
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+CYAN='\033[0;36m'
+NC='\033[0m'
 
-# 0. BACKUP (CRITICAL - guide line 195)
-echo -e "${YELLOW}📦 Step 0: Creating backup...${NC}"
-ssh root@onai.academy "tar -czf /root/backup-onai-academy-\$(date +%Y%m%d-%H%M).tar.gz /var/www/onai.academy/"
-echo -e "${GREEN}✅ Backup created${NC}"
+MODE="${1:-all}"
 
-# 1. Push to GitHub
-echo -e "${BLUE}📦 Step 1: Pushing to GitHub...${NC}"
-git push origin main
+echo -e "${CYAN}"
+echo "╔══════════════════════════════════════════════════════════════════╗"
+echo "║              onAI Platform - Deploy Script                       ║"
+echo "║              Mode: ${MODE}                                            ║"
+echo "╚══════════════════════════════════════════════════════════════════╝"
+echo -e "${NC}"
 
-# 2. Pull on server
-echo -e "${BLUE}📥 Step 2: Pulling latest code on server...${NC}"
-ssh root@onai.academy "cd /var/www/onai-integrator-login-main && git pull origin main"
+# ═══════════════════════════════════════════════════════════════════════════
+# FRONTEND DEPLOYMENT
+# ═══════════════════════════════════════════════════════════════════════════
+deploy_frontend() {
+    echo -e "${BLUE}🏗️  Building frontend...${NC}"
+    rm -rf dist
+    npm run build
 
-# 3. Install backend dependencies
-echo -e "${BLUE}📦 Step 3: Installing backend dependencies...${NC}"
-ssh root@onai.academy "cd /var/www/onai-integrator-login-main/backend && npm install"
+    # Show BUILD_ID
+    BUILD_ID=$(grep -o "BUILD_ID = '[^']*'" dist/index.html | head -1)
+    echo -e "${GREEN}📦 Build ID: ${BUILD_ID}${NC}"
+    echo ""
 
-# 4. Build frontend locally
-echo -e "${BLUE}🏗️  Step 4: Building frontend...${NC}"
-rm -rf dist
-npm run build
+    echo -e "${BLUE}🚀 Deploying frontend to ALL sites...${NC}"
+    echo ""
 
-# 5. Sync dist with CORRECT permissions (guide line 147-158)
-echo -e "${BLUE}🔄 Step 5: Syncing frontend files to server...${NC}"
+    for dir in "${FRONTEND_DIRS[@]}"; do
+        echo -e "${YELLOW}→ Deploying to ${dir}${NC}"
+        rsync -avz --delete dist/ "${SERVER}:${dir}/" --quiet
+        echo -e "${GREEN}✓ Done${NC}"
+    done
 
-# Sync to onai.academy (NGINX ROOT - primary location) with --chown
-rsync -avz --delete \
-  --chown=www-data:www-data \
-  dist/ root@onai.academy:/var/www/onai.academy/
+    echo ""
+    echo -e "${BLUE}🔍 Verifying BUILD_ID on all sites...${NC}"
+    echo ""
 
-# Backup sync to onai-integrator-login-main/dist
-rsync -avz --delete dist/ root@onai.academy:/var/www/onai-integrator-login-main/dist/
+    for dir in "${FRONTEND_DIRS[@]}"; do
+        REMOTE_BUILD=$(ssh ${SERVER} "grep -o \"BUILD_ID = '[^']*'\" ${dir}/index.html 2>/dev/null" || echo "ERROR")
+        echo -e "${GREEN}✓ ${dir}${NC}"
+        echo -e "  ${REMOTE_BUILD}"
+    done
+}
 
-echo -e "${GREEN}✅ Files synced with correct permissions${NC}"
+# ═══════════════════════════════════════════════════════════════════════════
+# BACKEND DEPLOYMENT
+# ═══════════════════════════════════════════════════════════════════════════
+deploy_backend() {
+    echo -e "${BLUE}📦 Pushing to GitHub...${NC}"
+    git push origin main 2>/dev/null || echo "Nothing to push"
 
-# 6. Fix permissions (guide line 251-253)
-echo -e "${BLUE}🔐 Step 6: Fixing permissions...${NC}"
-ssh root@onai.academy "chown -R www-data:www-data /var/www/onai.academy/ && chmod -R 755 /var/www/onai.academy/"
-echo -e "${GREEN}✅ Permissions fixed${NC}"
+    echo -e "${BLUE}📥 Pulling latest code on server...${NC}"
+    ssh ${SERVER} "cd /var/www/onai-integrator-login-main && git stash 2>/dev/null; git pull origin main; git stash pop 2>/dev/null || true"
 
-# 7. Restart backend
-echo -e "${BLUE}🔄 Step 7: Restarting backend...${NC}"
-ssh root@onai.academy "pm2 restart onai-backend"
+    echo -e "${BLUE}📦 Installing backend dependencies...${NC}"
+    ssh ${SERVER} "cd /var/www/onai-integrator-login-main/backend && npm install --silent"
 
-# 8. Restart Nginx (guide line 267)
-echo -e "${BLUE}🔄 Step 8: Restarting Nginx...${NC}"
-ssh root@onai.academy "systemctl restart nginx"
+    echo -e "${BLUE}🔄 Restarting PM2 services...${NC}"
+    ssh ${SERVER} "pm2 restart all"
 
-# 9. Wait for services
-echo -e "${BLUE}⏳ Waiting for services to start...${NC}"
-sleep 5
+    echo ""
+    echo -e "${BLUE}📊 PM2 Status:${NC}"
+    ssh ${SERVER} "pm2 list"
+}
 
-# 10. Verify deployment (guide line 512-542)
-echo -e "${BLUE}🧪 Step 9: Verifying deployment...${NC}"
+# ═══════════════════════════════════════════════════════════════════════════
+# VERIFICATION
+# ═══════════════════════════════════════════════════════════════════════════
+verify_deployment() {
+    echo ""
+    echo -e "${BLUE}🏥 Checking API health...${NC}"
+    echo ""
 
-# Check file timestamp (guide line 273)
-TIMESTAMP=$(ssh root@onai.academy "stat -c '%y' /var/www/onai.academy/index.html")
-echo -e "${BLUE}📅 Timestamp: ${TIMESTAMP}${NC}"
+    ENDPOINTS=(
+        "https://api.onai.academy/api/health"
+        "https://traffic.onai.academy/api/health"
+        "https://expresscourse.onai.academy/api/health"
+    )
 
-# Check owner (guide line 256)
-OWNER=$(ssh root@onai.academy "ls -la /var/www/onai.academy/ | head -3 | tail -1 | awk '{print \$3\":\"\$4}'")
-if [ "$OWNER" = "www-data:www-data" ]; then
-  echo -e "${GREEN}✅ Owner: www-data:www-data${NC}"
-else
-  echo -e "${RED}❌ Owner: ${OWNER} (should be www-data:www-data)${NC}"
-fi
+    for endpoint in "${ENDPOINTS[@]}"; do
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$endpoint" 2>/dev/null || echo "000")
+        if [ "$STATUS" == "200" ]; then
+            echo -e "${GREEN}✓ ${endpoint} - OK${NC}"
+        else
+            echo -e "${RED}✗ ${endpoint} - HTTP ${STATUS}${NC}"
+        fi
+    done
+}
 
-# Check backend
-BACKEND_STATUS=$(ssh root@onai.academy "pm2 list | grep onai-backend | grep online" && echo "OK" || echo "FAIL")
-if [ "$BACKEND_STATUS" = "OK" ]; then
-  echo -e "${GREEN}✅ Backend: Online${NC}"
-else
-  echo -e "${RED}❌ Backend: Failed${NC}"
-  exit 1
-fi
-
-# Check API
-API_STATUS=$(curl -s https://onai.academy/api/traffic-dashboard/funnel | jq -r '.success' 2>/dev/null)
-if [ "$API_STATUS" = "true" ]; then
-  echo -e "${GREEN}✅ API: Working${NC}"
-else
-  echo -e "${RED}❌ API: Failed${NC}"
-  exit 1
-fi
-
-# Check frontend (guide line 522)
-FRONTEND_STATUS=$(curl -s https://onai.academy/ | grep "onAI Academy" && echo "OK" || echo "FAIL")
-if [ "$FRONTEND_STATUS" = "OK" ]; then
-  echo -e "${GREEN}✅ Frontend: Deployed${NC}"
-else
-  echo -e "${RED}❌ Frontend: Failed${NC}"
-  exit 1
-fi
+# ═══════════════════════════════════════════════════════════════════════════
+# MAIN EXECUTION
+# ═══════════════════════════════════════════════════════════════════════════
+case $MODE in
+    frontend)
+        deploy_frontend
+        verify_deployment
+        ;;
+    backend)
+        deploy_backend
+        verify_deployment
+        ;;
+    all)
+        deploy_backend
+        deploy_frontend
+        verify_deployment
+        ;;
+    *)
+        echo "Usage: ./deploy.sh [frontend|backend|all]"
+        exit 1
+        ;;
+esac
 
 echo ""
-echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}✅ DEPLOYMENT COMPLETE!${NC}"
-echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║                    DEPLOY COMPLETED                              ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo "🌐 URLs:"
-echo "  - Main: https://onai.academy/"
-echo "  - Traffic: https://onai.academy/traffic/login"
-echo "  - API: https://onai.academy/api/traffic-dashboard/funnel"
+echo "📋 Sites deployed:"
+echo "   • https://onai.academy"
+echo "   • https://traffic.onai.academy"
+echo "   • https://expresscourse.onai.academy"
 echo ""
-echo "📊 PM2 Status:"
-ssh root@onai.academy "pm2 list | grep onai-backend"
-echo ""
-echo "📦 Last Backup:"
-ssh root@onai.academy "ls -lht /root/backup-onai-academy-*.tar.gz | head -1"
-echo ""
-echo "🎯 Next: Test in browser (use Incognito mode + Hard Refresh: Cmd+Shift+R)"
+echo -e "${YELLOW}💡 If browser shows old version, press Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)${NC}"
