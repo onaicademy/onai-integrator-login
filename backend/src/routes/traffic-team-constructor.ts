@@ -270,8 +270,8 @@ router.post('/users', async (req: Request, res: Response) => {
         password_hash: hashedPassword,
         role: userRole,
         utm_source: finalUtmSource,
-        funnel_type: finalFunnelType,
-        auto_sync_enabled: true
+        funnel_type: finalFunnelType
+        // NOTE: auto_sync_enabled removed - column doesn't exist yet
       })
       .select()
       .single();

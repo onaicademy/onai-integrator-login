@@ -33,16 +33,18 @@ interface PremiumFunnelPyramidProps {
   date?: string | null;
   startDate?: string | null;
   endDate?: string | null;
+  funnel?: 'express' | 'challenge3d' | 'intensive1d';
+  refreshTrigger?: number;
 }
 
-export function PremiumFunnelPyramid({ teamFilter, userId, compact = false, preset, date, startDate, endDate }: PremiumFunnelPyramidProps) {
+export function PremiumFunnelPyramid({ teamFilter, userId, compact = false, preset, date, startDate, endDate, funnel = 'express', refreshTrigger }: PremiumFunnelPyramidProps) {
   const [loading, setLoading] = useState(true);
   const [stages, setStages] = useState<FunnelStage[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
 
   useEffect(() => {
     fetchFunnelData();
-  }, [teamFilter, userId, preset, date, startDate, endDate]);
+  }, [teamFilter, userId, preset, date, startDate, endDate, funnel, refreshTrigger]);
 
   const fetchFunnelData = async () => {
     try {
@@ -58,6 +60,7 @@ export function PremiumFunnelPyramid({ teamFilter, userId, compact = false, pres
         params.set('start', startDate);
         params.set('end', endDate);
       }
+      if (funnel) params.set('funnel', funnel);
       const url = `${apiUrl}/api/traffic-dashboard/funnel${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await axios.get(url);

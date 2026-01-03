@@ -38,12 +38,14 @@ router.get('/funnel', async (req: Request, res: Response) => {
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const start = typeof req.query.start === 'string' ? req.query.start : undefined;
     const end = typeof req.query.end === 'string' ? req.query.end : undefined;
+    const funnel = req.query.funnel as 'express' | 'challenge3d' | 'intensive1d' | undefined;
     const dateRange = resolveFunnelDateRange(preset, date, start, end);
-    
+
     console.log('[Funnel API] GET /funnel - fetching all stages');
     console.log('[Funnel API] Team filter:', teamFilter || 'all teams');
+    console.log('[Funnel API] Funnel type:', funnel || 'express (default)');
 
-    const result = await getFunnelMetrics(teamFilter, userId, dateRange);
+    const result = await getFunnelMetrics(teamFilter, userId, dateRange, funnel);
 
     return res.json(result);
 

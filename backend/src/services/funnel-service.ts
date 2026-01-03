@@ -678,9 +678,17 @@ async function getMainProductMetrics(teamFilter?: string, utmSourceOverride?: st
 // ════════════════════════════════════════════════════════════════════════
 // MAIN FUNCTION: GET FUNNEL METRICS
 // ════════════════════════════════════════════════════════════════════════
-export async function getFunnelMetrics(teamFilter?: string, userId?: string, dateRange?: FunnelDateRange): Promise<FunnelResponse> {
+export type FunnelType = 'express' | 'challenge3d' | 'intensive1d';
+
+export async function getFunnelMetrics(
+  teamFilter?: string,
+  userId?: string,
+  dateRange?: FunnelDateRange,
+  funnelType: FunnelType = 'express'
+): Promise<FunnelResponse> {
   console.log('[Funnel Service] 🚀 Getting funnel metrics...');
   console.log('[Funnel Service] Team filter:', teamFilter || 'all teams');
+  console.log('[Funnel Service] Funnel type:', funnelType);
   const resolvedRange = dateRange || resolveFunnelDateRange();
 
   try {
