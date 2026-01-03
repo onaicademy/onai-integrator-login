@@ -20,6 +20,7 @@ interface AuthUser {
   fullName: string;
   team: string | null;
   role: 'admin' | 'targetologist' | 'analyst';
+  funnelType?: 'express' | 'challenge3d' | 'intensive1d';
 }
 
 class AuthManager {

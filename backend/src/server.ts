@@ -160,6 +160,7 @@ import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // �
 import amocrmMainProductWebhookRouter from './routes/amocrm-main-product-webhook.js'; // 🏆 AmoCRM → Main Product Webhook
 import amocrmChallenge3dWebhookRouter from './routes/amocrm-challenge3d-webhook.js'; // 📚 AmoCRM → Challenge 3D Sales Webhook
 import amocrmChallenge3dLeadsWebhookRouter from './routes/amocrm-challenge3d-leads-webhook.js'; // 📋 AmoCRM → Challenge 3D ALL Leads Webhook
+import amocrmChallenge3dPrepaymentWebhookRouter from './routes/amocrm-challenge3d-prepayment-webhook.js'; // 💳 AmoCRM → Challenge 3D Prepayments Webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
@@ -423,6 +424,8 @@ app.use('/api/amocrm/challenge3d-sale', express.urlencoded({ extended: true, lim
 app.use('/api/amocrm/challenge3d-sale', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
 app.use('/api/amocrm/challenge3d-lead', express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/amocrm/challenge3d-lead', express.json({ limit: '10mb' })); // Challenge3D ALL Leads
+app.use('/api/amocrm/challenge3d-prepayment', express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/api/amocrm/challenge3d-prepayment', express.json({ limit: '10mb' })); // Challenge3D Prepayments
 app.use('/webhook/amocrm', express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/webhook/amocrm', express.json({ limit: '10mb' }));
 
@@ -431,6 +434,7 @@ app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 📚 AmoCRM → Express Co
 // NOTE: amocrmFunnelWebhookRouter already handles Express Course webhooks
 app.use('/api/amocrm', amocrmChallenge3dWebhookRouter); // 📚 AmoCRM → Challenge 3D Sales Webhook
 app.use('/api/amocrm', amocrmChallenge3dLeadsWebhookRouter); // 📋 AmoCRM → Challenge 3D ALL Leads Webhook
+app.use('/api/amocrm', amocrmChallenge3dPrepaymentWebhookRouter); // 💳 AmoCRM → Challenge 3D Prepayments Webhook
 app.use('/webhook/amocrm', amocrmMainProductWebhookRouter); // 🏆 AmoCRM → Main Product Webhook (490K KZT)
 app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook (legacy)
 app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook

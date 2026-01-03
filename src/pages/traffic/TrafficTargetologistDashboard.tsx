@@ -243,22 +243,24 @@ export default function TrafficTargetologistDashboard() {
                 <BarChart3 className="w-4 h-4" />
               </Button>
 
-              {/* My Results Toggle */}
-              <Button
-                onClick={() => setShowOnlyMyTeam(!showOnlyMyTeam)}
-                variant="ghost"
-                size="sm"
-                className={`h-9 px-3 border ${
-                  showOnlyMyTeam 
-                    ? 'bg-[#00FF88] border-[#00FF88] text-black hover:bg-[#00FF88]/90' 
-                    : 'bg-transparent border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
-                }`}
-              >
-                {showOnlyMyTeam ? <User className="w-4 h-4 mr-1" /> : <Users className="w-4 h-4 mr-1" />}
-                <span className="hidden sm:inline text-xs">
-                  {showOnlyMyTeam ? t('btn.myResults') : t('btn.allTeams')}
-                </span>
-              </Button>
+              {/* My Results Toggle - только для админа */}
+              {user?.role === 'admin' && (
+                <Button
+                  onClick={() => setShowOnlyMyTeam(!showOnlyMyTeam)}
+                  variant="ghost"
+                  size="sm"
+                  className={`h-9 px-3 border ${
+                    showOnlyMyTeam
+                      ? 'bg-[#00FF88] border-[#00FF88] text-black hover:bg-[#00FF88]/90'
+                      : 'bg-transparent border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                  }`}
+                >
+                  {showOnlyMyTeam ? <User className="w-4 h-4 mr-1" /> : <Users className="w-4 h-4 mr-1" />}
+                  <span className="hidden sm:inline text-xs">
+                    {showOnlyMyTeam ? t('btn.myResults') : t('btn.allTeams')}
+                  </span>
+                </Button>
+              )}
 
               {/* Logout */}
               <Button
@@ -415,12 +417,13 @@ export default function TrafficTargetologistDashboard() {
               {/* Left: Funnel Pyramid */}
               <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
                 <PremiumFunnelPyramid
-                  teamFilter={showOnlyMyTeam ? teamName : null}
+                  teamFilter={user?.role === 'admin' ? (showOnlyMyTeam ? teamName : null) : teamName}
                   userId={user?.id}
                   preset={customDate || hasCustomRange ? null : dateRange}
                   date={customDate}
                   startDate={hasCustomRange ? rangeStart : null}
                   endDate={hasCustomRange ? rangeEnd : null}
+                  funnel={user?.funnelType || 'express'}
                 />
               </div>
 

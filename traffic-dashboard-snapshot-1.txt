@@ -1,0 +1,16 @@
+uid=1_0 RootWebArea "onAI Academy - Платформа обучения AI" url="https://traffic.onai.academy/login"
+  uid=1_1 region "Notifications (F8)"
+    uid=1_2 list
+  uid=1_3 region "Notifications alt+T"
+  uid=1_4 button "РУС"
+  uid=1_5 heading "КОМАНДНАЯ ПАНЕЛЬ ТРАФИКА" level="1"
+  uid=1_6 StaticText "ВХОД В СИСТЕМУ"
+  uid=1_7 StaticText "Email"
+  uid=1_8 textbox "your@email.com" required
+  uid=1_9 StaticText "Пароль"
+  uid=1_10 textbox "••••••••" required
+  uid=1_11 button "Войти →"
+  uid=1_12 StaticText "OnAI Academy Traffic Dashboard"
+  uid=1_13 StaticText "2025"
+  uid=1_14 StaticText "⚠️ IP-адреса отслеживаются."
+  uid=1_15 StaticText " Передача доступа запрещена. Конфиденциальная информация."

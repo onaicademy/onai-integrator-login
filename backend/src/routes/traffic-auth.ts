@@ -167,7 +167,7 @@ router.post('/login', trafficLoginRateLimit, async (req, res) => {
       if (!user) {
         const { data: userRow, error: userError } = await trafficAdminSupabase
           .from('traffic_users')
-          .select('id,email,full_name,team_name,role,password_hash,is_active')
+          .select('id,email,full_name,team_name,role,password_hash,is_active,funnel_type')
           .eq('email', email.toLowerCase().trim())
           .eq('is_active', true)
           .maybeSingle();
@@ -238,7 +238,8 @@ router.post('/login', trafficLoginRateLimit, async (req, res) => {
         email: user.email,
         fullName: user.full_name,
         team: user.team || null, // ✅ Ensure NULL is properly serialized
-        role: user.role
+        role: user.role,
+        funnelType: user.funnel_type || 'express' // ✅ Добавляем funnel_type
       }
     });
   } catch (error) {
@@ -274,7 +275,7 @@ router.post('/refresh', async (req, res) => {
       // Get user to verify they still exist and are active
       const { data: user, error } = await trafficAdminSupabase
         .from('traffic_users')
-        .select('id, email, full_name, team_name, role')
+        .select('id, email, full_name, team_name, role, funnel_type')
         .eq('id', decoded.userId)
         .eq('is_active', true)
         .single();
@@ -315,7 +316,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     // Try traffic_users first (primary table)
     let { data: user, error } = await trafficAdminSupabase
       .from('traffic_users')
-      .select('id, email, full_name, team_name, role, updated_at')
+      .select('id, email, full_name, team_name, role, updated_at, funnel_type')
       .eq('id', req.user.userId)
       .eq('is_active', true)
       .single();
@@ -324,7 +325,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     if (error || !user) {
       const result = await trafficAdminSupabase
         .from('traffic_users')
-        .select('id, email, full_name, team_name, role, avatar_url, last_login_at')
+        .select('id, email, full_name, team_name, role, avatar_url, last_login_at, funnel_type')
         .eq('id', req.user.userId)
         .maybeSingle();
 
@@ -341,7 +342,8 @@ router.get('/me', authenticateToken, async (req, res) => {
         email: user.email,
         fullName: user.full_name,
         team: (user.team_name === 'ADMIN' || user.team === 'ADMIN') ? null : (user.team_name || user.team),  // ✅ ADMIN => null
-        role: user.role
+        role: user.role,
+        funnelType: user.funnel_type || 'express' // ✅ Добавляем funnel_type
       }
     });
   } catch (error) {

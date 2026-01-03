@@ -1,13 +1,16 @@
 /**
  * Traffic Funnel API Routes
- * 
+ *
  * Endpoints для воронки продаж ONAI Academy:
  * - GET /api/traffic-dashboard/funnel - все этапы воронки
  * - GET /api/traffic-dashboard/funnel/:stageId - детали по конкретному этапу
+ * - GET /api/traffic-dashboard/funnel/leads-by-date - разбивка лидов по датам
  */
 
 import { Router, Request, Response } from 'express';
-import { getFunnelMetrics, getFunnelStageDetails, resolveFunnelDateRange } from '../services/funnel-service.js';
+import { getFunnelMetrics, getFunnelStageDetails, resolveFunnelDateRange, getDateBounds } from '../services/funnel-service.js';
+import { getTeamUtmRule, matchesTeamUtm } from '../services/funnel-service.js';
+import { landingSupabase } from '../config/supabase-landing.js';
 
 const router = Router();
 
@@ -272,6 +275,125 @@ router.get('/funnel-analytics', async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: error.message || 'Failed to fetch funnel analytics',
+    });
+  }
+});
+
+/**
+ * GET /api/traffic-dashboard/funnel/leads-by-date
+ *
+ * Получить разбивку лидов по датам
+ *
+ * Query params:
+ * - team (optional): Фильтр по команде
+ * - funnel (optional): Тип воронки (express, challenge3d, intensive1d)
+ * - start (optional): Начальная дата (YYYY-MM-DD)
+ * - end (optional): Конечная дата (YYYY-MM-DD)
+ * - preset (optional): Пресет диапазона (7d, 14d, 30d)
+ *
+ * Response:
+ * {
+ *   "success": true,
+ *   "data": [
+ *     { "date": "2025-12-29", "leads": 125 },
+ *     { "date": "2025-12-30", "leads": 150 },
+ *     { "date": "2025-12-31", "leads": 100 }
+ *   ],
+ *   "totalLeads": 375
+ * }
+ */
+router.get('/funnel/leads-by-date', async (req: Request, res: Response) => {
+  try {
+    const teamFilter = req.query.team as string | undefined;
+    const funnel = req.query.funnel as 'express' | 'challenge3d' | 'intensive1d' | undefined;
+    const preset = typeof req.query.preset === 'string' ? req.query.preset : undefined;
+    const start = typeof req.query.start === 'string' ? req.query.start : undefined;
+    const end = typeof req.query.end === 'string' ? req.query.end : undefined;
+    const dateRange = resolveFunnelDateRange(preset, undefined, start, end);
+    const { start: startDate, end: endDate } = getDateBounds(dateRange);
+
+    console.log('[Funnel API] GET /funnel/leads-by-date - fetching leads by date');
+    console.log('[Funnel API] Team filter:', teamFilter || 'all teams');
+    console.log('[Funnel API] Funnel type:', funnel || 'express (default)');
+
+    let tableName = 'landing_leads';
+    let sourceFilter: string | null = null;
+
+    // Определяем таблицу и фильтр по типу воронки
+    if (funnel === 'challenge3d') {
+      sourceFilter = 'challenge3d';
+    } else if (funnel === 'intensive1d') {
+      sourceFilter = 'intensive1d';
+    } else {
+      // Express funnel: proftest%, TF4, expresscourse
+      sourceFilter = null; // Будем фильтровать в запросе
+    }
+
+    // Получаем лиды из Landing DB
+    let query = landingSupabase
+      .from(tableName)
+      .select('id, created_at, source, utm_source, utm_medium, metadata')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate);
+
+    // Фильтр по типу источника
+    if (sourceFilter) {
+      query = query.eq('source', sourceFilter);
+    } else if (funnel === 'express' || !funnel) {
+      // Express funnel: proftest%, TF4, expresscourse
+      query = query.or('source.like.proftest%,source.eq.TF4,source.eq.expresscourse');
+    }
+
+    const { data: leads, error } = await query;
+
+    if (error) {
+      console.error('[Funnel API] Error fetching leads by date:', error);
+      throw error;
+    }
+
+    // Фильтр по UTM команде
+    const teamUtmRule = teamFilter ? getTeamUtmRule(teamFilter) : null;
+    let filteredLeads = leads || [];
+
+    if (teamFilter && teamUtmRule) {
+      filteredLeads = filteredLeads.filter(lead => matchesTeamUtm(lead, teamUtmRule));
+    }
+
+    // Группировка по датам (извлекаем только дату без времени)
+    const leadsByDate = new Map<string, number>();
+
+    filteredLeads.forEach((lead: any) => {
+      const date = lead.created_at.split('T')[0]; // YYYY-MM-DD
+      leadsByDate.set(date, (leadsByDate.get(date) || 0) + 1);
+    });
+
+    // Преобразуем в массив и сортируем по дате
+    const data = Array.from(leadsByDate.entries())
+      .map(([date, leads]) => ({ date, leads }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const totalLeads = filteredLeads.length;
+
+    console.log(`[Funnel API] ✅ Leads by date: ${totalLeads} total, ${data.length} days`);
+
+    return res.json({
+      success: true,
+      data,
+      totalLeads,
+      period: {
+        start: dateRange.since,
+        end: dateRange.until
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error: any) {
+    console.error('[Funnel API] Error getting leads by date:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch leads by date',
+      data: [],
+      totalLeads: 0
     });
   }
 });

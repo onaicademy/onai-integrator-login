@@ -68,66 +68,126 @@ export function PremiumFunnelPyramid({ teamFilter, userId, compact = false, pres
       if (response.data.success) {
         const apiStages = response.data.stages || [];
         
-        // Extract stages from API response
-        const spendStage = apiStages.find((s: any) => s.id === 'spend');
-        const proftestStage = apiStages.find((s: any) => s.id === 'proftest');
-        const expressStage = apiStages.find((s: any) => s.id === 'express');
-        const mainStage = apiStages.find((s: any) => s.id === 'main');
+        // 🎯 CHALLENGE3D FUNNEL: 4 stages (Spend → Leads → Prepayments → Full Purchases)
+        if (funnel === 'challenge3d') {
+          const spendStage = apiStages.find((s: any) => s.id === 'spend');
+          const leadsStage = apiStages.find((s: any) => s.id === 'challenge3d_leads');
+          const prepaymentsStage = apiStages.find((s: any) => s.id === 'challenge3d_prepayments');
+          const fullPurchasesStage = apiStages.find((s: any) => s.id === 'challenge3d_full_purchases');
 
-        // Extract values
-        const spendUSD = spendStage?.metrics?.spend_usd || 0;
-        const spendKZT = spendStage?.metrics?.spend_kzt || 0;
-        const proftestLeads = proftestStage?.metrics?.proftest_leads || 0;
-        const expressPurchases = expressStage?.metrics?.express_purchases || 0;
-        const expressRevenue = expressStage?.metrics?.express_revenue || 0;
-        const mainPurchases = mainStage?.metrics?.main_purchases || 0;
-        const mainRevenue = mainStage?.metrics?.main_revenue || 0;
+          const spendUSD = spendStage?.metrics?.spend_usd || 0;
+          const spendKZT = spendStage?.metrics?.spend_kzt || 0;
+          const leads = leadsStage?.metrics?.challenge3d_leads || 0;
+          const prepayments = prepaymentsStage?.metrics?.challenge3d_prepayments || 0;
+          const prepaymentRevenue = prepaymentsStage?.metrics?.challenge3d_prepayment_revenue || 0;
+          const fullPurchases = fullPurchasesStage?.metrics?.challenge3d_full_purchases || 0;
+          const fullRevenue = fullPurchasesStage?.metrics?.challenge3d_full_revenue || 0;
 
-        // Calculate conversions
-        const spendToLeads = spendUSD > 0 ? (proftestLeads / (spendUSD * 100)) * 100 : 0; // leads per $100
-        const leadsToExpress = proftestLeads > 0 ? (expressPurchases / proftestLeads) * 100 : 0;
-        const expressToMain = expressPurchases > 0 ? (mainPurchases / expressPurchases) * 100 : 0;
+          // Calculate conversions
+          const spendToLeads = spendUSD > 0 ? (leads / spendUSD) : 0;
+          const leadsToPrepayments = leads > 0 ? (prepayments / leads) * 100 : 0;
+          const prepaymentsToFull = prepayments > 0 ? (fullPurchases / prepayments) * 100 : 0;
 
-        const mappedStages: FunnelStage[] = [
-          {
-            id: 'spend',
-            label: 'Затраты',
-            sublabel: 'Facebook Ads',
-            value: `$${spendUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            revenue: spendKZT,
-            conversionRate: undefined,
-            icon: <DollarSign className="w-5 h-5" />,
-          },
-          {
-            id: 'proftest',
-            label: 'ProfTest Лиды',
-            sublabel: 'Регистрации',
-            value: proftestLeads,
-            conversionRate: undefined, // First real metric stage
-            icon: <Users className="w-5 h-5" />,
-          },
-          {
-            id: 'express',
-            label: 'Купили Express',
-            sublabel: '5,000₸ за курс',
-            value: expressPurchases,
-            revenue: expressRevenue,
-            conversionRate: leadsToExpress,
-            icon: <ShoppingCart className="w-5 h-5" />,
-          },
-          {
-            id: 'main',
-            label: 'Купили Flagman',
-            sublabel: '490,000₸ за курс',
-            value: mainPurchases,
-            revenue: mainRevenue,
-            conversionRate: expressToMain,
-            icon: <Award className="w-5 h-5" />,
-          },
-        ];
+          const mappedStages: FunnelStage[] = [
+            {
+              id: 'spend',
+              label: 'Затраты',
+              sublabel: 'Facebook Ads',
+              value: `$${spendUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              revenue: spendKZT,
+              conversionRate: undefined,
+              icon: <DollarSign className="w-5 h-5" />,
+            },
+            {
+              id: 'challenge3d_leads',
+              label: 'Лиды',
+              sublabel: 'Заявки с лендинга (3х дневник)',
+              value: leads,
+              conversionRate: spendToLeads,
+              icon: <Users className="w-5 h-5" />,
+            },
+            {
+              id: 'challenge3d_prepayments',
+              label: 'Предоплаты',
+              sublabel: 'Депозиты (≤5000₸)',
+              value: prepayments,
+              revenue: prepaymentRevenue,
+              conversionRate: leadsToPrepayments,
+              icon: <ShoppingCart className="w-5 h-5" />,
+            },
+            {
+              id: 'challenge3d_full_purchases',
+              label: 'Полные покупки',
+              sublabel: 'Полная оплата (>5000₸)',
+              value: fullPurchases,
+              revenue: fullRevenue,
+              conversionRate: prepaymentsToFull,
+              icon: <Award className="w-5 h-5" />,
+            },
+          ];
 
-        setStages(mappedStages);
-        setTotalRevenue(response.data.totalRevenue || expressRevenue + mainRevenue);
+          setStages(mappedStages);
+          setTotalRevenue(response.data.totalRevenue || prepaymentRevenue + fullRevenue);
+        } else {
+          // 📚 EXPRESS FUNNEL: 4 stages (Spend → ProfTest Leads → Express → Flagman)
+          const spendStage = apiStages.find((s: any) => s.id === 'spend');
+          const proftestStage = apiStages.find((s: any) => s.id === 'proftest');
+          const expressStage = apiStages.find((s: any) => s.id === 'express');
+          const mainStage = apiStages.find((s: any) => s.id === 'main');
+
+          const spendUSD = spendStage?.metrics?.spend_usd || 0;
+          const spendKZT = spendStage?.metrics?.spend_kzt || 0;
+          const proftestLeads = proftestStage?.metrics?.proftest_leads || 0;
+          const expressPurchases = expressStage?.metrics?.express_purchases || 0;
+          const expressRevenue = expressStage?.metrics?.express_revenue || 0;
+          const mainPurchases = mainStage?.metrics?.main_purchases || 0;
+          const mainRevenue = mainStage?.metrics?.main_revenue || 0;
+
+          const spendToLeads = spendUSD > 0 ? (proftestLeads / (spendUSD * 100)) * 100 : 0;
+          const leadsToExpress = proftestLeads > 0 ? (expressPurchases / proftestLeads) * 100 : 0;
+          const expressToMain = expressPurchases > 0 ? (mainPurchases / expressPurchases) * 100 : 0;
+
+          const mappedStages: FunnelStage[] = [
+            {
+              id: 'spend',
+              label: 'Затраты',
+              sublabel: 'Facebook Ads',
+              value: `$${spendUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              revenue: spendKZT,
+              conversionRate: undefined,
+              icon: <DollarSign className="w-5 h-5" />,
+            },
+            {
+              id: 'proftest',
+              label: 'ProfTest Лиды',
+              sublabel: 'Регистрации',
+              value: proftestLeads,
+              conversionRate: undefined,
+              icon: <Users className="w-5 h-5" />,
+            },
+            {
+              id: 'express',
+              label: 'Купили Express',
+              sublabel: '5,000₸ за курс',
+              value: expressPurchases,
+              revenue: expressRevenue,
+              conversionRate: leadsToExpress,
+              icon: <ShoppingCart className="w-5 h-5" />,
+            },
+            {
+              id: 'main',
+              label: 'Купили Flagman',
+              sublabel: '490,000₸ за курс',
+              value: mainPurchases,
+              revenue: mainRevenue,
+              conversionRate: expressToMain,
+              icon: <Award className="w-5 h-5" />,
+            },
+          ];
+
+          setStages(mappedStages);
+          setTotalRevenue(response.data.totalRevenue || expressRevenue + mainRevenue);
+        }
       } else {
         setStages(getPlaceholderStages());
       }

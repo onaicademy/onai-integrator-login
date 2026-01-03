@@ -270,8 +270,8 @@ router.post('/users', async (req: Request, res: Response) => {
         password_hash: hashedPassword,
         role: userRole,
         utm_source: finalUtmSource,
-        utm_medium: utmMedium,
-        tracking_by: trackingBy,
+        utm_medium: finalUtmMedium,
+        tracking_by: finalTrackingBy,
         funnel_type: finalFunnelType
       })
       .select()

@@ -81,20 +81,20 @@ const TEAM_ALIASES: Record<string, string> = {
 };
 
 // Get UTM rule for team
-function getTeamUtmRule(teamName?: string): TeamUtmRule | null {
+export function getTeamUtmRule(teamName?: string): TeamUtmRule | null {
   if (!teamName) return null;
   const normalized = TEAM_ALIASES[teamName.toLowerCase()] || teamName.toLowerCase();
   return TEAM_UTM_MAPPING[normalized] || null;
 }
 
 // Check if a lead matches team's UTM rules
-function matchesTeamUtm(lead: { utm_source?: string; utm_medium?: string; metadata?: any }, rule: TeamUtmRule): boolean {
+export function matchesTeamUtm(lead: { utm_source?: string; utm_medium?: string; metadata?: any }, rule: TeamUtmRule): boolean {
   const utmSource = lead.utm_source || lead.metadata?.utmParams?.utm_source || lead.metadata?.utm_source;
   const utmMedium = lead.utm_medium || lead.metadata?.utmParams?.utm_medium || lead.metadata?.utm_medium;
   
   if (!utmSource) return false;
   
-  const sourceMatches = rule.sources.some(s => 
+  const sourceMatches = rule.sources.some(s =>
     utmSource.toLowerCase() === s.toLowerCase()
   );
   
@@ -167,7 +167,7 @@ function getRangeCacheKey(range?: FunnelDateRange): string {
   return `${range.since}:${range.until}`;
 }
 
-function getDateBounds(range: FunnelDateRange) {
+export function getDateBounds(range: FunnelDateRange) {
   const start = new Date(`${range.since}T00:00:00+06:00`);
   const end = new Date(`${range.until}T23:59:59.999+06:00`);
   return {
@@ -284,6 +284,13 @@ export interface FunnelMetrics {
   // Stage 5: Main Product (Integrator Flagman)
   main_purchases?: number;
   main_revenue?: number;
+
+  // Challenge3D Funnel (3-Day Challenge from Landing DB)
+  challenge3d_leads?: number;              // Лиды с landing_leads (source='challenge3d')
+  challenge3d_prepayments?: number;        // Предоплаты (prepaid=true OR amount<=5000)
+  challenge3d_prepayment_revenue?: number; // Revenue от предоплат
+  challenge3d_full_purchases?: number;     // Полные покупки (prepaid=false AND amount>5000)
+  challenge3d_full_revenue?: number;       // Revenue от полных покупок
 }
 
 export interface FunnelStage {
@@ -682,6 +689,226 @@ async function getChallenge3dPurchases(teamFilter?: string, utmSourceOverride?: 
 }
 
 // ════════════════════════════════════════════════════════════════════════
+// CHALLENGE3D FUNNEL - STAGE 2: LEADS (from Landing DB)
+// ════════════════════════════════════════════════════════════════════════
+async function getChallenge3dLeads(teamFilter?: string, utmSourceOverride?: string, dateRange?: FunnelDateRange): Promise<FunnelMetrics> {
+  const resolvedRange = dateRange || resolveFunnelDateRange();
+  const rangeKey = getRangeCacheKey(resolvedRange);
+  const cacheKey = `funnel:challenge3d_leads:${utmSourceOverride || teamFilter || 'all'}:${rangeKey}`;
+
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching Challenge3D LEADS from Landing DB (landing_leads)...');
+      const { start, end } = getDateBounds(resolvedRange);
+
+      // Get leads from landing_leads table where source='challenge3d'
+      let query = landingSupabase
+        .from('landing_leads')
+        .select('id, utm_source, utm_medium, utm_campaign, created_at, metadata')
+        .eq('source', 'challenge3d')
+        .gte('created_at', start)
+        .lte('created_at', end);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('[Funnel] Challenge3D Leads error:', error.message);
+        throw error;
+      }
+
+      // Filter by UTM in-memory
+      let filteredData = data || [];
+      if (utmSourceOverride) {
+        filteredData = filteredData.filter(lead => matchesUtmSource(lead, utmSourceOverride));
+      } else if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Challenge3D Leads by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(lead => matchesTeamUtm(lead, teamUtmRule));
+        }
+      }
+
+      const challenge3d_leads = filteredData.length;
+
+      console.log(`[Funnel] ✅ Challenge3D Leads: ${challenge3d_leads}`);
+
+      return {
+        challenge3d_leads,
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getChallenge3dLeads failed:', error.message);
+      return {
+        challenge3d_leads: 0,
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// CHALLENGE3D FUNNEL - STAGE 3: PREPAYMENTS (deposits ≤5000₸)
+// ════════════════════════════════════════════════════════════════════════
+async function getChallenge3dPrepayments(teamFilter?: string, utmSourceOverride?: string, dateRange?: FunnelDateRange): Promise<FunnelMetrics> {
+  const resolvedRange = dateRange || resolveFunnelDateRange();
+  const rangeKey = getRangeCacheKey(resolvedRange);
+  const cacheKey = `funnel:challenge3d_prepayments:${utmSourceOverride || teamFilter || 'all'}:${rangeKey}`;
+
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching Challenge3D PREPAYMENTS from Landing DB (challenge3d_sales)...');
+      const { start, end } = getDateBounds(resolvedRange);
+
+      // Get prepayments: prepaid=true OR amount <= 5000
+      let query = landingSupabase
+        .from('challenge3d_sales')
+        .select('id, amount, utm_source, utm_medium, sale_date, deal_id, prepaid')
+        .gte('sale_date', start)
+        .lte('sale_date', end);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('[Funnel] Challenge3D Prepayments error:', error.message);
+        throw error;
+      }
+
+      // Filter by UTM in-memory
+      let filteredData = data || [];
+      if (utmSourceOverride) {
+        filteredData = filteredData.filter(sale => matchesUtmSource(sale, utmSourceOverride));
+      } else if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Challenge3D Prepayments by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(sale => matchesTeamUtm(sale, teamUtmRule));
+        }
+      }
+
+      // Filter prepayments: prepaid=true OR amount <= 5000
+      const prepayments = filteredData.filter(sale => {
+        const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+        return sale.prepaid === true || (amount && amount <= 5000);
+      });
+
+      const challenge3d_prepayments = prepayments.length;
+      const challenge3d_prepayment_revenue = prepayments.reduce((sum, row) => {
+        const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
+        return sum + (amount || 0);
+      }, 0);
+
+      console.log(`[Funnel] ✅ Challenge3D Prepayments: ${challenge3d_prepayments} (${challenge3d_prepayment_revenue.toLocaleString()} KZT)`);
+
+      return {
+        challenge3d_prepayments,
+        challenge3d_prepayment_revenue,
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getChallenge3dPrepayments failed:', error.message);
+      return {
+        challenge3d_prepayments: 0,
+        challenge3d_prepayment_revenue: 0,
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// CHALLENGE3D FUNNEL - STAGE 4: FULL PURCHASES (amount >5000₸)
+// ════════════════════════════════════════════════════════════════════════
+async function getChallenge3dFullPurchases(teamFilter?: string, utmSourceOverride?: string, dateRange?: FunnelDateRange): Promise<FunnelMetrics> {
+  const resolvedRange = dateRange || resolveFunnelDateRange();
+  const rangeKey = getRangeCacheKey(resolvedRange);
+  const cacheKey = `funnel:challenge3d_full_purchases:${utmSourceOverride || teamFilter || 'all'}:${rangeKey}`;
+
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching Challenge3D FULL PURCHASES from Landing DB (challenge3d_sales)...');
+      const { start, end } = getDateBounds(resolvedRange);
+
+      // Get full purchases: prepaid=false AND amount > 5000
+      let query = landingSupabase
+        .from('challenge3d_sales')
+        .select('id, amount, utm_source, utm_medium, sale_date, deal_id, prepaid')
+        .gte('sale_date', start)
+        .lte('sale_date', end);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('[Funnel] Challenge3D Full Purchases error:', error.message);
+        throw error;
+      }
+
+      // Filter by UTM in-memory
+      let filteredData = data || [];
+      if (utmSourceOverride) {
+        filteredData = filteredData.filter(sale => matchesUtmSource(sale, utmSourceOverride));
+      } else if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Challenge3D Full Purchases by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(sale => matchesTeamUtm(sale, teamUtmRule));
+        }
+      }
+
+      // Filter full purchases: prepaid=false AND amount > 5000
+      const fullPurchases = filteredData.filter(sale => {
+        const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+        return sale.prepaid === false && amount && amount > 5000;
+      });
+
+      const challenge3d_full_purchases = fullPurchases.length;
+      const challenge3d_full_revenue = fullPurchases.reduce((sum, row) => {
+        const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
+        return sum + (amount || 0);
+      }, 0);
+
+      console.log(`[Funnel] ✅ Challenge3D Full Purchases: ${challenge3d_full_purchases} (${challenge3d_full_revenue.toLocaleString()} KZT)`);
+
+      return {
+        challenge3d_full_purchases,
+        challenge3d_full_revenue,
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getChallenge3dFullPurchases failed:', error.message);
+      return {
+        challenge3d_full_purchases: 0,
+        challenge3d_full_revenue: 0,
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════════════
 // STAGE 4C: INTENSIVE1D COURSE (1-Day Intensive - if table exists)
 // ════════════════════════════════════════════════════════════════════════
 async function getIntensive1dPurchases(teamFilter?: string, utmSourceOverride?: string, dateRange?: FunnelDateRange): Promise<FunnelMetrics> {
@@ -815,6 +1042,118 @@ async function getMainProductMetrics(teamFilter?: string, utmSourceOverride?: st
 }
 
 // ════════════════════════════════════════════════════════════════════════
+// CHALLENGE3D FUNNEL BUILDER (4 этапа: Затраты → Лиды → Предоплаты → Покупки)
+// ════════════════════════════════════════════════════════════════════════
+function buildChallenge3dFunnel(
+  facebook: FunnelMetrics,
+  leads: FunnelMetrics,
+  prepayments: FunnelMetrics,
+  fullPurchases: FunnelMetrics
+): FunnelResponse {
+  // ════════════════════════════════════════════════════════════════
+  // EXTRACT DATA
+  // ════════════════════════════════════════════════════════════════
+  const spend_kzt = facebook.spend_kzt || 0;
+  const impressions = facebook.impressions || 0;
+
+  const total_leads = leads.challenge3d_leads || 0;
+  const total_prepayments = prepayments.challenge3d_prepayments || 0;
+  const prepayment_revenue = prepayments.challenge3d_prepayment_revenue || 0;
+  const total_full_purchases = fullPurchases.challenge3d_full_purchases || 0;
+  const full_purchase_revenue = fullPurchases.challenge3d_full_revenue || 0;
+
+  const total_revenue = prepayment_revenue + full_purchase_revenue;
+  const total_sales = total_prepayments + total_full_purchases;
+
+  // ════════════════════════════════════════════════════════════════
+  // CALCULATE METRICS
+  // ════════════════════════════════════════════════════════════════
+  const cpl = total_leads > 0 ? (spend_kzt / total_leads) : 0; // Cost Per Lead
+  const roas = spend_kzt > 0 ? (total_revenue / spend_kzt) : 0; // Return on Ad Spend
+  const payback_percent = total_revenue > 0 ? (spend_kzt / total_revenue * 100) : 0; // Payback %
+
+  // Conversion Rates
+  const conv_impressions_to_leads = impressions > 0
+    ? ((total_leads / impressions) * 100)
+    : 0;
+
+  const conv_leads_to_prepayments = total_leads > 0
+    ? ((total_prepayments / total_leads) * 100)
+    : 0;
+
+  const conv_prepayments_to_full = total_prepayments > 0
+    ? ((total_full_purchases / total_prepayments) * 100)
+    : 0;
+
+  const conv_overall = total_leads > 0
+    ? ((total_full_purchases / total_leads) * 100)
+    : 0;
+
+  // ════════════════════════════════════════════════════════════════
+  // BUILD STAGES (4 этапа для Challenge3D)
+  // ════════════════════════════════════════════════════════════════
+  const stages: FunnelStage[] = [
+    {
+      id: 'spend',
+      title: 'Затраты',
+      emoji: '💰',
+      description: 'Расходы на Facebook Ads',
+      metrics: facebook,
+      conversionRate: 100, // Starting point
+      status: 'neutral'
+    },
+    {
+      id: 'challenge3d_leads',
+      title: 'Лиды',
+      emoji: '📝',
+      description: 'Заявки с лендинга (3х дневник)',
+      metrics: {
+        challenge3d_leads: total_leads
+      },
+      conversionRate: parseFloat(conv_impressions_to_leads.toFixed(2)),
+      status: conv_impressions_to_leads > 1 ? 'success' : 'warning'
+    },
+    {
+      id: 'challenge3d_prepayments',
+      title: 'Предоплаты',
+      emoji: '💳',
+      description: 'Депозиты (≤5000₸)',
+      metrics: {
+        challenge3d_prepayments: total_prepayments,
+        challenge3d_prepayment_revenue: prepayment_revenue
+      },
+      conversionRate: parseFloat(conv_leads_to_prepayments.toFixed(2)),
+      status: conv_leads_to_prepayments > 10 ? 'success' : 'warning'
+    },
+    {
+      id: 'challenge3d_full_purchases',
+      title: 'Полные покупки',
+      emoji: '🎯',
+      description: 'Полная оплата (>5000₸)',
+      metrics: {
+        challenge3d_full_purchases: total_full_purchases,
+        challenge3d_full_revenue: full_purchase_revenue
+      },
+      conversionRate: parseFloat(conv_prepayments_to_full.toFixed(2)),
+      status: conv_prepayments_to_full > 50 ? 'success' : 'warning'
+    }
+  ];
+
+  // ════════════════════════════════════════════════════════════════
+  // RETURN CHALLENGE3D FUNNEL (FunnelResponse format)
+  // ════════════════════════════════════════════════════════════════
+  return {
+    success: true,
+    stages,
+    totalRevenue: total_revenue,
+    totalConversions: total_sales,
+    overallConversionRate: parseFloat(conv_overall.toFixed(2)),
+    roi: parseFloat(((roas - 1) * 100).toFixed(2)), // ROAS converted to ROI %
+    timestamp: new Date().toISOString()
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════════
 // MAIN FUNCTION: GET FUNNEL METRICS
 // ════════════════════════════════════════════════════════════════════════
 export type FunnelType = 'express' | 'challenge3d' | 'intensive1d';
@@ -840,13 +1179,23 @@ export async function getFunnelMetrics(
     }
     const effectiveUtmSource = userId ? (utmSourceOverride || '__no_match__') : utmSourceOverride;
 
-    // 🚀 Параллельная загрузка всех 4 этапов (убрали direct - объединяем с proftest)
-    // ✅ ВЫБИРАЕМ ПРАВИЛЬНУЮ ФУНКЦИЮ В ЗАВИСИМОСТИ ОТ ТИПА ВОРОНКИ
+    // 🚀 Параллельная загрузка всех этапов
+    // ✅ CHALLENGE3D использует отдельную 4-этапную воронку
+    if (funnelType === 'challenge3d') {
+      // Challenge3D Funnel: Затраты → Лиды → Предоплаты → Полные покупки
+      const [facebook, challenge3dLeads, challenge3dPrepayments, challenge3dFullPurchases] = await Promise.all([
+        getFacebookAdsMetrics(teamFilter, userId, resolvedRange),
+        getChallenge3dLeads(teamFilter, effectiveUtmSource, resolvedRange),
+        getChallenge3dPrepayments(teamFilter, effectiveUtmSource, resolvedRange),
+        getChallenge3dFullPurchases(teamFilter, effectiveUtmSource, resolvedRange)
+      ]);
+
+      return buildChallenge3dFunnel(facebook, challenge3dLeads, challenge3dPrepayments, challenge3dFullPurchases);
+    }
+
+    // ✅ ВЫБИРАЕМ ПРАВИЛЬНУЮ ФУНКЦИЮ В ЗАВИСИМОСТИ ОТ ТИПА ВОРОНКИ (Express, Intensive1D)
     let productPurchasesPromise: Promise<FunnelMetrics>;
     switch (funnelType) {
-      case 'challenge3d':
-        productPurchasesPromise = getChallenge3dPurchases(teamFilter, effectiveUtmSource, resolvedRange);
-        break;
       case 'intensive1d':
         productPurchasesPromise = getIntensive1dPurchases(teamFilter, effectiveUtmSource, resolvedRange);
         break;
