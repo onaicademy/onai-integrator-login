@@ -50,15 +50,17 @@ export function PremiumMetricsGrid({
 }: PremiumMetricsGridProps) {
 
   const formatMoney = (value: number, type: 'spend' | 'revenue' = 'spend') => {
+    const safeValue = value ?? 0;
     if (currency === 'KZT') {
-      const valueKZT = type === 'revenue' ? value : value * exchangeRate;
+      const valueKZT = type === 'revenue' ? safeValue : safeValue * exchangeRate;
       return `${valueKZT.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₸`;
     }
-    const valueUSD = type === 'revenue' ? value / exchangeRate : value;
+    const valueUSD = type === 'revenue' ? safeValue / exchangeRate : safeValue;
     return `$${valueUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const formatNumber = (value: number) => {
+    if (value == null || isNaN(value)) return '0';
     if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
     if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
     return value.toLocaleString('ru-RU');
