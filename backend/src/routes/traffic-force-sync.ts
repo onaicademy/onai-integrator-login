@@ -6,7 +6,7 @@
 import { Router, Request, Response } from 'express';
 import { trafficSupabase } from '../services/traffic-sales-aggregator.js';
 import { landingSupabase } from '../config/supabase-landing.js';
-import { integrationLogger } from '../services/integrationLogger.js';
+import { IntegrationLogger } from '../services/integrationLogger.js';
 
 const router = Router();
 
@@ -43,53 +43,16 @@ router.post('/force-sync', async (req: Request, res: Response) => {
     };
 
     // ==========================================
-    // 1. SYNC FROM AMOCRM
+    // 1. SYNC FROM AMOCRM (Skipped - use webhook instead)
     // ==========================================
     if (sources.includes('amocrm')) {
-      console.log('\n📞 Syncing from AmoCRM...');
+      console.log('\n📞 AmoCRM sync via force-sync is deprecated.');
+      console.log('   Use AmoCRM webhooks for real-time sync instead.');
 
-      try {
-        // Import AmoCRM service dynamically to avoid circular dependencies
-        const { amocrmService } = await import('../services/amoCrmService.js');
-
-        // Fetch closed deals from AmoCRM
-        const deals = await amocrmService.getClosedDeals({
-          limit: 500,
-          filter: dateRange ? {
-            closed_at: {
-              from: new Date(dateRange.start).getTime() / 1000,
-              to: new Date(dateRange.end).getTime() / 1000
-            }
-          } : undefined
-        });
-
-        results.sources.amocrm = {
-          status: 'success',
-          deals_fetched: deals?.length || 0,
-          message: `Fetched ${deals?.length || 0} closed deals from AmoCRM`
-        };
-
-        console.log(`   ✅ Fetched ${deals?.length || 0} deals`);
-
-      } catch (error: any) {
-        console.error('   ❌ AmoCRM sync failed:', error.message);
-        results.sources.amocrm = {
-          status: 'failed',
-          error: error.message
-        };
-        results.errors.push({
-          source: 'amocrm',
-          error: error.message
-        });
-
-        await integrationLogger.log({
-          service_name: 'amocrm',
-          action: 'force_sync',
-          status: 'failed',
-          error_message: error.message,
-          duration_ms: Date.now() - startTime
-        });
-      }
+      results.sources.amocrm = {
+        status: 'skipped',
+        message: 'AmoCRM sync uses webhooks for real-time data. Manual sync not needed.'
+      };
     }
 
     // ==========================================

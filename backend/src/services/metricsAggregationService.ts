@@ -92,7 +92,7 @@ interface SyncStatus {
   lastError: string | null;
   stats: typeof syncStats;
   nextSync: Date | null;
-  tokenStatus: typeof tokenStatus;
+  tokenStatus: 'valid' | 'invalid' | 'unknown';
   tokenExpiresAt: Date | null;
 }
 
