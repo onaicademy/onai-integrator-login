@@ -67,8 +67,9 @@ export function PremiumMetricsGrid({
   };
 
   const getRoasStatus = (value: number): 'positive' | 'negative' | 'neutral' => {
-    if (value >= 3) return 'positive';  // ✅ GREEN for ROAS > 3.0
-    if (value >= 1) return 'neutral';
+    const safeValue = value ?? 0;
+    if (safeValue >= 3) return 'positive';  // ✅ GREEN for ROAS > 3.0
+    if (safeValue >= 1) return 'neutral';
     return 'negative';  // ✅ RED for ROAS < 1.0
   };
 
@@ -93,8 +94,8 @@ export function PremiumMetricsGrid({
     {
       id: 'roas',
       label: 'ROAS',
-      value: `${roas.toFixed(2)}x`,
-      sublabel: roas >= 3 ? '🟢 Отлично' : roas >= 1 ? 'Прибыльно' : '🔴 Требует работы',
+      value: `${(roas ?? 0).toFixed(2)}x`,
+      sublabel: (roas ?? 0) >= 3 ? '🟢 Отлично' : (roas ?? 0) >= 1 ? 'Прибыльно' : '🔴 Требует работы',
       icon: <Target className="w-4 h-4" />,
       status: getRoasStatus(roas),
     },
@@ -110,7 +111,7 @@ export function PremiumMetricsGrid({
       id: 'clicks',
       label: 'Клики',
       value: formatNumber(clicks),
-      sublabel: `CTR: ${ctr.toFixed(2)}%`,
+      sublabel: `CTR: ${(ctr ?? 0).toFixed(2)}%`,
       icon: <Zap className="w-4 h-4" />,
       status: 'neutral',
     },
