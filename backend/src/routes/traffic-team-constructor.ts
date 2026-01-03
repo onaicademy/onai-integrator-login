@@ -260,7 +260,7 @@ router.post('/users', async (req: Request, res: Response) => {
     // Хешировать пароль
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 1. Создать пользователя в traffic_users
+    // 1. Создать пользователя в traffic_users с полной UTM настройкой
     const { data, error } = await trafficAdminSupabase
       .from('traffic_users')
       .insert({
@@ -268,10 +268,11 @@ router.post('/users', async (req: Request, res: Response) => {
         full_name: fullName,
         team_name: team,
         password_hash: hashedPassword,
-        role: userRole
-        // NOTE: utm_source, utm_medium, tracking_by, funnel_type, auto_sync_enabled
-        // - columns don't exist yet (migration 006 pending)
-        // TODO: Add these fields back after migration 006 is applied
+        role: userRole,
+        utm_source: finalUtmSource,
+        utm_medium: utmMedium,
+        tracking_by: trackingBy,
+        funnel_type: finalFunnelType
       })
       .select()
       .single();
