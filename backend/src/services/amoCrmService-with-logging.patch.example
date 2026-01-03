@@ -1,0 +1,184 @@
+/**
+ * ПАТЧ ДЛЯ ДОБАВЛЕНИЯ ЛОГИРОВАНИЯ В amoCrmService.ts
+ *
+ * Инструкция:
+ * 1. Добавить импорт IntegrationLogger в начало файла
+ * 2. Обернуть критичные функции в IntegrationLogger.track()
+ */
+
+// ========================================
+// 1. ДОБАВИТЬ ИМПОРТ (после существующих импортов)
+// ========================================
+import { IntegrationLogger } from './integrationLogger';
+
+// ========================================
+// 2. ОБНОВИТЬ ФУНКЦИЮ onLessonCompleted
+// ========================================
+
+// БЫЛО:
+export async function onLessonCompleted(userEmail: string, lessonNumber: number): Promise<void> {
+  try {
+    console.log(`[AmoCRM] 🎓 Урок ${lessonNumber} завершён для ${userEmail}`);
+
+    // ... existing code ...
+
+    const updateResponse = await amoCrmClient.patch(
+      `/api/v4/leads/${leadId}`,
+      {
+        status_id: newStatusId,
+        pipeline_id: AMO_PIPELINE_ID,
+      }
+    );
+
+    console.log(`✅ [AmoCRM] Сделка обновлена`);
+  } catch (error) {
+    console.error(`❌ [AmoCRM] Ошибка:`, error);
+    throw error;
+  }
+}
+
+// СТАЛО:
+export async function onLessonCompleted(userEmail: string, lessonNumber: number): Promise<void> {
+  const startTime = Date.now();
+
+  try {
+    console.log(`[AmoCRM] 🎓 Урок ${lessonNumber} завершён для ${userEmail}`);
+
+    // ... existing code для поиска лида ...
+
+    // Обновление сделки с логированием
+    const updateResponse = await IntegrationLogger.track(
+      'amocrm',
+      `lesson_${lessonNumber}_completed`,
+      async () => {
+        return await amoCrmClient.patch(
+          `/api/v4/leads/${leadId}`,
+          {
+            status_id: newStatusId,
+            pipeline_id: AMO_PIPELINE_ID,
+          }
+        );
+      },
+      {
+        relatedEntityType: 'tripwire_user',
+        includeResponse: true,
+      }
+    );
+
+    console.log(`✅ [AmoCRM] Сделка обновлена, статус: ${updateResponse.status}`);
+  } catch (error: any) {
+    console.error(`❌ [AmoCRM] Ошибка при обновлении урока ${lessonNumber}:`, error);
+
+    // Логируем ошибку
+    await IntegrationLogger.logError(
+      'amocrm',
+      `lesson_${lessonNumber}_completed`,
+      error,
+      {
+        relatedEntityType: 'tripwire_user',
+        durationMs: Date.now() - startTime,
+      }
+    );
+
+    throw error;
+  }
+}
+
+// ========================================
+// 3. ДОБАВИТЬ ЛОГИРОВАНИЕ В refreshAccessToken
+// ========================================
+
+// Найти функцию refreshAccessToken и добавить логирование:
+async function refreshAccessToken(): Promise<boolean> {
+  const startTime = Date.now();
+
+  try {
+    console.log('🔄 [AmoCRM] Обновляем access token...');
+
+    const result = await IntegrationLogger.track(
+      'amocrm',
+      'refresh_token',
+      async () => {
+        const response = await axios.post(
+          `https://${process.env.AMOCRM_SUBDOMAIN}.amocrm.ru/oauth2/access_token`,
+          {
+            client_id: process.env.AMOCRM_CLIENT_ID,
+            client_secret: process.env.AMOCRM_CLIENT_SECRET,
+            grant_type: 'refresh_token',
+            refresh_token: currentRefreshToken,
+            redirect_uri: process.env.AMOCRM_REDIRECT_URI,
+          }
+        );
+
+        return response.data;
+      },
+      {
+        includeResponse: false, // НЕ сохраняем токены в логах
+      }
+    );
+
+    await saveTokens(result.access_token, result.refresh_token);
+
+    console.log('✅ [AmoCRM] Токен успешно обновлён');
+    return true;
+  } catch (error: any) {
+    console.error('❌ [AmoCRM] Ошибка обновления токена:', error);
+
+    await IntegrationLogger.logError(
+      'amocrm',
+      'refresh_token',
+      error,
+      {
+        durationMs: Date.now() - startTime,
+      }
+    );
+
+    return false;
+  }
+}
+
+// ========================================
+// 4. ДОБАВИТЬ ЛОГИРОВАНИЕ В создание сделки
+// ========================================
+
+// Если есть функция для создания сделки Tripwire, добавить:
+export async function createTripwireDeal(
+  studentEmail: string,
+  studentName: string
+): Promise<void> {
+  return IntegrationLogger.track(
+    'amocrm',
+    'create_tripwire_deal',
+    async () => {
+      const response = await amoCrmClient.post('/api/v4/leads', {
+        name: `Tripwire - ${studentName}`,
+        pipeline_id: AMO_PIPELINE_ID,
+        // ... other fields ...
+      });
+
+      return response.data;
+    },
+    {
+      relatedEntityType: 'tripwire_user',
+    }
+  );
+}
+
+// ========================================
+// 5. ЭКСПОРТ СТАТИСТИКИ (опционально)
+// ========================================
+
+/**
+ * Получить статистику AmoCRM интеграции
+ */
+export async function getAmoCrmStats(): Promise<any> {
+  return IntegrationLogger.getServiceLogs('amocrm', 100);
+}
+
+/**
+ * Получить последние ошибки AmoCRM
+ */
+export async function getAmoCrmFailures(): Promise<any> {
+  const allFailures = await IntegrationLogger.getRecentFailures(100);
+  return allFailures.filter((log: any) => log.service_name === 'amocrm');
+}

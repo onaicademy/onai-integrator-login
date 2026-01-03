@@ -9,23 +9,11 @@ import { useState, useEffect } from 'react';
 import { TrafficCabinetLayout } from '@/components/traffic/TrafficCabinetLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Users, Edit2, Trash2, Building2, Target, Save, X, Loader2, Mail, Send } from 'lucide-react';
+import { Plus, Users, Trash2, Target, Save, X, Loader2, Mail, Send } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { TeamAvatar, TeamBadge } from '@/components/traffic/TeamAvatar';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
 import { AuthManager } from '@/lib/auth';
-
-interface Team {
-  id: string;
-  name: string;
-  company: string;
-  direction: string;
-  fbAdAccountId?: string;
-  color: string;
-  emoji: string;
-  created_at: string;
-}
 
 interface User {
   id: string;
@@ -46,44 +34,10 @@ interface User {
   updated_at?: string;
 }
 
-// Фиксированные команды (если в БД пусто)
-const DEFAULT_TEAMS = [
-  { name: 'Kenesary' },
-  { name: 'Arystan' },
-  { name: 'Traf4' },
-  { name: 'Muha' },
-];
-
-const PRODUCT_DIRECTIONS = [
-  { value: 'flagman', label: 'Flagman (Основной продукт)' },
-  { value: 'express', label: 'Express (3-дневный курс)' },
-  { value: 'tripwire', label: 'Tripwire / Трехдневник' },
-  { value: 'new_direction', label: 'Новое направление' }
-];
-
-const COLORS = [
-  { value: '#00FF88', label: 'Неоновый зеленый' },
-  { value: '#3B82F6', label: 'Синий' },
-  { value: '#F59E0B', label: 'Оранжевый' },
-  { value: '#8B5CF6', label: 'Фиолетовый' },
-  { value: '#EC4899', label: 'Розовый' },
-  { value: '#10B981', label: 'Изумрудный' }
-];
-
 export default function TrafficTeamConstructor() {
-  const [teams, setTeams] = useState<Team[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Team Form State
-  const [isAddingTeam, setIsAddingTeam] = useState(false);
-  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-  const [teamForm, setTeamForm] = useState({
-    name: '',
-    color: COLORS[0].value,
-    emoji: '📈'
-  });
-  
+
   // User Form State
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [userForm, setUserForm] = useState({
@@ -111,75 +65,71 @@ export default function TrafficTeamConstructor() {
   };
 
   useEffect(() => {
-    fetchTeamsAndUsers();
+    fetchUsers();
   }, []);
-  
-  const fetchTeamsAndUsers = async () => {
+
+  const fetchUsers = async () => {
     try {
       setLoading(true);
       const token = AuthManager.getAccessToken();
-      
-      // Fetch teams - используем constructor API
-      const teamsResponse = await axios.get(`${API_URL}/api/traffic-constructor/teams`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTeams(teamsResponse.data.teams || []);
-      
-      // Fetch users - используем constructor API
+
       const usersResponse = await axios.get(`${API_URL}/api/traffic-constructor/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(usersResponse.data.users || []);
-      
+
     } catch (error: any) {
-      console.error('Failed to fetch data:', error);
-      toast.error('Ошибка загрузки данных');
+      console.error('Failed to fetch users:', error);
+      toast.error('Ошибка загрузки пользователей');
     } finally {
       setLoading(false);
     }
   };
-  
-  const handleCreateTeam = async () => {
+
+  const handleCreateUser = async () => {
+    // ✅ ВАЛИДАЦИЯ ПОЛЕЙ
+    const errors: string[] = [];
+
+    if (!userForm.email.trim()) {
+      errors.push('❌ Email обязателен');
+    }
+    if (!userForm.fullName.trim()) {
+      errors.push('❌ Полное имя обязательно');
+    }
+    if (!userForm.teamName.trim()) {
+      errors.push('❌ Название команды обязательно');
+    }
+    if (!userForm.password.trim()) {
+      errors.push('❌ Пароль обязателен (нажми "Генерировать")');
+    }
+    if (!userForm.utm_source.trim()) {
+      errors.push('❌ UTM Source обязателен');
+    }
+
+    if (errors.length > 0) {
+      toast.error(
+        <div>
+          <div className="font-bold mb-2">Заполните все обязательные поля:</div>
+          {errors.map((err, i) => (
+            <div key={i}>{err}</div>
+          ))}
+        </div>,
+        { duration: 6000 }
+      );
+      return;
+    }
+
     try {
       const token = AuthManager.getAccessToken();
 
-      await axios.post(`${API_URL}/api/traffic-constructor/teams`, {
-        name: teamForm.name,
-        color: teamForm.color,
-        emoji: teamForm.emoji
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      console.log('[User Create] Sending request:', {
+        email: userForm.email,
+        fullName: userForm.fullName,
+        team: userForm.teamName,
+        role: userForm.role,
+        utm_source: userForm.utm_source,
+        funnel_type: userForm.funnel_type
       });
-      
-      toast.success(`Команда "${teamForm.name}" создана!`);
-      resetTeamForm();
-      fetchTeamsAndUsers();
-    } catch (error: any) {
-      console.error('Failed to create team:', error);
-      toast.error(error.response?.data?.error || 'Ошибка создания команды');
-    }
-  };
-  
-  const handleDeleteTeam = async (teamId: string, teamName: string) => {
-    if (!confirm(`Удалить команду "${teamName}"? Это действие необратимо!`)) return;
-    
-    try {
-      const token = AuthManager.getAccessToken();
-      await axios.delete(`${API_URL}/api/traffic-constructor/teams/${teamId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      toast.success(`Команда "${teamName}" удалена`);
-      fetchTeamsAndUsers();
-    } catch (error: any) {
-      console.error('Failed to delete team:', error);
-      toast.error('Ошибка удаления команды');
-    }
-  };
-  
-  const handleCreateUser = async () => {
-    try {
-      const token = AuthManager.getAccessToken();
 
       // Создать пользователя с полными UTM настройками
       const response = await axios.post(`${API_URL}/api/traffic-constructor/users`, {
@@ -196,7 +146,9 @@ export default function TrafficTeamConstructor() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
+      console.log('[User Create] Success:', response.data);
+
       // 🔥 Show retroactive sync result
       if (response.data.retroactiveSync?.success) {
         toast.success(
@@ -209,10 +161,19 @@ export default function TrafficTeamConstructor() {
         toast.success(`User "${userForm.email}" created! UTM: ${response.data.utmSource}`);
       }
       resetUserForm();
-      fetchTeamsAndUsers();
+      fetchUsers();
     } catch (error: any) {
-      console.error('Failed to create user:', error);
-      toast.error(error.response?.data?.error || 'Ошибка создания пользователя');
+      console.error('[User Create] Error:', error);
+      console.error('[User Create] Response:', error.response?.data);
+
+      const errorMessage = error.response?.data?.error || error.message || 'Ошибка создания пользователя';
+      toast.error(
+        <div>
+          <div className="font-bold">❌ Ошибка создания пользователя</div>
+          <div className="mt-1">{errorMessage}</div>
+        </div>,
+        { duration: 6000 }
+      );
     }
   };
   
@@ -226,7 +187,7 @@ export default function TrafficTeamConstructor() {
       });
       
       toast.success(`Пользователь "${userEmail}" удален`);
-      fetchTeamsAndUsers();
+      fetchUsers();
     } catch (error: any) {
       console.error('Failed to delete user:', error);
       toast.error('Ошибка удаления пользователя');
@@ -253,16 +214,6 @@ export default function TrafficTeamConstructor() {
       console.error('Failed to resend credentials:', error);
       toast.error('Ошибка отправки данных доступа');
     }
-  };
-  
-  const resetTeamForm = () => {
-    setTeamForm({
-      name: '',
-      color: COLORS[0].value,
-      emoji: '📈'
-    });
-    setIsAddingTeam(false);
-    setEditingTeamId(null);
   };
   
   const resetUserForm = () => {
@@ -298,115 +249,15 @@ export default function TrafficTeamConstructor() {
         <div className="bg-gradient-to-r from-[#00FF88]/10 to-transparent border border-[#00FF88]/20 rounded-2xl p-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-[#00FF88]/20 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-[#00FF88]" />
+              <Target className="w-6 h-6 text-[#00FF88]" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Конструктор Команд</h1>
-              <p className="text-sm text-[#00FF88]/60">Управление командами и пользователями</p>
+              <h1 className="text-2xl font-bold text-white">Управление Пользователями</h1>
+              <p className="text-sm text-[#00FF88]/60">Таргетологи, аналитики и администраторы</p>
             </div>
           </div>
         </div>
-        
-        {/* Teams Section */}
-        <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-[#00FF88]" />
-              <h2 className="text-xl font-bold text-white">Команды ({teams.length})</h2>
-            </div>
-            <Button
-              onClick={() => setIsAddingTeam(true)}
-              className="bg-[#00FF88] hover:bg-[#00FF88]/90 text-black"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Добавить команду
-            </Button>
-          </div>
-          
-          {/* Add Team Form */}
-          {isAddingTeam && (
-            <div className="mb-6 p-6 bg-black/60 border border-[#00FF88]/20 rounded-xl">
-              <h3 className="text-lg font-bold text-white mb-4">Новая команда</h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Название команды</label>
-                  <Input
-                    value={teamForm.name}
-                    onChange={(e) => setTeamForm({ ...teamForm, name: e.target.value })}
-                    placeholder="Kenesary Team"
-                    className="bg-black/50 border-[#00FF88]/20 text-white"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Цвет</label>
-                  <div className="flex gap-2">
-                    {COLORS.map(color => (
-                      <button
-                        key={color.value}
-                        onClick={() => setTeamForm({ ...teamForm, color: color.value })}
-                        className={`w-8 h-8 rounded-full border-2 ${
-                          teamForm.color === color.value ? 'border-white scale-110' : 'border-gray-600'
-                        }`}
-                        style={{ backgroundColor: color.value }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-2 mt-4">
-                <Button
-                  onClick={handleCreateTeam}
-                  className="bg-[#00FF88] hover:bg-[#00FF88]/90 text-black"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Создать
-                </Button>
-                <Button
-                  onClick={resetTeamForm}
-                  variant="outline"
-                  className="border-gray-600 text-gray-300"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Отмена
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {/* Teams List */}
-          <div className="space-y-3">
-            {teams.map((team) => (
-              <div
-                key={team.id}
-                className="p-4 bg-black/30 border border-[#00FF88]/10 rounded-xl flex items-center justify-between hover:bg-black/50 transition-all"
-              >
-                <div className="flex items-center gap-4">
-                  <TeamAvatar teamName={team.name} size="lg" />
-                  <div>
-                    <h3 className="text-lg font-bold text-white">{team.name}</h3>
-                    <p className="text-sm text-gray-400">
-                      {team.company} • {team.direction}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleDeleteTeam(team.id, team.name)}
-                    variant="outline"
-                    size="sm"
-                    className="border-red-500/20 text-red-400 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
         {/* Users Section */}
         <div className="bg-black/40 border border-[#00FF88]/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">

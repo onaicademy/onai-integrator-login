@@ -615,6 +615,145 @@ async function getExpressCoursePurchases(teamFilter?: string, utmSourceOverride?
 }
 
 // ════════════════════════════════════════════════════════════════════════
+// STAGE 4B: CHALLENGE3D COURSE (3-Day Challenge from Landing DB challenge3d_sales)
+// ════════════════════════════════════════════════════════════════════════
+async function getChallenge3dPurchases(teamFilter?: string, utmSourceOverride?: string, dateRange?: FunnelDateRange): Promise<FunnelMetrics> {
+  const resolvedRange = dateRange || resolveFunnelDateRange();
+  const rangeKey = getRangeCacheKey(resolvedRange);
+  const cacheKey = `funnel:challenge3d_purchases:${utmSourceOverride || teamFilter || 'all'}:${rangeKey}`;
+
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching Challenge3D PURCHASES from Landing DB (challenge3d_sales)...');
+      const { start, end } = getDateBounds(resolvedRange);
+
+      // Get purchases from challenge3d_sales table
+      let query = landingSupabase
+        .from('challenge3d_sales')
+        .select('id, amount, utm_source, utm_medium, sale_date, deal_id, prepaid')
+        .gte('sale_date', start)
+        .lte('sale_date', end);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('[Funnel] Challenge3D Purchases error:', error.message);
+        throw error;
+      }
+
+      // Filter by UTM in-memory
+      let filteredData = data || [];
+      if (utmSourceOverride) {
+        filteredData = filteredData.filter(sale => matchesUtmSource(sale, utmSourceOverride));
+      } else if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Challenge3D by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(sale => matchesTeamUtm(sale, teamUtmRule));
+        }
+      }
+
+      const express_purchases = filteredData.length;
+      const express_revenue = filteredData.reduce((sum, row) => {
+        const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
+        return sum + (amount || 0);
+      }, 0);
+
+      console.log(`[Funnel] ✅ Challenge3D Course: ${express_purchases} purchases, ${express_revenue.toLocaleString()} KZT`);
+
+      return {
+        express_purchases,
+        express_students: express_purchases, // Alias for consistency
+        express_revenue,
+        active_students: 0,
+        completed_students: 0
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getChallenge3dPurchases failed:', error.message);
+      return {
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// STAGE 4C: INTENSIVE1D COURSE (1-Day Intensive - if table exists)
+// ════════════════════════════════════════════════════════════════════════
+async function getIntensive1dPurchases(teamFilter?: string, utmSourceOverride?: string, dateRange?: FunnelDateRange): Promise<FunnelMetrics> {
+  const resolvedRange = dateRange || resolveFunnelDateRange();
+  const rangeKey = getRangeCacheKey(resolvedRange);
+  const cacheKey = `funnel:intensive1d_purchases:${utmSourceOverride || teamFilter || 'all'}:${rangeKey}`;
+
+  return getCachedOrFresh(cacheKey, async () => {
+    try {
+      console.log('[Funnel] Fetching Intensive1D PURCHASES from Landing DB (intensive1d_sales)...');
+      const { start, end } = getDateBounds(resolvedRange);
+
+      // Get purchases from intensive1d_sales table (if exists)
+      let query = landingSupabase
+        .from('intensive1d_sales')
+        .select('id, amount, utm_source, utm_medium, sale_date, deal_id')
+        .gte('sale_date', start)
+        .lte('sale_date', end);
+
+      const { data, error } = await query;
+
+      if (error) {
+        // If table doesn't exist - return zeros
+        if (error.code === 'PGRST116' || error.message?.includes('does not exist')) {
+          console.warn('[Funnel] ⚠️  intensive1d_sales table does not exist in Landing DB');
+          return { express_purchases: 0, express_students: 0, express_revenue: 0, active_students: 0, completed_students: 0 };
+        }
+        console.error('[Funnel] Intensive1D Purchases error:', error.message);
+        throw error;
+      }
+
+      // Filter by UTM in-memory
+      let filteredData = data || [];
+      if (utmSourceOverride) {
+        filteredData = filteredData.filter(sale => matchesUtmSource(sale, utmSourceOverride));
+      } else if (teamFilter) {
+        const teamUtmRule = getTeamUtmRule(teamFilter);
+        if (teamUtmRule) {
+          console.log(`[Funnel] Filtering Intensive1D by team: ${teamFilter} → [${teamUtmRule.sources.join(', ')}]`);
+          filteredData = filteredData.filter(sale => matchesTeamUtm(sale, teamUtmRule));
+        }
+      }
+
+      const express_purchases = filteredData.length;
+      const express_revenue = filteredData.reduce((sum, row) => {
+        const amount = typeof row.amount === 'string' ? parseFloat(row.amount) : row.amount;
+        return sum + (amount || 0);
+      }, 0);
+
+      console.log(`[Funnel] ✅ Intensive1D Course: ${express_purchases} purchases, ${express_revenue.toLocaleString()} KZT`);
+
+      return {
+        express_purchases,
+        express_students: express_purchases,
+        express_revenue,
+        active_students: 0,
+        completed_students: 0
+      };
+    } catch (error: any) {
+      console.error('[Funnel] getIntensive1dPurchases failed:', error.message);
+      return {
+        express_purchases: 0,
+        express_students: 0,
+        express_revenue: 0,
+        active_students: 0,
+        completed_students: 0
+      };
+    }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════════════
 // STAGE 5: MAIN PRODUCT (Integrator Flagman - 490K KZT from Landing DB)
 // Webhook saves to Landing DB, so we read from there
 // ════════════════════════════════════════════════════════════════════════
@@ -702,11 +841,26 @@ export async function getFunnelMetrics(
     const effectiveUtmSource = userId ? (utmSourceOverride || '__no_match__') : utmSourceOverride;
 
     // 🚀 Параллельная загрузка всех 4 этапов (убрали direct - объединяем с proftest)
+    // ✅ ВЫБИРАЕМ ПРАВИЛЬНУЮ ФУНКЦИЮ В ЗАВИСИМОСТИ ОТ ТИПА ВОРОНКИ
+    let productPurchasesPromise: Promise<FunnelMetrics>;
+    switch (funnelType) {
+      case 'challenge3d':
+        productPurchasesPromise = getChallenge3dPurchases(teamFilter, effectiveUtmSource, resolvedRange);
+        break;
+      case 'intensive1d':
+        productPurchasesPromise = getIntensive1dPurchases(teamFilter, effectiveUtmSource, resolvedRange);
+        break;
+      case 'express':
+      default:
+        productPurchasesPromise = getExpressCoursePurchases(teamFilter, effectiveUtmSource, resolvedRange);
+        break;
+    }
+
     const [facebook, proftest, direct, expressPurchases, main] = await Promise.all([
       getFacebookAdsMetrics(teamFilter, userId, resolvedRange),
       getProfTestMetrics(teamFilter, effectiveUtmSource, resolvedRange),
       getDirectLeadsMetrics(teamFilter, resolvedRange, userId),
-      getExpressCoursePurchases(teamFilter, effectiveUtmSource, resolvedRange),
+      productPurchasesPromise,
       getMainProductMetrics(teamFilter, effectiveUtmSource, resolvedRange)
     ]);
 
