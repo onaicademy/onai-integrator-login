@@ -8,7 +8,6 @@
 import { Router, Request, Response } from 'express';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { database } from '../config/database-layer.js';
-import { database } from '../config/database-layer.js';
 
 const router = Router();
 

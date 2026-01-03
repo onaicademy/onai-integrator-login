@@ -1,11 +1,13 @@
 /**
  * Traffic Team Constructor API
- * 
+ *
  * CRUD operations для управления командами и пользователями
+ *
+ * ENHANCED: Supports utm_medium, analyst role, extended user info
  */
 
 import { Router, Request, Response } from 'express';
-import { trafficSupabase } from '../config/supabase-traffic.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import bcrypt from 'bcrypt';
 import { syncHistoricalData } from '../services/retroactiveSyncService.js';
 
@@ -21,7 +23,7 @@ const router = Router();
  */
 router.get('/teams', async (req: Request, res: Response) => {
   try {
-    const { data: teams, error } = await trafficSupabase
+    const { data: teams, error } = await trafficAdminSupabase
       .from('traffic_teams')
       .select('*')
       .order('created_at', { ascending: false });
@@ -33,7 +35,7 @@ router.get('/teams', async (req: Request, res: Response) => {
       teams: teams || []
     });
   } catch (error: any) {
-    console.error('❌ Failed to fetch teams:', error);
+    console.error('Failed to fetch teams:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -57,7 +59,7 @@ router.post('/teams', async (req: Request, res: Response) => {
     }
 
     // Проверить что команда с таким именем не существует
-    const { data: existing } = await trafficSupabase
+    const { data: existing } = await trafficAdminSupabase
       .from('traffic_teams')
       .select('id')
       .eq('name', name)
@@ -71,7 +73,7 @@ router.post('/teams', async (req: Request, res: Response) => {
     }
 
     // Создать команду
-    const { data, error } = await trafficSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_teams')
       .insert({
         name,
@@ -84,14 +86,14 @@ router.post('/teams', async (req: Request, res: Response) => {
 
     if (error) throw error;
 
-    console.log(`✅ Team "${name}" created`);
+    console.log(`Team "${name}" created`);
 
     res.json({
       success: true,
       team: data
     });
   } catch (error: any) {
-    console.error('❌ Failed to create team:', error);
+    console.error('Failed to create team:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -108,7 +110,7 @@ router.delete('/teams/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Проверить что в команде нет пользователей
-    const { data: users } = await trafficSupabase
+    const { data: users } = await trafficAdminSupabase
       .from('traffic_users')
       .select('id')
       .eq('team_id', id);
@@ -121,20 +123,20 @@ router.delete('/teams/:id', async (req: Request, res: Response) => {
     }
 
     // Удалить команду
-    const { error } = await trafficSupabase
+    const { error } = await trafficAdminSupabase
       .from('traffic_teams')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
 
-    console.log(`✅ Team ${id} deleted`);
+    console.log(`Team ${id} deleted`);
 
     res.json({
       success: true
     });
   } catch (error: any) {
-    console.error('❌ Failed to delete team:', error);
+    console.error('Failed to delete team:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -148,33 +150,57 @@ router.delete('/teams/:id', async (req: Request, res: Response) => {
 
 /**
  * GET /api/traffic-constructor/users
- * Получить всех пользователей
+ * Получить всех пользователей с полной информацией
  */
 router.get('/users', async (req: Request, res: Response) => {
   try {
-    const { data: users, error } = await trafficSupabase
+    // Basic user fields (guaranteed to exist)
+    const { data: users, error } = await trafficAdminSupabase
       .from('traffic_users')
       .select('id, email, full_name, team_name, role, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    // Rename fields
-    const formattedUsers = (users || []).map(user => ({
-      id: user.id,
-      email: user.email,
-      fullName: user.full_name,
-      team: user.team_name,
-      role: user.role,
-      created_at: user.created_at
-    }));
+    // Fetch settings for each user to get UTM info
+    const userIds = (users || []).map(u => u.id);
+    let settingsMap = new Map<string, any>();
+
+    if (userIds.length > 0) {
+      const { data: settings } = await trafficAdminSupabase
+        .from('traffic_targetologist_settings')
+        .select('user_id, utm_source, utm_medium, tracking_by, fb_ad_accounts, tracked_campaigns')
+        .in('user_id', userIds);
+
+      settingsMap = new Map((settings || []).map(s => [s.user_id, s]));
+    }
+
+    // Rename fields and merge with settings
+    const formattedUsers = (users || []).map(user => {
+      const userSettings = settingsMap.get(user.id);
+      return {
+        id: user.id,
+        email: user.email,
+        fullName: user.full_name,
+        team: user.team_name,
+        role: user.role,
+        utmSource: userSettings?.utm_source || null,
+        utmMedium: userSettings?.utm_medium || 'cpc',
+        trackingBy: userSettings?.tracking_by || 'utm_source',
+        funnelType: 'express', // Default, can be extended later
+        autoSyncEnabled: true,
+        fbAdAccountsCount: userSettings?.fb_ad_accounts?.length || 0,
+        trackedCampaignsCount: userSettings?.tracked_campaigns?.length || 0,
+        created_at: user.created_at
+      };
+    });
 
     res.json({
       success: true,
       users: formattedUsers
     });
   } catch (error: any) {
-    console.error('❌ Failed to fetch users:', error);
+    console.error('Failed to fetch users:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -185,15 +211,16 @@ router.get('/users', async (req: Request, res: Response) => {
 /**
  * POST /api/traffic-constructor/users
  * Создать нового пользователя
- * 
- * ✅ AUTO-CREATES entries in:
+ *
+ * AUTO-CREATES entries in:
  *   - traffic_users
- *   - traffic_targetologists  
  *   - traffic_targetologist_settings
+ *
+ * ENHANCED: Supports utm_medium, analyst role
  */
 router.post('/users', async (req: Request, res: Response) => {
   try {
-    const { email, fullName, team, password, role } = req.body;
+    const { email, fullName, team, password, role, utm_source, utm_medium, tracking_by, funnel_type } = req.body;
 
     if (!email || !fullName || !team || !password) {
       return res.status(400).json({
@@ -203,14 +230,21 @@ router.post('/users', async (req: Request, res: Response) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const userRole = role || 'targetologist';
 
-    // 🔥 AUTO-GENERATE UTM SOURCE
-    const utmSource = `fb_${team.toLowerCase()}`;
-    console.log(`🎯 Auto-generated UTM source: ${utmSource}`);
+    // Support for analyst role
+    const validRoles = ['targetologist', 'analyst', 'admin'];
+    const userRole = validRoles.includes(role) ? role : 'targetologist';
+
+    // AUTO-GENERATE UTM SOURCE if not provided
+    const finalUtmSource = utm_source || `fb_${team.toLowerCase()}`;
+    const finalUtmMedium = utm_medium || 'cpc'; // Support for utm_medium
+    const finalTrackingBy = tracking_by === 'utm_medium' ? 'utm_medium' : 'utm_source'; // Default to utm_source
+    const finalFunnelType = funnel_type || 'express'; // Default to express
+
+    console.log(`UTM source: ${finalUtmSource}, Medium: ${finalUtmMedium}, Tracking by: ${finalTrackingBy}, Funnel: ${finalFunnelType}`);
 
     // Проверить что email уникален в traffic_users
-    const { data: existing } = await trafficSupabase
+    const { data: existing } = await trafficAdminSupabase
       .from('traffic_users')
       .select('id')
       .eq('email', normalizedEmail)
@@ -226,36 +260,40 @@ router.post('/users', async (req: Request, res: Response) => {
     // Хешировать пароль
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 1️⃣ Создать пользователя в traffic_users
-    const { data, error } = await trafficSupabase
+    // 1. Создать пользователя в traffic_users с UTM и funnel_type
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_users')
       .insert({
         email: normalizedEmail,
         full_name: fullName,
         team_name: team,
         password_hash: hashedPassword,
-        role: userRole
+        role: userRole,
+        utm_source: finalUtmSource,
+        funnel_type: finalFunnelType,
+        auto_sync_enabled: true
       })
       .select()
       .single();
 
     if (error) throw error;
 
-    console.log(`✅ User "${normalizedEmail}" created in traffic_users`);
+    console.log(`User "${normalizedEmail}" created with UTM "${finalUtmSource}" and funnel "${finalFunnelType}"`);
 
-    // 2️⃣ AUTO-CREATE entry in traffic_targetologist_settings with LOCKED UTM
+    // 2. AUTO-CREATE entry in traffic_targetologist_settings with LOCKED UTM
     try {
-      const { error: settingsError } = await trafficSupabase
+      const { error: settingsError } = await trafficAdminSupabase
         .from('traffic_targetologist_settings')
         .upsert({
           user_id: data.id,
           fb_ad_accounts: [],
           tracked_campaigns: [],
-          utm_source: utmSource, // 🔐 Auto-generated UTM source
-          utm_medium: 'cpc',
+          utm_source: finalUtmSource,
+          utm_medium: finalUtmMedium,
+          tracking_by: finalTrackingBy, // По какому полю трекаем (utm_source/utm_medium)
           utm_templates: {
-            utm_source: utmSource,
-            utm_medium: 'cpc',
+            utm_source: finalUtmSource,
+            utm_medium: finalUtmMedium,
             utm_campaign: '{campaign_name}',
             utm_content: '{ad_set_name}',
             utm_term: '{ad_name}'
@@ -268,22 +306,22 @@ router.post('/users', async (req: Request, res: Response) => {
         }, { onConflict: 'user_id' });
 
       if (settingsError) {
-        console.warn(`⚠️ Failed to auto-create traffic_targetologist_settings entry:`, settingsError.message);
+        console.warn(`Failed to auto-create traffic_targetologist_settings entry:`, settingsError.message);
       } else {
-        console.log(`✅ Auto-created traffic_targetologist_settings with locked UTM: ${utmSource}`);
+        console.log(`Auto-created traffic_targetologist_settings with UTM: ${finalUtmSource}, Medium: ${finalUtmMedium}, Tracking by: ${finalTrackingBy}`);
       }
     } catch (sErr: any) {
-      console.warn(`⚠️ Error auto-creating traffic_targetologist_settings:`, sErr.message);
+      console.warn(`Error auto-creating traffic_targetologist_settings:`, sErr.message);
     }
 
-    // 4️⃣ TRIGGER RETROACTIVE SYNC (Time Machine)
-    console.log(`🕐 Triggering retroactive sync for ${utmSource}...`);
-    const syncResult = await syncHistoricalData(data.id, utmSource);
-    
+    // 3. TRIGGER RETROACTIVE SYNC (Time Machine)
+    console.log(`Triggering retroactive sync for ${finalUtmSource}...`);
+    const syncResult = await syncHistoricalData(data.id, finalUtmSource);
+
     if (syncResult.success) {
-      console.log(`✅ Retroactive sync completed: ${syncResult.trafficStatsUpdated} stats updated`);
+      console.log(`Retroactive sync completed: ${syncResult.trafficStatsUpdated} stats updated`);
     } else {
-      console.warn(`⚠️ Retroactive sync failed: ${syncResult.error}`);
+      console.warn(`Retroactive sync failed: ${syncResult.error}`);
     }
 
     res.json({
@@ -293,13 +331,20 @@ router.post('/users', async (req: Request, res: Response) => {
         email: data.email,
         fullName: data.full_name,
         team: data.team_name,
-        role: data.role
+        role: data.role,
+        utmSource: finalUtmSource,
+        utmMedium: finalUtmMedium,
+        trackingBy: finalTrackingBy,
+        funnelType: finalFunnelType
       },
       autoCreated: {
         traffic_users: true,
         traffic_targetologist_settings: true
       },
-      utmSource: utmSource,
+      utmSource: finalUtmSource,
+      utmMedium: finalUtmMedium,
+      trackingBy: finalTrackingBy,
+      funnelType: finalFunnelType,
       retroactiveSync: {
         triggered: true,
         success: syncResult.success,
@@ -311,7 +356,65 @@ router.post('/users', async (req: Request, res: Response) => {
       }
     });
   } catch (error: any) {
-    console.error('❌ Failed to create user:', error);
+    console.error('Failed to create user:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * PUT /api/traffic-constructor/users/:id
+ * Обновить пользователя (для analyst роли - можно менять UTM)
+ */
+router.put('/users/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { utm_source, utm_medium, funnel_type, role, team } = req.body;
+
+    // Собрать обновления для traffic_users
+    const userUpdates: Record<string, any> = {};
+    if (utm_source !== undefined) userUpdates.utm_source = utm_source;
+    if (funnel_type !== undefined) userUpdates.funnel_type = funnel_type;
+    if (role !== undefined) userUpdates.role = role;
+    if (team !== undefined) userUpdates.team_name = team;
+
+    if (Object.keys(userUpdates).length > 0) {
+      const { error: userError } = await trafficAdminSupabase
+        .from('traffic_users')
+        .update(userUpdates)
+        .eq('id', id);
+
+      if (userError) throw userError;
+    }
+
+    // Собрать обновления для traffic_targetologist_settings
+    const settingsUpdates: Record<string, any> = {};
+    if (utm_source !== undefined) settingsUpdates.utm_source = utm_source;
+    if (utm_medium !== undefined) settingsUpdates.utm_medium = utm_medium;
+
+    if (Object.keys(settingsUpdates).length > 0) {
+      settingsUpdates.updated_at = new Date().toISOString();
+
+      const { error: settingsError } = await trafficAdminSupabase
+        .from('traffic_targetologist_settings')
+        .update(settingsUpdates)
+        .eq('user_id', id);
+
+      if (settingsError) {
+        console.warn(`Failed to update settings:`, settingsError.message);
+      }
+    }
+
+    console.log(`User ${id} updated`);
+
+    res.json({
+      success: true,
+      message: 'User updated successfully'
+    });
+  } catch (error: any) {
+    console.error('Failed to update user:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -328,25 +431,40 @@ router.delete('/users/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Удалить пользователя
-    const { error } = await trafficSupabase
+    const { error } = await trafficAdminSupabase
       .from('traffic_users')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
 
-    console.log(`✅ User ${id} deleted`);
+    console.log(`User ${id} deleted`);
 
     res.json({
       success: true
     });
   } catch (error: any) {
-    console.error('❌ Failed to delete user:', error);
+    console.error('Failed to delete user:', error);
     res.status(500).json({
       success: false,
       error: error.message
     });
   }
+});
+
+/**
+ * GET /api/traffic-constructor/roles
+ * Получить список доступных ролей
+ */
+router.get('/roles', async (_req: Request, res: Response) => {
+  res.json({
+    success: true,
+    roles: [
+      { value: 'targetologist', label: 'Таргетолог', description: 'Работает с рекламными кампаниями' },
+      { value: 'analyst', label: 'Аналитик', description: 'Может редактировать UTM метки' },
+      { value: 'admin', label: 'Администратор', description: 'Полный доступ к системе' }
+    ]
+  });
 });
 
 export default router;

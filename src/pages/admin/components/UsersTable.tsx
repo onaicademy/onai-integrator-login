@@ -153,9 +153,17 @@ Email: ${email}
       setDeleteError(null); // Сбросить предыдущие ошибки
       console.log(`🗑️ [DELETE] Sales Manager ${currentUserEmail} deleting user: ${userId}`);
       
-      const response = await api.delete(`/api/admin/tripwire/users/${userId}`);
+      // ✅ FIX: Вызываем RPC функцию напрямую через Supabase
+      const { data: result, error } = await tripwireSupabase.rpc('rpc_delete_tripwire_user', {
+        p_user_id: userId
+      });
       
-      console.log('✅ [DELETE] User deleted successfully:', response);
+      if (error) {
+        console.error('❌ [DELETE] RPC Error:', error);
+        throw error;
+      }
+      
+      console.log('✅ [DELETE] User deleted successfully:', result);
       
       // Обновляем список (удаляем из UI мгновенно)
       setUsers(users.filter(u => u.id !== userId));
@@ -325,8 +333,8 @@ Email: ${email}
                       <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
                         МОДУЛИ
                       </th>
-                      <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap hidden md:table-cell">
-                        EMAIL ОТПРАВЛЕН
+                      <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
+                        EMAIL
                       </th>
                       <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-xs font-['JetBrains_Mono'] text-[#9CA3AF] uppercase whitespace-nowrap">
                         ДОБАВЛЕН
@@ -373,7 +381,7 @@ Email: ${email}
                           <span className="text-[#00FF94]">/3</span>
                         </span>
                       </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
+                      <td className="py-3 sm:py-4 px-2 sm:px-4">
                         <div className="flex justify-center">
                           {user.welcome_email_sent ? (
                             <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />

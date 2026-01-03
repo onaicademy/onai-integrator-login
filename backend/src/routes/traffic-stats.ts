@@ -324,28 +324,42 @@ function extractUTMFromLead(lead: any): Partial<LeadWithUTM> {
 const REVENUE_PER_SALE = 5000;
 
 // 🎯 Traffic team UTM patterns - REAL patterns from production
+//
+// ATTRIBUTION STRATEGY (2026-01-02):
+// =====================================
+// PRIMARY: All teams use utm_source for attribution
+// EXCEPTION: Team 'Muha' uses utm_medium='yourmarketolog' (Technical Debt)
+//
+// RATIONALE:
+// - Muha team has NO unique utm_source (uses generic "facebook")
+// - 82 historical leads would be lost if utm_medium removed
+// - utm_medium='yourmarketolog' is a unique identifier (no conflicts)
+//
+// TODO: Migrate Muha to utm_source='fb_muha' in future campaigns
+//
 const TRAFFIC_TEAM_PATTERNS = {
   'Kenesary': {
-    match: (utm: { source?: string; medium?: string; campaign?: string }) => 
+    match: (utm: { source?: string; medium?: string; campaign?: string }) =>
       utm.source?.toLowerCase().includes('kenji'),
     emoji: '👑',
     color: '#00FF88',
   },
   'Arystan': {
-    match: (utm: { source?: string; medium?: string; campaign?: string }) => 
+    match: (utm: { source?: string; medium?: string; campaign?: string }) =>
       utm.source?.toLowerCase().includes('arystan'),
     emoji: '⚡',
     color: '#00FF88',
   },
   'Muha': {
-    match: (utm: { source?: string; medium?: string; campaign?: string }) => 
+    // EXCEPTION: Uses utm_medium (see explanation above)
+    match: (utm: { source?: string; medium?: string; campaign?: string }) =>
       utm.medium?.toLowerCase() === 'yourmarketolog',
     emoji: '🚀',
     color: '#00FF88',
   },
   'Traf4': {
-    match: (utm: { source?: string; medium?: string; campaign?: string }) => 
-      utm.source?.toLowerCase().includes('pb_agency') || 
+    match: (utm: { source?: string; medium?: string; campaign?: string }) =>
+      utm.source?.toLowerCase().includes('pb_agency') ||
       utm.source?.toLowerCase().includes('alex') ||
       utm.campaign?.toLowerCase().includes('alex') ||
       utm.campaign?.toLowerCase().includes('proftest'),
@@ -812,10 +826,19 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
             .gte('sale_date', since)
             .lte('sale_date', until);
 
+          // Query Challenge3D sales (3-Day Diary product)
+          const { data: challenge3dSales, error: challenge3dError } = await landingSupabase
+            .from('challenge3d_sales')
+            .select('amount, utm_source, sale_date, prepaid')
+            .gte('sale_date', since)
+            .lte('sale_date', until);
+
           let expressRevenue = 0;
           let expressPurchases = 0;
           let flagmanRevenue = 0;
           let flagmanPurchases = 0;
+          let challenge3dRevenue = 0;
+          let challenge3dPurchases = 0;
 
           // Count Express sales matching UTM
           if (!expressError && expressSales) {
@@ -839,10 +862,21 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
             }
           }
 
-          revenueKZT = expressRevenue + flagmanRevenue;
-          sales = expressPurchases + flagmanPurchases;
+          // Count Challenge3D sales matching UTM
+          if (!challenge3dError && challenge3dSales) {
+            for (const sale of challenge3dSales) {
+              if (matchesUtmSource(sale, utmSource)) {
+                challenge3dPurchases++;
+                const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+                challenge3dRevenue += (amount || 0);
+              }
+            }
+          }
 
-          console.log(`💰 [Revenue Fix] UTM: ${utmSource} | Express: ${expressRevenue.toLocaleString()}₸ (${expressPurchases}) | Flagman: ${flagmanRevenue.toLocaleString()}₸ (${flagmanPurchases}) | Total: ${revenueKZT.toLocaleString()}₸`);
+          revenueKZT = expressRevenue + flagmanRevenue + challenge3dRevenue;
+          sales = expressPurchases + flagmanPurchases + challenge3dPurchases;
+
+          console.log(`💰 [Revenue Fix] UTM: ${utmSource} | Express: ${expressRevenue.toLocaleString()}₸ (${expressPurchases}) | Flagman: ${flagmanRevenue.toLocaleString()}₸ (${flagmanPurchases}) | Challenge3D: ${challenge3dRevenue.toLocaleString()}₸ (${challenge3dPurchases}) | Total: ${revenueKZT.toLocaleString()}₸`);
         } catch (error: any) {
           console.error('❌ [Revenue Fix] Failed to get sales data:', error.message);
           // Fallback to old logic if DB query fails
@@ -1185,67 +1219,143 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     
     const fbResults = await Promise.all(fbPromises);
     
-    // 2. Fetch AmoCRM sales (from existing endpoint logic)
-    const paidLeads = await getAllPaidLeads();
-    const processedLeads = paidLeads.map(lead => {
-      const utmData = extractUTMFromLead(lead);
-      const trafficTeam = identifyTrafficTeam(utmData);
-      return {
-        ...utmData,
-        traffic_team: trafficTeam,
-        closed_at: lead.closed_at,
-      };
-    });
-    
-    // 🔍 ДИАГНОСТИКА: Логируем распределение по командам
-    console.log(`\n🔍 === ДИАГНОСТИКА AMOCRM LEADS ===`);
-    console.log(`📊 Всего платных лидов: ${paidLeads.length}`);
+    // 2. Fetch sales from DB (Express + Flagman + Challenge3D)
+    console.log(`\n🔍 === FETCHING SALES FROM DB ===`);
     console.log(`📅 Период: ${since} → ${until}`);
-    
-    // Group by team
-    const amocrmStats: Record<string, { sales: number; revenue: number }> = {};
+
+    const amocrmStats: Record<string, { sales: number; revenue: number; leads: number }> = {};
     let unknownLeadsCount = 0;
-    let outsideDateRangeCount = 0;
-    const unknownLeadsExamples: any[] = []; // 🔍 Примеры Unknown лидов
-    
-    for (const lead of processedLeads) {
-      const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
-      
-      // Для single date - проверяем что сделка закрыта именно в этот день (Almaty)
-      if (singleDate) {
-        const leadDate = getAlmatyDate(new Date(closedTime));
-        if (leadDate !== singleDate) {
-          outsideDateRangeCount++;
+    const unknownLeadsExamples: any[] = [];
+
+    try {
+      // Fetch Express Course sales
+      const { data: expressSales, error: expressError } = await landingSupabase
+        .from('express_course_sales')
+        .select('amount, utm_source, utm_medium, utm_campaign, sale_date')
+        .gte('sale_date', since)
+        .lte('sale_date', until);
+
+      // Fetch Flagman/Main Product sales
+      const { data: flagmanSales, error: flagmanError } = await landingSupabase
+        .from('main_product_sales')
+        .select('amount, utm_source, utm_medium, utm_campaign, sale_date')
+        .gte('sale_date', since)
+        .lte('sale_date', until);
+
+      // Fetch Challenge3D sales
+      const { data: challenge3dSales, error: challenge3dError } = await landingSupabase
+        .from('challenge3d_sales')
+        .select('amount, utm_source, utm_medium, utm_campaign, sale_date, prepaid')
+        .gte('sale_date', since)
+        .lte('sale_date', until);
+
+      // Fetch Challenge3D leads from landing_leads
+      const { data: challenge3dLeads, error: challenge3dLeadsError } = await landingSupabase
+        .from('landing_leads')
+        .select('email, utm_source, utm_medium, utm_campaign, created_at, metadata')
+        .eq('source', 'challenge3d')
+        .gte('created_at', `${since}T00:00:00+06:00`)
+        .lte('created_at', `${until}T23:59:59+06:00`);
+
+      const processLead = (lead: any) => {
+        const utmData = {
+          utm_source: lead.utm_source,
+          utm_medium: lead.utm_medium,
+          utm_campaign: lead.utm_campaign,
+        };
+        const team = identifyTrafficTeam(utmData);
+
+        if (!amocrmStats[team]) {
+          amocrmStats[team] = { sales: 0, revenue: 0, leads: 0 };
+        }
+        if (!amocrmStats[team].leads) {
+          amocrmStats[team].leads = 0;
+        }
+        amocrmStats[team].leads++;
+      };
+
+      const processSale = (sale: any, productType: string) => {
+        const utmData = {
+          utm_source: sale.utm_source,
+          utm_medium: sale.utm_medium,
+          utm_campaign: sale.utm_campaign,
+        };
+        const team = identifyTrafficTeam(utmData);
+
+        if (team === 'Unknown' || team === 'Другие' || !team) {
+          unknownLeadsCount++;
+          if (unknownLeadsExamples.length < 5) {
+            unknownLeadsExamples.push({
+              product: productType,
+              utm_source: sale.utm_source || 'NULL',
+              utm_medium: sale.utm_medium || 'NULL',
+              utm_campaign: sale.utm_campaign || 'NULL',
+              sale_date: sale.sale_date,
+            });
+          }
+        }
+
+        if (!amocrmStats[team]) {
+          amocrmStats[team] = { sales: 0, revenue: 0, leads: 0 };
+        }
+        amocrmStats[team].sales++;
+        const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+        amocrmStats[team].revenue += (amount || 0);
+      };
+
+      // Process Express sales
+      if (!expressError && expressSales) {
+        expressSales.forEach(sale => processSale(sale, 'Express'));
+      }
+
+      // Process Flagman sales
+      if (!flagmanError && flagmanSales) {
+        flagmanSales.forEach(sale => processSale(sale, 'Flagman'));
+      }
+
+      // Process Challenge3D sales
+      if (!challenge3dError && challenge3dSales) {
+        challenge3dSales.forEach(sale => processSale(sale, 'Challenge3D'));
+      }
+
+      // Process Challenge3D leads
+      if (!challenge3dLeadsError && challenge3dLeads) {
+        challenge3dLeads.forEach(lead => processLead(lead));
+      }
+
+      console.log(`📊 Express: ${expressSales?.length || 0} sales`);
+      console.log(`📊 Flagman: ${flagmanSales?.length || 0} sales`);
+      console.log(`📊 Challenge3D: ${challenge3dSales?.length || 0} sales, ${challenge3dLeads?.length || 0} leads`);
+    } catch (error: any) {
+      console.error('❌ Failed to fetch sales from DB:', error.message);
+      // Fallback to old AmoCRM logic
+      const paidLeads = await getAllPaidLeads();
+      const processedLeads = paidLeads.map(lead => {
+        const utmData = extractUTMFromLead(lead);
+        const trafficTeam = identifyTrafficTeam(utmData);
+        return {
+          ...utmData,
+          traffic_team: trafficTeam,
+          closed_at: lead.closed_at,
+        };
+      });
+
+      for (const lead of processedLeads) {
+        const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
+        if (singleDate) {
+          const leadDate = getAlmatyDate(new Date(closedTime));
+          if (leadDate !== singleDate) continue;
+        } else if (closedTime < rangeStartMs || closedTime > rangeEndMs) {
           continue;
         }
-      } else {
-        // Для preset - проверяем что сделка в диапазоне
-        if (closedTime < rangeStartMs || closedTime > rangeEndMs) {
-          outsideDateRangeCount++;
-          continue;
+
+        const team = lead.traffic_team;
+        if (!amocrmStats[team]) {
+          amocrmStats[team] = { sales: 0, revenue: 0, leads: 0 };
         }
+        amocrmStats[team].sales++;
+        amocrmStats[team].revenue += 5000; // Fallback: 5000₸ per sale
       }
-      
-      const team = lead.traffic_team;
-      
-      // 🔍 Считаем Unknown лиды и сохраняем примеры
-      if (team === 'Unknown' || team === 'Другие' || !team) {
-        unknownLeadsCount++;
-        if (unknownLeadsExamples.length < 5) { // Сохраняем первые 5 примеров
-          unknownLeadsExamples.push({
-            utm_source: lead.utm_source || 'NULL',
-            utm_medium: lead.utm_medium || 'NULL',
-            utm_campaign: lead.utm_campaign || 'NULL',
-            closed_date: new Date(closedTime).toISOString().split('T')[0],
-          });
-        }
-      }
-      
-      if (!amocrmStats[team]) {
-        amocrmStats[team] = { sales: 0, revenue: 0 };
-      }
-      amocrmStats[team].sales++;
-      amocrmStats[team].revenue += 5000; // 5000₸ per sale
     }
     
     // 🔍 Выводим статистику по командам
@@ -1258,14 +1368,12 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     console.log(`\n⚠️ Unknown/Другие лиды: ${unknownLeadsCount}`);
     
     if (unknownLeadsExamples.length > 0) {
-      console.log(`\n🔍 Примеры Unknown лидов (UTM метки):`);
+      console.log(`\n🔍 Примеры Unknown лидов/продаж (UTM метки):`);
       unknownLeadsExamples.forEach((example, i) => {
-        console.log(`   ${i + 1}. source: "${example.utm_source}" | medium: "${example.utm_medium}" | campaign: "${example.utm_campaign}" | date: ${example.closed_date}`);
+        console.log(`   ${i + 1}. [${example.product}] source: "${example.utm_source}" | medium: "${example.utm_medium}" | campaign: "${example.utm_campaign}" | date: ${example.sale_date || example.created_at}`);
       });
     }
-    
-    console.log(`\n⏰ За пределами диапазона: ${outsideDateRangeCount}`);
-    console.log(`✅ В диапазоне: ${processedLeads.length - outsideDateRangeCount}`);
+
     console.log(`🔍 === КОНЕЦ ДИАГНОСТИКИ ===\n`);
     
     // 3. Combine data
@@ -1274,7 +1382,7 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     
     const combined = fbResults.map(fb => {
       // Match team names
-      let amocrmTeam: { sales: number; revenue: number } | undefined = amocrmStats[fb.team] || amocrmStats[fb.team.toLowerCase()];
+      let amocrmTeam: { sales: number; revenue: number; leads: number } | undefined = amocrmStats[fb.team] || amocrmStats[fb.team.toLowerCase()];
 
       // Try matching by UTM pattern
       if (!amocrmTeam) {
@@ -1289,6 +1397,7 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
 
       const sales = amocrmTeam?.sales || 0;
       const revenueKZT = amocrmTeam?.revenue || 0; // Revenue в KZT
+      const dbLeads = amocrmTeam?.leads || 0; // Leads from Challenge3D
       const spendKZT = fb.spend * usdToKztRate; // Конвертируем spend в KZT
       
       // 🎯 ПРАВИЛЬНЫЙ ROAS: Revenue(KZT) / Spend(KZT)
@@ -1309,7 +1418,7 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
         clicks: fb.clicks,
         ctr: fb.ctr,
         reach: fb.reach || 0,
-        leads: fb.leads || 0,
+        leads: (fb.leads || 0) + dbLeads, // FB leads + Challenge3D leads
         fbPurchases: fb.fbPurchases || 0,
         // 🎬 Video engagement metrics
         videoMetrics: fb.videoMetrics || null,
@@ -1336,42 +1445,8 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
     const totalCpa = totals.sales > 0 ? totals.spend / totals.sales : 0;
     const totalCtr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
     
-    // 🏷️ ТОП UTM МЕТОК ПО ПРОДАЖАМ (из AmoCRM)
-    const utmSalesMap: Record<string, { campaign: string; sales: number; revenue: number; team: string }> = {};
-    for (const lead of processedLeads) {
-      const closedTime = lead.closed_at ? lead.closed_at * 1000 : 0;
-      
-      // Для single date - проверяем что сделка закрыта именно в этот день (Almaty)
-      if (singleDate) {
-        const leadDate = getAlmatyDate(new Date(closedTime));
-        if (leadDate !== singleDate) continue;
-      } else {
-        // Для preset - проверяем что сделка в диапазоне
-        if (closedTime < rangeStartMs || closedTime > rangeEndMs) continue;
-      }
-      
-      const campaign = lead.utm_campaign || lead.utm_content || 'unknown';
-      if (campaign === 'unknown') continue;
-      
-      if (!utmSalesMap[campaign]) {
-        utmSalesMap[campaign] = {
-          campaign,
-          sales: 0,
-          revenue: 0,
-          team: lead.traffic_team,
-        };
-      }
-      utmSalesMap[campaign].sales++;
-      utmSalesMap[campaign].revenue += 5000;
-    }
-    
-    const topUtmBySales = Object.values(utmSalesMap)
-      .sort((a, b) => b.sales - a.sales)
-      .slice(0, 10)
-      .map((item, idx) => ({
-        rank: idx + 1,
-        ...item,
-      }));
+    // 🏷️ ТОП UTM МЕТОК ПО ПРОДАЖАМ (temporarily disabled - migrating to DB-based logic)
+    const topUtmBySales: any[] = [];
     
     // 📈 ТОП КАМПАНИЙ ПО CTR (из Facebook Ads)
     const allCampaigns: { name: string; team: string; ctr: number; clicks: number; impressions: number; spend: number }[] = [];

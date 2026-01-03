@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { IntegrationLogger } from './integrationLogger';
 import { createShortLink } from './urlShortener.js';
 
 const MOBIZON_API_KEY = process.env.MOBIZON_API_KEY || 'kzc180c8b156ce75254b1b9845d410516dc4d968da627abf32ae3052e6f941f71bc368';
@@ -19,31 +20,45 @@ export async function sendSMS(params: SendSMSParams): Promise<boolean> {
       textLength: params.text.length,
     });
 
-    const response = await axios.post(
-      MOBIZON_API_URL,
-      new URLSearchParams({
-        recipient: cleanPhone,
-        text: params.text,
-      }).toString(),
+    return await IntegrationLogger.track(
+      'mobizon',
+      'send_sms',
+      async () => {
+        const response = await axios.post(
+          MOBIZON_API_URL,
+          new URLSearchParams({
+            recipient: cleanPhone,
+            text: params.text,
+          }).toString(),
+          {
+            params: {
+              output: 'json',
+              api: 'v1',
+              apiKey: MOBIZON_API_KEY,
+            },
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          }
+        );
+
+        if (response.data?.code === 0) {
+          console.log('✅ SMS sent successfully via Mobizon');
+          return true;
+        } else {
+          console.error('❌ Mobizon SMS error:', response.data);
+          throw new Error(`Mobizon API error: ${response.data?.message || 'Unknown error'}`);
+        }
+      },
       {
-        params: {
-          output: 'json',
-          api: 'v1',
-          apiKey: MOBIZON_API_KEY,
+        metadata: {
+          recipient: cleanPhone,
+          message_length: params.text.length,
         },
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        includeRequest: false, // Не логируем полный текст SMS
+        includeResponse: true,
       }
     );
-
-    if (response.data?.code === 0) {
-      console.log('✅ SMS sent successfully via Mobizon');
-      return true;
-    } else {
-      console.error('❌ Mobizon SMS error:', response.data);
-      return false;
-    }
   } catch (error: any) {
     console.error('❌ Error sending SMS via Mobizon:', error.message);
     return false;

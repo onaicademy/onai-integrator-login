@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TrafficCabinetLayout } from '@/components/traffic/TrafficCabinetLayout';
 import { AttributionPanel } from '@/components/traffic/AttributionPanel';
+import { TargetDashboardContent } from '@/components/traffic/TargetDashboardContent';
 import { AuthManager } from '@/lib/auth';
 import {
   Settings, Users, Sparkles, Loader2, CheckCircle, AlertCircle, RefreshCw,
@@ -34,7 +35,7 @@ const getPath = (path: string) => {
 };
 
 export default function TrafficAdminPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'attribution' | 'settings' | 'generate'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'attribution' | 'settings' | 'generate' | 'target'>('target');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
@@ -60,16 +61,16 @@ export default function TrafficAdminPanel() {
         {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b border-[#00FF88]/10 overflow-x-auto pb-1">
           <TabButton
+            active={activeTab === 'target'}
+            onClick={() => setActiveTab('target')}
+            icon={<Target className="w-4 h-4" />}
+            label="Таргет Dashboard"
+          />
+          <TabButton
             active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
             icon={<BarChart3 className="w-4 h-4" />}
-            label="Дашборд"
-          />
-          <TabButton
-            active={activeTab === 'users'}
-            onClick={() => setActiveTab('users')}
-            icon={<Users className="w-4 h-4" />}
-            label="Пользователи"
+            label="Панель администратора"
           />
           <TabButton
             active={activeTab === 'attribution'}
@@ -90,10 +91,10 @@ export default function TrafficAdminPanel() {
             label="Генерация планов"
           />
         </div>
-        
+
         {/* Content */}
+        {activeTab === 'target' && <TargetDashboardContent />}
         {activeTab === 'dashboard' && <DashboardPanel />}
-        {activeTab === 'users' && <UsersPanel />}
         {activeTab === 'attribution' && <AttributionPanel />}
         {activeTab === 'settings' && <SettingsPanel />}
         {activeTab === 'generate' && <GeneratePanel />}

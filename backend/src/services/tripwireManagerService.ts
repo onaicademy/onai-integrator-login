@@ -168,6 +168,7 @@ export async function getTripwireUsers(params: GetTripwireUsersParams & { startD
 /**
  * Получает статистику по Tripwire пользователям для менеджера (via RPC)
  * 🎯 ARCHITECT SOLUTION #3: Поддержка startDate/endDate фильтрации
+ * 🔥 FIX: RPC returns array, extract first element for frontend
  */
 export async function getTripwireStats(managerId?: string, startDate?: string, endDate?: string) {
   try {
@@ -181,7 +182,18 @@ export async function getTripwireStats(managerId?: string, startDate?: string, e
       throw new Error(`RPC error: ${error.message}`);
     }
 
-    return data;
+    // 🔥 FIX: RPC returns array with single object, extract it
+    const stats = Array.isArray(data) ? data[0] : data;
+    
+    // 🔥 FIX: Ensure we return an object with proper defaults
+    return stats || {
+      total_students: 0,
+      active_students: 0,
+      completed_students: 0,
+      students_this_month: 0,
+      total_revenue: 0,
+      revenue_this_month: 0,
+    };
   } catch (error: any) {
     console.error('❌ Error fetching tripwire stats via RPC:', error);
     throw error;

@@ -20,7 +20,7 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 export const TRAFFIC_API_URL = isTrafficDomain
   ? '' // ✅ Nginx proxy на traffic.onai.academy/api/* → localhost:3000/api/*
   : isLocalhost
-    ? 'http://localhost:3000'
+    ? 'http://localhost:3001'
     : 'https://api.onai.academy';
 
 console.log('🔧 [Traffic API Config]');

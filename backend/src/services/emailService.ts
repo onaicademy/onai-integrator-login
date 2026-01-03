@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { IntegrationLogger } from './integrationLogger';
 
 /**
  * Email Service для отправки приветственных писем
@@ -209,22 +210,37 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<bool
     console.log('   From:', fromEmail);
     console.log('   To:', params.toEmail);
     console.log('   Password:', params.password);
-    
-    // Отправка email через Resend
-    const { data, error } = await getResendClient().emails.send({
-      from: fromEmail,
-      to: params.toEmail,
-      subject: '🚀 Добро пожаловать в Интегратор 3.0 — Ваш путь к AI начинается здесь!',
-      html: htmlContent,
-    });
 
-    if (error) {
-      console.error(`❌ Resend error:`, error);
-      return false;
-    }
+    // Отправка email через Resend с логированием
+    return await IntegrationLogger.track(
+      'resend',
+      'send_welcome_email',
+      async () => {
+        const { data, error } = await getResendClient().emails.send({
+          from: fromEmail,
+          to: params.toEmail,
+          subject: '🚀 Добро пожаловать в Интегратор 3.0 — Ваш путь к AI начинается здесь!',
+          html: htmlContent,
+        });
 
-    console.log(`✅ Welcome email sent to ${params.toEmail} (ID: ${data?.id})`);
-    return true;
+        if (error) {
+          console.error(`❌ Resend error:`, error);
+          throw new Error(error.message || 'Failed to send email');
+        }
+
+        console.log(`✅ Welcome email sent to ${params.toEmail} (ID: ${data?.id})`);
+        return true;
+      },
+      {
+        metadata: {
+          to: params.toEmail,
+          name: params.name,
+          email_type: 'welcome'
+        },
+        includeRequest: false, // Не логируем HTML content
+        includeResponse: true,
+      }
+    );
   } catch (error: any) {
     console.error(`❌ Error sending welcome email:`, error.message);
     return false;
@@ -335,20 +351,36 @@ export async function sendEmailChangeNotification(params: EmailChangeNotificatio
 </html>
     `;
 
-    const { data, error } = await getResendClient().emails.send({
-      from: 'onAI Academy Security <noreply@onai.academy>',
-      to: params.toEmail,
-      subject: '🔐 Уведомление о смене email — onAI Academy',
-      html: htmlContent,
-    });
+    return await IntegrationLogger.track(
+      'resend',
+      'send_email_change_notification',
+      async () => {
+        const { data, error } = await getResendClient().emails.send({
+          from: 'onAI Academy Security <noreply@onai.academy>',
+          to: params.toEmail,
+          subject: '🔐 Уведомление о смене email — onAI Academy',
+          html: htmlContent,
+        });
 
-    if (error) {
-      console.error(`❌ Resend error:`, error);
-      return false;
-    }
+        if (error) {
+          console.error(`❌ Resend error:`, error);
+          throw new Error(error.message || 'Failed to send email');
+        }
 
-    console.log(`✅ Email change notification sent to ${params.toEmail} (ID: ${data?.id})`);
-    return true;
+        console.log(`✅ Email change notification sent to ${params.toEmail} (ID: ${data?.id})`);
+        return true;
+      },
+      {
+        metadata: {
+          to: params.toEmail,
+          old_email: params.oldEmail,
+          new_email: params.newEmail,
+          email_type: 'email_change'
+        },
+        includeRequest: false,
+        includeResponse: true,
+      }
+    );
   } catch (error: any) {
     console.error(`❌ Error sending email change notification:`, error.message);
     return false;
@@ -444,20 +476,35 @@ export async function sendPasswordChangeNotification(params: PasswordChangeNotif
 </html>
     `;
 
-    const { data, error } = await getResendClient().emails.send({
-      from: 'onAI Academy Security <noreply@onai.academy>',
-      to: params.toEmail,
-      subject: '🔐 Пароль успешно изменен — onAI Academy',
-      html: htmlContent,
-    });
+    return await IntegrationLogger.track(
+      'resend',
+      'send_password_change_notification',
+      async () => {
+        const { data, error } = await getResendClient().emails.send({
+          from: 'onAI Academy Security <noreply@onai.academy>',
+          to: params.toEmail,
+          subject: '🔐 Пароль успешно изменен — onAI Academy',
+          html: htmlContent,
+        });
 
-    if (error) {
-      console.error(`❌ Resend error:`, error);
-      return false;
-    }
+        if (error) {
+          console.error(`❌ Resend error:`, error);
+          throw new Error(error.message || 'Failed to send email');
+        }
 
-    console.log(`✅ Password change notification sent to ${params.toEmail} (ID: ${data?.id})`);
-    return true;
+        console.log(`✅ Password change notification sent to ${params.toEmail} (ID: ${data?.id})`);
+        return true;
+      },
+      {
+        metadata: {
+          to: params.toEmail,
+          name: params.name,
+          email_type: 'password_change'
+        },
+        includeRequest: false,
+        includeResponse: true,
+      }
+    );
   } catch (error: any) {
     console.error(`❌ Error sending password change notification:`, error.message);
     return false;

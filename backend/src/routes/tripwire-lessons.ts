@@ -587,6 +587,44 @@ router.post('/complete', async (req, res) => {
           } else {
             console.log(`✅ [STEP 6c SUCCESS] Profile updated: ${completedModulesCount}/3 modules (${completion_percentage}%)`);
           }
+
+          // ============================================
+          // 🎓 STEP 6d: АВТОМАТИЧЕСКАЯ ВЫДАЧА СЕРТИФИКАТА
+          // ============================================
+          // Если студент завершил все 3 модуля - выдаём сертификат
+          if (completedModulesCount === 3) {
+            console.log('🎓 [AUTO CERTIFICATE] Студент завершил все 3 модуля, проверяем сертификат...');
+
+            try {
+              // Проверяем, не выдан ли уже сертификат
+              const { data: existingCert } = await tripwireAdminSupabase
+                .from('certificates')
+                .select('id, certificate_number')
+                .eq('user_id', main_user_id)
+                .maybeSingle();
+
+              if (existingCert) {
+                console.log(`✅ [AUTO CERTIFICATE] Сертификат уже выдан: ${existingCert.certificate_number}`);
+              } else {
+                console.log('📄 [AUTO CERTIFICATE] Сертификат не найден, выдаём новый...');
+
+                // Импортируем сервис генерации сертификатов
+                const { issueCertificate } = await import('../services/tripwire/tripwireCertificateService');
+
+                // Выдаём сертификат
+                const certificate = await issueCertificate(main_user_id);
+
+                console.log(`✅ [AUTO CERTIFICATE] Сертификат успешно выдан!`);
+                console.log(`   📋 Номер: ${certificate.certificate_number}`);
+                console.log(`   🔗 URL: ${certificate.pdf_url}`);
+                console.log(`   👤 Студент: ${certificate.full_name}`);
+              }
+            } catch (certError: any) {
+              // Логируем ошибку, но НЕ блокируем завершение урока
+              console.error('❌ [AUTO CERTIFICATE] Ошибка при выдаче сертификата:', certError.message);
+              console.error('   Студент завершил курс, но сертификат нужно выдать вручную');
+            }
+          }
         }
       }
 

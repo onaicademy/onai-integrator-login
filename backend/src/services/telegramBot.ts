@@ -125,7 +125,13 @@ function deactivateChat(chatId: number, messageThreadId?: number) {
 }
 
 // Отправка сообщения во все активные чаты (с поддержкой Topics)
+// ⚠️ DISABLED: Функция отключена по запросу администратора
 export async function sendToAllChats(message: string, parseMode: 'Markdown' | 'HTML' = 'Markdown') {
+  // ⚠️ ОТКЛЮЧЕНО: Telegram отчеты деактивированы
+  console.log('⚠️ [sendToAllChats] ОТКЛЮЧЕНО - функция деактивирована');
+  return [];
+  
+  /* ORIGINAL CODE - закомментировано для восстановления
   // Проверяем, включена ли отправка отчетов
   const reportsEnabled = process.env.TELEGRAM_REPORTS_ENABLED !== 'false';
   
@@ -159,6 +165,7 @@ export async function sendToAllChats(message: string, parseMode: 'Markdown' | 'H
   }
   
   return results;
+  */
 }
 
 // Инициализация обработчиков бота

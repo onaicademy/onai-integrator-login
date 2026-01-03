@@ -8,6 +8,7 @@
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { landingSupabase } from '../config/supabase-landing';
+import { IntegrationLogger } from './integrationLogger';
 
 // ========================================
 // КОНФИГУРАЦИЯ ЭТАПОВ AMOCRM
@@ -124,66 +125,73 @@ loadTokensFromDB().catch((error) => {
  * Обновление Access Token через Refresh Token
  */
 async function refreshAccessToken(): Promise<boolean> {
-  try {
-    console.log('🔄 [AmoCRM] Токен истёк, запрашиваем новый через Refresh Token...');
+  return await IntegrationLogger.track(
+    'amocrm',
+    'refresh_access_token',
+    async () => {
+      console.log('🔄 [AmoCRM] Токен истёк, запрашиваем новый через Refresh Token...');
 
-    const subdomain = process.env.AMOCRM_SUBDOMAIN;
-    const clientId = process.env.AMOCRM_CLIENT_ID;
-    const clientSecret = process.env.AMOCRM_CLIENT_SECRET;
-    const redirectUri = process.env.AMOCRM_REDIRECT_URI || 'https://onai.academy';
+      const subdomain = process.env.AMOCRM_SUBDOMAIN;
+      const clientId = process.env.AMOCRM_CLIENT_ID;
+      const clientSecret = process.env.AMOCRM_CLIENT_SECRET;
+      const redirectUri = process.env.AMOCRM_REDIRECT_URI || 'https://onai.academy';
 
-    if (!subdomain || !clientId || !clientSecret || !currentRefreshToken) {
-      console.error('❌ [AmoCRM] Не хватает данных для обновления токена:');
-      if (!subdomain) console.error('  - AMOCRM_SUBDOMAIN не задан');
-      if (!clientId) console.error('  - AMOCRM_CLIENT_ID не задан');
-      if (!clientSecret) console.error('  - AMOCRM_CLIENT_SECRET не задан');
-      if (!currentRefreshToken) console.error('  - AMOCRM_REFRESH_TOKEN не задан');
-      return false;
-    }
-
-    // Запрос на обновление токена (БЕЗ interceptors, чтобы не зациклиться)
-    const response = await axios.post(
-      `https://${subdomain}.amocrm.ru/oauth2/access_token`,
-      {
-        client_id: clientId,
-        client_secret: clientSecret,
-        grant_type: 'refresh_token',
-        refresh_token: currentRefreshToken,
-        redirect_uri: redirectUri,
-      },
-      {
-        headers: { 'Content-Type': 'application/json' },
+      if (!subdomain || !clientId || !clientSecret || !currentRefreshToken) {
+        console.error('❌ [AmoCRM] Не хватает данных для обновления токена:');
+        if (!subdomain) console.error('  - AMOCRM_SUBDOMAIN не задан');
+        if (!clientId) console.error('  - AMOCRM_CLIENT_ID не задан');
+        if (!clientSecret) console.error('  - AMOCRM_CLIENT_SECRET не задан');
+        if (!currentRefreshToken) console.error('  - AMOCRM_REFRESH_TOKEN не задан');
+        throw new Error('Missing AmoCRM OAuth credentials');
       }
-    );
 
-    const { access_token, refresh_token } = response.data;
+      // Запрос на обновление токена (БЕЗ interceptors, чтобы не зациклиться)
+      const response = await axios.post(
+        `https://${subdomain}.amocrm.ru/oauth2/access_token`,
+        {
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'refresh_token',
+          refresh_token: currentRefreshToken,
+          redirect_uri: redirectUri,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
-    if (!access_token || !refresh_token) {
-      console.error('❌ [AmoCRM] Не получили токены в ответе от amoCRM');
-      return false;
+      const { access_token, refresh_token } = response.data;
+
+      if (!access_token || !refresh_token) {
+        console.error('❌ [AmoCRM] Не получили токены в ответе от amoCRM');
+        throw new Error('Invalid token response from AmoCRM');
+      }
+
+      // Сохраняем новые токены
+      await saveTokens(access_token, refresh_token);
+
+      console.log('✅ [AmoCRM] Токены успешно обновлены!');
+      console.log(`   - Access Token: ${access_token.substring(0, 20)}...`);
+      console.log(`   - Refresh Token: ${refresh_token.substring(0, 20)}...`);
+
+      return true;
+    },
+    {
+      includeRequest: false, // Не логируем секретные данные
+      includeResponse: false,
     }
-
-    // Сохраняем новые токены
-    await saveTokens(access_token, refresh_token);
-
-    console.log('✅ [AmoCRM] Токены успешно обновлены!');
-    console.log(`   - Access Token: ${access_token.substring(0, 20)}...`);
-    console.log(`   - Refresh Token: ${refresh_token.substring(0, 20)}...`);
-
-    return true;
-
-  } catch (error: any) {
+  ).catch((error: any) => {
     console.error('❌ [AmoCRM] Не удалось обновить токен:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
     });
-    
+
     console.error('💡 [AmoCRM] Возможно, Refresh Token истёк или интеграция деактивирована.');
     console.error('   Необходима повторная OAuth авторизация через amoCRM.');
-    
+
     return false;
-  }
+  });
 }
 
 // ========================================
@@ -376,48 +384,56 @@ async function findLeadIdByEmail(email: string): Promise<number | null> {
     return null;
   }
 
-  try {
-    console.log(`[AmoCRM] Поиск контакта по email: ${email}`);
+  return await IntegrationLogger.track(
+    'amocrm',
+    'find_lead_by_email',
+    async () => {
+      console.log(`[AmoCRM] Поиск контакта по email: ${email}`);
 
-    // 1. Ищем контакт по email
-    const contactRes = await client.get('/contacts', {
-      params: { query: email },
-    });
+      // 1. Ищем контакт по email
+      const contactRes = await client.get('/contacts', {
+        params: { query: email },
+      });
 
-    const contact = contactRes.data._embedded?.contacts?.[0];
-    if (!contact) {
-      console.log(`[AmoCRM] Контакт с email ${email} не найден`);
-      return null;
+      const contact = contactRes.data._embedded?.contacts?.[0];
+      if (!contact) {
+        console.log(`[AmoCRM] Контакт с email ${email} не найден`);
+        return null;
+      }
+
+      console.log(`[AmoCRM] Найден контакт: ID ${contact.id}, имя "${contact.name}"`);
+
+      // 2. Ищем сделки, привязанные к этому контакту в нужной воронке
+      const leadsRes = await client.get('/leads', {
+        params: {
+          'filter[id]': contact.id,
+          'filter[pipeline_id]': AMO_PIPELINE_ID,
+        },
+      });
+
+      const leads = leadsRes.data._embedded?.leads;
+      if (!leads || leads.length === 0) {
+        console.log(`[AmoCRM] Сделки для контакта ${contact.id} в воронке ${AMO_PIPELINE_ID} не найдены`);
+        return null;
+      }
+
+      // Берем самую свежую сделку
+      const latestLead = leads.reduce((latest: any, current: any) => {
+        return current.updated_at > latest.updated_at ? current : latest;
+      }, leads[0]);
+
+      console.log(`[AmoCRM] Найдена сделка: ID ${latestLead.id}, статус ${latestLead.status_id}`);
+      return latestLead.id;
+    },
+    {
+      metadata: { email, pipeline_id: AMO_PIPELINE_ID },
+      includeRequest: true,
+      includeResponse: true,
     }
-
-    console.log(`[AmoCRM] Найден контакт: ID ${contact.id}, имя "${contact.name}"`);
-
-    // 2. Ищем сделки, привязанные к этому контакту в нужной воронке
-    const leadsRes = await client.get('/leads', {
-      params: {
-        'filter[id]': contact.id,
-        'filter[pipeline_id]': AMO_PIPELINE_ID,
-      },
-    });
-
-    const leads = leadsRes.data._embedded?.leads;
-    if (!leads || leads.length === 0) {
-      console.log(`[AmoCRM] Сделки для контакта ${contact.id} в воронке ${AMO_PIPELINE_ID} не найдены`);
-      return null;
-    }
-
-    // Берем самую свежую сделку
-    const latestLead = leads.reduce((latest: any, current: any) => {
-      return current.updated_at > latest.updated_at ? current : latest;
-    }, leads[0]);
-
-    console.log(`[AmoCRM] Найдена сделка: ID ${latestLead.id}, статус ${latestLead.status_id}`);
-    return latestLead.id;
-
-  } catch (error) {
+  ).catch((error: any) => {
     handleAmoCrmError('[AmoCRM] Ошибка при поиске сделки', error);
     return null;
-  }
+  });
 }
 
 /**
@@ -430,20 +446,28 @@ async function moveLeadToStage(leadId: number, stageId: number): Promise<boolean
     return false;
   }
 
-  try {
-    console.log(`[AmoCRM] Перемещаем сделку ${leadId} на этап ${stageId}`);
+  return await IntegrationLogger.track(
+    'amocrm',
+    'move_lead_to_stage',
+    async () => {
+      console.log(`[AmoCRM] Перемещаем сделку ${leadId} на этап ${stageId}`);
 
-    await client.patch(`/leads/${leadId}`, {
-      status_id: stageId,
-    });
+      const response = await client.patch(`/leads/${leadId}`, {
+        status_id: stageId,
+      });
 
-    console.log(`✅ [AmoCRM] Сделка ${leadId} успешно перемещена на этап ${stageId}`);
-    return true;
-
-  } catch (error) {
+      console.log(`✅ [AmoCRM] Сделка ${leadId} успешно перемещена на этап ${stageId}`);
+      return true;
+    },
+    {
+      metadata: { lead_id: leadId, stage_id: stageId },
+      includeRequest: true,
+      includeResponse: true,
+    }
+  ).catch((error: any) => {
     handleAmoCrmError(`[AmoCRM] Не удалось переместить сделку ${leadId}`, error);
     return false;
-  }
+  });
 }
 
 /**

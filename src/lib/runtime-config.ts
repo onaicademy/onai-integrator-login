@@ -15,7 +15,7 @@ type RuntimeConfig = {
 };
 
 const defaultApiUrl = import.meta.env.DEV
-  ? 'http://localhost:3000'
+  ? 'http://localhost:3001'
   : 'https://api.onai.academy';
 
 const normalizeApiUrl = (value?: string) => {

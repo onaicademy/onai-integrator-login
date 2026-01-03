@@ -154,13 +154,18 @@ import trafficFacebookApiRouter from './routes/traffic-facebook-api.js'; // 📘
 import targetologistAssignmentRouter from './routes/targetologist-assignment.js'; // 🎯 Targetologist Assignment (manual + auto)
 import trafficFunnelApiRouter from './routes/traffic-funnel-api.js'; // 📊 Sales Funnel Visualization
 import trafficDashboardRouter from './routes/traffic-dashboard.js'; // 📊 Traffic Dashboard API (Sales Aggregation + UTM Attribution)
+import trafficForceSyncRouter from './routes/traffic-force-sync.js'; // 🔄 Force Sync API
+import trafficAggregationRouter from './routes/traffic-aggregation.js'; // 📊 Metrics Aggregation (server-initiated)
 import amocrmFunnelWebhookRouter from './routes/amocrm-funnel-webhook.js'; // 📚 AmoCRM → Express Course Webhook
 import amocrmMainProductWebhookRouter from './routes/amocrm-main-product-webhook.js'; // 🏆 AmoCRM → Main Product Webhook
+import amocrmChallenge3dWebhookRouter from './routes/amocrm-challenge3d-webhook.js'; // 📚 AmoCRM → Challenge 3D Sales Webhook
+import amocrmChallenge3dLeadsWebhookRouter from './routes/amocrm-challenge3d-leads-webhook.js'; // 📋 AmoCRM → Challenge 3D ALL Leads Webhook
 import errorReportsRouter from './routes/error-reports.js'; // 🚨 Error Reports → Telegram
 import trafficMainProductsRouter from './routes/traffic-main-products.js'; // 🚀 Main Products Sales (AmoCRM)
 import referralRouter from './routes/referral.js'; // 🎯 Referral System (UTM tracking & commissions)
 import apiIntegrationsRouter from './routes/api-integrations'; // 📊 API Integrations Status (Frontend)
 import integrationsDiagnosticsRouter from './routes/integrations-diagnostics'; // 🔍 Integrations Diagnostics
+import integrationMonitoringRouter from './routes/integration-monitoring'; // 📊 Integration Monitoring (Logs & Analytics)
 import amoCRMWebhookRouter from './integrations/amocrm-webhook.js'; // 🔔 AmoCRM Referral Webhooks (DEPRECATED - use unified)
 import unifiedAmoCRMWebhookRouter from './integrations/unified-amocrm-webhook.js'; // 🎯 UNIFIED AmoCRM Webhooks (Referral + Traffic)
 import trafficWebhookRouter from './integrations/traffic-webhook.js'; // 🎯 DEDICATED Traffic Dashboard Webhook
@@ -414,12 +419,18 @@ app.use('/api/amocrm/funnel-sale', express.urlencoded({ extended: true, limit: '
 app.use('/api/amocrm/funnel-sale', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
 app.use('/api/amocrm/expresscourse', express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/amocrm/expresscourse', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
+app.use('/api/amocrm/challenge3d-sale', express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/api/amocrm/challenge3d-sale', express.json({ limit: '10mb' })); // На всякий случай поддержка JSON
+app.use('/api/amocrm/challenge3d-lead', express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/api/amocrm/challenge3d-lead', express.json({ limit: '10mb' })); // Challenge3D ALL Leads
 app.use('/webhook/amocrm', express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/webhook/amocrm', express.json({ limit: '10mb' }));
 
 // Регистрируем webhook routes
 app.use('/api/amocrm', amocrmFunnelWebhookRouter); // 📚 AmoCRM → Express Course Webhook (OLD - для обратной совместимости)
 // NOTE: amocrmFunnelWebhookRouter already handles Express Course webhooks
+app.use('/api/amocrm', amocrmChallenge3dWebhookRouter); // 📚 AmoCRM → Challenge 3D Sales Webhook
+app.use('/api/amocrm', amocrmChallenge3dLeadsWebhookRouter); // 📋 AmoCRM → Challenge 3D ALL Leads Webhook
 app.use('/webhook/amocrm', amocrmMainProductWebhookRouter); // 🏆 AmoCRM → Main Product Webhook (490K KZT)
 app.use('/webhook/amocrm', trafficWebhookRouter); // 🎯 Traffic Dashboard Webhook (legacy)
 app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook
@@ -427,6 +438,7 @@ app.use('/webhook/amocrm', amoCRMWebhookRouter); // 🔔 Referral System Webhook
 console.log('✅ Webhook routes registered (before express.json)');
 console.log('   📚 Express Course (OLD): POST /api/amocrm/funnel-sale');
 console.log('   📚 Express Course (NEW): POST /api/amocrm/expresscourse');
+console.log('   📚 Challenge 3D (3х дневник): POST /api/amocrm/challenge3d-sale');
 console.log('   🏆 Main Product: POST /webhook/amocrm/traffic');
 
 // ════════════════════════════════════════════════════════════════════════
@@ -483,6 +495,7 @@ app.use('/api/tripwire/admin', tripwireAdminRouter); // ✅ Tripwire Admin Dashb
 app.use('/api/tripwire/admin/mass-broadcast', tripwireMassBroadcastRouter); // ✅ Mass Broadcast (EMAIL + SMS)
 app.use('/api/tripwire/admin/transcriptions', tripwireTranscriptionsOldRouter); // ✅ Tripwire Transcriptions (Admin)
 app.use('/api/admin/integrations/diagnostics', integrationsDiagnosticsRouter); // 🔍 Integrations Diagnostics
+app.use('/api/admin/integrations/monitoring', integrationMonitoringRouter); // 📊 Integration Monitoring (Logs & Analytics)
 app.use('/api/tripwire/transcriptions', tripwireTranscriptionsRouter); // ✅ NEW: Public transcriptions API
 app.use('/api/tripwire/users', tripwireProfileRouter); // ✅ Tripwire Profile (Isolated DB)
 app.use('/api/tripwire/analytics', tripwireAnalyticsRouter); // ✅ Tripwire Analytics (ISOLATED DB)
@@ -547,6 +560,8 @@ app.use('/api/health', apiHealthRouter); // 🏥 API Health Check & Token Manage
 app.use('/api/targetologist-assignment', targetologistAssignmentRouter); // 🎯 Targetologist Assignment
 app.use('/api/traffic-dashboard', trafficDashboardRouter); // 📊 Traffic Dashboard API (Sales Aggregation + UTM Attribution)
 app.use('/api/traffic-dashboard', trafficFunnelApiRouter); // 📊 Sales Funnel Visualization
+app.use('/api/traffic-dashboard', trafficForceSyncRouter); // 🔄 Force Sync & Status
+app.use('/api/traffic-aggregation', trafficAggregationRouter); // 📊 Metrics Aggregation (server-initiated)
 // ✅ MOVED BEFORE express.json(): app.use('/api/amocrm', amocrmFunnelWebhookRouter);
 app.use('/api/error-reports', errorReportsRouter); // 🚨 Error Reports → Telegram @analisistonaitrafic_bot
 app.use('/api/traffic', trafficMainProductsRouter); // 🚀 Main Products Sales (AmoCRM)
@@ -791,6 +806,17 @@ const server = app.listen(PORT, () => {
         console.log('✅ Bot Health Monitor initialized (hourly checks)');
       } catch (error) {
         console.error('❌ Failed to initialize Bot Health Monitor:', error);
+      }
+
+      // 12. Start Metrics Aggregation Scheduler (Traffic Dashboard)
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          const { startAggregationScheduler } = await import('./services/metricsAggregationService.js');
+          startAggregationScheduler(); // Every 10 minutes
+          console.log('✅ Metrics Aggregation Scheduler initialized (every 10 min)');
+        } catch (error) {
+          console.error('❌ Failed to initialize Metrics Aggregation:', error);
+        }
       }
 
       console.log('✅ All background services initialized');

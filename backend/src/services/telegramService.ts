@@ -4,6 +4,7 @@
  */
 
 import { getTelegramConfig } from '../config/telegram';
+import { IntegrationLogger } from './integrationLogger';
 import { createClient } from '@supabase/supabase-js';
 
 const config = getTelegramConfig();
@@ -192,36 +193,58 @@ export async function sendLeadNotification(
       try {
         console.log(`📱 Sending lead notification to group "${group.chat_title}" (${group.chat_id})`);
 
-        const response = await fetch(
-          `https://api.telegram.org/bot${botToken}/sendMessage`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: group.chat_id,
-              text: message,
-              parse_mode: 'HTML',
-            }),
-          }
-        );
+        await IntegrationLogger.track(
+          'telegram',
+          'send_lead_notification',
+          async () => {
+            const response = await fetch(
+              `https://api.telegram.org/bot${botToken}/sendMessage`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: group.chat_id,
+                  text: message,
+                  parse_mode: 'HTML',
+                }),
+              }
+            );
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error(`❌ Failed to send to group ${group.chat_id}:`, errorData);
-          failCount++;
-          
-          // Если бот был заблокирован или удален из группы, деактивируем её
-          if (errorData.error_code === 403 || errorData.error_code === 400) {
-            console.log(`🚫 Deactivating group ${group.chat_id} due to error ${errorData.error_code}`);
-            await landingSupabase
-              .from('telegram_groups')
-              .update({ is_active: false })
-              .eq('chat_id', group.chat_id);
+            if (!response.ok) {
+              const errorData = await response.json();
+              console.error(`❌ Failed to send to group ${group.chat_id}:`, errorData);
+
+              // Если бот был заблокирован или удален из группы, деактивируем её
+              if (errorData.error_code === 403 || errorData.error_code === 400) {
+                console.log(`🚫 Deactivating group ${group.chat_id} due to error ${errorData.error_code}`);
+                await landingSupabase
+                  .from('telegram_groups')
+                  .update({ is_active: false })
+                  .eq('chat_id', group.chat_id);
+              }
+
+              throw new Error(`Telegram API error ${errorData.error_code}: ${errorData.description}`);
+            } else {
+              console.log(`✅ Lead notification sent to group "${group.chat_title}" (${group.chat_id})`);
+              return true;
+            }
+          },
+          {
+            metadata: {
+              chat_id: group.chat_id,
+              chat_title: group.chat_title,
+              lead_name: leadData.name,
+              lead_source: leadData.source || 'expresscourse',
+            },
+            includeRequest: false,
+            includeResponse: true,
           }
-        } else {
-          console.log(`✅ Lead notification sent to group "${group.chat_title}" (${group.chat_id})`);
+        ).then(() => {
           successCount++;
-        }
+        }).catch((error: any) => {
+          console.error(`❌ Error sending to group ${group.chat_id}:`, error.message);
+          failCount++;
+        });
       } catch (error: any) {
         console.error(`❌ Error sending to group ${group.chat_id}:`, error.message);
         failCount++;

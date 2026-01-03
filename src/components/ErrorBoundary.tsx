@@ -1,8 +1,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home, Zap } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Zap, Copy, Send } from 'lucide-react';
 import { isChunkLoadError } from '@/utils/error-recovery';
 import * as Sentry from '@sentry/react';
+import toast from 'react-hot-toast';
 
 interface Props {
   children: React.ReactNode;
@@ -91,12 +92,81 @@ export class ErrorBoundary extends React.Component<Props, State> {
     window.location.href = '/';
   };
 
+  // 🛡️ NEW: Скопировать логи ошибки в буфер обмена
+  handleCopyLogs = async () => {
+    try {
+      // Формируем текст с полной информацией об ошибке
+      const logText = `
+═══════════════════════════════════════════════════
+🔴 ERROR LOG - OnAI Platform
+═══════════════════════════════════════════════════
+
+📅 Timestamp: ${new Date().toISOString()}
+🌍 Page: ${window.location.href}
+🖥️ Platform: ${this.detectPlatform()}
+👤 User: ${localStorage.getItem('user_email') || 'Not logged in'}
+
+─────────────────────────────────────────────────────
+ERROR DETAILS
+─────────────────────────────────────────────────────
+
+Error Name: ${this.state.error?.name || 'Unknown'}
+Error Message: ${this.state.error?.message || 'No message'}
+
+Stack Trace:
+${this.state.error?.stack || 'No stack trace available'}
+
+${this.state.errorInfo?.componentStack ? `
+─────────────────────────────────────────────────────
+COMPONENT STACK
+─────────────────────────────────────────────────────
+${this.state.errorInfo.componentStack}
+` : ''}
+
+─────────────────────────────────────────────────────
+ENVIRONMENT
+─────────────────────────────────────────────────────
+
+User Agent: ${navigator.userAgent}
+Viewport: ${window.innerWidth}x${window.innerHeight}
+Language: ${navigator.language}
+
+═══════════════════════════════════════════════════
+      `.trim();
+
+      // Копируем в буфер обмена
+      await navigator.clipboard.writeText(logText);
+
+      // Показываем уведомление
+      toast.success('✅ Логи скопированы в буфер обмена', {
+        duration: 3000,
+        position: 'bottom-center',
+        style: {
+          background: '#1a1a24',
+          color: '#00FF88',
+          border: '1px solid #00FF88',
+        },
+      });
+    } catch (error) {
+      console.error('Failed to copy logs:', error);
+      toast.error('❌ Не удалось скопировать логи', {
+        duration: 3000,
+        position: 'bottom-center',
+        style: {
+          background: '#1a1a24',
+          color: '#FF4444',
+          border: '1px solid #FF4444',
+        },
+      });
+    }
+  };
+
   // 🛡️ NEW: Отправить отчет об ошибке в Telegram
   handleReportFeedback = async () => {
     try {
       // Collect debug logs from console
       const debugLogs = this.collectDebugLogs();
-      
+
       // Prepare error report
       const errorReport = {
         error: {
@@ -121,26 +191,42 @@ export class ErrorBoundary extends React.Component<Props, State> {
           viewport: `${window.innerWidth}x${window.innerHeight}`
         }
       };
-      
+
       // Send to backend API
-      const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000' 
+      const API_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000'
         : 'https://api.onai.academy';
-        
+
       const response = await fetch(`${API_URL}/api/error-reports/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(errorReport)
       });
-      
+
       if (response.ok) {
-        alert('✅ Отчет отправлен! Спасибо за помощь 🙏');
+        toast.success('✅ Отчет отправлен! Спасибо за помощь 🙏', {
+          duration: 4000,
+          position: 'bottom-center',
+          style: {
+            background: '#1a1a24',
+            color: '#00FF88',
+            border: '1px solid #00FF88',
+          },
+        });
       } else {
         throw new Error('Failed to send report');
       }
     } catch (error) {
       console.error('Failed to send error report:', error);
-      alert('❌ Не удалось отправить отчет. Попробуйте еще раз.');
+      toast.error('❌ Не удалось отправить отчет. Попробуйте еще раз.', {
+        duration: 4000,
+        position: 'bottom-center',
+        style: {
+          background: '#1a1a24',
+          color: '#FF4444',
+          border: '1px solid #FF4444',
+        },
+      });
     }
   };
   
@@ -283,39 +369,55 @@ export class ErrorBoundary extends React.Component<Props, State> {
               </details>
             )}
 
-            <div className="flex gap-4 justify-center">
-              <Button
-                onClick={this.handleReset}
-                className="bg-[#00FF88] text-black hover:bg-[#00cc88]"
-              >
-                <Home className="w-4 h-4 mr-2" />
-                Вернуться на главную
-              </Button>
-              <Button
-                onClick={() => window.location.reload()}
-                variant="outline"
-                className="border-gray-600 text-white hover:bg-gray-800"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Обновить страницу
-              </Button>
-            </div>
-            
-            {/* 🛡️ NEW: Кнопка для report feedback в Sentry */}
-            {this.state.eventId && (
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <p className="text-sm text-gray-400 mb-3">
-                  Помогите нам стать лучше - расскажите что произошло
-                </p>
+            <div className="flex flex-col gap-3">
+              {/* Main action buttons */}
+              <div className="flex gap-4 justify-center">
                 <Button
-                  onClick={this.handleReportFeedback}
-                  variant="ghost"
-                  className="text-gray-400 hover:text-white text-sm"
+                  onClick={this.handleReset}
+                  className="bg-[#00FF88] text-black hover:bg-[#00cc88]"
                 >
-                  📝 Отправить отчет об ошибке
+                  <Home className="w-4 h-4 mr-2" />
+                  Вернуться на главную
+                </Button>
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  className="border-gray-600 text-white hover:bg-gray-800"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Обновить страницу
                 </Button>
               </div>
-            )}
+
+              {/* Debug/Report buttons */}
+              <div className="flex gap-3 justify-center">
+                <Button
+                  onClick={this.handleCopyLogs}
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800/50"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Скопировать логи
+                </Button>
+                <Button
+                  onClick={this.handleReportFeedback}
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800/50"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Отправить отчет
+                </Button>
+              </div>
+            </div>
+
+            {/* Helper text */}
+            <div className="mt-6 pt-6 border-t border-gray-700">
+              <p className="text-xs text-gray-500 text-center">
+                💡 Вы можете скопировать логи и отправить их разработчикам для быстрого решения проблемы
+              </p>
+            </div>
           </div>
         </div>
       );

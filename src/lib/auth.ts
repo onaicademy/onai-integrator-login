@@ -1,7 +1,12 @@
 /**
  * Centralized Authentication Management
  * Handles JWT tokens, validation, and user state
+ *
+ * ENHANCED: Added analyst role, refresh token flow, better type safety
  */
+
+import axios from 'axios';
+import { TRAFFIC_API_URL } from '@/config/traffic-api';
 
 interface AuthTokens {
   accessToken: string;
@@ -13,8 +18,8 @@ interface AuthUser {
   id: string;
   email: string;
   fullName: string;
-  team: string | null; // ✅ Can be NULL for admin (no team assignment)
-  role: 'admin' | 'targetologist';
+  team: string | null;
+  role: 'admin' | 'targetologist' | 'analyst';
 }
 
 class AuthManager {
@@ -24,7 +29,7 @@ class AuthManager {
   private static readonly USER_KEY = 'traffic_user';
 
   /**
-   * ✅ Save tokens after login
+   * Save tokens after login
    */
   static saveTokens(tokens: AuthTokens, user: AuthUser): void {
     sessionStorage.setItem(this.ACCESS_TOKEN_KEY, tokens.accessToken);
@@ -37,13 +42,13 @@ class AuthManager {
   }
 
   /**
-   * ✅ Get valid access token
+   * Get valid access token (checks expiration)
    */
   static getAccessToken(): string | null {
     const token = sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
-    
+
     if (!token) return null;
-    
+
     // Check expiration
     const expiresAt = localStorage.getItem(this.EXPIRES_AT_KEY);
     if (expiresAt && new Date(expiresAt) <= new Date()) {
@@ -55,14 +60,14 @@ class AuthManager {
   }
 
   /**
-   * ✅ Get refresh token
+   * Get refresh token
    */
   static getRefreshToken(): string | null {
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   /**
-   * ✅ Get authenticated user
+   * Get authenticated user with proper typing
    */
   static getUser(): AuthUser | null {
     const userStr = localStorage.getItem(this.USER_KEY);
@@ -76,14 +81,14 @@ class AuthManager {
   }
 
   /**
-   * ✅ Check if user is authenticated
+   * Check if user is authenticated
    */
   static isAuthenticated(): boolean {
     return this.getAccessToken() !== null && this.getUser() !== null;
   }
 
   /**
-   * ✅ Clear all tokens
+   * Clear all tokens (proper logout)
    */
   static clearAll(): void {
     sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
@@ -93,7 +98,7 @@ class AuthManager {
   }
 
   /**
-   * ✅ Get time until expiration (in milliseconds)
+   * Get time until expiration (in milliseconds)
    */
   static getTimeUntilExpiry(): number {
     const expiresAt = localStorage.getItem(this.EXPIRES_AT_KEY);
@@ -105,9 +110,38 @@ class AuthManager {
   }
 
   /**
-   * ✅ Parse JWT token payload
+   * Refresh access token using refresh token
    */
-  static parseJwt(token: string): any {
+  static async refreshAccessToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+      const response = await axios.post(`${TRAFFIC_API_URL}/api/traffic-auth/refresh`, {
+        refreshToken
+      });
+
+      if (response.data.success && response.data.token) {
+        sessionStorage.setItem(this.ACCESS_TOKEN_KEY, response.data.token);
+
+        // Update expiration
+        const expiresAt = new Date();
+        expiresAt.setSeconds(expiresAt.getSeconds() + (response.data.expiresIn || 604800));
+        localStorage.setItem(this.EXPIRES_AT_KEY, expiresAt.toISOString());
+
+        return response.data.token;
+      }
+      return null;
+    } catch {
+      this.clearAll();
+      return null;
+    }
+  }
+
+  /**
+   * Parse JWT token payload
+   */
+  static parseJwt(token: string): Record<string, unknown> | null {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -124,18 +158,54 @@ class AuthManager {
   }
 
   /**
-   * ✅ Validate token hasn't expired
+   * Validate token hasn't expired
    */
   static isTokenValid(token: string): boolean {
     try {
       const decoded = this.parseJwt(token);
-      if (!decoded || !decoded.exp) return false;
-      
-      // Check if token expired
+      if (!decoded || typeof decoded.exp !== 'number') return false;
+
       return decoded.exp * 1000 > Date.now();
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Check if user has admin role
+   */
+  static isAdmin(): boolean {
+    const user = this.getUser();
+    return user?.role === 'admin';
+  }
+
+  /**
+   * Check if user has analyst role (can edit UTM)
+   */
+  static isAnalyst(): boolean {
+    const user = this.getUser();
+    return user?.role === 'analyst' || user?.role === 'admin';
+  }
+
+  /**
+   * Logout with optional API call
+   */
+  static async logout(callApi = true): Promise<void> {
+    if (callApi) {
+      try {
+        const token = this.getAccessToken();
+        if (token) {
+          await axios.post(
+            `${TRAFFIC_API_URL}/api/traffic-auth/logout`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+      } catch {
+        // Ignore logout API errors
+      }
+    }
+    this.clearAll();
   }
 }
 

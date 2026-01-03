@@ -117,7 +117,7 @@ export async function apiRequest<T = any>(
   // Development: localhost:3000, Production: api.onai.academy
   const isDevelopment = import.meta.env.DEV; // Vite встроенная переменная
   const defaultApiUrl = isDevelopment 
-    ? 'http://localhost:3000'      // localhost для development
+    ? 'http://localhost:3001'      // localhost для development
     : 'https://api.onai.academy';  // production для prod
   
   const baseUrl = getApiBaseUrl() || defaultApiUrl;

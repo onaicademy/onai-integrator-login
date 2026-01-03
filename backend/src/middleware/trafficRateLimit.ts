@@ -118,19 +118,13 @@ export function createRateLimit(options: RateLimitOptions) {
 
 /**
  * Rate limit для входа в Traffic Dashboard
- * 5 попыток в 15 минут, блокировка на 15 минут при превышении
+ * DISABLED: IP blocking отключен по запросу пользователя
+ * Ранее: 5 попыток в 15 минут, блокировка на 15 минут при превышении
  */
-export const trafficLoginRateLimit = createRateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
-  maxRequests: 5, // 5 попыток
-  blockDuration: 15 * 60 * 1000, // Блокировка на 15 минут
-  message: 'Слишком много попыток входа. Ваш IP временно заблокирован.',
-  keyGenerator: (req) => {
-    // Используем IP + User-Agent для более точной идентификации
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
-    return `login:${ip}`;
-  }
-});
+export const trafficLoginRateLimit = (_req: Request, _res: Response, next: NextFunction) => {
+  // IP blocking disabled - всегда пропускаем
+  next();
+};
 
 /**
  * Rate limit для API запросов

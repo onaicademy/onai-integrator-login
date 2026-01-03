@@ -17,12 +17,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TRAFFIC_API_URL as API_URL } from '@/config/traffic-api';
+import { AuthManager } from '@/lib/auth';
 
 export default function UTMSourcesPanel() {
   const [activeTab, setActiveTab] = useState<'overview' | 'sources' | 'campaigns' | 'noUtm'>('overview');
   const [days, setDays] = useState(30);
   const [searchQuery, setSearchQuery] = useState('');
-  const token = localStorage.getItem('traffic_token');
+  const token = AuthManager.getAccessToken();
 
   // Fetch overview
   const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useQuery({
