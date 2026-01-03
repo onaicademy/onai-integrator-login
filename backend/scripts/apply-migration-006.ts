@@ -4,12 +4,13 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const TRAFFIC_ADMIN_URL = 'https://oetodaexnjcunklkdlkv.supabase.co';
-const TRAFFIC_ADMIN_KEY = process.env.TRAFFIC_ADMIN_SUPABASE_SERVICE_KEY || '';
+const TRAFFIC_ADMIN_URL = process.env.TRAFFIC_SUPABASE_URL || 'https://oetodaexnjcunklkdlkv.supabase.co';
+const TRAFFIC_ADMIN_KEY = process.env.TRAFFIC_SERVICE_ROLE_KEY || '';
 
 async function applyMigration() {
   if (!TRAFFIC_ADMIN_KEY) {
-    console.error('❌ TRAFFIC_ADMIN_SUPABASE_SERVICE_KEY not found');
+    console.error('❌ TRAFFIC_SERVICE_ROLE_KEY not found in environment');
+    console.error('Make sure .env file is loaded');
     process.exit(1);
   }
 
