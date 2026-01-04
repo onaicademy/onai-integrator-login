@@ -28,6 +28,13 @@ console.log(`[DB LAYER] Using ${mode} mode`);
 
 const resolveTrafficUserId = async (candidateUserId: string): Promise<string> => {
   try {
+    // ✅ Validate UUID format before querying (prevents PostgreSQL UUID syntax errors)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(candidateUserId)) {
+      console.warn('⚠️ [resolveTrafficUserId] Invalid UUID format:', candidateUserId);
+      return candidateUserId;
+    }
+
     const { data: directUser, error: directError } = await trafficAdminSupabase
       .from('traffic_users')
       .select('id')
@@ -200,6 +207,19 @@ export const database = {
     }
 
     // PRODUCTION MODE
+    // ✅ Validate UUID format before querying (prevents PostgreSQL UUID syntax errors)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      console.warn('⚠️ [DB getSettings] Invalid UUID format for userId:', userId, '- returning empty settings');
+      return {
+        user_id: userId,
+        fb_ad_accounts: [],
+        tracked_campaigns: [],
+        facebook_connected: false,
+        personal_utm_source: `fb_${userId.toLowerCase()}`,
+      };
+    }
+
     const { data, error } = await trafficAdminSupabase
       .from('traffic_targetologist_settings')
       .select('*')
