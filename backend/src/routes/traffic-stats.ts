@@ -109,6 +109,13 @@ const matchesUtmSource = (lead: any, utmSource: string) => {
 
 async function getUserTeamName(userId: string): Promise<string> {
   try {
+    // ✅ Validate UUID format before querying (prevents PostgreSQL UUID syntax errors)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      console.warn('⚠️ [Combined Analytics] Invalid UUID format for userId:', userId);
+      return 'Targetologist';
+    }
+
     const { data, error } = await trafficAdminSupabase
       .from('traffic_users')
       .select('team_name')
