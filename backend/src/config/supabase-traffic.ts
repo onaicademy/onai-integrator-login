@@ -60,6 +60,11 @@ export const trafficAdminSupabase = createClient(trafficUrl, trafficServiceKey, 
     autoRefreshToken: false,
     persistSession: false,
     detectSessionInUrl: false
+  },
+  global: {
+    headers: {
+      Authorization: `Bearer ${trafficServiceKey}`
+    }
   }
 });
 
