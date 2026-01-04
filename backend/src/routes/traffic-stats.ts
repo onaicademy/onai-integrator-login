@@ -178,6 +178,13 @@ async function getLandingStatsSummary(
   since: string,
   until: string
 ) {
+  // ✅ Validate UUID format before querying (prevents PostgreSQL UUID syntax errors)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(userId)) {
+    console.warn('⚠️ [Landing Stats] Invalid UUID format for userId:', userId, '- skipping query');
+    return { spend_usd: 0, spend_kzt: 0, impressions: 0, clicks: 0, reach: 0 };
+  }
+
   const query = trafficAdminSupabase
     .from('traffic_stats')
     .select('spend_usd, spend_kzt, impressions, clicks, reach, usd_to_kzt_rate')
