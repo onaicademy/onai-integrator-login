@@ -6,7 +6,6 @@
  */
 
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
-import { landingSupabase } from '../config/supabase-landing.js';
 
 interface SyncResult {
   success: boolean;
@@ -56,7 +55,7 @@ export async function syncHistoricalData(
     
     // Find all traffic_stats matching the UTM source pattern
     // Note: traffic_stats uses 'team' field (TEXT), not targetologist_id
-    const { data: matchingStats, error: statsError } = await landingSupabase
+    const { data: matchingStats, error: statsError } = await trafficAdminSupabase
       .from('traffic_stats')
       .select('id, team, campaign_name')
       .or(`team.eq.${utmSource},campaign_name.ilike.%${utmSource}%`);
@@ -70,7 +69,7 @@ export async function syncHistoricalData(
 
     if (matchingStats && matchingStats.length > 0) {
       // Update team field to user's team_name
-      const { error: updateError } = await landingSupabase
+      const { error: updateError } = await trafficAdminSupabase
         .from('traffic_stats')
         .update({ 
           team: teamName,

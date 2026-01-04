@@ -4,7 +4,7 @@
  * Orchestrates bulk synchronization operations with progress tracking
  */
 import { v4 as uuidv4 } from 'uuid';
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { hset, expire, set, hgetall, get } from '../config/redis';
 import { amocrmSyncQueue } from '../queues/amocrmSyncQueue';
 import pino from 'pino';
@@ -79,7 +79,7 @@ class BulkSyncService {
 
     try {
       // 1️⃣ Create sync record in database
-      const { error: dbError } = await landingSupabase.from('bulk_syncs').insert({
+      const { error: dbError } = await trafficAdminSupabase.from('bulk_syncs').insert({
         id: syncId,
         total_leads: totalLeads,
         status: 'in_progress',
@@ -130,7 +130,7 @@ class BulkSyncService {
       logger.error(`Error starting bulk sync:`, error);
 
       // Mark sync as failed
-      await landingSupabase.from('bulk_syncs').update({
+      await trafficAdminSupabase.from('bulk_syncs').update({
         status: 'failed',
         completed_at: new Date().toISOString(),
       }).eq('id', syncId);
@@ -148,7 +148,7 @@ class BulkSyncService {
       const progress = await hgetall(`sync:${syncId}:progress`);
 
       // Get sync record from database
-      const { data: syncRecord, error } = await landingSupabase
+      const { data: syncRecord, error } = await trafficAdminSupabase
         .from('bulk_syncs')
         .select('*')
         .eq('id', syncId)
@@ -214,7 +214,7 @@ class BulkSyncService {
   async getResults(syncId: string): Promise<SyncSummary> {
     try {
       // Get sync record
-      const { data: syncRecord, error: syncError } = await landingSupabase
+      const { data: syncRecord, error: syncError } = await trafficAdminSupabase
         .from('bulk_syncs')
         .select('*')
         .eq('id', syncId)
@@ -225,7 +225,7 @@ class BulkSyncService {
       }
 
       // Get all results
-      const { data: results, error: resultsError } = await landingSupabase
+      const { data: results, error: resultsError } = await trafficAdminSupabase
         .from('bulk_sync_results')
         .select('*')
         .eq('sync_id', syncId)
@@ -269,7 +269,7 @@ class BulkSyncService {
    */
   private async markSyncCompleted(syncId: string): Promise<void> {
     try {
-      const { error } = await landingSupabase
+      const { error } = await trafficAdminSupabase
         .from('bulk_syncs')
         .update({
           status: 'completed',
@@ -292,7 +292,7 @@ class BulkSyncService {
    */
   async getActiveSyncs(): Promise<any[]> {
     try {
-      const { data, error } = await landingSupabase
+      const { data, error } = await trafficAdminSupabase
         .from('bulk_syncs')
         .select('*')
         .eq('status', 'in_progress')
@@ -317,7 +317,7 @@ class BulkSyncService {
   async retryFailed(syncId: string): Promise<number> {
     try {
       // Get failed results
-      const { data: failedResults, error } = await landingSupabase
+      const { data: failedResults, error } = await trafficAdminSupabase
         .from('bulk_sync_results')
         .select('*')
         .eq('sync_id', syncId)
@@ -329,8 +329,8 @@ class BulkSyncService {
 
       // Get lead data
       const leadIds = failedResults.map((r) => r.lead_id);
-      const { data: leads, error: leadsError } = await landingSupabase
-        .from('landing_leads')
+      const { data: leads, error: leadsError } = await trafficAdminSupabase
+        .from('traffic_leads')
         .select('*')
         .in('id', leadIds);
 

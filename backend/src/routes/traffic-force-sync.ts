@@ -5,7 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import { trafficSupabase } from '../services/traffic-sales-aggregator.js';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 const router = Router();
 
 /**
@@ -61,7 +61,7 @@ router.post('/force-sync', async (req: Request, res: Response) => {
 
       try {
         // Count all sales in all_sales_tracking
-        const { count: salesCount, error: salesError } = await landingSupabase
+        const { count: salesCount, error: salesError } = await trafficAdminSupabase
           .from('all_sales_tracking')
           .select('*', { count: 'exact', head: true });
 
@@ -105,14 +105,14 @@ router.post('/force-sync', async (req: Request, res: Response) => {
 
       try {
         // Recalculate total revenue
-        const { data: sales } = await landingSupabase
+        const { data: sales } = await trafficAdminSupabase
           .from('all_sales_tracking')
           .select('sale_price');
 
         const totalRevenue = sales?.reduce((sum, sale) => sum + (sale.sale_price || 0), 0) || 0;
 
         // Recalculate by funnel
-        const { data: expressSales } = await landingSupabase
+        const { data: expressSales } = await trafficAdminSupabase
           .from('all_sales_tracking')
           .select('sale_price')
           .eq('funnel_type', 'express');
@@ -178,7 +178,7 @@ router.post('/force-sync', async (req: Request, res: Response) => {
 router.get('/sync-status', async (req: Request, res: Response) => {
   try {
     // Get last sync from integration_logs
-    const { data: lastSync } = await landingSupabase
+    const { data: lastSync } = await trafficAdminSupabase
       .from('integration_logs')
       .select('*')
       .eq('service_name', 'traffic_dashboard')

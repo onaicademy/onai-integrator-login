@@ -9,7 +9,7 @@
  * - ProofTest интеграция
  */
 
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { trafficSupabase } from '../config/supabase-traffic';
 import { AMOCRM_CONFIG } from '../config/amocrm-config';
 // TODO: Временно отключены из-за отсутствия переменных окружения на продакшене
@@ -128,7 +128,7 @@ export class IntegrationsDiagnostics {
     
     try {
       // Проверить наличие продаж в express_course_sales
-      const { data: sales, error: salesError } = await landingSupabase
+      const { data: sales, error: salesError } = await trafficAdminSupabase
         .from('express_course_sales')
         .select('id, deal_id, pipeline_id, status_id, created_at')
         .order('created_at', { ascending: false })
@@ -194,7 +194,7 @@ export class IntegrationsDiagnostics {
     
     try {
       // Проверить наличие продаж в main_product_sales
-      const { data: sales, error: salesError } = await landingSupabase
+      const { data: sales, error: salesError } = await trafficAdminSupabase
         .from('main_product_sales')
         .select('id, deal_id, pipeline_id, status_id, created_at')
         .order('created_at', { ascending: false })
@@ -260,8 +260,8 @@ export class IntegrationsDiagnostics {
     
     try {
       // Проверить наличие лидов в landing_leads
-      const { data: leads, error: leadsError } = await landingSupabase
-        .from('landing_leads')
+      const { data: leads, error: leadsError } = await trafficAdminSupabase
+        .from('traffic_leads')
         .select('id, email, phone, amocrm_lead_id, amocrm_synced, created_at')
         .order('created_at', { ascending: false })
         .limit(10);
@@ -392,7 +392,7 @@ export class IntegrationsDiagnostics {
     console.log('🔍 Checking Express Course sales...');
     
     try {
-      const { data: sales, error: salesError } = await landingSupabase
+      const { data: sales, error: salesError } = await trafficAdminSupabase
         .from('express_course_sales')
         .select('id, deal_id, utm_source, utm_campaign, sale_date')
         .order('sale_date', { ascending: false })
@@ -441,7 +441,7 @@ export class IntegrationsDiagnostics {
     console.log('🔍 Checking Flagship Course sales...');
     
     try {
-      const { data: sales, error: salesError } = await landingSupabase
+      const { data: sales, error: salesError } = await trafficAdminSupabase
         .from('main_product_sales')
         .select('id, deal_id, utm_source, utm_campaign, sale_date')
         .order('sale_date', { ascending: false })

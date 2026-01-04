@@ -4,7 +4,6 @@ import { AMOCRM_CONFIG } from '../config/amocrm-config.js';
 import { supabase } from '../config/supabase';
 import { database } from '../config/database-layer.js';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
-import { landingSupabase } from '../config/supabase-landing.js';
 import { cacheGet, cacheSet } from '../config/redis.js';
 import { getAlmatyDate, getYesterdayAlmaty } from '../utils/timezone';
 import { getAverageExchangeRate, getExchangeRateForDate } from '../services/exchangeRateService.js';
@@ -172,7 +171,7 @@ async function getLandingStatsSummary(
   since: string,
   until: string
 ) {
-  const query = landingSupabase
+  const query = trafficAdminSupabase
     .from('traffic_stats')
     .select('spend_usd, spend_kzt, impressions, clicks, reach, usd_to_kzt_rate')
     .eq('user_id', userId)
@@ -813,21 +812,21 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
       if (utmSource) {
         try {
           // Query Express Course sales (5,000 KZT each)
-          const { data: expressSales, error: expressError } = await landingSupabase
+          const { data: expressSales, error: expressError } = await trafficAdminSupabase
             .from('express_course_sales')
             .select('amount, utm_source, sale_date')
             .gte('sale_date', since)
             .lte('sale_date', until);
 
           // Query Flagman/Main Product sales (490,000 KZT each)
-          const { data: flagmanSales, error: flagmanError } = await landingSupabase
+          const { data: flagmanSales, error: flagmanError } = await trafficAdminSupabase
             .from('main_product_sales')
             .select('amount, utm_source, sale_date')
             .gte('sale_date', since)
             .lte('sale_date', until);
 
           // Query Challenge3D sales (3-Day Diary product)
-          const { data: challenge3dSales, error: challenge3dError } = await landingSupabase
+          const { data: challenge3dSales, error: challenge3dError } = await trafficAdminSupabase
             .from('challenge3d_sales')
             .select('amount, utm_source, sale_date, prepaid')
             .gte('sale_date', since)
@@ -1229,29 +1228,29 @@ router.get('/combined-analytics', async (req: Request, res: Response) => {
 
     try {
       // Fetch Express Course sales
-      const { data: expressSales, error: expressError } = await landingSupabase
+      const { data: expressSales, error: expressError } = await trafficAdminSupabase
         .from('express_course_sales')
         .select('amount, utm_source, utm_medium, utm_campaign, sale_date')
         .gte('sale_date', since)
         .lte('sale_date', until);
 
       // Fetch Flagman/Main Product sales
-      const { data: flagmanSales, error: flagmanError } = await landingSupabase
+      const { data: flagmanSales, error: flagmanError } = await trafficAdminSupabase
         .from('main_product_sales')
         .select('amount, utm_source, utm_medium, utm_campaign, sale_date')
         .gte('sale_date', since)
         .lte('sale_date', until);
 
       // Fetch Challenge3D sales
-      const { data: challenge3dSales, error: challenge3dError } = await landingSupabase
+      const { data: challenge3dSales, error: challenge3dError } = await trafficAdminSupabase
         .from('challenge3d_sales')
         .select('amount, utm_source, utm_medium, utm_campaign, sale_date, prepaid')
         .gte('sale_date', since)
         .lte('sale_date', until);
 
       // Fetch Challenge3D leads from landing_leads
-      const { data: challenge3dLeads, error: challenge3dLeadsError } = await landingSupabase
-        .from('landing_leads')
+      const { data: challenge3dLeads, error: challenge3dLeadsError } = await trafficAdminSupabase
+        .from('traffic_leads')
         .select('email, utm_source, utm_medium, utm_campaign, created_at, metadata')
         .eq('source', 'challenge3d')
         .gte('created_at', `${since}T00:00:00+06:00`)

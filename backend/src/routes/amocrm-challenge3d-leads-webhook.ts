@@ -11,11 +11,11 @@
  *   - 9430994 (ОП - Основные Продукты)
  * Статусы: ВСЕ (не только 142)
  *
- * Сохраняет в Landing DB → challenge3d_leads (новая таблица для лидов)
+ * ✅ Сохраняет в Traffic DB → traffic_leads (consolidated database)
  */
 
 import { Router, Request, Response } from 'express';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { getOriginalUTM, extractPhoneFromDeal } from '../utils/amocrm-utils.js';
 
 const router = Router();
@@ -307,18 +307,17 @@ router.post('/challenge3d-lead', async (req: Request, res: Response) => {
         raw_data: lead,
       };
 
-      // Save to landing_leads or create new table challenge3d_leads
-      // TODO: Создать таблицу challenge3d_leads или использовать landing_leads
-      // Пока сохраняем в landing_leads с source='challenge3d'
+      // ✅ Save to Traffic DB (consolidated)
       try {
-        const { error } = await landingSupabase
-          .from('landing_leads')
+        const { error } = await trafficAdminSupabase
+          .from('traffic_leads')
           .upsert({
             email: leadData.email || `lead_${leadData.deal_id}@unknown.com`,
             name: leadData.customer_name || 'Unknown',
             phone: leadData.phone || '',
             source: 'challenge3d',
-            amocrm_lead_id: leadData.deal_id.toString(),
+            funnel_type: leadData.product_type,
+            amocrm_lead_id: leadData.deal_id,
             amocrm_synced: true,
             utm_source: leadData.utm_source,
             utm_campaign: leadData.utm_campaign,
@@ -328,7 +327,6 @@ router.post('/challenge3d-lead', async (req: Request, res: Response) => {
             metadata: {
               pipeline_id: leadData.pipeline_id,
               status_id: leadData.status_id,
-              product_type: leadData.product_type,
               targetologist: leadData.targetologist,
               original_utm: {
                 source: leadData.original_utm_source,

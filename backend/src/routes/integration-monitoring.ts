@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ router.get('/stats', async (req, res) => {
     const since = new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();
 
     // Базовый запрос
-    let query = landingSupabase
+    let query = trafficAdminSupabase
       .from('integration_logs')
       .select('*')
       .gte('created_at', since);
@@ -109,7 +109,7 @@ router.get('/failures', async (req, res) => {
   try {
     const { limit = '50', serviceName } = req.query;
 
-    let query = landingSupabase
+    let query = trafficAdminSupabase
       .from('integration_logs')
       .select('*')
       .eq('status', 'failed')
@@ -146,7 +146,7 @@ router.get('/service/:serviceName', async (req, res) => {
     const { serviceName } = req.params;
     const { limit = '100', status, action } = req.query;
 
-    let query = landingSupabase
+    let query = trafficAdminSupabase
       .from('integration_logs')
       .select('*')
       .eq('service_name', serviceName)
@@ -187,7 +187,7 @@ router.get('/recent', async (req, res) => {
   try {
     const { limit = '50' } = req.query;
 
-    const { data: logs, error } = await landingSupabase
+    const { data: logs, error } = await trafficAdminSupabase
       .from('integration_logs')
       .select('*')
       .order('created_at', { ascending: false })
@@ -217,7 +217,7 @@ router.get('/health', async (req, res) => {
     // Проверяем последние 10 минут
     const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    const { data: recentLogs, error } = await landingSupabase
+    const { data: recentLogs, error } = await trafficAdminSupabase
       .from('integration_logs')
       .select('service_name, status')
       .gte('created_at', since);

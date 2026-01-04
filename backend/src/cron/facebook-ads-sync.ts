@@ -9,7 +9,6 @@
 
 import cron from 'node-cron';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
-import { landingSupabase } from '../config/supabase-landing.js';
 
 async function buildTeamUserMap() {
   const { data } = await trafficAdminSupabase
@@ -71,7 +70,7 @@ export async function syncFacebookAdsToLanding(): Promise<void> {
           continue;
         }
 
-        const { error: upsertError } = await landingSupabase
+        const { error: upsertError } = await trafficAdminSupabase
           .from('traffic_stats')
           .upsert({
             stat_date: stat.date,

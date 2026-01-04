@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { AMOCRM_CONFIG } from '../config/amocrm-config';
 
 const router = Router();
@@ -139,8 +139,8 @@ router.post('/sync-amocrm', async (req: Request, res: Response) => {
     const amocrmLeads = await fetchRecentAmoCRMLeads(500);
 
     // 2. Получить все лиды из landing_leads (LANDING DB)
-    const { data: landingLeads, error: dbError } = await landingSupabase
-      .from('landing_leads')
+    const { data: landingLeads, error: dbError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -239,8 +239,8 @@ router.post('/sync-amocrm', async (req: Request, res: Response) => {
         
         // Обновляем amocrm_lead_id если его нет
         if (!lead.amocrm_lead_id || lead.amocrm_lead_id !== amocrmLead.id.toString()) {
-          await landingSupabase
-            .from('landing_leads')
+          await trafficAdminSupabase
+            .from('traffic_leads')
             .update({
               amocrm_lead_id: amocrmLead.id.toString(),
               amocrm_synced: true,

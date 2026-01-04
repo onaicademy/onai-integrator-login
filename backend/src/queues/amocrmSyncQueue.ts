@@ -5,7 +5,7 @@
  */
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import { getRedisConnection, isRedisAvailable, redisClient } from '../config/redis';
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { amoCrmBulkService } from '../services/amoCrmBulkService';
 import { errorTracking, ErrorSeverity, ErrorCategory } from '../services/errorTrackingService';
 import pino from 'pino';
@@ -122,8 +122,8 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
       }
 
       // 2️⃣ Update database with sync results
-      const { error: dbError } = await landingSupabase
-        .from('landing_leads')
+      const { error: dbError } = await trafficAdminSupabase
+        .from('traffic_leads')
         .update({
           amocrm_lead_id: amocrmResult.leadId?.toString(),
           amocrm_contact_id: amocrmResult.contactId?.toString(),
@@ -176,8 +176,8 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
         }
 
         // Update database with retry status
-        await landingSupabase
-          .from('landing_leads')
+        await trafficAdminSupabase
+          .from('traffic_leads')
           .update({
             amocrm_sync_status: 'retrying',
             amocrm_sync_attempts: attemptNum,
@@ -199,8 +199,8 @@ export const amocrmSyncWorker = new Worker<SyncJobData, SyncJobResult>(
         }
 
         // Update database with final failed status
-        await landingSupabase
-          .from('landing_leads')
+        await trafficAdminSupabase
+          .from('traffic_leads')
           .update({
             amocrm_sync_status: 'failed',
             amocrm_sync_attempts: attemptNum,
@@ -281,7 +281,7 @@ async function saveSyncResult(
   data: { contactId?: number; dealId?: number; error?: string; attempt?: number }
 ): Promise<void> {
   try {
-    const { error } = await landingSupabase.from('bulk_sync_results').insert({
+    const { error } = await trafficAdminSupabase.from('bulk_sync_results').insert({
       sync_id: syncId,
       lead_id: leadId,
       status,

@@ -10,7 +10,7 @@
  * - Whapi (send_whatsapp)
  */
 
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 
 /**
  * Тип сервиса интеграции
@@ -64,7 +64,7 @@ export class IntegrationLogger {
    */
   static async log(data: IntegrationLogData): Promise<void> {
     try {
-      const { error } = await landingSupabase
+      const { error } = await trafficAdminSupabase
         .from('integration_logs')
         .insert({
           service_name: data.serviceName,
@@ -224,7 +224,7 @@ export class IntegrationLogger {
    */
   static async getHourlyStats(): Promise<any[]> {
     try {
-      const { data, error } = await landingSupabase
+      const { data, error } = await trafficAdminSupabase
         .from('integration_stats_hourly')
         .select('*')
         .order('hour', { ascending: false });
@@ -246,7 +246,7 @@ export class IntegrationLogger {
    */
   static async getDailyStats(): Promise<any[]> {
     try {
-      const { data, error } = await landingSupabase
+      const { data, error } = await trafficAdminSupabase
         .from('integration_stats_daily')
         .select('*')
         .order('day', { ascending: false });
@@ -268,7 +268,7 @@ export class IntegrationLogger {
    */
   static async getRecentFailures(limit: number = 50): Promise<any[]> {
     try {
-      const { data, error } = await landingSupabase
+      const { data, error } = await trafficAdminSupabase
         .from('integration_logs')
         .select('*')
         .eq('status', 'failed')
@@ -295,7 +295,7 @@ export class IntegrationLogger {
     limit: number = 100
   ): Promise<any[]> {
     try {
-      const { data, error } = await landingSupabase
+      const { data, error } = await trafficAdminSupabase
         .from('integration_logs')
         .select('*')
         .eq('service_name', serviceName)

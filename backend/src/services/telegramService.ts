@@ -9,11 +9,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const config = getTelegramConfig();
 
-// Подключение к Landing Supabase для получения активных групп
-const LANDING_SUPABASE_URL = process.env.LANDING_SUPABASE_URL || '';
-const LANDING_SUPABASE_SERVICE_KEY = process.env.LANDING_SUPABASE_SERVICE_KEY || '';
+// Подключение к Traffic DB для получения активных групп
+const TRAFFIC_SUPABASE_URL = process.env.TRAFFIC_SUPABASE_URL || '';
+const TRAFFIC_SUPABASE_SERVICE_KEY = process.env.TRAFFIC_SUPABASE_SERVICE_KEY || '';
 
-const landingSupabase = createClient(LANDING_SUPABASE_URL, LANDING_SUPABASE_SERVICE_KEY, {
+const trafficAdminSupabase = createClient(TRAFFIC_SUPABASE_URL, TRAFFIC_SUPABASE_SERVICE_KEY, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -129,7 +129,7 @@ export async function sendLeadNotification(
     }
 
     // 🔥 НОВОЕ: Получаем активные группы из БД
-    const { data: activeGroups, error: dbError } = await landingSupabase
+    const { data: activeGroups, error: dbError } = await trafficAdminSupabase
       .from('telegram_groups')
       .select('chat_id, chat_title')
       .eq('group_type', 'leads')
@@ -217,7 +217,7 @@ export async function sendLeadNotification(
               // Если бот был заблокирован или удален из группы, деактивируем её
               if (errorData.error_code === 403 || errorData.error_code === 400) {
                 console.log(`🚫 Deactivating group ${group.chat_id} due to error ${errorData.error_code}`);
-                await landingSupabase
+                await trafficAdminSupabase
                   .from('telegram_groups')
                   .update({ is_active: false })
                   .eq('chat_id', group.chat_id);

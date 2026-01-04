@@ -2,22 +2,22 @@
  * ════════════════════════════════════════════════════════════════════════
  * 📊 FUNNEL SERVICE - ONAI ACADEMY SALES FUNNEL (4 STAGES)
  * ════════════════════════════════════════════════════════════════════════
- * 
+ *
  * Воронка продаж (4 этапа):
  * 1. 💰 Затраты (Facebook Ads) - spent USD/KZT
  * 2. 🧪 ProfTest - лиды с профтеста
  * 3. 📚 Express Course - покупки экспресс-курса (5K KZT)
  * 4. 🏆 Integrator Flagman - покупки основного продукта (490K KZT)
- * 
+ *
  * Features:
  * - Фильтрация по командам (team filter)
- * - Реальные данные из БД (Landing DB, Traffic DB)
+ * - Реальные данные из БД (Traffic DB, Tripwire DB)
  * - Кэширование (5 мин TTL)
  * - ROI с учётом обеих продаж
  */
 
 import axios from 'axios';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire.js';
 import { database } from '../config/database-layer.js';
 import { getAlmatyDate, getYesterdayAlmaty } from '../utils/timezone.js';
@@ -353,7 +353,7 @@ async function getFacebookAdsMetrics(teamFilter?: string, userId?: string, dateR
         const since = resolvedRange.since;
         const until = resolvedRange.until;
 
-        const { data: cachedStats } = await landingSupabase
+        const { data: cachedStats } = await trafficAdminSupabase
           .from('traffic_stats')
           .select('spend_usd, spend_kzt, impressions, clicks')
           .eq('user_id', userId)
@@ -418,7 +418,7 @@ async function getFacebookAdsMetrics(teamFilter?: string, userId?: string, dateR
 
       console.log('[Funnel] Fetching Facebook Ads metrics from Traffic DB...');
       console.log('[Funnel] Team filter:', teamFilter || 'all teams');
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('traffic_stats')
         .select('spend_usd, spend_kzt, impressions, clicks')
         .gte('stat_date', resolvedRange.since)
@@ -474,7 +474,7 @@ async function getProfTestMetrics(teamFilter?: string, utmSourceOverride?: strin
       const { start, end } = getDateBounds(resolvedRange);
       
       // PRODUCTION: Get all leads with proftest% source (traffic-driven registrations)
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('landing_leads')
         .select('id, source, metadata, utm_source')
         .or('source.like.proftest%,source.eq.TF4,source.eq.expresscourse') // Traffic sources only
@@ -530,7 +530,7 @@ async function getDirectLeadsMetrics(teamFilter?: string, dateRange?: FunnelDate
       const { start, end } = getDateBounds(resolvedRange);
       
       // ⚠️ source='expresscourse' - это НЕ покупки, а лиды БЕЗ UTM (пришли напрямую на сайт)
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('landing_leads')
         .select('id, email, phone, metadata, created_at, source')
         .eq('source', 'expresscourse')
@@ -572,7 +572,7 @@ async function getExpressCoursePurchases(teamFilter?: string, utmSourceOverride?
       
       // Get purchases from express_course_sales table in Landing DB
       // ⚠️ ONLY real AmoCRM sales (deal_id < 1B), not migrated leads
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('express_course_sales')
         .select('id, amount, utm_source, utm_medium, sale_date, deal_id')
         .lt('deal_id', 1000000000)
@@ -652,7 +652,7 @@ async function getChallenge3dPurchases(teamFilter?: string, utmSourceOverride?: 
       const { start, end } = getDateBounds(resolvedRange);
 
       // Get purchases from challenge3d_sales table
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('challenge3d_sales')
         .select('id, amount, utm_source, utm_medium, sale_date, deal_id, prepaid')
         .gte('sale_date', start)
@@ -719,7 +719,7 @@ async function getChallenge3dLeads(teamFilter?: string, utmSourceOverride?: stri
       const { start, end } = getDateBounds(resolvedRange);
 
       // Get leads from landing_leads table where source='challenge3d'
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('landing_leads')
         .select('id, utm_source, utm_medium, utm_campaign, created_at, metadata')
         .eq('source', 'challenge3d')
@@ -785,7 +785,7 @@ async function getChallenge3dPrepayments(teamFilter?: string, utmSourceOverride?
       const { start, end } = getDateBounds(resolvedRange);
 
       // Get prepayments: prepaid=true OR amount <= 5000
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('challenge3d_sales')
         .select('id, amount, utm_source, utm_medium, sale_date, deal_id, prepaid')
         .gte('sale_date', start)
@@ -862,7 +862,7 @@ async function getChallenge3dFullPurchases(teamFilter?: string, utmSourceOverrid
       const { start, end } = getDateBounds(resolvedRange);
 
       // Get full purchases: prepaid=false AND amount > 5000
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('challenge3d_sales')
         .select('id, amount, utm_source, utm_medium, sale_date, deal_id, prepaid')
         .gte('sale_date', start)
@@ -939,7 +939,7 @@ async function getIntensive1dPurchases(teamFilter?: string, utmSourceOverride?: 
       const { start, end } = getDateBounds(resolvedRange);
 
       // Get purchases from intensive1d_sales table (if exists)
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('intensive1d_sales')
         .select('id, amount, utm_source, utm_medium, sale_date, deal_id')
         .gte('sale_date', start)
@@ -1012,7 +1012,7 @@ async function getMainProductMetrics(teamFilter?: string, utmSourceOverride?: st
       const { start, end } = getDateBounds(resolvedRange);
       
       // Read from main_product_sales in Landing DB (where webhook saves)
-      let query = landingSupabase
+      let query = trafficAdminSupabase
         .from('main_product_sales')
         .select('id, amount, utm_source, utm_medium, sale_date')
         .gte('sale_date', start)

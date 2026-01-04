@@ -11,7 +11,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { validateExpressCourseWebhook } from '../middleware/validation';
 
 const router = Router();
@@ -162,7 +162,7 @@ router.post('/traffic', validateExpressCourseWebhook, async (req: Request, res: 
         // ════════════════════════════════════════════════════════════
         // SAVE TO DATABASE
         // ════════════════════════════════════════════════════════════
-        const { data: insertedData, error: insertError } = await landingSupabase
+        const { data: insertedData, error: insertError } = await trafficAdminSupabase
           .from('main_product_sales')
           .upsert(saleData, {
             onConflict: 'deal_id',

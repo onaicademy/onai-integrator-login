@@ -14,7 +14,7 @@
 import { Router, Request, Response } from 'express';
 import express from 'express';
 import axios from 'axios';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { validateExpressCourseWebhook } from '../middleware/validation';
 import { getOriginalUTM, extractPhoneFromDeal } from '../utils/amocrm-utils.js';
 
@@ -243,7 +243,7 @@ router.post('/funnel-sale', validateExpressCourseWebhook, async (req: Request, r
 
       // Save to Supabase (Landing DB - express_course_sales table)
       try {
-        const { data: savedData, error } = await landingSupabase
+        const { data: savedData, error } = await trafficAdminSupabase
           .from('express_course_sales')
           .upsert(saleData, {
             onConflict: 'deal_id'

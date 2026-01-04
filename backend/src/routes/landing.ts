@@ -11,16 +11,16 @@ import { amoCRMRateLimiter } from '../services/amocrm-rate-limiter.js';
 const router = express.Router();
 
 // ============================================
-// LANDING DATABASE CLIENT (New Supabase)
+// TRAFFIC DATABASE CLIENT (New Supabase)
 // ============================================
-const LANDING_SUPABASE_URL = process.env.LANDING_SUPABASE_URL || 'https://placeholder.supabase.co';
-const LANDING_SUPABASE_SERVICE_KEY = process.env.LANDING_SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
+const TRAFFIC_SUPABASE_URL = process.env.TRAFFIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const TRAFFIC_SUPABASE_SERVICE_KEY = process.env.TRAFFIC_SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
 
-if (!process.env.LANDING_SUPABASE_URL || !process.env.LANDING_SUPABASE_SERVICE_KEY) {
-  console.warn('⚠️ LANDING SUPABASE CREDENTIALS NOT CONFIGURED! Using placeholders.');
+if (!process.env.TRAFFIC_SUPABASE_URL || !process.env.TRAFFIC_SUPABASE_SERVICE_KEY) {
+  console.warn('⚠️ TRAFFIC SUPABASE CREDENTIALS NOT CONFIGURED! Using placeholders.');
 }
 
-const landingSupabase = createClient(LANDING_SUPABASE_URL, LANDING_SUPABASE_SERVICE_KEY, {
+const trafficAdminSupabase = createClient(TRAFFIC_SUPABASE_URL, TRAFFIC_SUPABASE_SERVICE_KEY, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -311,7 +311,7 @@ router.post('/submit', async (req: Request, res: Response) => {
     let leadId: string;
     
     // Try using the new journey-based system (if migration applied)
-    const { data: unifiedLeadResult, error: leadFunctionError } = await landingSupabase
+    const { data: unifiedLeadResult, error: leadFunctionError } = await trafficAdminSupabase
       .rpc('find_or_create_unified_lead', {
         p_email: email || null,
         p_name: name,
@@ -329,10 +329,10 @@ router.post('/submit', async (req: Request, res: Response) => {
 
     if (leadFunctionError) {
       console.warn('⚠️ Unified lead function not available (migration not applied?), using fallback:', leadFunctionError.message);
-      
+
       // FALLBACK: Direct insert (old method - works without migration)
-      const { data: leadData, error: insertError } = await landingSupabase
-        .from('landing_leads')
+      const { data: leadData, error: insertError} = await trafficAdminSupabase
+        .from('traffic_leads')
         .insert({
           name,
           email,
@@ -368,8 +368,8 @@ router.post('/submit', async (req: Request, res: Response) => {
     // 🎯 EVENT TYPE DETECTION: express_submit (from payment selection)
     const stage = paymentMethod ? `payment_${paymentMethod}` : 'expresscourse_submitted';
     const eventType = paymentMethod ? 'express_submit' : 'express_visit'; // ✅ NEW: Detect event type
-    const { error: journeyError } = await landingSupabase
-      .from('journey_stages')
+    const { error: journeyError } = await trafficAdminSupabase
+      .from('traffic_traffic_lead_journey')
       .insert({
         lead_id: leadId,
         stage,
@@ -389,8 +389,8 @@ router.post('/submit', async (req: Request, res: Response) => {
     }
 
     // Get the full lead record for response
-    const { data: supabaseLead, error: fetchError } = await landingSupabase
-      .from('landing_leads')
+    const { data: supabaseLead, error: fetchError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .eq('id', leadId)
       .single();
@@ -465,11 +465,11 @@ router.post('/submit', async (req: Request, res: Response) => {
           console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
           
           // ✅ UPDATE БД с AmoCRM ID
-          const { error: updateError } = await landingSupabase
-            .from('landing_leads')
-            .update({ 
+          const { error: updateError } = await trafficAdminSupabase
+            .from('traffic_leads')
+            .update({
               amocrm_lead_id: amocrmResult.leadId.toString(),
-              amocrm_synced: true 
+              amocrm_synced: true
             })
             .eq('id', leadId);
           
@@ -541,8 +541,8 @@ router.post('/submit', async (req: Request, res: Response) => {
  */
 router.get('/stats', async (req: Request, res: Response) => {
   try {
-    const { data: stats, error } = await landingSupabase
-      .from('landing_leads')
+    const { data: stats, error } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('id, amocrm_synced, created_at');
 
     if (error) {
@@ -587,8 +587,8 @@ router.get('/health', async (req: Request, res: Response) => {
 
   // Check database
   try {
-    const { error } = await landingSupabase
-      .from('landing_leads')
+    const { error } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('id')
       .limit(1);
     
@@ -769,7 +769,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
     let leadId: string;
     
     // Try using the new journey-based system (if migration applied)
-    const { data: unifiedLeadResult, error: leadFunctionError } = await landingSupabase
+    const { data: unifiedLeadResult, error: leadFunctionError } = await trafficAdminSupabase
       .rpc('find_or_create_unified_lead', {
         p_email: email,
         p_name: name,
@@ -789,8 +789,8 @@ router.post('/proftest', async (req: Request, res: Response) => {
       console.warn('⚠️ Unified lead function not available (migration not applied?), using fallback:', leadFunctionError.message);
       
       // FALLBACK: Direct insert (old method - works without migration)
-      const { data: leadData, error: insertError } = await landingSupabase
-        .from('landing_leads')
+      const { data: leadData, error: insertError } = await trafficAdminSupabase
+        .from('traffic_leads')
         .insert({
           name,
           email,
@@ -821,7 +821,7 @@ router.post('/proftest', async (req: Request, res: Response) => {
 
     // 2. Add journey stage (optional - only if table exists)
     // 🎯 EVENT TYPE DETECTION: proftest_submit
-    const { error: journeyError } = await landingSupabase
+    const { error: journeyError } = await trafficAdminSupabase
       .from('journey_stages')
       .insert({
         lead_id: leadId,
@@ -843,8 +843,8 @@ router.post('/proftest', async (req: Request, res: Response) => {
     }
 
     // Get the full lead record for response
-    const { data: supabaseLead } = await landingSupabase
-      .from('landing_leads')
+    const { data: supabaseLead } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .eq('id', leadId)
       .single();
@@ -907,11 +907,11 @@ router.post('/proftest', async (req: Request, res: Response) => {
           console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId}, isNew: ${amocrmResult.isNew})`);
           
           // ✅ UPDATE БД с AmoCRM ID
-          const { error: updateError } = await landingSupabase
-            .from('landing_leads')
-            .update({ 
+          const { error: updateError } = await trafficAdminSupabase
+            .from('traffic_leads')
+            .update({
               amocrm_lead_id: amocrmResult.leadId.toString(),
-              amocrm_synced: true 
+              amocrm_synced: true
             })
             .eq('id', leadId);
           
@@ -1002,8 +1002,8 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
     }
 
     // First, get current click_count
-    const { data: leadData } = await landingSupabase
-      .from('landing_leads')
+    const { data: leadData } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('click_count')
       .eq('id', leadId)
       .single();
@@ -1023,8 +1023,8 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
       updateData.sms_clicked_at = new Date().toISOString();
     }
 
-    const { error } = await landingSupabase
-      .from('landing_leads')
+    const { error } = await trafficAdminSupabase
+      .from('traffic_leads')
       .update(updateData)
       .eq('id', leadId);
 
@@ -1036,7 +1036,7 @@ router.get('/track/:leadId', async (req: Request, res: Response) => {
     }
 
     // 🎉 NEW: Track journey stage (expresscourse clicked from email/SMS)
-    const { error: journeyError } = await landingSupabase
+    const { error: journeyError } = await trafficAdminSupabase
       .from('journey_stages')
       .insert({
         lead_id: leadId,
@@ -1076,8 +1076,8 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
     console.log(`🔄 INSTANT Resend request for lead: ${leadId}`);
 
     // 1. Fetch lead data
-    const { data: lead, error: fetchError } = await landingSupabase
-      .from('landing_leads')
+    const { data: lead, error: fetchError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .eq('id', leadId)
       .single();
@@ -1113,8 +1113,8 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
       try {
         emailSuccess = await sendProftestEmailWithTracking(lead.name, lead.email, leadId);
         if (emailSuccess) {
-          await landingSupabase
-            .from('landing_leads')
+          await trafficAdminSupabase
+            .from('traffic_leads')
             .update({ email_sent: true })
             .eq('id', leadId);
           console.log(`✅ Email sent to ${lead.email}`);
@@ -1129,8 +1129,8 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
       try {
         smsSuccess = await sendProftestResultSMS(lead.phone, leadId);
         if (smsSuccess) {
-          await landingSupabase
-            .from('landing_leads')
+          await trafficAdminSupabase
+            .from('traffic_leads')
             .update({ sms_sent: true })
             .eq('id', leadId);
           console.log(`✅ SMS sent to ${lead.phone}`);
@@ -1141,7 +1141,7 @@ router.post('/resend/:leadId', async (req: Request, res: Response) => {
     }
 
     // Update scheduled_notifications if exists
-    await landingSupabase
+    await trafficAdminSupabase
       .from('scheduled_notifications')
       .update({ 
         status: (emailSuccess && smsSuccess) || (!needsEmail && smsSuccess) || (emailSuccess && !needsSMS) ? 'sent' : 'failed',
@@ -1180,7 +1180,7 @@ router.delete('/delete/:leadId', async (req: Request, res: Response) => {
     console.log(`🗑️ Delete request for lead: ${leadId}`);
 
     // 1. Delete from scheduled_notifications first (foreign key constraint)
-    const { error: notifError } = await landingSupabase
+    const { error: notifError } = await trafficAdminSupabase
       .from('scheduled_notifications')
       .delete()
       .eq('lead_id', leadId);
@@ -1191,8 +1191,8 @@ router.delete('/delete/:leadId', async (req: Request, res: Response) => {
     }
 
     // 2. Delete the lead
-    const { error: leadError } = await landingSupabase
-      .from('landing_leads')
+    const { error: leadError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .delete()
       .eq('id', leadId);
 
@@ -1228,10 +1228,10 @@ router.get('/admin/diagnostics', async (req: Request, res: Response) => {
   try {
     console.log('🔍 Starting AmoCRM diagnostics...');
 
-    // 1. Get leads from landing_leads (last 24 hours)
+    // 1. Get leads from traffic_leads (last 24 hours)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: dbLeads, error: dbError } = await landingSupabase
-      .from('landing_leads')
+    const { data: dbLeads, error: dbError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .gte('created_at', oneDayAgo)
       .order('created_at', { ascending: false });
@@ -1351,7 +1351,7 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     let journeyStages: any[] = [];
     
     // Try fetching from view first (if migration applied)
-    const { data: leadWithJourney, error: viewError } = await landingSupabase
+    const { data: leadWithJourney, error: viewError } = await trafficAdminSupabase
       .from('leads_with_journey')
       .select('*')
       .eq('id', leadId)
@@ -1360,9 +1360,9 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     if (viewError) {
       console.warn('⚠️ leads_with_journey view not available, using fallback');
       
-      // FALLBACK: Get lead from landing_leads table
-      const { data: basicLead, error: fetchError } = await landingSupabase
-        .from('landing_leads')
+      // FALLBACK: Get lead from traffic_leads table
+      const { data: basicLead, error: fetchError } = await trafficAdminSupabase
+        .from('traffic_leads')
         .select('*')
         .eq('id', leadId)
         .single();
@@ -1471,8 +1471,8 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
     console.log(`✅ AmoCRM: Lead ${amocrmResult.action} (ID: ${amocrmResult.leadId})`);
     
     // 4. Update DB with AmoCRM ID
-    const { error: updateError } = await landingSupabase
-      .from('landing_leads')
+    const { error: updateError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .update({ 
         amocrm_lead_id: amocrmResult.leadId.toString(),
         amocrm_synced: true 
@@ -1508,16 +1508,16 @@ router.post('/sync-to-amocrm/:leadId', async (req: Request, res: Response) => {
 
 /**
  * POST /api/landing/sync-all-to-amocrm
- * 🎯 Поэтапная синхронизация ВСЕХ landing_leads с AmoCRM
+ * 🎯 Поэтапная синхронизация ВСЕХ traffic_leads с AmoCRM
  * Отправляет лиды по одному, ждёт ответа перед отправкой следующего
  */
 router.post('/sync-all-to-amocrm', async (req: Request, res: Response) => {
   try {
-    console.log('🚀 Starting batch sync of all landing_leads to AmoCRM...');
+    console.log('🚀 Starting batch sync of all traffic_leads to AmoCRM...');
 
     // 1. Получаем ВСЕ лиды из БД (без amocrm_lead_id или с ошибками)
-    const { data: leadsToSync, error: fetchError } = await landingSupabase
-      .from('landing_leads')
+    const { data: leadsToSync, error: fetchError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .order('created_at', { ascending: true }); // От старых к новым
 
@@ -1584,8 +1584,8 @@ router.post('/sync-all-to-amocrm', async (req: Request, res: Response) => {
         }
 
         // Обновляем БД
-        const { error: updateError } = await landingSupabase
-          .from('landing_leads')
+        const { error: updateError } = await trafficAdminSupabase
+          .from('traffic_leads')
           .update({
             amocrm_lead_id: leadId.toString(),
             amocrm_synced: true,

@@ -14,7 +14,7 @@
 import { Router, Request, Response } from 'express';
 import { getFunnelMetrics, getFunnelStageDetails, resolveFunnelDateRange, getDateBounds } from '../services/funnel-service.js';
 import { getTeamUtmRule, matchesTeamUtm } from '../services/funnel-service.js';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const router = Router();
 
@@ -133,7 +133,7 @@ router.get('/funnel/leads-by-date', async (req: Request, res: Response) => {
     }
 
     // Получаем лиды из Landing DB
-    let query = landingSupabase
+    let query = trafficAdminSupabase
       .from(tableName)
       .select('id, created_at, source, utm_source, utm_medium, metadata')
       .gte('created_at', startDate)
@@ -224,7 +224,7 @@ router.get('/funnel-analytics', async (req: Request, res: Response) => {
     console.log('[Funnel Analytics API] Filters:', { teamFilter, campaignFilter, startDate, endDate });
 
     // Build query
-    let query = landingSupabase
+    let query = trafficAdminSupabase
       .from('journey_stages')
       .select(`
         lead_id,

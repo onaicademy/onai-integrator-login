@@ -5,17 +5,17 @@ import { generateProftestResultEmail } from '../templates/proftest-result-email.
 import { createShortLink } from './urlShortener.js';
 
 // Lazy initialization of Supabase clients (to ensure env vars are loaded)
-let landingSupabase: SupabaseClient | null = null;
+let trafficAdminSupabase: SupabaseClient | null = null;
 let tripwireSupabase: SupabaseClient | null = null;
 
-function getLandingSupabase() {
-  if (!landingSupabase) {
-    landingSupabase = createClient(
-      process.env.LANDING_SUPABASE_URL || '',
-      process.env.LANDING_SUPABASE_SERVICE_KEY || ''
+function getTrafficAdminSupabase() {
+  if (!trafficAdminSupabase) {
+    trafficAdminSupabase = createClient(
+      process.env.TRAFFIC_SUPABASE_URL || '',
+      process.env.TRAFFIC_SUPABASE_SERVICE_KEY || ''
     );
   }
-  return landingSupabase;
+  return trafficAdminSupabase;
 }
 
 function getTripwireSupabase() {
@@ -58,7 +58,7 @@ async function saveScheduledNotificationToDB(
   scheduledFor: Date
 ): Promise<void> {
   try {
-    const { data, error } = await getLandingSupabase()
+    const { data, error } = await getTrafficAdminSupabase()
       .from('scheduled_notifications')
       .insert({
         lead_id: leadId,
@@ -89,7 +89,7 @@ async function updateNotificationStatus(
   errorMessage?: string
 ): Promise<void> {
   try {
-    await getLandingSupabase()
+    await getTrafficAdminSupabase()
       .from('scheduled_notifications')
       .update({
         status,
@@ -112,7 +112,7 @@ export async function recoverPendingNotifications(): Promise<void> {
   try {
     console.log('\n🔄 [RECOVERY] Loading pending notifications from DB...');
 
-    const { data, error } = await getLandingSupabase()
+    const { data, error } = await getTrafficAdminSupabase()
       .from('scheduled_notifications')
       .select('*')
       .eq('status', 'pending')
@@ -197,8 +197,8 @@ export async function sendProftestEmailWithTracking(
     }
 
     // 🛡️ IDEMPOTENCY CHECK: Don't send if already sent
-    const { data: leadCheck, error: checkError } = await getLandingSupabase()
-      .from('landing_leads')
+    const { data: leadCheck, error: checkError } = await getTrafficAdminSupabase()
+      .from('traffic_leads')
       .select('email_sent')
       .eq('id', leadId)
       .single();
@@ -250,17 +250,17 @@ export async function sendProftestEmailWithTracking(
       throw new Error(result.error.message);
     }
 
-    // ✅ UPDATE landing_leads (with error handling)
+    // ✅ UPDATE traffic_leads (with error handling)
     try {
-      await getLandingSupabase()
-        .from('landing_leads')
+      await getTrafficAdminSupabase()
+        .from('traffic_leads')
         .update({
           email_sent: true,
           email_sent_at: new Date().toISOString(),
         })
         .eq('id', leadId);
     } catch (err) {
-      console.warn(`⚠️ Failed to update landing_leads: ${err}`);
+      console.warn(`⚠️ Failed to update traffic_leads: ${err}`);
     }
 
     // ✅ UPDATE unified_lead_tracking (with error handling)
@@ -284,10 +284,10 @@ export async function sendProftestEmailWithTracking(
   } catch (error: any) {
     console.error(`❌ [Lead ${leadId}] Email ERROR:`, error.message);
 
-    // ✅ UPDATE landing_leads with error (with error handling)
+    // ✅ UPDATE traffic_leads with error (with error handling)
     try {
-      await getLandingSupabase()
-        .from('landing_leads')
+      await getTrafficAdminSupabase()
+        .from('traffic_leads')
         .update({
           email_error: error.message,
         })
@@ -331,8 +331,8 @@ async function sendProftestSMSWithTracking(
     }
 
     // 🛡️ IDEMPOTENCY CHECK: Don't send if already sent
-    const { data: leadCheck, error: checkError } = await getLandingSupabase()
-      .from('landing_leads')
+    const { data: leadCheck, error: checkError } = await getTrafficAdminSupabase()
+      .from('traffic_leads')
       .select('sms_sent')
       .eq('id', leadId)
       .single();
@@ -351,17 +351,17 @@ async function sendProftestSMSWithTracking(
       throw new Error('SMS sending returned false');
     }
 
-    // ✅ UPDATE landing_leads (with error handling)
+    // ✅ UPDATE traffic_leads (with error handling)
     try {
-      await getLandingSupabase()
-        .from('landing_leads')
+      await getTrafficAdminSupabase()
+        .from('traffic_leads')
         .update({
           sms_sent: true,
           sms_sent_at: new Date().toISOString(),
         })
         .eq('id', leadId);
     } catch (err) {
-      console.warn(`⚠️ Failed to update landing_leads SMS: ${err}`);
+      console.warn(`⚠️ Failed to update traffic_leads SMS: ${err}`);
     }
 
     // ✅ UPDATE unified_lead_tracking (with error handling)
@@ -383,10 +383,10 @@ async function sendProftestSMSWithTracking(
   } catch (error: any) {
     console.error(`❌ [Lead ${leadId}] SMS ERROR:`, error.message);
 
-    // ✅ UPDATE landing_leads with error (with error handling)
+    // ✅ UPDATE traffic_leads with error (with error handling)
     try {
-      await getLandingSupabase()
-        .from('landing_leads')
+      await getTrafficAdminSupabase()
+        .from('traffic_leads')
         .update({
           sms_error: error.message,
         })

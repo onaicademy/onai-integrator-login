@@ -48,7 +48,7 @@ export const tripwireAdminSupabase = createClient(tripwireUrl, tripwireServiceRo
 
 console.log('✅ Tripwire Admin Supabase client initialized');
 console.log('   URL:', tripwireUrl);
-console.log('   Authorization: Bearer ***' + tripwireServiceRoleKey.slice(-8));
+// Security: API key logging removed
 
 /**
  * Tripwire Anon Supabase Client (для публичных операций)

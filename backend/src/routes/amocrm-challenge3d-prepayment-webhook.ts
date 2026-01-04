@@ -6,14 +6,14 @@
  *
  * Endpoint: POST /api/amocrm/challenge3d-prepayment
  * Purpose: Принимает данные о предоплатах "3х дневник" из AmoCRM
- * Pipeline: 9430994 (ОП - Основные Продукты)
+ * Pipeline: 9430994 (ОП - Основные Продукты) + 9977350 (New prepayment pipeline)
  * Статус: Любой статус предоплаты (настраивается в AmoCRM webhook)
  *
- * Сохраняет в Landing DB → challenge3d_sales с prepaid=true
+ * ✅ Сохраняет в Traffic DB → challenge3d_sales с prepaid=true
  */
 
 import { Router, Request, Response } from 'express';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { getOriginalUTM, extractPhoneFromDeal } from '../utils/amocrm-utils.js';
 
 const router = Router();
@@ -22,7 +22,10 @@ const router = Router();
 // 🔌 CONFIGURATION
 // ════════════════════════════════════════════════════════════════════════
 const AMOCRM_ACCESS_TOKEN = process.env.AMOCRM_ACCESS_TOKEN || '';
-const PREPAYMENT_PIPELINE_ID = 9430994; // ОП - Основные Продукты
+const PREPAYMENT_PIPELINE_IDS = [
+  9430994, // ОП - Основные Продукты (старая воронка)
+  9977350  // Новая воронка предоплат (2-step: Предоплатники → Успешно реализовано)
+];
 
 // ════════════════════════════════════════════════════════════════════════
 // 🛡️ DEDUPLICATION
@@ -163,9 +166,9 @@ router.post('/challenge3d-prepayment', async (req: Request, res: Response) => {
     for (const lead of data.leads.status) {
       console.log(`[Challenge3D Prepayment] 🔍 Processing lead ${lead.id}`);
 
-      // Filter by pipeline - only Pipeline 9430994
-      if (lead.pipeline_id !== PREPAYMENT_PIPELINE_ID) {
-        console.log(`[Challenge3D Prepayment] ⏭️  Skip: Pipeline ${lead.pipeline_id} != ${PREPAYMENT_PIPELINE_ID}`);
+      // Filter by pipeline - only allowed prepayment pipelines
+      if (!PREPAYMENT_PIPELINE_IDS.includes(lead.pipeline_id)) {
+        console.log(`[Challenge3D Prepayment] ⏭️  Skip: Pipeline ${lead.pipeline_id} not in [${PREPAYMENT_PIPELINE_IDS.join(',')}]`);
         skippedCount++;
         continue;
       }
@@ -234,7 +237,7 @@ router.post('/challenge3d-prepayment', async (req: Request, res: Response) => {
 
       // Save to challenge3d_sales (upsert - если сделка уже существует, обновить)
       try {
-        const { error } = await landingSupabase
+        const { error } = await trafficAdminSupabase
           .from('challenge3d_sales')
           .upsert(prepaymentData, {
             onConflict: 'deal_id',
@@ -281,7 +284,7 @@ router.get('/challenge3d-prepayment/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     service: 'Challenge3D Prepayment Webhook',
-    pipeline: PREPAYMENT_PIPELINE_ID,
+    pipelines: PREPAYMENT_PIPELINE_IDS,
     acceptsPrepayments: true,
     timestamp: new Date().toISOString(),
   });

@@ -40,7 +40,7 @@ export const adminSupabase = createClient(supabaseUrl, serviceRoleKey, {
 
 console.log('✅ Admin Supabase client initialized with service_role_key');
 console.log('   URL:', supabaseUrl);
-console.log('   Authorization: Bearer ***' + serviceRoleKey.slice(-8));
+// Security: API key logging removed
 
 /**
  * Backward Compatibility Export

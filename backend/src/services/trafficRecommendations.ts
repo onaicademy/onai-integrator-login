@@ -1,5 +1,5 @@
 import Groq from 'groq-sdk';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -235,11 +235,11 @@ ROAS: ${metrics.roas.toFixed(1)}x → [цель]x | CPA: $${metrics.cpa.toFixed(
  */
 export async function saveRecommendations(teamName: string, recommendations: string): Promise<void> {
   try {
-    if (!landingSupabase) {
+    if (!trafficAdminSupabase) {
       throw new Error('Landing Supabase client not initialized');
     }
 
-    await landingSupabase.from('traffic_recommendations').insert({
+    await trafficAdminSupabase.from('traffic_recommendations').insert({
       team_name: teamName,
       recommendations,
       created_at: new Date().toISOString(),
@@ -256,11 +256,11 @@ export async function saveRecommendations(teamName: string, recommendations: str
  */
 export async function getLatestRecommendations(teamName: string): Promise<string | null> {
   try {
-    if (!landingSupabase) {
+    if (!trafficAdminSupabase) {
       throw new Error('Landing Supabase client not initialized');
     }
 
-    const { data, error } = await landingSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('traffic_recommendations')
       .select('recommendations')
       .eq('team_name', teamName)

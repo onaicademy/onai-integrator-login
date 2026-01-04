@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { landingSupabase } from '../config/supabase-landing.js';
 import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { database } from '../config/database-layer.js';
 import { getAlmatyDate, getYesterdayAlmaty } from '../utils/timezone.js';
@@ -102,7 +101,7 @@ async function getAttributedTeamName(
 
   // Priority 2: Check Ad Account mapping in database
   try {
-    const { data } = await landingSupabase
+    const { data } = await trafficAdminSupabase
       .from('integration_ad_accounts')
       .select('team_name')
       .eq('account_id', adAccountId)
@@ -166,7 +165,7 @@ async function fetchAccountInsightsDaily(
 async function getLatestCampaignDates(userId: string, campaignIds: string[]) {
   if (!campaignIds.length) return new Map<string, string>();
 
-  const { data } = await landingSupabase
+  const { data } = await trafficAdminSupabase
     .from('traffic_stats')
     .select('campaign_id, stat_date')
     .eq('user_id', userId)
@@ -187,7 +186,7 @@ async function upsertStatsRows(rows: any[]) {
 
   // Production DB constraint: traffic_stats_unique_date_user_campaign (stat_date, user_id, campaign_id)
   for (const chunk of chunkArray(rows, 500)) {
-    const { error } = await landingSupabase
+    const { error } = await trafficAdminSupabase
       .from('traffic_stats')
       .upsert(chunk, { onConflict: 'stat_date,user_id,campaign_id' });
     if (error) {
@@ -214,7 +213,7 @@ async function updateSyncState(userId: string, rows: any[], endDate: string) {
 
   if (!payload.length) return;
 
-  await landingSupabase
+  await trafficAdminSupabase
     .from('traffic_sync_state')
     .upsert(payload, { onConflict: 'scope,user_id,ad_account_id,campaign_id' });
 }

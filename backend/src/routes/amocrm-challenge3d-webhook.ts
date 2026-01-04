@@ -1,22 +1,23 @@
 // @ts-nocheck
 /**
  * ════════════════════════════════════════════════════════════════════════
- * 📚 AMOCRM CHALLENGE 3D WEBHOOK (3х дневник)
+ * 📚 AMOCRM CHALLENGE 3D WEBHOOK (3х дневник - FULL PAYMENT)
  * ════════════════════════════════════════════════════════════════════════
  *
  * Endpoint: POST /api/amocrm/challenge3d-sale
- * Purpose: Принимает данные о продажах "3х дневник" из AmoCRM
+ * Purpose: Принимает данные о ПОЛНЫХ продажах "3х дневник" из AmoCRM
  * Pipelines:
  *   - 9777626 (КЦ - Короткий Курс)
  *   - 9430994 (ОП - Основные Продукты)
+ *   - 9977350 (Новая воронка предоплат - full payment stage)
  * Статусы: 142 (Успешно реализовано)
  *
- * Сохраняет в Landing DB → challenge3d_sales
+ * ✅ Сохраняет в Traffic DB → challenge3d_sales с prepaid=false
  */
 
 import { Router, Request, Response } from 'express';
 import express from 'express';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { getOriginalUTM, extractPhoneFromDeal } from '../utils/amocrm-utils.js';
 
 const router = Router();
@@ -444,9 +445,9 @@ router.post('/challenge3d-sale', async (req: Request, res: Response) => {
 
       console.log('[Challenge3D Webhook] 💾 Saving to challenge3d_sales...');
 
-      // Save to Supabase (Landing DB - challenge3d_sales table)
+      // ✅ Save to Traffic DB - challenge3d_sales table
       try {
-        const { data: savedData, error } = await landingSupabase
+        const { data: savedData, error } = await trafficAdminSupabase
           .from('challenge3d_sales')
           .upsert(saleData, {
             onConflict: 'deal_id'

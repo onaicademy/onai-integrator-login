@@ -35,8 +35,7 @@ const openaiKey = process.env.OPENAI_API_KEY;
 console.log('🔑 OPENAI_API_KEY:');
 console.log('   - Exists:', !!openaiKey);
 console.log('   - Length:', openaiKey?.length || 0);
-console.log('   - First 20 chars:', openaiKey?.substring(0, 20) || 'EMPTY');
-console.log('   - Last 10 chars:', openaiKey?.substring(openaiKey.length - 10) || 'EMPTY');
+// Security: API key fragment logging removed
 console.log('\n');
 
 
@@ -54,7 +53,7 @@ const resendKey = process.env.RESEND_API_KEY;
 console.log('📧 RESEND (Email Service):');
 console.log('   - RESEND_API_KEY exists:', !!resendKey);
 console.log('   - RESEND_API_KEY length:', resendKey?.length || 0);
-console.log('   - First 10 chars:', resendKey?.substring(0, 10) || 'EMPTY');
+// Security: API key fragment logging removed
 if (!resendKey || resendKey.length < 20) {
   console.error('   ⚠️  WARNING: RESEND_API_KEY не загружен! Отправка писем НЕ БУДЕТ работать!');
 }
@@ -194,13 +193,12 @@ const PORT = process.env.PORT || 3000;
 initSentry(app);
 
 // ✅ Rate Limiting (защита от DDoS и brute-force)
-// 🔴 TEMPORARILY DISABLED due to IPv6 key generator error
-// import {
-//   aiLimiter,
-//   apiLimiter,
-//   authLimiter,
-//   trafficFacebookLimiter
-// } from './middleware/rate-limit';
+import {
+  aiLimiter,
+  apiLimiter,
+  authLimiter,
+  trafficFacebookLimiter
+} from './middleware/rate-limit';
 
 // ✅ Enhanced Security Headers with Helmet
 app.use(helmet({
@@ -343,11 +341,10 @@ app.use(userActivityErrorLogger); // 📝 Log API errors to user_activity_logs
 
 // ✅ Apply Rate Limiting to API routes
 // ВАЖНО: Применяется ПЕРЕД регистрацией конкретных routes
-// 🔴 TEMPORARILY DISABLED due to IPv6 key generator error
-// app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
-// app.use('/api/tripwire/', apiLimiter); // 100 req/15min для tripwire
-// app.use('/api/admin/', apiLimiter);    // 100 req/15min для admin
-// app.use('/api/traffic-facebook/', trafficFacebookLimiter); // FB cache API limiter
+app.use('/api/auth/', authLimiter);  // 50 req/15min для auth
+app.use('/api/tripwire/', apiLimiter); // 2000 req/15min для tripwire (adaptive)
+app.use('/api/admin/', apiLimiter);    // 2000 req/15min для admin (adaptive)
+app.use('/api/traffic-facebook/', trafficFacebookLimiter); // FB cache API limiter (60/2min)
 // AI endpoints получат строгий лимит в своих роутах (10 req/min)
 
 // Увеличиваем timeout для массовой загрузки видео

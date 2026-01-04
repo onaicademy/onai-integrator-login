@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 import { authenticateTrafficJWT } from '../middleware/traffic-auth.js';
 
 const router = express.Router();
@@ -20,7 +20,7 @@ router.get('/unassigned', async (req, res) => {
   try {
     const { startDate, endDate, limit = 100, offset = 0 } = req.query;
 
-    let query = landingSupabase
+    let query = trafficAdminSupabase
       .from('traffic_stats')
       .select('stat_date, campaign_id, campaign_name, ad_account_id, spend_usd, spend_kzt, impressions, clicks, team, user_id')
       .eq('team', 'Unassigned')
@@ -99,7 +99,7 @@ router.post('/assign', async (req, res) => {
     }
 
     // Fetch current records with team='Unassigned' for this campaign
-    const { data: oldRecords, error: fetchError } = await landingSupabase
+    const { data: oldRecords, error: fetchError } = await trafficAdminSupabase
       .from('traffic_stats')
       .select('stat_date, campaign_id, team, user_id')
       .eq('campaign_id', campaignId)
@@ -115,7 +115,7 @@ router.post('/assign', async (req, res) => {
     }
 
     // Update team for all matching records
-    const { error: updateError } = await landingSupabase
+    const { error: updateError } = await trafficAdminSupabase
       .from('traffic_stats')
       .update({ team: teamName, updated_at: new Date().toISOString() })
       .eq('campaign_id', campaignId)
@@ -137,7 +137,7 @@ router.post('/assign', async (req, res) => {
       reason: reason || 'Manual assignment from Attribution Manager',
     }));
 
-    const { error: logError } = await landingSupabase
+    const { error: logError } = await trafficAdminSupabase
       .from('manual_attribution_log')
       .insert(logEntries);
 
@@ -163,7 +163,7 @@ router.post('/assign', async (req, res) => {
  */
 router.get('/ad-accounts', async (req, res) => {
   try {
-    const { data, error } = await landingSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('integration_ad_accounts')
       .select('*')
       .order('created_at', { ascending: false });
@@ -193,7 +193,7 @@ router.post('/ad-accounts', async (req, res) => {
       return res.status(400).json({ error: 'accountId and teamName are required' });
     }
 
-    const { data, error } = await landingSupabase
+    const { data, error } = await trafficAdminSupabase
       .from('integration_ad_accounts')
       .upsert(
         {
@@ -229,7 +229,7 @@ router.delete('/ad-accounts/:accountId', async (req, res) => {
   try {
     const { accountId } = req.params;
 
-    const { error } = await landingSupabase
+    const { error } = await trafficAdminSupabase
       .from('integration_ad_accounts')
       .delete()
       .eq('account_id', accountId);
@@ -254,7 +254,7 @@ router.get('/stats', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
-    let baseQuery = landingSupabase
+    let baseQuery = trafficAdminSupabase
       .from('traffic_stats')
       .select('team, spend_usd, spend_kzt', { count: 'exact' });
 

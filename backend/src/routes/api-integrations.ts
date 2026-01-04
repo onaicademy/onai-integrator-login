@@ -9,7 +9,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import { trafficSupabase } from '../config/supabase-traffic';
 import { AMOCRM_CONFIG } from '../config/amocrm-config';
 
@@ -248,7 +248,7 @@ async function checkSupabaseAPI(): Promise<{
   try {
     // Проверяем подключение ко всем БД
     const checks = await Promise.allSettled([
-      checkSupabaseConnection(landingSupabase, 'Landing DB'),
+      checkSupabaseConnection(trafficAdminSupabase, 'Landing DB'),
       checkSupabaseConnection(trafficSupabase, 'Traffic DB')
     ]);
     

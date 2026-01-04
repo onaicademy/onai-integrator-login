@@ -1,9 +1,9 @@
-import { landingSupabase } from '../config/supabase-landing.js';
+import { trafficAdminSupabase } from '../config/supabase-traffic.js';
 
 const FALLBACK_RATE = 475;
 
 export async function upsertExchangeRate(date: string, rate: number, source: string) {
-  const { error } = await landingSupabase
+  const { error } = await trafficAdminSupabase
     .from('exchange_rates')
     .upsert(
       {
@@ -21,7 +21,7 @@ export async function upsertExchangeRate(date: string, rate: number, source: str
 }
 
 export async function getExchangeRateForDate(date: string): Promise<number> {
-  const { data, error } = await landingSupabase
+  const { data, error } = await trafficAdminSupabase
     .from('exchange_rates')
     .select('usd_to_kzt')
     .eq('date', date)
@@ -31,7 +31,7 @@ export async function getExchangeRateForDate(date: string): Promise<number> {
     return data.usd_to_kzt;
   }
 
-  const { data: latestRate } = await landingSupabase
+  const { data: latestRate } = await trafficAdminSupabase
     .from('exchange_rates')
     .select('usd_to_kzt')
     .order('date', { ascending: false })
@@ -42,7 +42,7 @@ export async function getExchangeRateForDate(date: string): Promise<number> {
 }
 
 export async function getExchangeRateMap(start: string, end: string): Promise<Record<string, number>> {
-  const { data } = await landingSupabase
+  const { data } = await trafficAdminSupabase
     .from('exchange_rates')
     .select('date, usd_to_kzt')
     .gte('date', start)

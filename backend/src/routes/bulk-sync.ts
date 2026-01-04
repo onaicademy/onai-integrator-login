@@ -4,7 +4,7 @@
  */
 import { Router, Request, Response } from 'express';
 import { bulkSyncService } from '../services/bulkSyncService';
-import { landingSupabase } from '../config/supabase-landing';
+import { trafficAdminSupabase } from '../config/supabase-traffic';
 import pino from 'pino';
 
 const logger = pino();
@@ -27,8 +27,8 @@ router.post('/start', async (req: Request, res: Response) => {
     logger.info(`📥 Starting bulk sync for ${leadIds.length} leads`);
 
     // Fetch lead data from database
-    const { data: leads, error: dbError } = await landingSupabase
-      .from('landing_leads')
+    const { data: leads, error: dbError } = await trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .in('id', leadIds);
 
@@ -247,8 +247,8 @@ router.post('/sync-all', async (req: Request, res: Response) => {
     logger.info(`📥 Fetching all leads for bulk sync (source: ${source || 'all'})`);
 
     // Build query
-    let query = landingSupabase
-      .from('landing_leads')
+    let query = trafficAdminSupabase
+      .from('traffic_leads')
       .select('*')
       .order('created_at', { ascending: false });
 
