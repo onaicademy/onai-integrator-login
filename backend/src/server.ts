@@ -880,4 +880,19 @@ setInterval(() => {
 
 console.log('✅ Cache cleanup scheduled (every 5 minutes)');
 
+// ═══════════════════════════════════════════════════════════════
+// 📊 TRAFFIC DASHBOARD SYNC JOBS
+// ═══════════════════════════════════════════════════════════════
+import { startAllTrafficSyncJobs } from './cron/traffic-sync-jobs.js';
+
+try {
+  startAllTrafficSyncJobs();
+  console.log('✅ Traffic Dashboard sync jobs started');
+  console.log('   - Facebook Ads Sync: Every hour at :05');
+  console.log('   - Metrics Aggregation: Every 10 minutes');
+} catch (error: any) {
+  console.error('❌ Failed to start Traffic sync jobs:', error.message);
+  console.error('⚠️  Traffic Dashboard auto-sync disabled. Use manual sync instead.');
+}
+
 export default app;
