@@ -38,11 +38,12 @@ export async function syncFacebookAdsToLanding(): Promise<void> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
+    // ✅ FIXED: Read from traffic_facebook_ads_raw instead of non-existent traffic_stats
     const { data: trafficStats, error: fetchError } = await trafficAdminSupabase
-      .from('traffic_stats')
+      .from('traffic_facebook_ads_raw')
       .select('*')
-      .gte('date', thirtyDaysAgo.toISOString().split('T')[0])
-      .order('date', { ascending: false });
+      .gte('stat_date', thirtyDaysAgo.toISOString().split('T')[0])
+      .order('stat_date', { ascending: false });
     
     if (fetchError) {
       console.error('[FB Sync] ❌ Error fetching from Traffic DB:', fetchError.message);
@@ -70,26 +71,29 @@ export async function syncFacebookAdsToLanding(): Promise<void> {
           continue;
         }
 
+        // ✅ FIXED: Upsert to traffic_facebook_ads_raw with correct schema
         const { error: upsertError } = await trafficAdminSupabase
-          .from('traffic_stats')
+          .from('traffic_facebook_ads_raw')
           .upsert({
-            stat_date: stat.date,
             user_id: userId,
-            team: stat.team,
-            ad_account_id: null,
-            campaign_id: 'team_total',
-            campaign_name: 'team_total',
+            team_name: stat.team_name || stat.team,
+            ad_account_id: stat.ad_account_id || null,
+            campaign_id: stat.campaign_id || 'team_total',
+            campaign_name: stat.campaign_name || 'team_total',
+            adset_id: stat.adset_id || null,
+            adset_name: stat.adset_name || null,
+            ad_id: stat.ad_id || null,
+            ad_name: stat.ad_name || null,
+            stat_date: stat.stat_date,
             impressions: stat.impressions || 0,
             clicks: stat.clicks || 0,
-            spend_usd: stat.spend_usd || 0,
-            spend_kzt: stat.spend_kzt || (stat.spend_usd || 0) * 475,
-            ctr: stat.ctr || 0,
-            cpc_usd: stat.cpc || 0,
-            usd_to_kzt_rate: stat.usd_to_kzt_rate || 475,
+            reach: stat.reach || 0,
+            spend: stat.spend || 0,
+            raw_data: stat.raw_data || {},
             updated_at: new Date().toISOString()
-          }, { 
-            onConflict: 'stat_date,user_id,campaign_id',
-            ignoreDuplicates: false 
+          }, {
+            onConflict: 'campaign_id,stat_date',
+            ignoreDuplicates: false
           });
         
         if (upsertError) {

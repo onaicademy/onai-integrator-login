@@ -185,9 +185,10 @@ async function getLandingStatsSummary(
     return { spend_usd: 0, spend_kzt: 0, impressions: 0, clicks: 0, reach: 0 };
   }
 
+  // ✅ FIXED: Query traffic_facebook_ads_raw (created by Migration 017)
   const query = trafficAdminSupabase
-    .from('traffic_stats')
-    .select('spend_usd, spend_kzt, impressions, clicks, reach, usd_to_kzt_rate')
+    .from('traffic_facebook_ads_raw')
+    .select('spend, impressions, clicks, reach')
     .eq('user_id', userId)
     .gte('stat_date', since)
     .lte('stat_date', until);
@@ -199,18 +200,23 @@ async function getLandingStatsSummary(
   const { data, error } = await query;
 
   if (error) {
-    console.warn('[Combined Analytics] Landing traffic_stats error:', error.message);
-    return null;
+    console.warn('[Combined Analytics] traffic_facebook_ads_raw error:', error.message);
+    // Table doesn't exist yet - return zeros instead of null
+    return { spend_usd: 0, spend_kzt: 0, impressions: 0, clicks: 0, reach: 0 };
   }
 
   if (!data || data.length === 0) {
     return null;
   }
 
+  // Get exchange rate (using average for the period)
+  const exchangeRate = await getUSDtoKZTRate(since, until);
+
   const totals = data.reduce(
     (acc, row) => {
-      acc.spend_usd += parseFloat((row as any).spend_usd || '0');
-      acc.spend_kzt += parseFloat((row as any).spend_kzt || '0');
+      const spendUSD = parseFloat((row as any).spend || '0');
+      acc.spend_usd += spendUSD;
+      acc.spend_kzt += spendUSD * exchangeRate;
       acc.impressions += parseInt((row as any).impressions || '0', 10);
       acc.clicks += parseInt((row as any).clicks || '0', 10);
       acc.reach += parseInt((row as any).reach || '0', 10);
