@@ -1,28 +1,19 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Brain, Sparkles, DollarSign, TrendingUp, Mic, Activity } from "lucide-react";
+import { Users, Brain, Sparkles, DollarSign, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { api } from "@/utils/apiClient";
-import { supabase } from "@/lib/supabase";
 
 const KZT_RATE = 460; // 1 USD = 460 KZT
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [tokenStats, setTokenStats] = useState<any>(null);
-  const [studentStats, setStudentStats] = useState<any>(null);
-  const [tripwireStats, setTripwireStats] = useState<any>(null);
-  const [myStats, setMyStats] = useState<any>(null);
-  const [transcriptionStats, setTranscriptionStats] = useState<any>(null);
 
   // Загружаем все статистики при монтировании
   useEffect(() => {
     loadTokenStats();
-    loadStudentStats();
-    loadTripwireStats();
-    loadMyStats();
-    loadTranscriptionStats();
   }, []);
 
   const loadTokenStats = async () => {
@@ -37,126 +28,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadStudentStats = async () => {
-    try {
-      console.log('[AdminDashboard] Загружаем статистику Tripwire студентов...');
-      
-      // ✅ ИСПОЛЬЗУЕМ TRIPWIRE API ДЛЯ ПОЛУЧЕНИЯ РЕАЛЬНОЙ СТАТИСТИКИ!
-      const response = await api.get('/api/tripwire/admin/stats');
-      const statsData = response;
-      
-      console.log('[AdminDashboard] ✅ Получена статистика от Tripwire API:', statsData);
-
-      const stats = {
-        total: statsData.total_students || 0,
-        active: statsData.active_students || 0,
-        newThisWeek: statsData.total_students || 0, // ✅ Можно улучшить добавив фильтр по дате в API
-      };
-
-      console.log('[AdminDashboard] ✅ Статистика Tripwire студентов загружена:', stats);
-      setStudentStats(stats);
-    } catch (error) {
-      console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
-    }
-  };
-
-  const loadTripwireStats = async () => {
-    try {
-      console.log('[AdminDashboard] Загружаем статистику Tripwire продаж...');
-      
-      // ✅ ИСПОЛЬЗУЕМ TRIPWIRE ADMIN STATS API
-      const statsResponse = await api.get('/api/tripwire/admin/stats');
-      console.log('[AdminDashboard] ✅ Tripwire Stats API response:', statsResponse);
-      
-      // ✅ Также получаем данные о менеджерах для доп. информации
-      try {
-        const leaderboardResponse = await api.get('/api/admin/tripwire/leaderboard');
-        const managers = leaderboardResponse.data?.managers || leaderboardResponse.managers || [];
-        
-        // Подсчитываем суммы из leaderboard (для продаж)
-        const totalSales = managers.reduce((sum: number, m: any) => sum + m.total_sales, 0);
-        const totalRevenue = managers.reduce((sum: number, m: any) => sum + m.total_revenue, 0);
-        const thisMonthSales = managers.reduce((sum: number, m: any) => sum + m.this_month_sales, 0);
-
-        setTripwireStats({
-          // ✅ Основные метрики берём из реальной статистики
-          totalStudents: statsResponse.total_students || 0,
-          completedStudents: statsResponse.completed_students || 0,
-          completionRate: statsResponse.completion_rate || 0,
-          // ✅ Продажи берём из leaderboard (это для менеджеров)
-          totalSales,
-          totalRevenue,
-          thisMonthSales,
-          managersCount: managers.length,
-        });
-
-        console.log('[AdminDashboard] ✅ Статистика Tripwire загружена:', { 
-          students: statsResponse.total_students, 
-          sales: totalSales, 
-          revenue: totalRevenue 
-        });
-      } catch (leaderboardError) {
-        // Если leaderboard не доступен, используем только stats
-        console.warn('[AdminDashboard] ⚠️ Leaderboard недоступен, используем только stats');
-        setTripwireStats({
-          totalStudents: statsResponse.total_students || 0,
-          completedStudents: statsResponse.completed_students || 0,
-          completionRate: statsResponse.completion_rate || 0,
-          totalSales: statsResponse.total_students || 0, // Fallback: кол-во студентов = кол-во продаж
-          totalRevenue: (statsResponse.total_students || 0) * 5000, // Fallback: студенты * 5000₸
-          thisMonthSales: 0,
-          managersCount: 0,
-        });
-      }
-    } catch (error) {
-      console.error('[AdminDashboard] ❌ Ошибка загрузки Tripwire:', error);
-    }
-  };
-
-  const loadMyStats = async () => {
-    try {
-      console.log('[AdminDashboard] Загружаем МОЮ статистику...');
-      const response = await api.get('/api/admin/tripwire/my-stats');
-      const stats = response.data || response;
-      
-      setMyStats(stats);
-
-      console.log('[AdminDashboard] ✅ МОЯ статистика загружена:', stats);
-    } catch (error) {
-      console.error('[AdminDashboard] ❌ Ошибка загрузки МОЕй статистики:', error);
-    }
-  };
-
-  const loadTranscriptionStats = async () => {
-    try {
-      console.log('[AdminDashboard] Загружаем статистику транскрипций...');
-      const response = await api.get('/api/admin/transcriptions/stats');
-      const data = response.data || response;
-      
-      setTranscriptionStats(data.stats);
-
-      console.log('[AdminDashboard] ✅ Статистика транскрипций загружена:', data.stats);
-    } catch (error) {
-      console.error('[AdminDashboard] ❌ Ошибка загрузки статистики транскрипций:', error);
-    }
-  };
-
-  // Форматирование данных для карточки студентов (TRIPWIRE)
-  const formatStudentStats = () => {
-    if (!studentStats) {
-      return [
-        { label: "Всего студентов", value: "..." },
-        { label: "Активных", value: "..." },
-        { label: "Завершили курс", value: "..." },
-      ];
-    }
-
-    return [
-      { label: "Всего студентов", value: studentStats.total.toString() },
-      { label: "Активных (7 дн)", value: studentStats.active.toString() },
-      { label: "Завершений", value: `${tripwireStats?.completedStudents || 0}` },
-    ];
-  };
 
   // Форматирование данных для карточки токенов
   const formatTokenStats = () => {
@@ -207,13 +78,16 @@ export default function AdminDashboard() {
 
         {/* Карточки */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Карточка 1: Управление студентами (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
+          {/* Карточка 1: Управление студентами */}
           <AdminCard
             title="Управление студентами"
             description="Добавление, удаление, роли, приглашения"
             icon={<Users className="w-8 h-8" />}
             onClick={() => navigate("/admin/students-activity")}
-            stats={formatStudentStats()}
+            stats={[
+              { label: "Функционал", value: "Доступен" },
+              { label: "Статус", value: "✅ Active" },
+            ]}
           />
 
           {/* Карточка 2: Activity (старая панель) */}
@@ -251,33 +125,7 @@ export default function AdminDashboard() {
             stats={formatTokenStats()}
           />
 
-          {/* Карточка 5: Мой отдел продаж (ЛИЧНАЯ ПАНЕЛЬ ДЛЯ ДИРЕКТОРА) */}
-          <AdminCard
-            title="Мой отдел продаж"
-            description="Мои продажи, мои клиенты, добавление пользователей"
-            icon={<TrendingUp className="w-8 h-8" />}
-            onClick={() => window.location.href = "https://expresscourse.onai.academy/sales-manager"}
-            stats={[
-              { label: "Мои продажи", value: myStats?.totalSales?.toString() || "0" },
-              { label: "Моя выручка", value: myStats ? `${myStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },
-              { label: "Этот месяц", value: `+${myStats?.thisMonthSales || 0}` },
-            ]}
-          />
-
-          {/* Карточка 6: Sales Manager - Tripwire (ГЛОБАЛЬНАЯ СТАТИСТИКА) */}
-          <AdminCard
-            title="Sales Manager - Tripwire"
-            description="Управление продажами, рейтинг менеджеров"
-            icon={<TrendingUp className="w-8 h-8" />}
-            onClick={() => navigate("/admin/tripwire-sales-global")}
-            stats={[
-              { label: "Всего студентов", value: tripwireStats?.totalStudents?.toString() || "0" },
-              { label: "Завершений курса", value: `${tripwireStats?.completedStudents || 0} (${Math.round(tripwireStats?.completionRate || 0)}%)` },
-              { label: "Выручка", value: tripwireStats ? `${tripwireStats.totalRevenue.toLocaleString('ru-RU')}₸` : "0₸" },
-            ]}
-          />
-
-          {/* Карточка 7: System Health & Queue Management */}
+          {/* Карточка 5: System Health & Queue Management */}
           <AdminCard
             title="System Health"
             description="Мониторинг очереди задач и управление режимами работы"
@@ -290,7 +138,7 @@ export default function AdminDashboard() {
             ]}
           />
 
-          {/* Карточка 8: Debug Panel (Operation Logging) */}
+          {/* Карточка 6: Debug Panel (Operation Logging) */}
           <AdminCard
             title="Debug Panel"
             description="Полицейский: логирование всех операций, статистика багов"
@@ -300,19 +148,6 @@ export default function AdminDashboard() {
               { label: "Операций/день", value: "..." },
               { label: "Ошибок", value: "..." },
               { label: "Error rate", value: "..." },
-            ]}
-          />
-
-          {/* Карточка 9: Транскрибации уроков */}
-          <AdminCard
-            title="Транскрибации уроков"
-            description="Управление транскрибациями через Groq Whisper"
-            icon={<Mic className="w-8 h-8" />}
-            onClick={() => navigate("/admin/transcriptions")}
-            stats={[
-              { label: "Всего уроков", value: transcriptionStats?.total?.toString() || "..." },
-              { label: "Готовых", value: transcriptionStats?.completed?.toString() || "..." },
-              { label: "Ожидают", value: transcriptionStats?.pending?.toString() || "..." },
             ]}
           />
         </div>
