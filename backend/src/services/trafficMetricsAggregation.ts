@@ -145,9 +145,12 @@ async function aggregateLeads(
 }
 
 /**
- * Aggregate Challenge3D sales for a user and period
+ * Aggregate Challenge3D sales for a team and period
+ *
+ * ✅ FIXED: Now filters by team_name to show only sales for the specific team
  */
 async function aggregateChallenge3DSales(
+  teamName: string,
   startDate: string,
   endDate: string
 ): Promise<{
@@ -159,18 +162,20 @@ async function aggregateChallenge3DSales(
   const startDateTime = `${startDate}T00:00:00Z`;
   const endDateTime = `${endDate}T23:59:59Z`;
 
-  const { data, error } = await trafficAdminSupabase
+  const { data, error} = await trafficAdminSupabase
     .from('challenge3d_sales')
-    .select('sale_amount, sale_type')
+    .select('sale_amount, sale_type, team_name')
     .gte('sale_date', startDateTime)
-    .lte('sale_date', endDateTime);
+    .lte('sale_date', endDateTime)
+    .eq('team_name', teamName); // ✅ FIXED: Filter by team
 
   if (error) {
-    console.error('[Aggregation] Error fetching Challenge3D sales:', error.message);
+    console.error(`[Aggregation] Error fetching Challenge3D sales for ${teamName}:`, error.message);
     return { prepayments: 0, prepayment_revenue: 0, full_purchases: 0, full_revenue: 0 };
   }
 
   if (!data || data.length === 0) {
+    console.log(`[Aggregation] No Challenge3D sales found for ${teamName}`);
     return { prepayments: 0, prepayment_revenue: 0, full_purchases: 0, full_revenue: 0 };
   }
 
@@ -188,13 +193,18 @@ async function aggregateChallenge3DSales(
     { prepayments: 0, prepayment_revenue: 0, full_purchases: 0, full_revenue: 0 }
   );
 
+  console.log(`[Aggregation] ${teamName} Challenge3D: ${totals.prepayments} prepayments, ${totals.full_purchases} full payments`);
+
   return totals;
 }
 
 /**
- * Aggregate Express Course sales for a period
+ * Aggregate Express Course sales for a team and period
+ *
+ * ✅ FIXED: Now filters by team_name to show only sales for the specific team
  */
 async function aggregateExpressSales(
+  teamName: string,
   startDate: string,
   endDate: string
 ): Promise<{ sales: number; revenue: number }> {
@@ -203,12 +213,13 @@ async function aggregateExpressSales(
 
   const { data, error } = await trafficAdminSupabase
     .from('express_course_sales')
-    .select('sale_amount')
+    .select('sale_amount, team_name')
     .gte('sale_date', startDateTime)
-    .lte('sale_date', endDateTime);
+    .lte('sale_date', endDateTime)
+    .eq('team_name', teamName); // ✅ FIXED: Filter by team
 
   if (error) {
-    console.error('[Aggregation] Error fetching Express sales:', error.message);
+    console.error(`[Aggregation] Error fetching Express sales for ${teamName}:`, error.message);
     return { sales: 0, revenue: 0 };
   }
 
@@ -222,9 +233,12 @@ async function aggregateExpressSales(
 }
 
 /**
- * Aggregate Intensive1D sales for a period
+ * Aggregate Intensive1D sales for a team and period
+ *
+ * ✅ FIXED: Now filters by team_name to show only sales for the specific team
  */
 async function aggregateIntensive1DSales(
+  teamName: string,
   startDate: string,
   endDate: string
 ): Promise<{ sales: number; revenue: number }> {
@@ -233,12 +247,13 @@ async function aggregateIntensive1DSales(
 
   const { data, error } = await trafficAdminSupabase
     .from('intensive1d_sales')
-    .select('sale_amount, sale_type')
+    .select('sale_amount, sale_type, team_name')
     .gte('sale_date', startDateTime)
-    .lte('sale_date', endDateTime);
+    .lte('sale_date', endDateTime)
+    .eq('team_name', teamName); // ✅ FIXED: Filter by team
 
   if (error) {
-    console.error('[Aggregation] Error fetching Intensive1D sales:', error.message);
+    console.error(`[Aggregation] Error fetching Intensive1D sales for ${teamName}:`, error.message);
     return { sales: 0, revenue: 0 };
   }
 
@@ -268,14 +283,14 @@ async function aggregateUserPeriod(
     // 2. Lead counts
     const leads = await aggregateLeads(userId, teamName, period.startDate, period.endDate);
 
-    // 3. Challenge3D sales
-    const challenge3d = await aggregateChallenge3DSales(period.startDate, period.endDate);
+    // 3. Challenge3D sales (filtered by team)
+    const challenge3d = await aggregateChallenge3DSales(teamName, period.startDate, period.endDate);
 
-    // 4. Express sales
-    const express = await aggregateExpressSales(period.startDate, period.endDate);
+    // 4. Express sales (filtered by team)
+    const express = await aggregateExpressSales(teamName, period.startDate, period.endDate);
 
-    // 5. Intensive1D sales
-    const intensive1d = await aggregateIntensive1DSales(period.startDate, period.endDate);
+    // 5. Intensive1D sales (filtered by team)
+    const intensive1d = await aggregateIntensive1DSales(teamName, period.startDate, period.endDate);
 
     // 6. Calculate totals
     const totalRevenue =

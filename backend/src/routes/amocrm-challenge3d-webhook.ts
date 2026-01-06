@@ -410,6 +410,18 @@ router.post('/challenge3d-sale', async (req: Request, res: Response) => {
         deal_id: parseInt(lead.id.toString()),
         pipeline_id: lead.pipeline_id,
         status_id: lead.status_id,
+
+        // ✅ NEW SCHEMA (MIGRATION_017) - REQUIRED FOR AGGREGATION
+        sale_amount: amount,
+        sale_type: prepaid ? 'Prepayment' : 'Full Payment', // ✅ New field for aggregation
+        lead_name: lead.name || null, // ✅ New field for aggregation
+        lead_email: null,
+        lead_phone: phone || attributionResult.phone || null,
+        team_name: targetologist, // ✅ Team attribution for aggregation
+        amocrm_lead_id: lead.id?.toString() || null,
+        amocrm_contact_id: (lead._embedded?.contacts?.[0]?.id || null)?.toString(),
+
+        // OLD SCHEMA (KEPT FOR COMPATIBILITY)
         amount: amount,
         currency: 'KZT',
         prepaid: prepaid,
@@ -424,7 +436,7 @@ router.post('/challenge3d-sale', async (req: Request, res: Response) => {
         utm_referrer: currentUtmData.utm_referrer || null,
         fbclid: currentUtmData.fbclid || null,
 
-        // 👤 Customer data
+        // 👤 Customer data (old schema)
         customer_id: lead._embedded?.contacts?.[0]?.id || null,
         customer_name: lead.name || null,
         phone: phone || attributionResult.phone || null,
@@ -432,6 +444,8 @@ router.post('/challenge3d-sale', async (req: Request, res: Response) => {
 
         // 📅 Sale metadata
         sale_date: saleDate,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         webhook_received_at: new Date().toISOString(),
         raw_data: lead,
 

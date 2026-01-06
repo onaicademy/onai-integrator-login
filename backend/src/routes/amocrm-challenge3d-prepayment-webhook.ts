@@ -108,6 +108,73 @@ function extractUTMData(customFields: any[]) {
 }
 
 // ════════════════════════════════════════════════════════════════════════
+// 🎯 DETERMINE TARGETOLOGIST FROM UTM
+// ════════════════════════════════════════════════════════════════════════
+interface UTMData {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+}
+
+function determineTargetologistFromUTM(utm: UTMData): string | null {
+  const source = (utm.utm_source || '').toLowerCase();
+  const medium = (utm.utm_medium || '').toLowerCase();
+  const campaign = (utm.utm_campaign || '').toLowerCase();
+
+  // Kenesary patterns (включая kenjifb)
+  if (
+    source.includes('kenesary') ||
+    source.includes('kenji') ||
+    source.includes('kenjifb') ||
+    source.includes('tripwire') ||
+    source.includes('nutcab') ||
+    source.includes('kab3') ||
+    source.includes('1day') ||
+    source.includes('pb_agency')
+  ) {
+    return 'Kenesary';
+  }
+
+  // Arystan patterns (включая fbarystan)
+  if (
+    source.includes('arystan') ||
+    source.includes('ar_') ||
+    source.includes('ast_') ||
+    source.includes('fbarystan') ||
+    source.includes('rm almaty') ||
+    source.includes('rm_almaty')
+  ) {
+    return 'Arystan';
+  }
+
+  // Muha patterns
+  if (
+    source.includes('onai') ||
+    source.includes('on ai') ||
+    source.includes('запуск') ||
+    source.includes('muha') ||
+    medium.includes('yourmarketolog')
+  ) {
+    return 'Muha';
+  }
+
+  // Traf4 patterns (включая alex_FB, alex_inst)
+  if (
+    source.includes('alex') ||
+    source.includes('traf4') ||
+    source.includes('proftest') ||
+    campaign.includes('alex') ||
+    campaign.includes('proftest')
+  ) {
+    return 'Traf4';
+  }
+
+  return null;
+}
+
+// ════════════════════════════════════════════════════════════════════════
 // 📦 WEBHOOK ENDPOINT - PREPAYMENTS
 // ════════════════════════════════════════════════════════════════════════
 /**
@@ -193,15 +260,31 @@ router.post('/challenge3d-prepayment', async (req: Request, res: Response) => {
       // Extract current UTM from deal
       const currentUtmData = extractUTMData(lead.custom_fields_values || []);
 
+      // ✅ Determine team_name from UTM (for team-based filtering in aggregation)
+      const team_name = determineTargetologistFromUTM(attributionResult.original) || null;
+      console.log('[Challenge3D Prepayment] 🎯 Team:', team_name || 'Unknown');
+
       // Prepare prepayment data
       const prepaymentData = {
         deal_id: parseInt(lead.id.toString()),
         pipeline_id: lead.pipeline_id,
         status_id: lead.status_id,
+
+        // ✅ NEW SCHEMA (MIGRATION_017) - REQUIRED FOR AGGREGATION
+        sale_amount: amount,
+        sale_type: 'Prepayment', // ✅ New field for aggregation
+        lead_name: lead.name || null, // ✅ New field for aggregation
+        lead_email: null,
+        lead_phone: phone || null,
+        team_name: team_name, // ✅ Team attribution for aggregation
+        amocrm_lead_id: lead.id?.toString() || null,
+        amocrm_contact_id: lead.contact_id?.toString() || null,
+
+        // OLD SCHEMA (KEPT FOR COMPATIBILITY)
         amount: amount,
         currency: 'KZT',
         package_type: null,
-        prepaid: true, // ✅ Маркер предоплаты
+        prepaid: true, // ✅ Маркер предоплаты (old field)
 
         // UTM Attribution (current deal UTM)
         utm_source: currentUtmData.utm_source || null,
@@ -212,7 +295,7 @@ router.post('/challenge3d-prepayment', async (req: Request, res: Response) => {
         utm_referrer: currentUtmData.utm_referrer || null,
         fbclid: currentUtmData.fbclid || null,
 
-        // Customer data
+        // Customer data (old schema)
         customer_id: lead.contact_id || null,
         customer_name: lead.name || null,
         phone: phone || null,
