@@ -272,19 +272,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } />
 
-          {/* 🚔 MAIN PLATFORM: System Health & Debug Panel */}
-          <Route path="/admin/system-health" element={
-            <ProtectedRoute>
-              <OldAdminGuard><MainLayout><SystemHealth /></MainLayout></OldAdminGuard>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/admin/debug" element={
-            <ProtectedRoute>
-              <OldAdminGuard><MainLayout><DebugPanel /></MainLayout></OldAdminGuard>
-            </ProtectedRoute>
-          } />
-
           {/* Чат (требует авторизацию) */}
           <Route path="/messages" element={
             <ProtectedRoute>
@@ -406,6 +393,19 @@ const AppRoutes = () => {
                 <MassBroadcast />
               </TripwireLayout>
             </TripwireAdminGuard>
+          } />
+
+          {/* 🚔 DEBUG PANEL: System Health & Operation Logging */}
+          <Route path="/admin/system-health" element={
+            <SalesGuard>
+              <SystemHealth />
+            </SalesGuard>
+          } />
+
+          <Route path="/admin/debug" element={
+            <SalesGuard>
+              <DebugPanel />
+            </SalesGuard>
           } />
 
           {/* ❌ Access Denied for Tripwire */}

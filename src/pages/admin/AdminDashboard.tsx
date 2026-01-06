@@ -1,19 +1,24 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Brain, Sparkles, DollarSign, Activity } from "lucide-react";
+import { Users, Brain, Sparkles, DollarSign, TrendingUp, Mic, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { api } from "@/utils/apiClient";
+import { supabase } from "@/lib/supabase";
 
 const KZT_RATE = 460; // 1 USD = 460 KZT
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [tokenStats, setTokenStats] = useState<any>(null);
+  const [studentStats, setStudentStats] = useState<any>(null);
+  const [transcriptionStats, setTranscriptionStats] = useState<any>(null);
 
   // Загружаем все статистики при монтировании
   useEffect(() => {
     loadTokenStats();
+    loadStudentStats();
+    loadTranscriptionStats();
   }, []);
 
   const loadTokenStats = async () => {
@@ -28,6 +33,67 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadStudentStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику студентов Main Platform...');
+
+      // Загружаем данные из Main Platform (profiles table)
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, created_at, last_seen');
+
+      if (error) throw error;
+
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const total = profiles?.length || 0;
+      const active = profiles?.filter(p => p.last_seen && new Date(p.last_seen) > sevenDaysAgo).length || 0;
+      const newThisWeek = profiles?.filter(p => new Date(p.created_at) > sevenDaysAgo).length || 0;
+
+      const stats = { total, active, newThisWeek };
+
+      console.log('[AdminDashboard] ✅ Статистика студентов загружена:', stats);
+      setStudentStats(stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки студентов:', error);
+    }
+  };
+
+  const loadTranscriptionStats = async () => {
+    try {
+      console.log('[AdminDashboard] Загружаем статистику транскрипций...');
+      const response = await api.get('/api/admin/transcriptions/stats');
+      const data = response.data || response;
+      
+      setTranscriptionStats(data.stats);
+
+      console.log('[AdminDashboard] ✅ Статистика транскрипций загружена:', data.stats);
+    } catch (error) {
+      console.error('[AdminDashboard] ❌ Ошибка загрузки статистики транскрипций:', error);
+    }
+  };
+
+  // Форматирование данных для карточки студентов (Main Platform)
+  const formatStudentStats = () => {
+    if (!studentStats) {
+      return [
+        { label: "Всего студентов", value: "..." },
+        { label: "Активных (7 дн)", value: "..." },
+        { label: "Новых за неделю", value: "..." },
+      ];
+    }
+
+    const activityChange = studentStats.total > 0
+      ? ((studentStats.active / studentStats.total) * 100).toFixed(1)
+      : "0";
+
+    return [
+      { label: "Всего студентов", value: studentStats.total.toString() },
+      { label: "Активных (7 дн)", value: `${studentStats.active} (${activityChange}%)` },
+      { label: "Новых за неделю", value: `+${studentStats.newThisWeek}` },
+    ];
+  };
 
   // Форматирование данных для карточки токенов
   const formatTokenStats = () => {
@@ -78,16 +144,13 @@ export default function AdminDashboard() {
 
         {/* Карточки */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Карточка 1: Управление студентами */}
+          {/* Карточка 1: Управление студентами (ДИНАМИЧЕСКИЕ ДАННЫЕ) */}
           <AdminCard
             title="Управление студентами"
             description="Добавление, удаление, роли, приглашения"
             icon={<Users className="w-8 h-8" />}
             onClick={() => navigate("/admin/students-activity")}
-            stats={[
-              { label: "Функционал", value: "Доступен" },
-              { label: "Статус", value: "✅ Active" },
-            ]}
+            stats={formatStudentStats()}
           />
 
           {/* Карточка 2: Activity (старая панель) */}
@@ -148,6 +211,19 @@ export default function AdminDashboard() {
               { label: "Операций/день", value: "..." },
               { label: "Ошибок", value: "..." },
               { label: "Error rate", value: "..." },
+            ]}
+          />
+
+          {/* Карточка 7: Транскрибации уроков (Main Platform) */}
+          <AdminCard
+            title="Транскрибации уроков"
+            description="Управление транскрибациями через Groq Whisper"
+            icon={<Mic className="w-8 h-8" />}
+            onClick={() => navigate("/admin/transcriptions")}
+            stats={[
+              { label: "Всего уроков", value: transcriptionStats?.total?.toString() || "..." },
+              { label: "Готовых", value: transcriptionStats?.completed?.toString() || "..." },
+              { label: "Ожидают", value: transcriptionStats?.pending?.toString() || "..." },
             ]}
           />
         </div>
