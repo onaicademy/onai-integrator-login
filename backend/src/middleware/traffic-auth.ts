@@ -26,14 +26,28 @@ export function authenticateTrafficJWT(req: Request, res: Response, next: NextFu
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-    const decoded = jwt.verify(token, JWT_SECRET) as TrafficJWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // 🔒 SECURITY: Validate JWT payload structure before using
+    if (
+      typeof decoded !== 'object' ||
+      decoded === null ||
+      !('userId' in decoded) ||
+      !('email' in decoded) ||
+      typeof (decoded as any).userId !== 'string' ||
+      typeof (decoded as any).email !== 'string'
+    ) {
+      return res.status(401).json({ error: 'Invalid token payload' });
+    }
+
+    const payload = decoded as TrafficJWTPayload;
 
     // Attach user info to request object
     (req as any).user = {
-      userId: decoded.userId,
-      email: decoded.email,
-      team: decoded.team,
-      role: decoded.role,
+      userId: payload.userId,
+      email: payload.email,
+      team: payload.team,
+      role: payload.role,
     };
 
     next();

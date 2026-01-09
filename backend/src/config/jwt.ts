@@ -13,11 +13,21 @@ const UNSAFE_DEFAULTS = [
   'test-secret',
 ];
 
+// 🔒 CRITICAL: Cache the secret to ensure consistency across all modules
+// Without caching, Date.now() would create different secrets for each import!
+let cachedSecret: string | null = null;
+let secretValidated = false;
+
 /**
  * Get JWT secret with security validation
  * @throws Error if secret is not properly configured
  */
 export function getJWTSecret(): string {
+  // Return cached secret if already validated (ensures consistency)
+  if (cachedSecret && secretValidated) {
+    return cachedSecret;
+  }
+
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
@@ -27,8 +37,14 @@ export function getJWTSecret(): string {
         'This is required for production security.'
       );
     }
-    console.warn('⚠️ [JWT] WARNING: JWT_SECRET not set. Using development fallback.');
-    return 'dev-only-secret-do-not-use-in-production-' + Date.now();
+
+    // Generate fallback ONCE and cache for entire process lifetime
+    if (!cachedSecret) {
+      console.warn('⚠️ [JWT] WARNING: JWT_SECRET not set. Using development fallback.');
+      cachedSecret = 'dev-only-secret-do-not-use-in-production-' + Date.now();
+    }
+    secretValidated = true;
+    return cachedSecret;
   }
 
   // Check for unsafe defaults
@@ -42,12 +58,15 @@ export function getJWTSecret(): string {
     console.warn('⚠️ [JWT] WARNING: JWT_SECRET is using an unsafe default value.');
   }
 
-  // Check minimum length
-  if (secret.length < 32) {
+  // Check minimum length (only warn once)
+  if (!secretValidated && secret.length < 32) {
     console.warn('⚠️ [JWT] WARNING: JWT_SECRET should be at least 32 characters for security.');
   }
 
-  return secret;
+  // Cache the validated secret
+  cachedSecret = secret;
+  secretValidated = true;
+  return cachedSecret;
 }
 
 /**
