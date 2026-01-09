@@ -114,6 +114,7 @@ import streamUploadRouter from './routes/streamUpload'; // ✅ Bunny Stream (NEW
 import progressRouter from './routes/progress'; // ✅ Video Progress Tracking for AI Mentor
 import videoRouter from './routes/video'; // ✅ Video Quality & Transcription API
 import transcriptionsRouter from './routes/admin/transcriptions'; // ✅ Admin Transcriptions Management
+import openaiStatusRouter from './routes/admin/openai-status'; // 🤖 OpenAI Rate Limiter & Pool Status
 import aiLessonGeneratorRouter from './routes/ai-lesson-generator'; // ✅ AI Description & Tips Generator
 import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & Analytics
 import landingRouter from './routes/landing'; // ✅ Landing Page Leads (New DB + AmoCRM)
@@ -523,6 +524,7 @@ app.use('/api', videoUploadRouter); // 🐰 BunnyCDN Video Upload
 app.use('/api/progress', progressRouter); // 📊 Video Progress Tracking
 app.use('/api', videoRouter); // 🎬 Video Quality & Transcription API
 app.use('/api/admin/transcriptions', transcriptionsRouter); // 🎙️ Admin Transcriptions Management
+app.use('/api/admin/openai-status', openaiStatusRouter); // 🤖 OpenAI Rate Limiter & Pool Status
 app.use('/api/ai', aiLessonGeneratorRouter); // 🤖 AI Lesson Description & Tips Generator
 app.use('/api/ai-mentor', aiMentorRouter); // 🤖 AI Mentor Scheduler & Analytics
 app.use('/api/ai-analytics', aiAnalyticsRouter); // 📊 AI Analytics Reports

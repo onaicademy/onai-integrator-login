@@ -1,220 +1,287 @@
+/**
+ * OpenAI Service
+ *
+ * Сервис для работы с OpenAI Assistants API.
+ * Интегрирован с Rate Limiter для защиты от превышения лимитов.
+ *
+ * @see ./openai-rate-limiter.ts - Rate limiting
+ * @see ./openai-client-pool.ts - Client pool с отдельными API ключами
+ */
+
 import OpenAI from 'openai';
 import { openai } from '../config/openai';
 import * as groqService from './groqAiService';
+import { openAIRateLimiter, RateLimitError, Priority } from './openai-rate-limiter';
+import { clientPool, AssistantType } from './openai-client-pool';
+
+// Re-export types for convenience
+export { RateLimitError, Priority, AssistantType };
+
+// Re-export rate limiter stats
+export { openAIRateLimiter };
 
 /**
  * Создание нового Thread
+ *
+ * @param assistantType - Тип ассистента для rate limiting (default: curator)
+ * @param priority - Приоритет запроса (default: HIGH)
  */
-export async function createThread() {
-  try {
-    console.log('[OpenAI] Creating new thread...');
-    console.log('[OpenAI] Sending with header: OpenAI-Beta: assistants=v2');
-    
-    const thread = await openai.beta.threads.create({}, {
-      headers: {
-        'OpenAI-Beta': 'assistants=v2',
-      },
-    });
-    
-    console.log(`✅ Thread created: ${thread.id}`);
-    return thread;
-  } catch (error: any) {
-    console.error('[OpenAI] Failed to create thread:', error.message);
-    console.error('[OpenAI] Full error:', error);
-    throw new Error(`Failed to create thread: ${error.message}`);
-  }
+export async function createThread(
+  assistantType: AssistantType = 'curator',
+  priority: Priority = 'HIGH'
+) {
+  return openAIRateLimiter.enqueue(
+    assistantType,
+    'createThread',
+    async () => {
+      console.log('[OpenAI] Creating new thread...');
+
+      const { client } = clientPool.getClient(assistantType);
+
+      const thread = await client.beta.threads.create({}, {
+        headers: {
+          'OpenAI-Beta': 'assistants=v2',
+        },
+      });
+
+      console.log(`✅ Thread created: ${thread.id}`);
+      return thread;
+    },
+    priority
+  );
 }
 
 /**
  * Создание сообщения в Thread
+ *
+ * @param threadId - ID треда
+ * @param content - Содержимое сообщения
+ * @param role - Роль (user/assistant)
+ * @param assistantType - Тип ассистента для rate limiting
+ * @param priority - Приоритет запроса
  */
 export async function createThreadMessage(
   threadId: string,
   content: string,
-  role: 'user' | 'assistant' = 'user'
+  role: 'user' | 'assistant' = 'user',
+  assistantType: AssistantType = 'curator',
+  priority: Priority = 'HIGH'
 ) {
-  try {
-    if (!threadId || !content) {
-      throw new Error('threadId and content are required');
-    }
-    
-    // ✅ ПРОВЕРКА ФОРМАТА: thread_ префикс ОБЯЗАТЕЛЕН!
-    if (!threadId.startsWith('thread_')) {
-      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
-    }
-    
-    console.log(`[OpenAI] Creating message in thread: ${threadId}`);
-    console.log(`[OpenAI] Role: ${role}, Content length: ${content.length}`);
-    
-    const message = await openai.beta.threads.messages.create(
-      threadId,
-      {
-        role: role as any,
-        content,
-      },
-      {
-        headers: {
-          'OpenAI-Beta': 'assistants=v2',
-        },
-      }
-    );
-    
-    console.log(`✅ Message created: ${message.id}`);
-    return message;
-  } catch (error: any) {
-    console.error('[OpenAI] Failed to create message:', {
-      message: error.message,
-      threadId,
-      stack: error.stack,
-    });
-    throw new Error(`Failed to create message: ${error.message}`);
+  // Валидация вне rate limiter для быстрого fail
+  if (!threadId || !content) {
+    throw new Error('threadId and content are required');
   }
+
+  if (!threadId.startsWith('thread_')) {
+    throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+  }
+
+  return openAIRateLimiter.enqueue(
+    assistantType,
+    `createMessage:${threadId.substring(0, 20)}`,
+    async () => {
+      console.log(`[OpenAI] Creating message in thread: ${threadId}`);
+      console.log(`[OpenAI] Role: ${role}, Content length: ${content.length}`);
+
+      const { client } = clientPool.getClient(assistantType);
+
+      const message = await client.beta.threads.messages.create(
+        threadId,
+        {
+          role: role as any,
+          content,
+        },
+        {
+          headers: {
+            'OpenAI-Beta': 'assistants=v2',
+          },
+        }
+      );
+
+      console.log(`✅ Message created: ${message.id}`);
+      return message;
+    },
+    priority
+  );
 }
 
 /**
  * Получение сообщений из Thread
+ *
+ * @param threadId - ID треда
+ * @param limit - Лимит сообщений
+ * @param order - Порядок сортировки
+ * @param assistantType - Тип ассистента для rate limiting
+ * @param priority - Приоритет запроса
  */
 export async function getThreadMessages(
   threadId: string,
   limit?: number,
-  order?: 'asc' | 'desc'
+  order?: 'asc' | 'desc',
+  assistantType: AssistantType = 'curator',
+  priority: Priority = 'MEDIUM'
 ) {
-  try {
-    if (!threadId) {
-      throw new Error('threadId is required');
-    }
-    
-    // ✅ ПРОВЕРКА ФОРМАТА: thread_ префикс ОБЯЗАТЕЛЕН!
-    if (!threadId.startsWith('thread_')) {
-      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
-    }
-    
-    console.log(`[OpenAI] Getting messages from thread: ${threadId}`);
-    
-    const messages = await openai.beta.threads.messages.list(
-      threadId,
-      {
-        limit: limit || 1,
-        order: order || 'desc',
-      },
-      {
-        headers: {
-          'OpenAI-Beta': 'assistants=v2',
-        },
-      }
-    );
-    
-    console.log(`✅ Retrieved ${messages.data.length} messages`);
-    return messages;
-  } catch (error: any) {
-    console.error('[OpenAI] Failed to get messages:', error.message);
-    throw new Error(`Failed to retrieve thread messages: ${error.message}`);
+  if (!threadId) {
+    throw new Error('threadId is required');
   }
+
+  if (!threadId.startsWith('thread_')) {
+    throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+  }
+
+  return openAIRateLimiter.enqueue(
+    assistantType,
+    `getMessages:${threadId.substring(0, 20)}`,
+    async () => {
+      console.log(`[OpenAI] Getting messages from thread: ${threadId}`);
+
+      const { client } = clientPool.getClient(assistantType);
+
+      const messages = await client.beta.threads.messages.list(
+        threadId,
+        {
+          limit: limit || 1,
+          order: order || 'desc',
+        },
+        {
+          headers: {
+            'OpenAI-Beta': 'assistants=v2',
+          },
+        }
+      );
+
+      console.log(`✅ Retrieved ${messages.data.length} messages`);
+      return messages;
+    },
+    priority
+  );
 }
 
 /**
  * Создание Run для Thread
+ *
+ * @param threadId - ID треда
+ * @param assistantId - ID ассистента
+ * @param assistantType - Тип ассистента для rate limiting
+ * @param priority - Приоритет запроса
  */
 export async function createThreadRun(
   threadId: string,
   assistantId: string,
-  temperature?: number,
-  topP?: number
+  assistantType: AssistantType = 'curator',
+  priority: Priority = 'HIGH'
 ) {
-  try {
-    if (!threadId || !assistantId) {
-      throw new Error('threadId and assistantId are required');
-    }
-    
-    // ✅ ПРОВЕРКА ФОРМАТА: префиксы ОБЯЗАТЕЛЬНЫ!
-    if (!threadId.startsWith('thread_')) {
-      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
-    }
-    if (!assistantId.startsWith('asst_')) {
-      throw new Error(`Invalid assistantId format. Expected asst_*, got: ${assistantId}`);
-    }
-    
-    console.log(`[OpenAI] Creating run: threadId=${threadId}, assistantId=${assistantId}`);
-    
-    const run = await openai.beta.threads.runs.create(
-      threadId,
-      {
-        assistant_id: assistantId,
-        // temperature и top_p не поддерживаются в v4
-      } as any,
-      {
-        headers: {
-          'OpenAI-Beta': 'assistants=v2',
-        },
-      }
-    );
-    
-    console.log(`✅ Run created: ${run.id}, status=${run.status}`);
-    return run;
-  } catch (error: any) {
-    console.error('[OpenAI] Failed to create run:', {
-      message: error.message,
-      threadId,
-      assistantId,
-      stack: error.stack,
-    });
-    throw new Error(`Failed to create thread run: ${error.message}`);
+  if (!threadId || !assistantId) {
+    throw new Error('threadId and assistantId are required');
   }
+
+  if (!threadId.startsWith('thread_')) {
+    throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+  }
+  if (!assistantId.startsWith('asst_')) {
+    throw new Error(`Invalid assistantId format. Expected asst_*, got: ${assistantId}`);
+  }
+
+  return openAIRateLimiter.enqueue(
+    assistantType,
+    `createRun:${threadId.substring(0, 20)}`,
+    async () => {
+      console.log(`[OpenAI] Creating run: threadId=${threadId}, assistantId=${assistantId}`);
+
+      const { client } = clientPool.getClient(assistantType);
+
+      const run = await client.beta.threads.runs.create(
+        threadId,
+        {
+          assistant_id: assistantId,
+        } as any,
+        {
+          headers: {
+            'OpenAI-Beta': 'assistants=v2',
+          },
+        }
+      );
+
+      console.log(`✅ Run created: ${run.id}, status=${run.status}`);
+      return run;
+    },
+    priority
+  );
 }
 
 /**
  * Получение статуса Run
+ *
+ * Примечание: Polling операции используют MEDIUM priority чтобы не блокировать
+ * более важные операции (создание тредов, сообщений).
+ *
+ * @param threadId - ID треда
+ * @param runId - ID run
+ * @param assistantType - Тип ассистента для rate limiting
+ * @param priority - Приоритет запроса (default: MEDIUM для polling)
  */
-export async function getThreadRun(threadId: string, runId: string) {
-  try {
-    console.log(`🔍 [getThreadRun] START: threadId=${threadId}, runId=${runId}`);
-    
-    if (!threadId || !runId) {
-      throw new Error('threadId and runId are required');
-    }
-    
-    // ✅ ПРОВЕРКА ФОРМАТА: префиксы ОБЯЗАТЕЛЬНЫ!
-    if (!threadId.startsWith('thread_')) {
-      console.error(`❌ Invalid threadId format: ${threadId}`);
-      throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
-    }
-    if (!runId.startsWith('run_')) {
-      console.error(`❌ Invalid runId format: ${runId}`);
-      throw new Error(`Invalid runId format. Expected run_*, got: ${runId}`);
-    }
-    
-    console.log(`✅ ID formats validated`);
-    console.log(`🔄 Calling OpenAI API...`);
-    console.log(`   threadId: "${threadId}"`);
-    console.log(`   runId: "${runId}"`);
-    
-    // OpenAI SDK v4 правильный синтаксис: retrieve(threadId, runId, options)
-    const run = await openai.beta.threads.runs.retrieve(threadId, runId, {
-      headers: {
-        'OpenAI-Beta': 'assistants=v2',
-      },
-    });
-    
-    console.log(`✅ Run retrieved successfully: ${run.id}, status=${run.status}`);
-    return run;
-  } catch (error: any) {
-    console.error('❌❌❌ [OpenAI] CRITICAL ERROR in getThreadRun:');
-    console.error('   Error message:', error.message);
-    console.error('   Error type:', error.constructor.name);
-    console.error('   threadId:', threadId);
-    console.error('   runId:', runId);
-    console.error('   Full error:', error);
-    console.error('   Stack trace:', error.stack);
-    throw new Error(`Failed to retrieve thread run: ${error.message}`);
+export async function getThreadRun(
+  threadId: string,
+  runId: string,
+  assistantType: AssistantType = 'curator',
+  priority: Priority = 'MEDIUM'
+) {
+  if (!threadId || !runId) {
+    throw new Error('threadId and runId are required');
   }
+
+  if (!threadId.startsWith('thread_')) {
+    throw new Error(`Invalid threadId format. Expected thread_*, got: ${threadId}`);
+  }
+  if (!runId.startsWith('run_')) {
+    throw new Error(`Invalid runId format. Expected run_*, got: ${runId}`);
+  }
+
+  return openAIRateLimiter.enqueue(
+    assistantType,
+    `getRun:${runId.substring(0, 15)}`,
+    async () => {
+      console.log(`🔍 [getThreadRun] threadId=${threadId}, runId=${runId}`);
+
+      const { client } = clientPool.getClient(assistantType);
+
+      const run = await client.beta.threads.runs.retrieve(threadId, runId, {
+        headers: {
+          'OpenAI-Beta': 'assistants=v2',
+        },
+      });
+
+      console.log(`✅ Run retrieved: ${run.id}, status=${run.status}`);
+      return run;
+    },
+    priority
+  );
 }
+
+/**
+ * Получение статистики Rate Limiter
+ */
+export function getRateLimiterStats() {
+  return openAIRateLimiter.getStats();
+}
+
+/**
+ * Получение статистики Client Pool
+ */
+export function getClientPoolStats() {
+  return clientPool.getStats();
+}
+
+// =========================================================================
+// GROQ SERVICES (без rate limiting - у Groq свои лимиты)
+// =========================================================================
 
 /**
  * Транскрипция аудио через Groq Whisper (БЕСПЛАТНО!)
  * ✅ Groq Whisper быстрее и бесплатнее OpenAI Whisper
  */
 export async function transcribeAudio(
-  audioFile: any, // FileLike из openai/uploads (Buffer в Node.js)
+  audioFile: any,
   language: string = 'ru',
   prompt?: string
 ) {
@@ -223,37 +290,32 @@ export async function transcribeAudio(
     console.log(`[Groq Whisper] File name: ${audioFile.name}`);
     console.log(`[Groq Whisper] File type: ${audioFile.type}`);
     console.log(`[Groq Whisper] File size: ${audioFile.size} bytes`);
-    
-    // ✅ Создаём Groq client для транскрибации
+
     const groq = new OpenAI({
       apiKey: process.env.GROQ_API_KEY || '',
       baseURL: 'https://api.groq.com/openai/v1'
     });
-    
+
     const transcription = await groq.audio.transcriptions.create({
       file: audioFile,
-      model: 'whisper-large-v3', // Groq использует whisper-large-v3
+      model: 'whisper-large-v3',
       language: language,
-      response_format: 'verbose_json', // ✅ Для детальной диагностики
+      response_format: 'verbose_json',
       prompt: prompt || 'Это голосовое сообщение студента на русском языке для AI-куратора образовательной платформы. Транскрибируй текст с правильной пунктуацией и заглавными буквами.',
-      temperature: 0.0, // Для максимальной точности
+      temperature: 0.0,
     });
-    
+
     console.log(`✅ [Groq Whisper] Transcription successful:`);
     console.log(`   - Text length: ${(transcription as any).text?.length || 0} characters`);
     console.log(`   - Duration: ${(transcription as any).duration || 'N/A'} seconds`);
     console.log(`   - Language: ${(transcription as any).language || 'N/A'}`);
-    
+
     return (transcription as any).text as string;
   } catch (error: any) {
     console.error('[Groq Whisper] ❌ === ОШИБКА ТРАНСКРИПЦИИ ===');
     console.error('[Groq Whisper] Error message:', error.message);
-    console.error('[Groq Whisper] Error name:', error.name);
     console.error('[Groq Whisper] Error status:', error.status);
-    console.error('[Groq Whisper] Error code:', error.code);
-    console.error('[Groq Whisper] Full error:', JSON.stringify(error, null, 2));
-    
-    // ✅ Передаём детальную ошибку во frontend
+
     if (error.status) {
       throw new Error(`${error.status} ${error.message || 'Unknown Groq Whisper error'}`);
     }
@@ -272,7 +334,6 @@ export async function analyzeImage(
   try {
     console.log('[Groq Vision] Analyzing image with Llama 4 Scout...');
 
-    // Конвертируем data URL в Buffer
     const base64Data = imageDataUrl.split(',')[1];
     const imageBuffer = Buffer.from(base64Data, 'base64');
 
