@@ -9,6 +9,10 @@ validateEnvironment();
 import { validateSupabaseEnv } from './config/validate-env.js';
 validateSupabaseEnv();
 
+// 🔒 CORE: Production-safe logging and self-healing
+import { logger, getLogger, healthRoutes, initializeServiceRegistry, healthManager } from './core/index.js';
+const serverLogger = getLogger('Server');
+
 // 🛡️ SENTRY: Initialize BEFORE creating Express app
 import { initSentry, sentryErrorHandler, trackAPIPerformance } from './config/sentry.js';
 
@@ -367,19 +371,14 @@ app.use((req, res, next) => {
 // 🛡️ SENTRY: Track API performance
 app.use(trackAPIPerformance);
 
-// Health check endpoints (both /health and /api/health)
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    service: 'onAI Backend API'
-  });
-});
+// 🔒 CORE: Unified Health Monitoring (Self-Healing System)
+// New endpoints: /health/ready, /health/detailed, /health/metrics
+app.use('/health', healthRoutes);
 
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+// Legacy health check endpoints (backwards compatibility)
+app.get('/api/health-legacy', (req, res) => {
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     service: 'onAI Backend API'
@@ -634,22 +633,26 @@ process.on('SIGINT', () => {
 
 // ⭐ CRITICAL: Graceful shutdown
 async function gracefulShutdown(signal: string) {
-  console.log(`🛑 Received ${signal}, shutting down gracefully...`);
+  serverLogger.info(`Received ${signal}, shutting down gracefully...`, { signal });
   try {
+    // 🔒 CORE: Shutdown Health Manager first
+    await healthManager.shutdown(signal);
+    serverLogger.info('Health Manager shutdown complete');
+
     // Close Tripwire Worker
     try {
       const { default: tripwireWorker } = await import('./workers/tripwire-worker');
       await tripwireWorker.close();
-      console.log('✅ Tripwire Worker closed');
+      serverLogger.info('Tripwire Worker closed');
     } catch (err) {
-      console.warn('⚠️ Tripwire Worker not running or already closed');
+      serverLogger.warn('Tripwire Worker not running or already closed');
     }
-    
+
     await closeTelegramService();
     await closeAmoCRMRedis();
-    console.log('✅ All services closed');
+    serverLogger.info('All services closed');
   } catch (err: any) {
-    console.error('❌ Shutdown error:', err.message);
+    serverLogger.error('Shutdown error', err);
   }
   process.exit(0);
 }
@@ -677,7 +680,15 @@ const server = app.listen(PORT, () => {
   // These run in BACKGROUND without blocking HTTP
   (async () => {
     try {
-      console.log('📦 Initializing services in background...');
+      serverLogger.info('Initializing services in background...');
+
+      // 🔒 CORE: Initialize Self-Healing Service Registry
+      try {
+        await initializeServiceRegistry();
+        serverLogger.info('Service Health Manager initialized');
+      } catch (error: any) {
+        serverLogger.error('Failed to initialize Service Registry', error);
+      }
 
       // 1. Initialize AmoCRM Redis (for BullMQ)
       await initAmoCRMRedis();
@@ -840,35 +851,21 @@ const server = app.listen(PORT, () => {
 
 
 // 🛡️ UNCAUGHT EXCEPTION - НЕ ДОЛЖНО КРАШИТЬ СЕРВЕР!
+// 🔒 Using SecureLogger for production-safe error reporting
 process.on('uncaughtException', (error: Error) => {
-  console.error('🚨 UNCAUGHT EXCEPTION:', error);
-  console.error('Stack:', error.stack);
-  
-  // Логируем в Sentry если доступен
-  try {
-    // Sentry.captureException(error);
-  } catch (e) {
-    console.error('Failed to report to Sentry:', e);
-  }
-  
-  // ⚠️ НЕ КРАШИМ! Продолжаем работу
-  console.log('⚠️ Сервер продолжает работу несмотря на ошибку');
+  serverLogger.fatal('UNCAUGHT EXCEPTION - server continuing', error, {
+    operation: 'uncaughtException',
+  });
+  serverLogger.security('Uncaught exception caught, server continuing');
 });
 
 // 🛡️ UNHANDLED REJECTION - НЕ ДОЛЖНО КРАШИТЬ СЕРВЕР!
 process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-  console.error('🚨 UNHANDLED REJECTION:', reason);
-  console.error('Promise:', promise);
-  
-  // Логируем в Sentry
-  try {
-    // Sentry.captureException(reason);
-  } catch (e) {
-    console.error('Failed to report to Sentry:', e);
-  }
-  
-  // ⚠️ НЕ КРАШИМ! Продолжаем работу
-  console.log('⚠️ Сервер продолжает работу несмотря на rejected promise');
+  const error = reason instanceof Error ? reason : new Error(String(reason));
+  serverLogger.fatal('UNHANDLED REJECTION - server continuing', error, {
+    operation: 'unhandledRejection',
+  });
+  serverLogger.security('Unhandled promise rejection caught, server continuing');
 });
 
 // 🛡️ PM2 READY SIGNAL
