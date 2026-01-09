@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { Lock, Radio } from 'lucide-react';
+import { Lock, Radio, Calendar } from 'lucide-react';
 import { memo } from 'react';
 
 interface LiveStreamModuleProps {
@@ -7,13 +7,17 @@ interface LiveStreamModuleProps {
 }
 
 /**
- * 🔴 LIVE STREAM MODULE - ВРЕМЕННО ЗАБЛОКИРОВАН
- * - Модуль полностью заблокирован для всех пользователей
- * - Заглушка: "Информация будет позже"
+ * 🔴 LIVE STREAM MODULE - ОТКРЫТ ДЛЯ ВСЕХ
+ * - Дата заключительного эфира: 20 января 2026
+ * - Открыт для всех учеников
  */
 const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: LiveStreamModuleProps) {
-  // 🚫 МОДУЛЬ ПОЛНОСТЬЮ ЗАБЛОКИРОВАН
-  const isUnlocked = false;
+  // ✅ МОДУЛЬ ОТКРЫТ ДЛЯ ВСЕХ УЧЕНИКОВ
+  const isUnlocked = true;
+
+  // 📅 Дата заключительного эфира
+  const streamDate = '20 января 2026';
+  const streamTime = '20:00 по Алматы';
 
   return (
     <Card 
@@ -93,13 +97,32 @@ const LiveStreamModule = memo(function LiveStreamModule({ modulesCompleted }: Li
           </h2>
         </div>
 
-        {/* Заглушка - СКОРО */}
-        <div className="flex items-center justify-center p-6 sm:p-8 md:p-10">
-          <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-white/5 border border-white/10">
-            <span className="text-base sm:text-lg md:text-xl font-bold font-['JetBrains_Mono'] uppercase text-white/60">
-              СКОРО
-            </span>
-          </div>
+        {/* Информация о дате эфира */}
+        <div className="flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 space-y-4">
+          {isUnlocked ? (
+            <>
+              <div className="flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-xl bg-[#FF3366]/10 border border-[#FF3366]/30">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#FF3366]" />
+                <div className="text-center">
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold font-['JetBrains_Mono'] text-[#FF3366]">
+                    {streamDate}
+                  </span>
+                  <span className="text-sm sm:text-base text-white/60 ml-3">
+                    {streamTime}
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm sm:text-base text-white/50 text-center max-w-md">
+                Прямой эфир с основателями onAI Academy. Узнайте, как создать платформу стоимостью 10 000$ без навыков программирования.
+              </p>
+            </>
+          ) : (
+            <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-white/5 border border-white/10">
+              <span className="text-base sm:text-lg md:text-xl font-bold font-['JetBrains_Mono'] uppercase text-white/60">
+                СКОРО
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Card>
