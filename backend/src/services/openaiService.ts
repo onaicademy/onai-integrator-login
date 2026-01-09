@@ -334,7 +334,17 @@ export async function analyzeImage(
   try {
     console.log('[Groq Vision] Analyzing image with Llama 4 Scout...');
 
-    const base64Data = imageDataUrl.split(',')[1];
+    // 🔒 SECURITY: Validate image data URL format before parsing
+    if (!imageDataUrl || typeof imageDataUrl !== 'string') {
+      throw new Error('Invalid image data: imageDataUrl is required');
+    }
+
+    const parts = imageDataUrl.split(',');
+    if (parts.length < 2 || !parts[1]) {
+      throw new Error('Invalid image data URL format. Expected: data:<mime>;base64,<data>');
+    }
+
+    const base64Data = parts[1];
     const imageBuffer = Buffer.from(base64Data, 'base64');
 
     const { analysis, usage } = await groqService.analyzeImage(

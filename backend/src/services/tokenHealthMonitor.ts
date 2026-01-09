@@ -564,7 +564,9 @@ class TokenHealthMonitor {
         const data = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
         return data.access_token || null;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[TokenHealthMonitor] Failed to read AmoCRM token cache:', (e as Error).message);
+    }
     return null;
   }
 
@@ -575,7 +577,9 @@ class TokenHealthMonitor {
         const data = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
         return data.expires_at ? new Date(data.expires_at) : null;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[TokenHealthMonitor] Failed to read AmoCRM expiration cache:', (e as Error).message);
+    }
     return null;
   }
 

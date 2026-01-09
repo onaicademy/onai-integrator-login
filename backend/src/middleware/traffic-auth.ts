@@ -5,8 +5,9 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { getJWTSecret } from '../config/jwt';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = getJWTSecret();
 
 interface TrafficJWTPayload {
   userId: string;

@@ -462,20 +462,27 @@ app.use(express.urlencoded({
 }));
 
 // Debug endpoint для проверки environment variables
+// 🔒 SECURITY: Never expose API key fragments - only show SET/NOT SET status
 app.get('/api/debug/env', (req, res) => {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  const openaiKey = process.env.OPENAI_API_KEY || '';
+  // Block in production unless explicitly enabled
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINT !== 'true') {
+    return res.status(403).json({
+      error: 'Debug endpoint disabled in production',
+      hint: 'Set ENABLE_DEBUG_ENDPOINT=true to enable (not recommended)'
+    });
+  }
+
   res.json({
+    environment: process.env.NODE_ENV || 'development',
     SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
-    SUPABASE_SERVICE_ROLE_KEY: serviceKey ? 'SET' : 'NOT SET',
-    SUPABASE_SERVICE_ROLE_KEY_FIRST_10: serviceKey.substring(0, 10),
-    SUPABASE_SERVICE_ROLE_KEY_LAST_10: serviceKey.substring(serviceKey.length - 10),
-    SUPABASE_SERVICE_ROLE_KEY_LENGTH: serviceKey.length,
-    OPENAI_API_KEY: openaiKey ? 'SET' : 'NOT SET',
-    OPENAI_API_KEY_FIRST_20: openaiKey ? openaiKey.substring(0, 20) : 'EMPTY',
-    OPENAI_API_KEY_LAST_10: openaiKey ? openaiKey.substring(openaiKey.length - 10) : 'EMPTY',
-    OPENAI_API_KEY_LENGTH: openaiKey.length,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT SET',
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET',
+    OPENAI_API_KEY_CURATOR: process.env.OPENAI_API_KEY_CURATOR ? 'SET' : 'NOT SET',
+    OPENAI_API_KEY_MENTOR: process.env.OPENAI_API_KEY_MENTOR ? 'SET' : 'NOT SET',
+    OPENAI_API_KEY_ANALYST: process.env.OPENAI_API_KEY_ANALYST ? 'SET' : 'NOT SET',
+    JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
     FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET',
+    // No key fragments exposed for security
   });
 });
 

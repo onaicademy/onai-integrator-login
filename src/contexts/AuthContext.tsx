@@ -319,29 +319,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!isMounted) return;
         
         console.log('🔐 Auth event:', event);
-        
+
+        // 🔒 SECURITY: Handle all auth state updates with error catching
+        const safeUpdateAuthState = (session: any) => {
+          updateAuthState(session).catch(err => {
+            console.error('[AuthContext] Failed to update auth state:', err);
+          });
+        };
+
         if (event === 'SIGNED_IN') {
           console.log('✅ SIGNED_IN:', newSession?.user.email);
-          updateAuthState(newSession); // ✅ В обработчике событий не нужен await
+          safeUpdateAuthState(newSession);
         } else if (event === 'SIGNED_OUT') {
           console.log('🚪 SIGNED_OUT');
-          updateAuthState(null);
+          safeUpdateAuthState(null);
         } else if (event === 'TOKEN_REFRESHED') {
           // 🔥 THROTTLE: игнорируем слишком частые обновления
           const now = Date.now();
           const timeSinceLastRefresh = now - lastRefreshTime.current;
-          
+
           if (timeSinceLastRefresh < MIN_REFRESH_INTERVAL) {
             console.warn(`⏱️ TOKEN_REFRESHED проигнорирован (прошло ${Math.round(timeSinceLastRefresh / 1000)}s, нужно ${MIN_REFRESH_INTERVAL / 1000}s)`);
             return;
           }
-          
+
           console.log('🔄 TOKEN_REFRESHED (разрешено)');
           lastRefreshTime.current = now;
-          updateAuthState(newSession);
+          safeUpdateAuthState(newSession);
         } else if (event === 'INITIAL_SESSION') {
           console.log('🎬 INITIAL_SESSION');
-          updateAuthState(newSession);
+          safeUpdateAuthState(newSession);
         }
       }
     );

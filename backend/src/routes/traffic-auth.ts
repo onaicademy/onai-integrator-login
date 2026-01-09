@@ -14,10 +14,11 @@ import { logUserSession } from './traffic-security.js';
 import { callFunction } from '../config/traffic-db.js';
 import { trafficLoginRateLimit, trafficMutationRateLimit } from '../middleware/trafficRateLimit.js';
 import { validateEmail, validatePassword, sanitizeString } from '../utils/trafficValidation.js';
+import { getJWTSecret, JWT_EXPIRES_IN as JWT_CONFIG } from '../config/jwt.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = '7d';
+const JWT_SECRET = getJWTSecret();
+const JWT_EXPIRES_IN = JWT_CONFIG.ACCESS_TOKEN;
 
 // 🔒 POST /api/traffic-auth/login
 router.post('/login', trafficLoginRateLimit, async (req, res) => {

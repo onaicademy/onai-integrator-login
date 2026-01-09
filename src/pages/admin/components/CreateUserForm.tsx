@@ -58,7 +58,7 @@ export default function CreateUserForm({ onClose, onSuccess }: CreateUserFormPro
     if (!password) {
       const autoPassword = generatePassword();
       setPassword(autoPassword);
-      console.log('🔐 [CREATE_USER] Auto-generated password:', autoPassword);
+      // 🔒 SECURITY: Never log passwords - removed console.log
     }
   }, []); // Empty dependency - run once on mount
 
