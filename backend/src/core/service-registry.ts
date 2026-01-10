@@ -117,12 +117,10 @@ export function registerTrafficDB(): void {
 
     async healthCheck() {
       try {
-        const { pgPool } = await import('../config/traffic-db.js');
-        if (!pgPool) {
-          return { healthy: false, message: 'pgPool not initialized' };
-        }
+        const { getPool } = await import('../config/traffic-db.js');
+        const pool = getPool(); // Это инициализирует pool если он null
         const start = Date.now();
-        const result = await pgPool.query('SELECT 1 as health');
+        const result = await pool.query('SELECT 1 as health');
         const latencyMs = Date.now() - start;
 
         return { healthy: result.rows.length > 0, latencyMs };
