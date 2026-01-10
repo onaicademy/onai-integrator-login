@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { tripwireSupabase } from '../config/supabase-tripwire.js';
-import { trafficSupabase } from '../config/supabase-traffic.js';
+import { getPool } from '../config/traffic-db.js';
 
 const router = Router();
 
@@ -33,15 +33,11 @@ router.get('/', async (req: Request, res: Response) => {
       health.status = 'degraded';
     }
 
-    // Check Traffic DB
+    // Check Traffic DB (direct PostgreSQL)
     try {
-      const { data, error } = await trafficSupabase
-        .from('traffic_users')
-        .select('id')
-        .limit(1);
-      
-      if (error) throw error;
-      health.services.traffic_db = data ? 'healthy' : 'degraded';
+      const pool = getPool();
+      const result = await pool.query('SELECT 1 as health');
+      health.services.traffic_db = result.rows.length > 0 ? 'healthy' : 'degraded';
     } catch (e: any) {
       console.error('❌ Traffic DB health check failed:', e.message);
       health.services.traffic_db = 'unhealthy';
@@ -147,12 +143,10 @@ router.get('/traffic', async (req: Request, res: Response) => {
   };
 
   try {
-    // Traffic DB
-    const { data, error } = await trafficSupabase
-      .from('traffic_users')
-      .select('id')
-      .limit(1);
-    checks.db = !error && !!data;
+    // Traffic DB (direct PostgreSQL)
+    const pool = getPool();
+    const result = await pool.query('SELECT id FROM traffic_users LIMIT 1');
+    checks.db = result.rows.length >= 0; // Even 0 rows is OK, just need connection
 
     // FB Token
     checks.fb_integration = !!process.env.FACEBOOK_PERMANENT_TOKEN;
