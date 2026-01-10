@@ -270,3 +270,37 @@ refactor/cleanup-services
 - Always include summary
 - Link related issues
 - Include test plan
+
+---
+
+## Deployment Rules for Claude Agent
+
+### CRITICAL: Agent Deployment Policy
+
+**Default Mode: NO AUTO-DEPLOY**
+- Agent должен ТОЛЬКО пушить изменения в репозиторий
+- Agent НЕ должен самостоятельно запускать деплой
+- Деплой запускает пользователь вручную через GitHub Actions UI
+
+### Deploy Gate (Exception Mode)
+
+**Когда открывается "шлюз деплоя":**
+1. Пользователь явно просит сделать деплой
+2. Agent делает push
+3. Пользователь запускает workflow вручную
+4. Если workflow падает с ошибками - Agent ОБЯЗАН циклично фиксить ошибки
+5. Agent продолжает пушить фиксы пока деплой не станет успешным
+6. После успешного деплоя - шлюз закрывается
+
+### Workflow
+```
+[User Request] → [Agent Push] → [User triggers deploy] →
+  ↓ (если ошибка)
+[Agent fixes] → [Push fix] → [Auto-trigger or User re-run] →
+  ↓ (цикл до успеха)
+[Success] → [Gate closes]
+```
+
+### Commands for User
+- Запустить деплой: GitHub Actions → Run workflow
+- URL: https://github.com/onaicademy/onai-integrator-login/actions/workflows/deploy-backend.yml
