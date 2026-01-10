@@ -44,10 +44,10 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
 
-          # Install backend dependencies
+          # Install backend dependencies (including devDependencies for TypeScript build)
           echo "📥 Installing backend dependencies..."
           cd backend
-          npm install --production
+          npm install
 
           # Build TypeScript
           echo "🔨 Building TypeScript..."
