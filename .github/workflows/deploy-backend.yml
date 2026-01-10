@@ -13,51 +13,72 @@ on:
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Deploy to DigitalOcean via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: 207.154.231.30
-          username: root
-          key: ${{ secrets.DO_SSH_KEY }}
-          script: |
-            set -e
-            echo "🚀 Начинаю деплой backend..."
+          ssh-private-key: ${{ secrets.DO_SSH_KEY }}
 
-            # Переходим в правильную директорию
-            cd /var/www/onai-integrator-login-main
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 207.154.231.30 >> ~/.ssh/known_hosts
 
-            echo "📦 Git pull..."
-            git fetch origin main
-            git reset --hard origin/main
+      - name: Deploy to DigitalOcean
+        run: |
+          ssh root@207.154.231.30 'bash -s' << 'ENDSSH'
+          set -e
+          echo "🚀 Starting backend deployment at $(date)"
 
-            echo "📥 Установка зависимостей backend..."
-            cd backend
-            npm install --production
+          # Navigate to project directory
+          cd /var/www/onai-integrator-login-main
+          echo "📍 Directory: $(pwd)"
 
-            echo "🔨 Сборка TypeScript..."
-            npm run build
+          # Pull latest code
+          echo "📦 Git pull..."
+          git fetch origin main
+          git reset --hard origin/main
 
-            echo "✅ Проверка env.env..."
-            if [ ! -f "env.env" ]; then
-              echo "⚠️ Файл env.env не найден!"
-              exit 1
-            fi
+          # Install backend dependencies
+          echo "📥 Installing backend dependencies..."
+          cd backend
+          npm install --production
 
-            echo "🔄 Перезапуск PM2..."
-            pm2 restart onai-backend --update-env || pm2 start dist/index.js --name onai-backend
+          # Build TypeScript
+          echo "🔨 Building TypeScript..."
+          npm run build
 
-            echo "✅ Проверка статуса PM2..."
-            pm2 status onai-backend
-            pm2 save
+          # Check env file exists
+          if [ ! -f "env.env" ]; then
+            echo "⚠️ env.env file not found!"
+            exit 1
+          fi
 
-            echo "🏥 Health check..."
-            sleep 5
-            curl -f http://localhost:3001/api/health || echo "⚠️ Health check failed (проверьте логи: pm2 logs onai-backend)"
+          # Restart PM2 service
+          echo "🔄 Restarting PM2..."
+          pm2 restart backend --update-env || pm2 start dist/server.js --name backend
 
-            echo "✅ Деплой backend завершён успешно!"
+          # Save PM2 config
+          pm2 save
 
+          # Health check (port 3000 for main backend)
+          echo "🏥 Health check..."
+          sleep 5
+          curl -sf http://localhost:3000/api/health && echo "✅ Health check passed!" || echo "⚠️ Health check failed - check logs: pm2 logs backend"
+
+          echo "✅ Backend deployment completed at $(date)"
+          pm2 list
+          ENDSSH
+
+      - name: Deployment Status
+        if: success()
+        run: echo "✅ Deployment successful!"
+
+      - name: Deployment Failed
+        if: failure()
+        run: echo "❌ Deployment failed! Check logs above."
