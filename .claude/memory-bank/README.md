@@ -1,7 +1,7 @@
 # Memory Bank - onAI Academy Architecture
 
-> **Last Updated**: 2026-01-09
-> **Version**: 1.0.0
+> **Last Updated**: 2026-01-10
+> **Version**: 1.0.1
 
 ## Quick Navigation
 
@@ -13,6 +13,7 @@
 | [integrations.md](./integrations.md) | External API integrations |
 | [database-schema.md](./database-schema.md) | Database structure and relations |
 | [conventions.md](./conventions.md) | Coding standards and patterns |
+| [deployment.md](./deployment.md) | **Production deployment guide** |
 
 ---
 
@@ -165,6 +166,12 @@ JWT_SECRET=
 ---
 
 ## Recent Changes Log
+
+### 2026-01-10
+- Fixed Admin Panel Students section (401 errors resolved)
+- Fixed ResponseFilter breaking API responses (removed DataMasker from response filtering)
+- Created proxy endpoint `/api/admin/tripwire-students` for Main Platform admins
+- Added deployment guide to Memory Bank (`deployment.md`)
 
 ### 2026-01-09
 - Implemented self-healing system (`/backend/src/core/`)
