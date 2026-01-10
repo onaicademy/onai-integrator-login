@@ -55,7 +55,7 @@ async function convertWebmToMp3(webmBuffer: Buffer): Promise<Buffer> {
 export async function createRun(req: Request, res: Response) {
   try {
     const { threadId } = req.params;
-    const { assistant_type, temperature, top_p } = req.body;
+    const { assistant_type } = req.body;
 
     if (!assistant_type) {
       return res.status(400).json({ 
@@ -76,12 +76,15 @@ export async function createRun(req: Request, res: Response) {
     // Получаем Assistant ID из конфигурации (environment variables)
     const assistantId = getAssistantId(assistant_type as AssistantType);
 
+    // Определяем тип для rate limiter (tripwire использует curator)
+    const rateLimiterType = assistant_type === 'tripwire' ? 'curator' : assistant_type;
+
     // Создаём run
     const run = await openaiService.createThreadRun(
       threadId,
       assistantId,
-      temperature,
-      top_p
+      rateLimiterType as 'curator' | 'mentor' | 'analyst',
+      'HIGH'
     );
 
     console.log('✅ Run created:', run.id, 'Status:', run.status);
@@ -205,10 +208,22 @@ export async function createRun(req: Request, res: Response) {
       });
     }
   } catch (error: any) {
-    console.error('❌ Error in createRun:', error.message);
-    res.status(500).json({ 
+    console.error('❌ Error in createRun:', {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      threadId: req.params.threadId,
+      assistantType: req.body.assistant_type,
+      stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+    });
+
+    // Если это ошибка OpenAI - передаем детали
+    const statusCode = error.status || 500;
+    res.status(statusCode).json({
       error: 'Failed to create run',
-      message: error.message 
+      message: error.message,
+      code: error.code,
+      details: error.error?.message || null,
     });
   }
 }

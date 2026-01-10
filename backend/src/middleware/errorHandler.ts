@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { dataMasker } from '../core/data-masker.js';
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 // 🔥 Custom Error Types
 export class ValidationError extends Error {
@@ -52,16 +55,22 @@ export class ExternalServiceError extends Error {
 
 // 🔥 Error Handler
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-  // 🔥 Log error
-  console.error('❌ [Error Handler] Error occurred:', {
-    name: err.name,
-    message: err.message,
-    path: req.path,
-    method: req.method,
-    query: req.query,
-    body: req.body,
-    stack: err.stack,
-  });
+  // 🔥 Log error - MASKED for production safety
+  if (!isProduction) {
+    // Development: show more details but still mask sensitive data
+    console.error('❌ [Error Handler] Error occurred:', {
+      name: err.name,
+      message: dataMasker.mask(err.message),
+      path: req.path,
+      method: req.method,
+      query: dataMasker.mask(req.query),
+      body: dataMasker.mask(req.body), // Mask passwords, tokens, etc.
+      stack: dataMasker.mask(err.stack),
+    });
+  } else {
+    // Production: minimal logging
+    console.error('❌ [Error Handler]', err.name, dataMasker.mask(err.message));
+  }
 
   // 🔥 Handle specific error types
   if (err instanceof ValidationError) {
@@ -114,10 +123,12 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
   }
 
   if (err instanceof ExternalServiceError) {
-    console.error(`❌ [External Service] ${err.service} error:`, err.originalError);
+    if (!isProduction) {
+      console.error(`❌ [External Service] ${err.service} error:`, dataMasker.mask(err.originalError));
+    }
     return res.status(502).json({
       error: 'External service error',
-      message: err.message,
+      message: isProduction ? 'External service unavailable' : err.message,
       service: err.service,
       timestamp: new Date().toISOString(),
     });
@@ -128,18 +139,19 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     const axiosError = err as any;
     const status = axiosError.response?.status || 500;
     const message = axiosError.response?.data?.message || axiosError.message || 'External API error';
-    
-    console.error('❌ [Axios Error]', {
-      status,
-      message,
-      url: axiosError.config?.url,
-      method: axiosError.config?.method,
-      data: axiosError.response?.data,
-    });
+
+    if (!isProduction) {
+      console.error('❌ [Axios Error]', {
+        status,
+        message: dataMasker.mask(message),
+        url: dataMasker.mask(axiosError.config?.url),
+        method: axiosError.config?.method,
+      });
+    }
 
     return res.status(status).json({
       error: 'External API error',
-      message,
+      message: isProduction ? 'External service error' : message,
       status,
       timestamp: new Date().toISOString(),
     });
@@ -147,7 +159,10 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
 
   // 🔥 Handle Supabase errors
   if (err.name === 'PostgresError' || err.message.includes('Supabase')) {
-    console.error('❌ [Database Error]', err.message);
+    // Database errors might contain table/column names - mask them in production
+    if (!isProduction) {
+      console.error('❌ [Database Error]', dataMasker.mask(err.message));
+    }
     return res.status(500).json({
       error: 'Database error',
       message: 'An error occurred while accessing the database',
@@ -182,12 +197,15 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
   }
 
   // 🔥 Handle generic errors
-  console.error('❌ [Unhandled Error]', err);
+  if (!isProduction) {
+    console.error('❌ [Unhandled Error]', dataMasker.mask(err));
+  } else {
+    console.error('❌ [Unhandled Error]', err.name);
+  }
+
   return res.status(500).json({
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'An unexpected error occurred' 
-      : err.message,
+    message: isProduction ? 'An unexpected error occurred' : dataMasker.mask(err.message) as string,
     timestamp: new Date().toISOString(),
   });
 }

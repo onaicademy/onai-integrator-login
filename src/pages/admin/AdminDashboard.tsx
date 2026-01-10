@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       // Загружаем данные из Main Platform (profiles table)
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, created_at, last_seen');
+        .select('id, created_at, last_activity_at');
 
       if (error) throw error;
 
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
       const total = profiles?.length || 0;
-      const active = profiles?.filter(p => p.last_seen && new Date(p.last_seen) > sevenDaysAgo).length || 0;
+      const active = profiles?.filter(p => p.last_activity_at && new Date(p.last_activity_at) > sevenDaysAgo).length || 0;
       const newThisWeek = profiles?.filter(p => new Date(p.created_at) > sevenDaysAgo).length || 0;
 
       const stats = { total, active, newThisWeek };

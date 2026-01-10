@@ -13,6 +13,10 @@ validateSupabaseEnv();
 import { logger, getLogger, healthRoutes, initializeServiceRegistry, healthManager } from './core/index.js';
 const serverLogger = getLogger('Server');
 
+// 🔒 PRODUCTION: Install secure console BEFORE any console.log
+import { installProductionConsole } from './core/production-console.js';
+installProductionConsole();
+
 // 🛡️ SENTRY: Initialize BEFORE creating Express app
 import { initSentry, sentryErrorHandler, trackAPIPerformance } from './config/sentry.js';
 
@@ -339,6 +343,11 @@ app.use(corsMonitoringMiddleware);
 import { correlationIdMiddleware, requestLogger } from './middleware/correlationId.js';
 app.use(correlationIdMiddleware);
 app.use(requestLogger);
+
+// 🔒 Response Filter - removes secrets from API responses
+import { responseFilter, securityHeaders } from './middleware/responseFilter.js';
+app.use(securityHeaders);
+app.use('/api/', responseFilter); // Apply only to API routes
 
 // 🚔 Operation Logger - "The Policeman" (tracks ALL operations)
 app.use(operationLogger);
