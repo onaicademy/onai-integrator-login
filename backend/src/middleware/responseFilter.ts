@@ -105,11 +105,9 @@ function filterObject(obj: any, depth = 0): any {
       continue;
     }
 
-    // Проверяем строки на секретные паттерны
-    if (typeof value === 'string' && isProduction) {
-      filtered[key] = dataMasker.mask(value);
-      continue;
-    }
+    // ⚠️ ВАЖНО: НЕ маскируем обычные строки в production!
+    // DataMasker используется ТОЛЬКО в логах (errorHandler.ts), а НЕ в API responses.
+    // Фильтрация по FORBIDDEN_FIELDS выше уже защищает от утечки секретов.
 
     // Безопасное значение - копируем как есть
     filtered[key] = value;
@@ -122,6 +120,25 @@ function filterObject(obj: any, depth = 0): any {
  * Middleware для фильтрации response
  */
 export function responseFilter(req: Request, res: Response, next: NextFunction) {
+  // ✅ ИСКЛЮЧЕНИЯ: Пути которые НЕ должны фильтроваться
+  const EXCLUDED_PATHS = [
+    '/api/webhooks',                  // BunnyCDN webhooks
+    '/api/amocrm',                    // AmoCRM webhooks (все amocrm endpoints)
+    '/api/landing/amocrm',            // AmoCRM landing callbacks
+    '/api/health',                    // Health checks
+    '/api/config',                    // Public config
+  ];
+
+  // Проверяем нужно ли пропустить этот path
+  const shouldSkipFilter = EXCLUDED_PATHS.some(excluded =>
+    req.path.startsWith(excluded)
+  );
+
+  if (shouldSkipFilter) {
+    // Пропускаем фильтрацию для webhook endpoints
+    return next();
+  }
+
   // Сохраняем оригинальный json метод
   const originalJson = res.json.bind(res);
 

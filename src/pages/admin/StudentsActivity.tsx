@@ -168,13 +168,13 @@ export default function StudentsActivity() {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек timeout
       
       try {
-        // ✅ ИСПОЛЬЗУЕМ TRIPWIRE API ENDPOINT ДЛЯ ПОЛУЧЕНИЯ СТУДЕНТОВ С ПРОГРЕССОМ!
-        console.log('🔥 Запрашиваем студентов через /api/tripwire/admin/students...');
-        const response = await api.get('/api/tripwire/admin/students');
+        // ✅ ИСПОЛЬЗУЕМ MAIN PLATFORM ADMIN PROXY ДЛЯ ПОЛУЧЕНИЯ TRIPWIRE СТУДЕНТОВ
+        console.log('🔥 Запрашиваем Tripwire студентов через Main Platform admin API...');
+        const response = await api.get('/api/admin/tripwire-students');
         
         clearTimeout(timeoutId);
-        
-        console.log('✅ Получен ответ от Tripwire API:', response);
+
+        console.log('✅ Получен ответ от Main Platform Admin API:', response);
 
         if (!response || !response.students) {
           console.warn('⚠️ Нет студентов в ответе');
@@ -183,7 +183,7 @@ export default function StudentsActivity() {
         }
 
         const tripwireStudents = response.students;
-        console.log(`✅ Получено ${tripwireStudents.length} Tripwire студентов`);
+        console.log(`✅ Получено ${tripwireStudents.length} Tripwire студентов через Main Platform proxy`);
 
       const mapped: StudentRow[] =
         tripwireStudents?.map((student: any) => {

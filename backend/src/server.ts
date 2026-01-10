@@ -123,6 +123,7 @@ import progressRouter from './routes/progress'; // ✅ Video Progress Tracking f
 import videoRouter from './routes/video'; // ✅ Video Quality & Transcription API
 import transcriptionsRouter from './routes/admin/transcriptions'; // ✅ Admin Transcriptions Management
 import openaiStatusRouter from './routes/admin/openai-status'; // 🤖 OpenAI Rate Limiter & Pool Status
+import adminTripwireStudentsRouter from './routes/admin-tripwire-students'; // 📊 Main Admin → Tripwire Students Proxy
 import aiLessonGeneratorRouter from './routes/ai-lesson-generator'; // ✅ AI Description & Tips Generator
 import aiMentorRouter from './routes/ai-mentor'; // ✅ AI Mentor Scheduler & Analytics
 import landingRouter from './routes/landing'; // ✅ Landing Page Leads (New DB + AmoCRM)
@@ -540,6 +541,7 @@ app.use('/api/progress', progressRouter); // 📊 Video Progress Tracking
 app.use('/api', videoRouter); // 🎬 Video Quality & Transcription API
 app.use('/api/admin/transcriptions', transcriptionsRouter); // 🎙️ Admin Transcriptions Management
 app.use('/api/admin/openai-status', openaiStatusRouter); // 🤖 OpenAI Rate Limiter & Pool Status
+app.use('/api/admin/tripwire-students', adminTripwireStudentsRouter); // 📊 Main Admin → Tripwire Students Proxy
 app.use('/api/ai', aiLessonGeneratorRouter); // 🤖 AI Lesson Description & Tips Generator
 app.use('/api/ai-mentor', aiMentorRouter); // 🤖 AI Mentor Scheduler & Analytics
 app.use('/api/ai-analytics', aiAnalyticsRouter); // 📊 AI Analytics Reports
