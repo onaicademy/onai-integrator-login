@@ -128,9 +128,9 @@ export default function Login() {
         
         sessionStorage.clear();
         
-        // ✅ Проверяем роль пользователя из users таблицы
+        // ✅ Проверяем роль пользователя из profiles таблицы
         const { data: userData, error: userError } = await supabase
-          .from('users')
+          .from('profiles')
           .select('role, onboarding_completed')
           .eq('id', data.user.id)
           .single();
