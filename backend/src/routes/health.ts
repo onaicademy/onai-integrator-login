@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { tripwireSupabase } from '../config/supabase-tripwire.js';
-import { getPool } from '../config/traffic-db.js';
+import { createClient } from '@supabase/supabase-js';
 
 const router = Router();
 
@@ -33,13 +33,20 @@ router.get('/', async (req: Request, res: Response) => {
       health.status = 'degraded';
     }
 
-    // Check Traffic DB (direct PostgreSQL)
+    // Check Traffic DB (Supabase REST API)
     try {
-      const pool = getPool();
-      const result = await pool.query('SELECT 1 as health');
-      health.services.traffic_db = result.rows.length > 0 ? 'healthy' : 'degraded';
-    } catch (e: any) {
-      console.error('❌ Traffic DB health check failed:', e.message);
+      const trafficUrl = process.env.TRAFFIC_SUPABASE_URL;
+      const trafficKey = process.env.TRAFFIC_SERVICE_ROLE_KEY;
+      if (!trafficUrl || !trafficKey) {
+        throw new Error('Traffic Supabase not configured');
+      }
+      const trafficSupabase = createClient(trafficUrl, trafficKey);
+      const { error } = await trafficSupabase.from('traffic_users').select('id').limit(1);
+      if (error) throw error;
+      health.services.traffic_db = 'healthy';
+    } catch (e: unknown) {
+      const err = e as Error;
+      console.error('Traffic DB health check failed:', err.message);
       health.services.traffic_db = 'unhealthy';
       health.status = 'degraded';
     }
@@ -143,10 +150,14 @@ router.get('/traffic', async (req: Request, res: Response) => {
   };
 
   try {
-    // Traffic DB (direct PostgreSQL)
-    const pool = getPool();
-    const result = await pool.query('SELECT id FROM traffic_users LIMIT 1');
-    checks.db = result.rows.length >= 0; // Even 0 rows is OK, just need connection
+    // Traffic DB (Supabase REST API)
+    const trafficUrl = process.env.TRAFFIC_SUPABASE_URL;
+    const trafficKey = process.env.TRAFFIC_SERVICE_ROLE_KEY;
+    if (trafficUrl && trafficKey) {
+      const trafficSupabase = createClient(trafficUrl, trafficKey);
+      const { error } = await trafficSupabase.from('traffic_users').select('id').limit(1);
+      checks.db = !error;
+    }
 
     // FB Token
     checks.fb_integration = !!process.env.FACEBOOK_PERMANENT_TOKEN;
