@@ -20,13 +20,22 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-// CRITICAL ROUTES ONLY
+// ✅ STEP 1: Add Critical Admin Routes
+console.log('📦 [STEP 1] Importing admin routes...');
+import usersRouter from './routes/users';
+import studentsRouter from './routes/students';
+import transcriptionsRouter from './routes/admin/transcriptions';
+import openaiStatusRouter from './routes/admin/openai-status';
+console.log('✅ [STEP 1] Admin routes imported successfully');
+
+// CRITICAL ROUTES
 app.get('/api/health', (req, res) => {
   console.log('🏥 Health check received');
   res.json({
     status: 'ok',
     message: 'Minimal backend running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    memory: process.memoryUsage()
   });
 });
 
@@ -43,6 +52,13 @@ app.get('/api/amocrm/stats', (req, res) => {
     eta: 0
   });
 });
+
+// Admin routes
+app.use('/api/users', usersRouter);
+app.use('/api/students', studentsRouter);
+app.use('/api/admin/transcriptions', transcriptionsRouter);
+app.use('/api/admin/openai-status', openaiStatusRouter);
+console.log('✅ Admin routes registered');
 
 // Start server
 const server = app.listen(PORT, () => {
