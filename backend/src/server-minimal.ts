@@ -57,6 +57,16 @@ import lessonsRouter from './routes/lessons';
 import progressRouter from './routes/progress';
 console.log('✅ [STEP 2] Course routes imported');
 
+// ✅ STEP 3: Add Missing Admin Routes from logs
+console.log('📦 [STEP 3] Importing missing admin routes...');
+import tokensRouter from './routes/tokens';
+import configRouter from './routes/config';
+import adminTripwireStudentsRouter from './routes/admin-tripwire-students';
+import debugRouter from './routes/debug';
+import systemHealthRouter from './routes/system-health';
+import videoRouter from './routes/video';
+console.log('✅ [STEP 3] Missing admin routes imported');
+
 // CRITICAL ROUTES
 app.get('/api/health', (req, res) => {
   console.log('🏥 Health check received');
@@ -95,6 +105,15 @@ app.use('/api/modules', modulesRouter);
 app.use('/api/lessons', lessonsRouter);
 app.use('/api/progress', progressRouter);
 console.log('✅ Course routes registered');
+
+// Missing admin routes
+app.use('/api/tokens', tokensRouter);
+app.use('/api/config', configRouter);
+app.use('/api/admin/tripwire-students', adminTripwireStudentsRouter);
+app.use('/api/debug', debugRouter);
+app.use('/api/admin/system', systemHealthRouter);
+app.use('/api/video', videoRouter);
+console.log('✅ Missing admin routes registered');
 
 // Start server
 const server = app.listen(PORT, () => {
