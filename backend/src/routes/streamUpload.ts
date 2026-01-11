@@ -122,18 +122,19 @@ async function waitForVideoReadyAndTranscribe(videoId: string): Promise<void> {
         
         const videoUrl = `https://${BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
         const { generateTranscription } = require('../services/transcriptionService');
-        
+
         // Обновляем статус в БД
         await adminSupabase
           .from('video_content')
-          .update({ 
+          .update({
             transcoding_status: 'ready',
             updated_at: new Date().toISOString()
           })
           .eq('bunny_video_id', videoId);
-        
-        await generateTranscription(videoId, videoUrl);
-        console.log(`✅ [Auto-Pipeline] Transcription completed for ${videoId}`);
+
+        // MAIN PLATFORM transcription
+        await generateTranscription(videoId, videoUrl, 'main');
+        console.log(`✅ [Auto-Pipeline] Transcription completed for ${videoId} (main platform)`);
         
         return; // Готово!
       } else if (bunnyStatus === 5) {

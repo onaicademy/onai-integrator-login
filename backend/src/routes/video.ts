@@ -60,20 +60,22 @@ router.get('/video/:videoId/qualities', authenticateJWT, async (req: Request, re
 /**
  * GET /api/video/:videoId/transcription
  * Получить транскрибацию видео
+ * Query params: platform='main'|'tripwire' (default: 'main')
  */
 router.get('/video/:videoId/transcription', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const { videoId } = req.params;
-    
-    const transcription = await transcriptionService.getTranscription(videoId);
-    
+    const platform = (req.query.platform as 'main' | 'tripwire') || 'main';
+
+    const transcription = await transcriptionService.getTranscription(videoId, platform);
+
     if (!transcription) {
       return res.status(404).json({
         success: false,
         message: 'Transcription not found'
       });
     }
-    
+
     res.json({
       success: true,
       videoId: videoId,
@@ -95,28 +97,30 @@ router.get('/video/:videoId/transcription', authenticateJWT, async (req: Request
 /**
  * POST /api/video/:videoId/transcription/generate
  * Сгенерировать транскрибацию для видео
+ * Body params: videoUrl (required), platform='main'|'tripwire' (default: 'main')
  */
 router.post('/video/:videoId/transcription/generate', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const { videoId } = req.params;
-    const { videoUrl } = req.body;
-    
+    const { videoUrl, platform = 'main' } = req.body;
+
     if (!videoUrl) {
       return res.status(400).json({
         success: false,
         message: 'videoUrl is required'
       });
     }
-    
+
     // Запуск транскрибации асинхронно
-    transcriptionService.generateTranscription(videoId, videoUrl)
-      .then(() => console.log(`✅ Transcription completed for video ${videoId}`))
+    transcriptionService.generateTranscription(videoId, videoUrl, platform as 'main' | 'tripwire')
+      .then(() => console.log(`✅ Transcription completed for video ${videoId} (${platform} platform)`))
       .catch(err => console.error(`❌ Transcription failed for video ${videoId}:`, err));
-    
+
     res.json({
       success: true,
       message: 'Transcription generation started',
-      videoId: videoId
+      videoId: videoId,
+      platform: platform
     });
   } catch (error) {
     console.error('Error starting transcription:', error);

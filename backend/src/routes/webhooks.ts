@@ -62,14 +62,15 @@ router.post('/bunnycdn', async (req: Request, res: Response) => {
     const videoUrl = `https://${BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
     
     const { generateTranscription } = require('../services/transcriptionService');
-    
-    generateTranscription(videoId, videoUrl)
+
+    // MAIN PLATFORM transcription
+    generateTranscription(videoId, videoUrl, 'main')
       .then(() => {
-        console.log(`✅ [WEBHOOK] Transcription completed for ${videoId}`);
+        console.log(`✅ [WEBHOOK] Transcription completed for ${videoId} (main platform)`);
       })
       .catch((error: Error) => {
         console.error(`❌ [WEBHOOK] Transcription failed for ${videoId}:`, error.message);
-        
+
         // Update transcription status as failed in DB
         adminSupabase
           .from('video_transcriptions')

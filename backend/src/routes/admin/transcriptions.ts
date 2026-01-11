@@ -197,8 +197,8 @@ router.get('/lesson/:lessonId', authenticateJWT, requireAdmin, async (req, res) 
       return res.status(404).json({ error: 'Lesson has no video' });
     }
 
-    // Получить транскрибацию
-    const transcription = await getTranscription(lesson.bunny_video_id);
+    // Получить транскрибацию (MAIN PLATFORM)
+    const transcription = await getTranscription(lesson.bunny_video_id, 'main');
 
     if (!transcription) {
       return res.status(404).json({ error: 'Transcription not found' });
@@ -247,9 +247,9 @@ router.post('/lesson/:lessonId/transcribe', authenticateJWT, requireAdmin, async
     // Построить URL видео (HLS playlist для транскрибации)
     const videoUrl = `https://${process.env.BUNNY_STREAM_CDN_HOSTNAME}/${lesson.bunny_video_id}/playlist.m3u8`;
 
-    // Запустить транскрибацию асинхронно
-    generateTranscription(lesson.bunny_video_id, videoUrl)
-      .then(() => console.log(`✅ Transcription completed for lesson ${lessonId}`))
+    // Запустить транскрибацию асинхронно (MAIN PLATFORM)
+    generateTranscription(lesson.bunny_video_id, videoUrl, 'main')
+      .then(() => console.log(`✅ Transcription completed for lesson ${lessonId} (main platform)`))
       .catch(err => console.error(`❌ Transcription failed for lesson ${lessonId}:`, err));
 
     res.json({
@@ -311,18 +311,18 @@ router.post('/transcribe-all', authenticateJWT, requireAdmin, async (req, res) =
     let processed = 0;
     for (const lesson of lessonsToTranscribe) {
       const videoUrl = `https://${process.env.BUNNY_STREAM_CDN_HOSTNAME}/${lesson.bunny_video_id}/playlist.m3u8`;
-      
-      // Запустить асинхронно
-      generateTranscription(lesson.bunny_video_id, videoUrl)
+
+      // Запустить асинхронно (MAIN PLATFORM)
+      generateTranscription(lesson.bunny_video_id, videoUrl, 'main')
         .then(() => {
           processed++;
-          console.log(`✅ [${processed}/${lessonsToTranscribe.length}] Transcription completed for lesson ${lesson.id}`);
+          console.log(`✅ [${processed}/${lessonsToTranscribe.length}] Transcription completed for lesson ${lesson.id} (main platform)`);
         })
         .catch(err => {
           processed++;
           console.error(`❌ [${processed}/${lessonsToTranscribe.length}] Transcription failed for lesson ${lesson.id}:`, err);
         });
-      
+
       // Задержка между запусками (чтобы не перегрузить API)
       await new Promise(resolve => setTimeout(resolve, 2000));
     }

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -7,14 +7,10 @@ import { promisify } from 'util';
 import { exec } from 'child_process';
 import axios from 'axios';
 import { generateLessonAI } from '../routes/ai-lesson-generator';
+import { adminSupabase } from '../config/supabase';
+import { tripwireAdminSupabase } from '../config/supabase-tripwire';
 
 const execPromise = promisify(exec);
-
-// ✅ ИСПОЛЬЗУЕМ TRIPWIRE БД для транскрипций Tripwire уроков
-const supabase = createClient(
-  process.env.TRIPWIRE_SUPABASE_URL || '',
-  process.env.TRIPWIRE_SERVICE_ROLE_KEY || ''
-);
 
 // ✅ GROQ WHISPER CLIENT (в 10× быстрее OpenAI!)
 const groq = new OpenAI({
@@ -33,15 +29,30 @@ interface TranscriptionResult {
 }
 
 /**
- * Генерация транскрибации через Groq Whisper API (FAST!)
+ * Получить правильный Supabase клиент в зависимости от платформы
  */
-export async function generateTranscription(videoId: string, videoUrl: string): Promise<TranscriptionResult> {
+function getSupabaseClient(platform: 'main' | 'tripwire' = 'tripwire'): SupabaseClient {
+  return platform === 'main' ? adminSupabase : tripwireAdminSupabase;
+}
+
+/**
+ * Генерация транскрибации через Groq Whisper API (FAST!)
+ * @param videoId - ID видео в BunnyCDN
+ * @param videoUrl - URL HLS плейлиста
+ * @param platform - Платформа ('main' | 'tripwire')
+ */
+export async function generateTranscription(
+  videoId: string,
+  videoUrl: string,
+  platform: 'main' | 'tripwire' = 'tripwire'
+): Promise<TranscriptionResult> {
   const tempVideoPath = `/tmp/${videoId}.mp4`;
   const tempAudioPath = `/tmp/${videoId}.mp3`;
+  const supabase = getSupabaseClient(platform);
 
   try {
-    console.log(`🎙️ [Transcription] Starting for video ${videoId}`);
-    
+    console.log(`🎙️ [Transcription] Starting for video ${videoId} (${platform} platform)`);
+
     // Обновить статус на "processing"
     await supabase
       .from('video_transcriptions')
@@ -276,8 +287,12 @@ export async function generateTranscription(videoId: string, videoUrl: string): 
 
 /**
  * Получить транскрибацию (берем последнюю completed)
+ * @param videoId - ID видео
+ * @param platform - Платформа ('main' | 'tripwire')
  */
-export async function getTranscription(videoId: string) {
+export async function getTranscription(videoId: string, platform: 'main' | 'tripwire' = 'main') {
+  const supabase = getSupabaseClient(platform);
+
   const { data, error } = await supabase
     .from('video_transcriptions')
     .select('*')
@@ -286,13 +301,13 @@ export async function getTranscription(videoId: string) {
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
-  
+
   if (error) {
-    console.warn(`❌ Transcription not found for ${videoId}:`, error.message);
+    console.warn(`❌ Transcription not found for ${videoId} (${platform}):`, error.message);
     return null;
   }
-  
-  console.log(`✅ Found transcription for ${videoId}`);
+
+  console.log(`✅ Found transcription for ${videoId} (${platform})`);
   return data;
 }
 
@@ -411,28 +426,28 @@ async function downloadFromBunnyCDN(
 async function triggerAIGeneration(videoId: string) {
   try {
     console.log(`🤖 [AI Generator] Auto-trigger for video ${videoId}`);
-    
+
     // 1️⃣ Ищем урок в ОСНОВНОЙ ПЛАТФОРМЕ
-    const { data: mainLesson } = await supabase
+    const { data: mainLesson } = await adminSupabase
       .from('lessons')
       .select('id, module_id, bunny_video_id')
       .eq('bunny_video_id', videoId)
       .single();
-    
+
     if (mainLesson) {
       console.log(`✅ [AI Generator] Found lesson ${mainLesson.id} in MAIN platform`);
       await generateAIContent(videoId, 'main', mainLesson.id);
       return;
     }
-    
+
     // 2️⃣ Ищем урок в TRIPWIRE (если таблица существует)
     try {
-      const { data: tripwireLesson } = await supabase
+      const { data: tripwireLesson } = await tripwireAdminSupabase
         .from('tripwire_lessons')
         .select('id, module_id, bunny_video_id')
         .eq('bunny_video_id', videoId)
         .single();
-      
+
       if (tripwireLesson) {
         console.log(`✅ [AI Generator] Found lesson ${tripwireLesson.id} in TRIPWIRE platform`);
         await generateAIContent(videoId, 'tripwire', tripwireLesson.id);
@@ -442,7 +457,7 @@ async function triggerAIGeneration(videoId: string) {
       // Таблица tripwire_lessons может не существовать - это нормально
       console.log(`ℹ️ [AI Generator] Tripwire table not found or no lesson`);
     }
-    
+
     console.warn(`⚠️ [AI Generator] No lesson found for video ${videoId}`);
   } catch (error: any) {
     console.error(`❌ [AI Generator] Trigger error:`, error.message);
