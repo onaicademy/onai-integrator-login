@@ -47,6 +47,8 @@ const AdminDashboard = lazy(() => retryChunkLoad(() => import("./pages/admin/Adm
 const SystemHealth = lazy(() => retryChunkLoad(() => import("./pages/admin/SystemHealth")));
 const DebugPanel = lazy(() => retryChunkLoad(() => import("./pages/admin/DebugPanel"))); // 🚔 Debug Panel
 const StudentsActivity = lazy(() => retryChunkLoad(() => import("./pages/admin/StudentsActivity")));
+const MainPlatformSystemHealth = lazy(() => retryChunkLoad(() => import("./pages/admin/MainPlatformSystemHealth")));
+const MainPlatformDebugPanel = lazy(() => retryChunkLoad(() => import("./pages/admin/MainPlatformDebugPanel")));
 const AIAnalytics = lazy(() => retryChunkLoad(() => import("./pages/admin/AIAnalytics")));
 const TripwireManager = lazy(() => retryChunkLoad(() => import("./pages/admin/TripwireManager")));
 const Messages = lazy(() => retryChunkLoad(() => import("./pages/Messages")));
@@ -241,6 +243,10 @@ const AppRoutes = () => {
             <Route path="/admin/short-links" element={<AdminGuard><ShortLinksStats /></AdminGuard>} />
             {/* ✅ NEW: Tripwire Sales Global - referenced in AdminDashboard card #6 */}
             <Route path="/admin/tripwire-sales-global" element={<AdminGuard><MainLayout><TripwireManager /></MainLayout></AdminGuard>} />
+            {/* ✅ FIX: System Health & Debug Panel for Main Platform */}
+            <Route path="/admin/system-health" element={<AdminGuard><MainPlatformSystemHealth /></AdminGuard>} />
+            <Route path="/admin/debug" element={<AdminGuard><MainPlatformDebugPanel /></AdminGuard>} />
+            <Route path="/admin/students-activity" element={<AdminGuard><MainLayout><StudentsActivity /></MainLayout></AdminGuard>} />
 
             {/* ❌ OLD ADMIN ROUTES (Keeping for backwards compatibility) */}
             <Route path="/admin/old" element={
@@ -251,11 +257,6 @@ const AppRoutes = () => {
             <Route path="/admin/activity" element={
               <ProtectedRoute>
                 <OldAdminGuard><MainLayout><Activity /></MainLayout></OldAdminGuard>
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/students-activity" element={
-              <ProtectedRoute>
-                <OldAdminGuard><MainLayout><StudentsActivity /></MainLayout></OldAdminGuard>
               </ProtectedRoute>
             } />
             <Route path="/admin/ai-analytics" element={

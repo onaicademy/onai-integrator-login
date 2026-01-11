@@ -14,7 +14,31 @@
       "Bash(ssh root@207.154.231.30 \"cd /var/www/onai-integrator-login-main && git pull origin main\")",
       "Bash(ssh root@207.154.231.30 \"cd /var/www/onai-integrator-login-main && npm install\")",
       "Bash(ssh:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh auth status:*)",
+      "Bash(winget install:*)",
+      "Bash(choco install:*)",
+      "Bash(scoop install:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' auth status\")",
+      "Bash(powershell.exe -Command \"refreshenv; gh auth status\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' auth login --web --git-protocol https\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' auth login -h github.com -p https -w\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' auth login --with-token\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' secret set DO_SSH_KEY -R onaicademy/onai-integrator-login\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' workflow run deploy-backend.yml -R onaicademy/onai-integrator-login\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' run list -R onaicademy/onai-integrator-login --limit 5\")",
+      "Bash(powershell.exe -Command \"& 'C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe' run view:*)",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' run view 20879667029 -R onaicademy/onai-integrator-login 2>&1\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' run list -R onaicademy/onai-integrator-login --limit 1\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' run view -R onaicademy/onai-integrator-login --log 2>&1 | Select-String -Pattern ''error|Error|failed|Failed|fatal|Fatal'' | Select-Object -First 20\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' run view -R onaicademy/onai-integrator-login --log-failed 2>&1\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe'' run list -R onaicademy/onai-integrator-login --limit 1 --json databaseId --jq ''.[0].databaseId''\")",
+      "Bash(powershell.exe:*)",
+      "Bash(curl:*)",
+      "Bash(cmd.exe /c \"pip install python-pptx\")",
+      "Bash(node create_presentation.js:*)"
     ]
   }
 }
