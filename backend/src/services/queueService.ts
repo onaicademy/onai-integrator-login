@@ -1,12 +1,25 @@
 // @ts-nocheck
 import { Queue } from 'bullmq';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { getRedisConnection, isRedisAvailable } from '../config/redis';
+import { adminSupabase } from '../config/supabase';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire';
 
 /**
  * Queue Service for Tripwire User Creation
  * Manages async job processing with BullMQ + Redis
+ *
+ * Supports both platforms:
+ * - Main Platform → adminSupabase
+ * - Tripwire → tripwireAdminSupabase
  */
+
+/**
+ * Get correct Supabase client based on platform
+ */
+function getSupabaseClient(platform: 'main' | 'tripwire' = 'tripwire'): SupabaseClient {
+  return platform === 'main' ? adminSupabase : tripwireAdminSupabase;
+}
 
 export interface CreateUserJobData {
   full_name: string;
@@ -54,22 +67,26 @@ export const userCreationQueue = new Queue<CreateUserJobData>('tripwire-user-cre
 
 /**
  * Enqueue user creation job
+ * @param platform - Platform ('main' | 'tripwire')
  */
-export async function enqueueUserCreation(data: CreateUserJobData) {
+export async function enqueueUserCreation(
+  data: CreateUserJobData,
+  platform: 'main' | 'tripwire' = 'tripwire'
+) {
   try {
     const job = await userCreationQueue.add('create-user', data, {
       jobId: `user-${data.email}-${Date.now()}`, // Unique ID prevents duplicates
       priority: 1
     });
-    
+
     console.log(`✅ [QUEUE] Job ${job.id} enqueued for ${data.email}`);
-    
+
     // Log to health logs
     await logHealthEvent('INFO', `User creation job queued: ${data.email}`, {
       jobId: job.id,
       email: data.email
-    });
-    
+    }, platform);
+
     return job;
   } catch (error: any) {
     console.error('❌ [QUEUE] Failed to enqueue:', error);
@@ -99,35 +116,39 @@ export async function getQueueMetrics() {
 /**
  * Get current system mode (async_queue or sync_direct)
  * ✅ CACHED: 60s TTL to prevent DB overload
+ * @param platform - Platform ('main' | 'tripwire')
  */
-export async function getSystemMode(): Promise<'async_queue' | 'sync_direct'> {
+export async function getSystemMode(
+  platform: 'main' | 'tripwire' = 'tripwire'
+): Promise<'async_queue' | 'sync_direct'> {
   // Check cache first
   if (isCacheValid() && configCache) {
     return configCache.mode;
   }
-  
+
   try {
-    const { data, error } = await tripwireAdminSupabase
+    const supabase = getSupabaseClient(platform);
+    const { data, error } = await supabase
       .from('system_config')
       .select('value')
       .eq('key', 'traffic_mode')
       .single();
-    
+
     if (error) {
       console.error('❌ [QUEUE] Failed to get system mode:', error);
       return 'async_queue'; // Default to queue mode
     }
-    
+
     const mode = (data?.value as any) || 'async_queue';
-    
+
     // Update cache
     configCache = {
       mode,
       timestamp: Date.now()
     };
-    
+
     console.log(`✅ [CACHE] System mode cached: ${mode} (valid for ${CONFIG_CACHE_TTL / 1000}s)`);
-    
+
     return mode;
   } catch (error) {
     console.error('❌ [QUEUE] Exception getting system mode:', error);
@@ -138,33 +159,36 @@ export async function getSystemMode(): Promise<'async_queue' | 'sync_direct'> {
 /**
  * Set system mode (kill switch)
  * ✅ Clears cache after mode change
+ * @param platform - Platform ('main' | 'tripwire')
  */
 export async function setSystemMode(
-  mode: 'async_queue' | 'sync_direct', 
-  userId: string
+  mode: 'async_queue' | 'sync_direct',
+  userId: string,
+  platform: 'main' | 'tripwire' = 'tripwire'
 ) {
   try {
+    const supabase = getSupabaseClient(platform);
     // Update mode in DB
-    const { error: updateError } = await tripwireAdminSupabase
+    const { error: updateError } = await supabase
       .from('system_config')
-      .update({ 
-        value: mode, 
-        updated_by: userId, 
-        updated_at: new Date().toISOString() 
+      .update({
+        value: mode,
+        updated_by: userId,
+        updated_at: new Date().toISOString()
       })
       .eq('key', 'traffic_mode');
-    
+
     if (updateError) throw updateError;
-    
+
     // Clear cache immediately
     clearCache();
-    
+
     // Log mode switch
-    await logHealthEvent('SWITCH', `System mode changed to: ${mode}`, { 
+    await logHealthEvent('SWITCH', `System mode changed to: ${mode}`, {
       changed_by: userId,
       previous_mode: mode === 'async_queue' ? 'sync_direct' : 'async_queue'
-    });
-    
+    }, platform);
+
     console.log(`✅ [QUEUE] System mode changed to: ${mode} by ${userId}`);
   } catch (error: any) {
     console.error('❌ [QUEUE] Failed to set system mode:', error);
@@ -175,21 +199,24 @@ export async function setSystemMode(
 /**
  * Log health event to system_health_logs
  * ✅ CRITICAL/SWITCH events trigger instant Telegram alerts
+ * @param platform - Platform ('main' | 'tripwire')
  */
 export async function logHealthEvent(
-  type: 'INFO' | 'WARNING' | 'ERROR' | 'SWITCH' | 'CRITICAL', 
-  message: string, 
-  metadata?: any
+  type: 'INFO' | 'WARNING' | 'ERROR' | 'SWITCH' | 'CRITICAL',
+  message: string,
+  metadata?: any,
+  platform: 'main' | 'tripwire' = 'tripwire'
 ) {
   try {
-    await tripwireAdminSupabase
+    const supabase = getSupabaseClient(platform);
+    await supabase
       .from('system_health_logs')
       .insert({
         event_type: type,
         message,
         metadata: metadata ? JSON.parse(JSON.stringify(metadata)) : null
       });
-    
+
     // 🚨 Send Telegram alert for critical events
     if (type === 'CRITICAL' || type === 'SWITCH') {
       await sendTelegramAlert(type, message, metadata);
@@ -248,14 +275,18 @@ async function sendTelegramAlert(
 
 /**
  * Cleanup old logs (call via cron or manually)
+ * @param platform - Platform ('main' | 'tripwire')
  */
-export async function cleanupOldLogs() {
+export async function cleanupOldLogs(
+  platform: 'main' | 'tripwire' = 'tripwire'
+) {
   try {
-    const { error } = await tripwireAdminSupabase.rpc('cleanup_old_health_logs');
-    
+    const supabase = getSupabaseClient(platform);
+    const { error } = await supabase.rpc('cleanup_old_health_logs');
+
     if (error) throw error;
-    
-    console.log('✅ [QUEUE] Old health logs cleaned up');
+
+    console.log(`✅ [QUEUE] Old health logs cleaned up (${platform} platform)`);
   } catch (error: any) {
     console.error('❌ [QUEUE] Failed to cleanup logs:', error);
   }

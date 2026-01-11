@@ -23,11 +23,12 @@ router.get('/stats', authenticateJWT, async (req, res) => {
       ? new Date(req.query.startDate as string) 
       : new Date(Date.now() - 24 * 60 * 60 * 1000); // Default: last 24h
     
-    const endDate = req.query.endDate 
-      ? new Date(req.query.endDate as string) 
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
       : new Date();
 
-    const stats = await getDebugStats(startDate, endDate);
+    // Main Platform debug stats
+    const stats = await getDebugStats(startDate, endDate, 'main');
 
     res.json(stats);
   } catch (error: any) {
@@ -56,11 +57,12 @@ router.get('/errors', authenticateJWT, async (req, res) => {
       ? new Date(req.query.startDate as string) 
       : new Date(Date.now() - 24 * 60 * 60 * 1000);
     
-    const endDate = req.query.endDate 
-      ? new Date(req.query.endDate as string) 
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
       : new Date();
 
-    const errors = await getErrorLogs(limit, startDate, endDate);
+    // Main Platform error logs
+    const errors = await getErrorLogs(limit, startDate, endDate, 'main');
 
     res.json({ errors });
   } catch (error: any) {
@@ -90,11 +92,12 @@ router.get('/logs', authenticateJWT, async (req, res) => {
       ? new Date(req.query.startDate as string) 
       : new Date(Date.now() - 24 * 60 * 60 * 1000);
     
-    const endDate = req.query.endDate 
-      ? new Date(req.query.endDate as string) 
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
       : new Date();
 
-    const logs = await getAllLogs(limit, startDate, endDate, eventType);
+    // Main Platform all logs
+    const logs = await getAllLogs(limit, startDate, endDate, eventType, 'main');
 
     res.json({ logs });
   } catch (error: any) {
@@ -117,11 +120,11 @@ router.post('/cleanup', authenticateJWT, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin only' });
     }
 
-    // Call cleanup function
+    // Call cleanup function - Main Platform
     const { cleanupOldLogs } = await import('../services/queueService');
-    await cleanupOldLogs();
+    await cleanupOldLogs('main');
 
-    console.log('✅ [DEBUG] Manual cleanup triggered by admin');
+    console.log('✅ [DEBUG] Manual cleanup triggered by admin (Main Platform)');
 
     res.json({ success: true, message: 'Old logs cleaned up (7+ days)' });
   } catch (error: any) {

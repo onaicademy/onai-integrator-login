@@ -1,12 +1,25 @@
 // @ts-nocheck
+import { SupabaseClient } from '@supabase/supabase-js';
+import { adminSupabase } from '../config/supabase';
 import { tripwireAdminSupabase } from '../config/supabase-tripwire';
 
 /**
  * 🚔 DEBUG SERVICE
- * 
+ *
  * Aggregates operation logs for Debug Panel
  * Provides statistics and error analysis
+ *
+ * Каждая платформа собирает свои логи в свою БД:
+ * - Main Platform → adminSupabase
+ * - Tripwire → tripwireAdminSupabase
  */
+
+/**
+ * Получить правильный Supabase клиент в зависимости от платформы
+ */
+function getSupabaseClient(platform: 'main' | 'tripwire' = 'main'): SupabaseClient {
+  return platform === 'main' ? adminSupabase : tripwireAdminSupabase;
+}
 
 export interface DebugStats {
   total_operations: number;
@@ -32,17 +45,20 @@ export interface OperationLogEntry {
 
 /**
  * Get debug statistics for time period
+ * @param platform - Платформа ('main' | 'tripwire')
  */
 export async function getDebugStats(
   startDate?: Date,
-  endDate?: Date
+  endDate?: Date,
+  platform: 'main' | 'tripwire' = 'main'
 ): Promise<DebugStats> {
   try {
     const start = startDate || new Date(Date.now() - 24 * 60 * 60 * 1000); // Default: last 24h
     const end = endDate || new Date();
-    
+    const supabase = getSupabaseClient(platform);
+
     // Get all logs in period
-    const { data: logs, error } = await tripwireAdminSupabase
+    const { data: logs, error } = await supabase
       .from('system_health_logs')
       .select('*')
       .gte('created_at', start.toISOString())
@@ -117,17 +133,20 @@ export async function getDebugStats(
 
 /**
  * Get detailed error logs
+ * @param platform - Платформа ('main' | 'tripwire')
  */
 export async function getErrorLogs(
   limit: number = 50,
   startDate?: Date,
-  endDate?: Date
+  endDate?: Date,
+  platform: 'main' | 'tripwire' = 'main'
 ): Promise<OperationLogEntry[]> {
   try {
     const start = startDate || new Date(Date.now() - 24 * 60 * 60 * 1000);
     const end = endDate || new Date();
-    
-    const { data, error } = await tripwireAdminSupabase
+    const supabase = getSupabaseClient(platform);
+
+    const { data, error } = await supabase
       .from('system_health_logs')
       .select('*')
       .in('event_type', ['ERROR', 'CRITICAL', 'WARNING'])
@@ -150,18 +169,21 @@ export async function getErrorLogs(
 
 /**
  * Get all logs (for full debug view)
+ * @param platform - Платформа ('main' | 'tripwire')
  */
 export async function getAllLogs(
   limit: number = 100,
   startDate?: Date,
   endDate?: Date,
-  eventType?: string
+  eventType?: string,
+  platform: 'main' | 'tripwire' = 'main'
 ): Promise<OperationLogEntry[]> {
   try {
     const start = startDate || new Date(Date.now() - 24 * 60 * 60 * 1000);
     const end = endDate || new Date();
-    
-    let query = tripwireAdminSupabase
+    const supabase = getSupabaseClient(platform);
+
+    let query = supabase
       .from('system_health_logs')
       .select('*')
       .gte('created_at', start.toISOString())

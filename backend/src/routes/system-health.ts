@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middleware/auth';
 import { getQueueMetrics, getSystemMode, setSystemMode } from '../services/queueService';
-import { tripwireAdminSupabase } from '../config/supabase-tripwire';
+import { adminSupabase } from '../config/supabase';
 
 const router = Router();
 
@@ -13,13 +13,14 @@ router.get('/mode', authenticateJWT, async (req, res) => {
   try {
     const currentUser = (req as any).user;
     const userRole = currentUser?.user_metadata?.role || currentUser?.role;
-    
+
     // Only admin can view system mode
     if (userRole !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admin only' });
     }
-    
-    const mode = await getSystemMode();
+
+    // Main Platform system mode
+    const mode = await getSystemMode('main');
     res.json({ mode });
   } catch (error: any) {
     console.error('❌ Error getting system mode:', error);
@@ -42,19 +43,20 @@ router.post('/mode', authenticateJWT, async (req, res) => {
     }
     
     const { mode } = req.body;
-    
+
     if (!mode || !['async_queue', 'sync_direct'].includes(mode)) {
-      return res.status(400).json({ 
-        error: 'Invalid mode. Must be "async_queue" or "sync_direct"' 
+      return res.status(400).json({
+        error: 'Invalid mode. Must be "async_queue" or "sync_direct"'
       });
     }
-    
+
     const userId = currentUser.sub || currentUser.id;
-    
-    await setSystemMode(mode, userId);
-    
+
+    // Main Platform mode change
+    await setSystemMode(mode, userId, 'main');
+
     console.log(`✅ [SYSTEM] Mode changed to ${mode} by ${currentUser.email}`);
-    
+
     res.json({ success: true, mode });
   } catch (error: any) {
     console.error('❌ Error setting system mode:', error);
@@ -92,22 +94,23 @@ router.get('/logs', authenticateJWT, async (req, res) => {
   try {
     const currentUser = (req as any).user;
     const userRole = currentUser?.user_metadata?.role || currentUser?.role;
-    
+
     // Only admin can view logs
     if (userRole !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admin only' });
     }
-    
+
     const limit = parseInt(req.query.limit as string) || 50;
-    
-    const { data, error } = await tripwireAdminSupabase
+
+    // Main Platform logs
+    const { data, error } = await adminSupabase
       .from('system_health_logs')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);
-    
+
     if (error) throw error;
-    
+
     res.json({ logs: data || [] });
   } catch (error: any) {
     console.error('❌ Error getting system logs:', error);
