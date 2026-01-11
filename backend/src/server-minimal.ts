@@ -13,10 +13,31 @@ import cors from 'cors';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// Middlewares - CORS for production
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://onai.academy',
+  'https://www.onai.academy',
+  'https://traffic.onai.academy',
+  'https://expresscourse.onai.academy'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, Postman, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`⚠️ CORS blocked origin: ${origin}`);
+      callback(null, true); // Allow for now during migration
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json({ limit: '10mb' }));
 
@@ -26,7 +47,15 @@ import usersRouter from './routes/users';
 import studentsRouter from './routes/students';
 import transcriptionsRouter from './routes/admin/transcriptions';
 import openaiStatusRouter from './routes/admin/openai-status';
-console.log('✅ [STEP 1] Admin routes imported successfully');
+console.log('✅ [STEP 1] Admin routes imported');
+
+// ✅ STEP 2: Add Course/Module/Lesson routes for Integrator 3.0
+console.log('📦 [STEP 2] Importing course routes...');
+import coursesRouter from './routes/courses';
+import modulesRouter from './routes/modules';
+import lessonsRouter from './routes/lessons';
+import progressRouter from './routes/progress';
+console.log('✅ [STEP 2] Course routes imported');
 
 // CRITICAL ROUTES
 app.get('/api/health', (req, res) => {
@@ -59,6 +88,13 @@ app.use('/api/students', studentsRouter);
 app.use('/api/admin/transcriptions', transcriptionsRouter);
 app.use('/api/admin/openai-status', openaiStatusRouter);
 console.log('✅ Admin routes registered');
+
+// Course/Module/Lesson routes
+app.use('/api/courses', coursesRouter);
+app.use('/api/modules', modulesRouter);
+app.use('/api/lessons', lessonsRouter);
+app.use('/api/progress', progressRouter);
+console.log('✅ Course routes registered');
 
 // Start server
 const server = app.listen(PORT, () => {
