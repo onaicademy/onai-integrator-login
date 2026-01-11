@@ -37,7 +37,10 @@ export const PIXEL_CONFIGS: Record<string, PixelConfig> = {
   },
 };
 
-export function getPixelConfig(slug: string): PixelConfig | null {
-  return PIXEL_CONFIGS[slug] || null;
+// Default pixel for traffic without UTM or unknown campaigns
+export const DEFAULT_PIXEL = PIXEL_CONFIGS.kenesary;
+
+export function getPixelConfig(slug: string): PixelConfig {
+  return PIXEL_CONFIGS[slug] || DEFAULT_PIXEL;
 }
 

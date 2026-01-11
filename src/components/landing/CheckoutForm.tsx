@@ -14,7 +14,8 @@ interface CheckoutFormProps {
 export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campaignSlug }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     name: '',
-    phone: ''
+    phone: '',
+    email: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState('--:--:--');
@@ -26,7 +27,7 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', phone: '' });
+      setFormData({ name: '', phone: '', email: '' });
       setIsSubmitting(false);
       setShowThankYou(false);
       setRedirectCountdown(8); // Reset to 8 seconds
@@ -424,6 +425,23 @@ export function CheckoutForm({ isOpen, onClose, source = 'expresscourse', campai
                       onChange={handleChange}
                       required
                       placeholder="+X (XXX) XXX-XX-XX"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* Email Input (Optional) */}
+                  <div>
+                    <label htmlFor="email" className="block text-xs font-mono text-gray-400 uppercase mb-2">
+                      EMAIL <span className="text-gray-600">(для получения доступа)</span>
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="your@email.com"
                       disabled={isSubmitting}
                       className="w-full bg-[#161920] border border-[#333] text-white px-4 py-3.5 text-base rounded transition-all focus:outline-none focus:border-[#00FF94] focus:shadow-[0_0_10px_rgba(0,255,148,0.3)] disabled:opacity-50"
                     />

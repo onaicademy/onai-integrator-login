@@ -724,8 +724,8 @@ export default function TripwireLanding() {
         </div>
       </div>
 
-      {/* Facebook Pixel */}
-      {pixelConfig && <FacebookPixel pixelConfig={pixelConfig} />}
+      {/* Facebook Pixel - Always renders with default fallback */}
+      <FacebookPixel pixelConfig={pixelConfig} />
       
       {/* Yandex Metrika */}
       <YandexMetrika counterId={105875572} />
