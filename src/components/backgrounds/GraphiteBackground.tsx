@@ -15,9 +15,9 @@ function GraphiteParticles() {
     white: new THREE.Color(0xffffff),     // #ffffff - белый
   }), []);
 
-  // Создание частиц
+  // Создание частиц - ОПТИМИЗИРОВАНО для производительности
   const { positions, colorArray, scales } = useMemo(() => {
-    const particleCount = 5000;
+    const particleCount = 1500; // ⚡ Уменьшено с 5000 до 1500 для плавной работы
     const positions = new Float32Array(particleCount * 3);
     const colorArray = new Float32Array(particleCount * 3);
     const scales = new Float32Array(particleCount);
@@ -31,13 +31,13 @@ function GraphiteParticles() {
       // Случайные цвета из палитры - ТОЛЬКО твои цвета!
       const rand = Math.random();
       let color: THREE.Color;
-      
-      if (rand < 0.4) {
-        color = colors.green;  // 40% зеленые
-      } else if (rand < 0.7) {
+
+      if (rand < 0.3) {
+        color = colors.green;  // 30% зеленые (снижено с 40%)
+      } else if (rand < 0.6) {
         color = colors.gray;   // 30% серые
       } else if (rand < 0.95) {
-        color = colors.black;  // 25% черные
+        color = colors.black;  // 35% черные (увеличено для баланса)
       } else {
         color = colors.white;  // 5% белые (акцент)
       }
@@ -46,8 +46,8 @@ function GraphiteParticles() {
       colorArray[i * 3 + 1] = color.g;
       colorArray[i * 3 + 2] = color.b;
 
-      // Случайные размеры - ОГРОМНЫЕ!
-      scales[i] = Math.random() * 4.0 + 2.0;
+      // Случайные размеры - Уменьшены для тонкого эффекта
+      scales[i] = Math.random() * 2.5 + 1.0; // Уменьшено с (2.0-6.0) до (1.0-3.5)
     }
 
     return { positions, colorArray, scales };
@@ -73,9 +73,9 @@ function GraphiteParticles() {
     const time = state.clock.getElapsedTime();
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
 
-    // Медленное вращение и волнообразное движение
-    particlesRef.current.rotation.y = time * 0.05;
-    particlesRef.current.rotation.x = Math.sin(time * 0.1) * 0.1;
+    // Очень медленное вращение для subtle 3D эффекта
+    particlesRef.current.rotation.y = time * 0.02; // Уменьшено с 0.05 до 0.02
+    particlesRef.current.rotation.x = Math.sin(time * 0.1) * 0.05; // Уменьшено с 0.1 до 0.05
 
     // Интерактивность с мышью
     const mouseX = mousePosition.current.x;
@@ -125,10 +125,10 @@ function GraphiteParticles() {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={5.0}
+        size={3.0} // Уменьшено с 5.0 до 3.0 для тонкого эффекта
         vertexColors
         transparent
-        opacity={1.0}
+        opacity={0.3} // Снижено с 1.0 до 0.3 (~30% интенсивность)
         sizeAttenuation
         blending={THREE.AdditiveBlending}
         depthWrite={false}
@@ -144,10 +144,11 @@ export function GraphiteBackground() {
       {/* CSS Градиентный фон с шумом */}
       <div className="graphite-gradient-layer" />
       
-      {/* Three.js Canvas с частицами */}
+      {/* Three.js Canvas с частицами - ОПТИМИЗИРОВАНО */}
       <Canvas
         camera={{ position: [0, 0, 50], fov: 75 }}
         className="graphite-canvas"
+        gl={{ powerPreference: 'high-performance', antialias: false }} // GPU optimization
         style={{
           position: 'fixed',
           top: 0,
@@ -155,6 +156,7 @@ export function GraphiteBackground() {
           width: '100%',
           height: '100%',
           zIndex: -1,
+          willChange: 'transform', // GPU acceleration hint
         }}
       >
         <ambientLight intensity={0.3} />

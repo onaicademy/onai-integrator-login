@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Sparkles, Code, ArrowRight, Clock, Users, Star, Zap, Target, Trophy, PartyPopper } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 
 export default function Courses() {
   const navigate = useNavigate();
@@ -66,19 +65,7 @@ export default function Courses() {
     },
   ];
 
-  // Генерируем звёзды ОДИН РАЗ при монтировании компонента (как в Login)
-  const stars = useMemo(() => {
-    return [...Array(50)].map((_, i) => {
-      const startX = Math.random() * 100;
-      const startY = Math.random() * 100;
-      const moveX = (Math.random() - 0.5) * 30;
-      const moveY = (Math.random() - 0.5) * 30;
-      const duration = Math.random() * 5 + 3;
-      const delay = Math.random() * 2;
-      
-      return { startX, startY, moveX, moveY, duration, delay };
-    });
-  }, []);
+  // ❌ УБРАНО: Белые метеориты для чистого фона с зелеными частицами
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden p-6">
@@ -102,32 +89,6 @@ export default function Courses() {
             times: [0, 0.2, 0.8, 1],
           }}
         />
-      </div>
-
-      {/* Летающие звезды (как в Login) */}
-      <div className="absolute inset-0 pointer-events-none">
-        {stars.map((star, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
-            style={{
-              top: `${star.startY}%`,
-              left: `${star.startX}%`,
-            }}
-            animate={{
-              x: [0, star.moveX, 0],
-              y: [0, star.moveY, 0],
-              opacity: [0.2, 1, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: star.duration,
-              repeat: Infinity,
-              delay: star.delay,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
       </div>
 
       <div className="max-w-7xl mx-auto space-y-12 relative z-10">
